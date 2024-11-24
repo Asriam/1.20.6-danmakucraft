@@ -1,13 +1,20 @@
 package com.asrian.thDanmakuCraft.util.script;
 
+import com.asrian.thDanmakuCraft.util.RunnableWithException;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.jarjar.nio.util.LambdaExceptionUtils;
 
-public abstract class AbstractScriptManager {
+public abstract class ScriptManager {
     protected String script = "";
-    protected boolean shouldExecuteScript;
+    protected boolean shouldExecuteScript = false;
+
+    ScriptManager(){
+        this.disableScript();
+    }
 
     public abstract Object invokeScript(String functionName, Object... args) throws Exception;
+    public abstract Object invokeScript(String functionName, RunnableWithException whenException, Object... args);
 
     public boolean hasScript(){
         return this.script != null && !this.script.equals("");

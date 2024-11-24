@@ -7,6 +7,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
@@ -15,8 +16,8 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 @OnlyIn(Dist.CLIENT)
 public class THBulletRenderer {
     public static void render2DBullet(EntityTHObjectContainerRenderer renderer, THBullet bullet, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, int p_114710_) {
-        poseStack.mulPose(renderer.dispatcher.cameraOrientation());
-        poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
+        //poseStack.mulPose(renderer.dispatcher.cameraOrientation());
+        //poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
         poseStack.scale(bullet.getScale().x, bullet.getScale().y,bullet.getScale().z);
         PoseStack.Pose posestack_pose = poseStack.last();
         VertexConsumer vertexconsumer = bufferSource.getBuffer(bullet._blend.renderType.apply(bullet.getTexture()));

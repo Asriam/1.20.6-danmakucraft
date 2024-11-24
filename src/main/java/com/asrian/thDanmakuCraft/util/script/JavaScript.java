@@ -1,4 +1,4 @@
-package com.asrian.thDanmakuCraft.script;
+package com.asrian.thDanmakuCraft.util.script;
 
 import com.asrian.thDanmakuCraft.world.entity.danmaku.THBullet;
 import com.asrian.thDanmakuCraft.world.entity.danmaku.laser.THCurvedLaser;

@@ -1,7 +1,7 @@
 package com.asrian.thDanmakuCraft;
 
 import com.asrian.thDanmakuCraft.init.*;
-import com.asrian.thDanmakuCraft.script.JavaScript;
+import com.asrian.thDanmakuCraft.util.script.JavaScript;
 import com.asrian.thDanmakuCraft.util.JSLoader;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.common.MinecraftForge;
@@ -30,8 +30,8 @@ public class THDanmakuCraftCore
         return JAVASCRIPT.getEngine();
     }
 
-    public THDanmakuCraftCore() {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+    public THDanmakuCraftCore(FMLJavaModLoadingContext context) {
+        IEventBus modEventBus = context.getModEventBus();
         modEventBus.addListener(this::commonSetup);
         BlockInit.BLOCKS.register(modEventBus);
         ItemInit.ITEMS.register(modEventBus);
@@ -42,11 +42,18 @@ public class THDanmakuCraftCore
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
+        /*
+        LOGGER.info("loading JS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         JSLOADER = new JSLoader();
+
+         */
     }
+
 
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
         LOGGER.info("HELLO from server starting");
+        LOGGER.info("loading JS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        JSLOADER = new JSLoader();
     }
 }

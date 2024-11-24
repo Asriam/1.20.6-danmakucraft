@@ -216,6 +216,8 @@ public class THBullet extends THObject {
                 THBulletRenderer.render3DBullet(renderer, object,this.renderFactory,partialTicks, poseStack, bufferSource, p_114710_);
 
             }else {
+                poseStack.mulPose(renderer.dispatcher.cameraOrientation());
+                poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
                 THBulletRenderer.render2DBullet(renderer, object,partialTicks, poseStack, bufferSource, p_114710_);
             }
             poseStack.popPose();

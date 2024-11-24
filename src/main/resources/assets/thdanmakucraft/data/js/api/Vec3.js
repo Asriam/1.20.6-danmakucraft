@@ -7,7 +7,6 @@ class Vec3 {
     constructor(x: number, y: number, z: number);
 
     vectorTo(vec3: Vec3): Vec3;
-
     normalize(): Vec3;
 
     dot(vec3: Vec3): Vec3;

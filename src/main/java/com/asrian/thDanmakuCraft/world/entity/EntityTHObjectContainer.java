@@ -4,6 +4,7 @@ import com.asrian.thDanmakuCraft.client.renderer.THRenderType;
 import com.asrian.thDanmakuCraft.init.EntityInit;
 import com.asrian.thDanmakuCraft.util.script.IScript;
 import com.asrian.thDanmakuCraft.util.script.JavaScriptManager;
+import com.asrian.thDanmakuCraft.util.script.ScriptManager;
 import com.asrian.thDanmakuCraft.world.entity.danmaku.THBullet;
 import com.asrian.thDanmakuCraft.world.entity.danmaku.THObject;
 import com.asrian.thDanmakuCraft.world.entity.danmaku.THObjectManager;
@@ -125,7 +126,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
             }
         }
 
-        if((this.timer+2)%1==0 && true) {
+        if(/*(this.timer+2)%1==0 &&*/ true) {
             Vec3 pos = this.position();
             Vec3 rotation = Vec3.directionFromRotation(0.0f,0.0f);
             Vec2 rotate = new Vec2(Mth.DEG_TO_RAD*((float) Math.pow(this.timer*0.1f,2)+360.0f/5),-Mth.DEG_TO_RAD*((float) Math.pow(this.timer*0.1f,2)+360.0f/5));
@@ -220,7 +221,6 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
         for(THObject object:removeList){
             object.onRemove();
             this.objectManager.removeTHObject(object);
-            //object.remove();
         }
     }
 
@@ -321,7 +321,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     }
 
     @Override
-    public JavaScriptManager getScriptManager() {
+    public ScriptManager getScriptManager() {
         return this.scriptManager;
     }
 }

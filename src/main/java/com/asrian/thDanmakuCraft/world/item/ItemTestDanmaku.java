@@ -27,10 +27,11 @@ public class ItemTestDanmaku extends Item {
         ItemStack itemstack = player.getItemInHand(p_43144_);
         EntityTHObjectContainer container = new EntityTHObjectContainer(player,level,player.position());
 
+        /*
         container.task.add(()->{
             THDanmakuCraftCore.LOGGER.info("fffffffffffff");
 
-        },0);
+        },0);*/
 
         String script = null;
         try {
@@ -41,9 +42,10 @@ public class ItemTestDanmaku extends Item {
         //THDanmakuCraftCore.LOGGER.info(script);
 
         for(int i=0;i<1;i++) {
-            //THCurvedLaser laser = (THCurvedLaser) new THCurvedLaser(container, THBullet.BULLET_COLOR.COLOR_DEEP_PURPLE, 180, 0.5f).initPosition(container.position()).shoot(new Vec3(0.0f, 0.1f, 0));
-            //laser.setLifetime(1200);
-            //laser.injectScript(script);
+            THCurvedLaser laser = (THCurvedLaser) new THCurvedLaser(container, THBullet.BULLET_COLOR.COLOR_DEEP_PURPLE, 180, 0.5f).initPosition(container.position()).shoot(new Vec3(0.0f, 0.1f, 0));
+            laser.setLifetime(1200);
+            laser.getScriptManager().enableScript();
+            laser.injectScript(script);
 
             /*
             laser.injectScript(

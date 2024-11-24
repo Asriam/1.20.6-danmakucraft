@@ -39,7 +39,7 @@ public class THObjectRenderHelper {
                 new Vector3f(0.5f*scale.x+pos.x, -0.5f*scale.y+pos.y, pos.z),    new Vector2f(uvEnd.x, uvStart.y),  color,
                 new Vector3f(0.5f*scale.x+pos.x, 0.5f*scale.y+pos.y, pos.z),     new Vector2f(uvEnd.x, uvEnd.y),    color,
                 new Vector3f(-0.5f*scale.x+pos.x, 0.5f*scale.y+pos.y, pos.z),    new Vector2f(uvStart.x, uvEnd.y),  color);
-    };
+    }
 
     public static void vertex(VertexConsumer consumer, PoseStack.Pose pose, int p_254296_, Vector3f vertex, Vector2f uv, THObject.Color color) {
         vertex(consumer,pose,p_254296_,vertex.x, vertex.y, vertex.z,uv.x, uv.y,color);
@@ -59,14 +59,16 @@ public class THObjectRenderHelper {
     public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, int p_254296_, float pow, Vec3 offsetPosition, Vec3 scale, int edgeA, int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, THObject.Color color, THObject.Color endColor) {
         THObject.Color startColor = color;
         THObject.Color deColor = THObject.Color(0,0,0,0);
-        int edgeADiv2 = Mth.ceil(edgeA / 2);
+        int edgeADiv2 = Mth.ceil(edgeA / 2.0f);
         float angle1;
+        float angle2;
+
         if (isHalf){
             angle1 = Mth.DEG_TO_RAD * (90.0f/edgeADiv2);
         }else {
             angle1 = Mth.DEG_TO_RAD * (180.0f/edgeADiv2);
         }
-        float angle2 = Mth.DEG_TO_RAD * (360.0f/edgeB);
+        angle2 = Mth.DEG_TO_RAD * (360.0f/edgeB);
 
         if (startColor.r != endColor.r){
             deColor.r = (startColor.r - endColor.r)/(edgeADiv2);
@@ -90,22 +92,48 @@ public class THObjectRenderHelper {
 
             startColor = color;
             for (int i = 0; i < edgeADiv2; i++) {
-                double sin01 = Mth.sin(i*angle1);
-                double sin02 = Mth.sin((i+1)*angle1);
+                float sin01 = Mth.sin(i*angle1);
+                float sin02 = Mth.sin((i+1)*angle1);
 
-                double sin1,sin2;
+                float sin1,sin2;
                 if (pow == 1){
                     sin1 = sin01;
                     sin2 = sin02;
                 }else {
-                    sin1 = Math.pow(sin01,pow);
-                    sin2 = Math.pow(sin02,pow);
+                    sin1 = (float) Math.pow(sin01,pow);
+                    sin2 = (float) Math.pow(sin02,pow);
                 }
 
-                double cos1 = Mth.cos(i*angle1);
-                double cos2 = Mth.cos((i+1)*angle1);
+                float cos1 = Mth.cos(i*angle1);
+                float cos2 = Mth.cos((i+1)*angle1);
                 THObject.Color color1 = THObject.Color(color.r-deColor.r*i,color.g-deColor.g*i,color.b-deColor.b*i,color.a-deColor.a*i);
 
+                Vector3f scaleF = scale.toVector3f();
+                Vector3f offsetPositionF = offsetPosition.toVector3f();
+
+                renderTexture(consumer, pose, p_254296_,
+                        new Vector3f(x1*sin1,
+                                cos1,
+                                z1*sin1).mul(scaleF).add(offsetPositionF),
+                        new Vector2f(uvStart.x, uvStart.y),startColor,
+
+                        new Vector3f(x2*sin1,
+                                cos1,
+                                z2*sin1).mul(scaleF).add(offsetPositionF),
+                        new Vector2f(uvEnd.x,   uvStart.y),startColor,
+
+                        new Vector3f(x2*sin2,
+                                cos2,
+                                z2*sin2).mul(scaleF).add(offsetPositionF),
+                        new Vector2f(uvEnd.x,   uvEnd.y),  color1,
+
+                        new Vector3f(x1*sin2,
+                                cos2,
+                                z1*sin2).mul(scaleF).add(offsetPositionF),
+                        new Vector2f(uvStart.x, uvEnd.y),  color1
+                );
+
+                /*
                 renderTexture(consumer, pose, p_254296_,
                         new Vector3f((float) (x1*sin1*scale.x+offsetPosition.x),
                                      (float) (cos1*scale.y+offsetPosition.y),
@@ -126,7 +154,7 @@ public class THObjectRenderHelper {
                                      (float) (cos2*scale.y+offsetPosition.y),
                                      (float) (z1*sin2*scale.z+offsetPosition.z)),
                         new Vector2f(uvStart.x, uvEnd.y),  color1
-                );
+                );*/
 
                 startColor = color1;
             }

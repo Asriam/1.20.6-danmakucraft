@@ -2,7 +2,7 @@ package com.asrian.thDanmakuCraft.init;
 
 import com.asrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.asrian.thDanmakuCraft.world.entity.EntityExample;
-import com.asrian.thDanmakuCraft.world.entity.EntityTHSpellCard;
+import com.asrian.thDanmakuCraft.world.entity.spellcard.EntityTHSpellCard;
 import com.asrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;

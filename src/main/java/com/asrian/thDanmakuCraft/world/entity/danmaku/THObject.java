@@ -5,6 +5,8 @@ import com.asrian.thDanmakuCraft.client.renderer.THObjectRenderHelper;
 import com.asrian.thDanmakuCraft.client.renderer.THRenderType;
 import com.asrian.thDanmakuCraft.client.renderer.entity.EntityTHObjectContainerRenderer;
 import com.asrian.thDanmakuCraft.init.THObjectInit;
+import com.asrian.thDanmakuCraft.util.RunnableWithException;
+import com.asrian.thDanmakuCraft.util.script.ScriptManager;
 import com.asrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.asrian.thDanmakuCraft.util.script.IScript;
 import com.asrian.thDanmakuCraft.util.script.JavaScriptManager;
@@ -29,7 +31,7 @@ import java.util.List;
 
 public class THObject implements IScript, IScriptTHObjectAPI{
     private final THObjectType<? extends THObject> type;
-    private final JavaScriptManager scriptManager;
+    private final ScriptManager scriptManager;
     private Level level;
     private EntityTHObjectContainer container;
     public static final ResourceLocation TEXTURE_WHITE = new ResourceLocation(THDanmakuCraftCore.MODID, "textures/white.png");
@@ -77,6 +79,7 @@ public class THObject implements IScript, IScriptTHObjectAPI{
         this.container = container;
         this.level = container.level();
         this.scriptManager = container.getScriptManager();
+        //this.scriptManager.disableScript();
         this.initPosition(container.position());
     }
 
@@ -154,7 +157,8 @@ public class THObject implements IScript, IScriptTHObjectAPI{
     }
 
     public void setVelocity(float speed, Vec2 rotation, boolean isDeg, boolean setRotation) {
-        this.setVelocity(speed, Vec3.directionFromRotation(rotation.scale(isDeg ? 1: Mth.RAD_TO_DEG)), false);
+        this.setVelocity(speed, Vec3.directionFromRotation(isDeg ? rotation : rotation.scale(Mth.RAD_TO_DEG)), false);
+
         if (setRotation){
             this.setRotation(isDeg? rotation.scale(Mth.DEG_TO_RAD) : rotation);
         }
@@ -170,7 +174,7 @@ public class THObject implements IScript, IScriptTHObjectAPI{
 
     public void setRotation(float x,float y,float z) {
         this.xRot = x;
-        this.yRot = y;
+        this.yRot = -y;
         this.zRot = z;
     }
 
@@ -180,7 +184,7 @@ public class THObject implements IScript, IScriptTHObjectAPI{
 
     public void setRotation(Vec2 rotation){
         this.xRot = rotation.x;
-        this.yRot = rotation.y;
+        this.yRot = -rotation.y;
     }
 
     public void setRotationByDirectionalVector(Vec3 vectorRotation) {
@@ -365,7 +369,12 @@ public class THObject implements IScript, IScriptTHObjectAPI{
         this.timer += 1;
 
 
-        this.scriptManager.invokeScript("onTick", this::remove, this);
+        this.scriptManager.invokeScript("onTick", (exception)-> {
+            if(this.container != null){
+                this.container.remove(Entity.RemovalReason.DISCARDED);
+            }
+            this.remove();
+        }, this);
     }
 
     public void collision(){
@@ -657,7 +666,7 @@ public class THObject implements IScript, IScriptTHObjectAPI{
     }
 
     @Override
-    public JavaScriptManager getScriptManager() {
+    public ScriptManager getScriptManager() {
         return this.scriptManager;
     }
 
