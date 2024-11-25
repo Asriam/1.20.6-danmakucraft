@@ -1,4 +1,4 @@
-class THObject extends Java.type('com.asrian.thDanmakuCraft.world.entity.danmaku.THObject'){
+class THObject extends Java.type('com.adrian.thDanmakuCraft.world.entity.danmaku.THObject'){
 
     onTick(){
         super.onTick();
