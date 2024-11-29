@@ -41,17 +41,17 @@ public class THObjectRenderHelper {
                 new Vector3f(-0.5f*scale.x+pos.x, 0.5f*scale.y+pos.y, pos.z),    new Vector2f(uvStart.x, uvEnd.y),  color);
     }
 
-    public static void vertex(VertexConsumer consumer, PoseStack.Pose pose, int p_254296_, Vector3f vertex, Vector2f uv, THObject.Color color) {
-        vertex(consumer,pose,p_254296_,vertex.x, vertex.y, vertex.z,uv.x, uv.y,color);
+    public static void vertex(VertexConsumer consumer, PoseStack.Pose pose, int uv2, Vector3f vertex, Vector2f uv, THObject.Color color) {
+        vertex(consumer,pose,uv2,vertex.x, vertex.y, vertex.z,uv.x, uv.y,color);
     }
 
-    public static void vertex(VertexConsumer consumer, PoseStack.Pose pose, int p_254296_,
+    public static void vertex(VertexConsumer consumer, PoseStack.Pose pose, int uv2,
                                   float x, float y, float z,
                                   float u, float v, THObject.Color color) {
         consumer.vertex(pose.pose(), x, y, z)
                 .color(color.r, color.g, color.b, color.a)
                 .uv(u, v)
-                .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(p_254296_)
+                .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(uv2)
                 .normal(pose, 0.0F, 1.0F, 0.0F)
                 .endVertex();
     }
@@ -71,17 +71,18 @@ public class THObjectRenderHelper {
 
         angle2 = Mth.DEG_TO_RAD * (360.0f/edgeB);
 
+        int edge3 = edgeADiv2;
         if (startColor.r != endColor.r){
-            deColor.r = (startColor.r - endColor.r)/(edgeADiv2);
+            deColor.r = (startColor.r - endColor.r)/edge3;
         }
         if (startColor.g != endColor.g){
-            deColor.g = (startColor.g - endColor.g)/(edgeADiv2);
+            deColor.g = (startColor.g - endColor.g)/edge3;
         }
         if (startColor.b != endColor.b){
-            deColor.b = (startColor.b - endColor.b)/(edgeADiv2);
+            deColor.b = (startColor.b - endColor.b)/edge3;
         }
         if (startColor.a != endColor.a){
-            deColor.a = (startColor.a - endColor.a)/(edgeADiv2);
+            deColor.a = (startColor.a - endColor.a)/edge3;
         }
 
         for (int j = 0; j < edgeB; j++) {

@@ -150,7 +150,7 @@ public class THBullet extends THObject {
         butterfly,
         square,
         ball_small,
-        ball_mid(TEXTURE_BALL_MID,DEFAULT_SIZE,false, THBulletRenderer.BulletRenderers::ball_mid),
+        ball_mid(TEXTURE_BALL_MID,DEFAULT_SIZE),
         ball_mid_c,
         ball_big(TEXTURE_BALL_MID,DEFAULT_SIZE,false, THBulletRenderer.BulletRenderers::ball_big),
         ball_huge,
@@ -191,8 +191,8 @@ public class THBullet extends THObject {
             this(TEXTURE_WHITE,DEFAULT_SIZE);
         }
 
-        public void setIs3D(boolean is3D){
-            this.is3D = is3D;
+        public boolean getIs3d(){
+            return this.is3D;
         }
 
         public Vec3 getSize(){
@@ -242,7 +242,7 @@ public class THBullet extends THObject {
             this.is2D = is2D;
         }
 
-        public static BULLET_QUALITY_LEVEL getLevel(THObject object, double camX, double camY, double camZ){
+        public static BULLET_QUALITY_LEVEL getQualityLevel(THObject object, double camX, double camY, double camZ){
             double d0 = object.positionX - camX;
             double d1 = object.positionY - camY;
             double d2 = object.positionZ - camZ;
@@ -254,7 +254,7 @@ public class THBullet extends THObject {
             }
             d4 *= d4;
 
-            double[] distOfLevel = {4.0d,8.0D,16.0D,32.0D,48.0D};
+            double[] distOfLevel = {8.0D,16.0D,32.0D,48.0D};
 
             if(distSquare < d4*distOfLevel[0]*distOfLevel[0]){
                 return VERY_CLOSE;

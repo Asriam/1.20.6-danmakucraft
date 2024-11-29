@@ -23,7 +23,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.checkerframework.checker.units.qual.C;
 import org.joml.*;
 
 import java.lang.Math;
@@ -71,7 +70,7 @@ public class THObject implements IScript, IScriptTHObjectAPI{
     public int layer = 0;
 
     public Color color = Color(255,255,255,255);
-    public THRenderType.BLEND _blend = THRenderType.BLEND.LIGHTEN;
+    public THRenderType.BLEND blend = THRenderType.BLEND.LIGHTEN;
 
 
     public THObject(THObjectType<? extends THObject> type,EntityTHObjectContainer container) {
@@ -158,7 +157,7 @@ public class THObject implements IScript, IScriptTHObjectAPI{
         this.setVelocity(speed, Vec3.directionFromRotation(isDeg ? rotation : rotation.scale(Mth.RAD_TO_DEG)), false);
 
         if (setRotation){
-            this.setRotation(isDeg? rotation.scale(Mth.DEG_TO_RAD) : rotation);
+            this.setRotation(isDeg? rotation.scale(-Mth.DEG_TO_RAD) : rotation);
         }
     }
 
@@ -172,7 +171,7 @@ public class THObject implements IScript, IScriptTHObjectAPI{
 
     public void setRotation(float x,float y,float z) {
         this.xRot = x;
-        this.yRot = -y;
+        this.yRot = y;
         this.zRot = z;
     }
 
@@ -182,7 +181,7 @@ public class THObject implements IScript, IScriptTHObjectAPI{
 
     public void setRotation(Vec2 rotation){
         this.xRot = rotation.x;
-        this.yRot = -rotation.y;
+        this.yRot = rotation.y;
     }
 
     public void setRotationByDirectionalVector(Vec3 vectorRotation) {
@@ -446,6 +445,10 @@ public class THObject implements IScript, IScriptTHObjectAPI{
 
     }
 
+    public void setBlend(THRenderType.BLEND blend){
+        this.blend = blend;
+    }
+
     public boolean hasContainer(){
         return this.container != null && !this.container.isRemoved();
     }
@@ -474,7 +477,7 @@ public class THObject implements IScript, IScriptTHObjectAPI{
         buffer.writeInt(this.timer);
         buffer.writeInt(this.lifetime);
         buffer.writeInt(this.deathLastsTime);
-        buffer.writeEnum(this._blend);
+        buffer.writeEnum(this.blend);
         buffer.writeBoolean(this.isDead);
         buffer.writeBoolean(this.colli);
         buffer.writeBoolean(this.bound);
@@ -504,7 +507,7 @@ public class THObject implements IScript, IScriptTHObjectAPI{
         this.timer = buffer.readInt();
         this.lifetime = buffer.readInt();
         this.deathLastsTime = buffer.readInt();
-        this._blend = buffer.readEnum(THRenderType.BLEND.class);
+        this.blend = buffer.readEnum(THRenderType.BLEND.class);
         this.isDead = buffer.readBoolean();
         this.colli = buffer.readBoolean();
         this.bound = buffer.readBoolean();
@@ -524,7 +527,7 @@ public class THObject implements IScript, IScriptTHObjectAPI{
         Color c = this.color;
         tag.put("Color", newIntList(c.r,c.g,c.b,c.a));
         tag.put("Timers", newIntList(this.timer,this.lifetime,this.deathLastsTime));
-        tag.putInt("Blend",this._blend.ordinal());
+        tag.putInt("Blend",this.blend.ordinal());
         tag.putBoolean("IsDead", this.isDead);
         tag.putBoolean("Collision",this.colli);
         this.scriptManager.save(tag);
@@ -552,7 +555,7 @@ public class THObject implements IScript, IScriptTHObjectAPI{
         this.timer = timerTag.getInt(0);
         this.lifetime = timerTag.getInt(1);
         this.deathLastsTime = timerTag.getInt(2);
-        this._blend = THRenderType.BLEND.class.getEnumConstants()[tag.getInt("Blend")];
+        this.blend = THRenderType.BLEND.class.getEnumConstants()[tag.getInt("Blend")];
         this.isDead = tag.getBoolean("IsDead");
         this.colli = tag.getBoolean("Collision");
         this.scriptManager.load(tag);
@@ -604,7 +607,7 @@ public class THObject implements IScript, IScriptTHObjectAPI{
         Matrix3f normal = posestack$pose.normal();
          */
 
-        VertexConsumer vertexconsumer = bufferSource.getBuffer(this._blend.renderType.apply(this.getTexture()));
+        VertexConsumer vertexconsumer = bufferSource.getBuffer(this.blend.renderType.apply(this.getTexture()));
 
         THObjectRenderHelper.renderTexture(vertexconsumer, posestack$pose, combinedOverlay,
                 new Vector3f(-0.5f, -0.5f, 0.0f),   new Vector2f(0.0f, 1.0f),

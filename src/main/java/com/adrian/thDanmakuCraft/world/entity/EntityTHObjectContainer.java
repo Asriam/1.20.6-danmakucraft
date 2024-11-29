@@ -5,15 +5,15 @@ import com.adrian.thDanmakuCraft.init.EntityInit;
 import com.adrian.thDanmakuCraft.script.IScript;
 import com.adrian.thDanmakuCraft.script.JSManager;
 import com.adrian.thDanmakuCraft.script.ScriptManager;
-import com.adrian.thDanmakuCraft.world.entity.danmaku.THBullet;
-import com.adrian.thDanmakuCraft.world.entity.danmaku.THObject;
-import com.adrian.thDanmakuCraft.world.entity.danmaku.THObjectManager;
-import com.adrian.thDanmakuCraft.world.entity.danmaku.THTask;
+import com.adrian.thDanmakuCraft.util.MultiMap;
+import com.adrian.thDanmakuCraft.world.entity.danmaku.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -21,12 +21,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 import org.apache.commons.compress.utils.Lists;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -38,13 +37,14 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     private @Nullable UUID userUUID;
     private @Nullable UUID targetUUID;
 
-    private final JSManager scriptManager;
-    private final THObjectManager objectManager;
-    private int timer = 0;
+    protected final JSManager scriptManager;
+    protected final THObjectManager objectManager;
+    protected int timer = 0;
+    protected final RandomSource random = RandomSource.create();
     public AABB aabb = new AABB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
     public AABB bound = new AABB(-60.0D,-60.0D,-60.0D,60.0D,60.0D,60.0D);
     public boolean positionBinding = false;
-    private int maxObjectAmount = 1000;
+    private int maxObjectAmount = 2000;
     public boolean autoRemove = true;
     public int autoRemoveLife = 60;
     public final THTask task = new THTask();
@@ -110,7 +110,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
         this.setBound(this.position(),this.bound);
         this.loadUserAndTarget();
 
-        if(this.objectManager.isEmpty() && true) {
+        if(this.objectManager.isEmpty() && false) {
             for (int j = 0; j< THBullet.BULLET_STYLE.class.getEnumConstants().length; j++) {
                 for (int i = 0; i < 16; i++) {
                     THObject a = (THObject) new THBullet(this,THBullet.BULLET_STYLE.getStyleByIndex(j),THBullet.BULLET_COLOR.getColorByIndex(i + 1))
@@ -121,15 +121,15 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
                     );
                     a.setLifetime(3600);
                     a.colli = true;
-                    a._blend = THRenderType.BLEND.NONE;
+                    a.blend = THRenderType.BLEND.NONE;
                 }
             }
         }
 
-        if(/*(this.timer+2)%1==0 &&*/ false) {
+        if(/*(this.timer+2)%1==0 &&*/ true) {
             Vec3 pos = this.position();
             Vec3 rotation = Vec3.directionFromRotation(0.0f,0.0f);
-            Vec2 rotate = new Vec2(Mth.DEG_TO_RAD*((float) Math.pow(this.timer*0.1f,2)+360.0f/5),-Mth.DEG_TO_RAD*((float) Math.pow(this.timer*0.1f,2)+360.0f/5));
+            Vec2 rotate = new Vec2(Mth.DEG_TO_RAD*((float) Math.pow(this.timer*0.1f,2)+360.0f/5),-Mth.DEG_TO_RAD*((float) Math.pow(this.timer*0.08f,2)+360.0f/5));
 
             Vec3 angle = rotation.xRot(Mth.DEG_TO_RAD*90.0f).normalize().xRot(rotate.x).yRot(rotate.y);
             THBullet.BULLET_STYLE style = THBullet.BULLET_STYLE.ball_mid;
@@ -141,9 +141,9 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
             danmaku.setAcceleration(0.02f,angle);
             danmaku.setLifetime(120);
 
-            danmaku.getScriptManager().enableScript();
+            //danmaku.getScriptManager().enableScript();
 
-            int way = 4;
+            int way = 8;
             for(int i=1;i<=2;i++){
                 Vec3 angle2 = rotation.xRot(Mth.DEG_TO_RAD*90.0f-Mth.DEG_TO_RAD*60.0f*i).yRot(Mth.DEG_TO_RAD*(180.0f/way)*i);
                 for(int j=0;j<way;j++) {
@@ -155,6 +155,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
                     );
                     danmaku2.setAcceleration(0.02f, angle3);
                     danmaku2.setLifetime(120);
+                    //danmaku2.setBlend(THRenderType.BLEND.NONE);
                 }
             }
 
@@ -179,32 +180,32 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
         }
     }
 
+    /*
     @OnlyIn(Dist.CLIENT)
     public void layerObjects(double camX, double camY, double camZ){
-        this.objectManager.sortTHObjects(new Comparator<THObject>() {
-            @Override
-            public int compare(THObject o1, THObject o2) {
-                if (o1 == null || o2 == null){
-                    return 0;
-                }
-                Vec3 pos1 = o1.getPosition();
-                Vec3 pos2 = o2.getPosition();
-                double d1x = pos1.x - camX;
-                double d1y = pos1.y - camY;
-                double d1z = pos1.z - camZ;
-                double dist1Square = (d1x * d1x + d1y * d1y + d1z * d1z);
-                double d2x = pos2.x - camX;
-                double d2y = pos2.y - camY;
-                double d2z = pos2.z - camZ;
-                double dist2Square = (d2x * d2x + d2y * d2y + d2z * d2z);
-                if (dist1Square < dist2Square){
-                    return 1;
-                }else {
-                    return -1;
-                }
+        this.objectManager.sortTHObjects((o1, o2) -> {
+            if (o1 == null || o2 == null){
+                return 0;
+            }
+            Vec3 pos1 = o1.getPosition();
+            Vec3 pos2 = o2.getPosition();
+            double d1x = pos1.x - camX;
+            double d1y = pos1.y - camY;
+            double d1z = pos1.z - camZ;
+            double dist1Square = (d1x * d1x + d1y * d1y + d1z * d1z);
+            double d2x = pos2.x - camX;
+            double d2y = pos2.y - camY;
+            double d2z = pos2.z - camZ;
+            double dist2Square = (d2x * d2x + d2y * d2y + d2z * d2z);
+            if (dist1Square < dist2Square){
+                return 1;
+            }else {
+                return -1;
             }
         });
-    }
+    }*/
+
+
 
     public void updateObjects(){
         if(this.objectManager.isEmpty()){
@@ -325,5 +326,132 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     @Override
     public ScriptManager getScriptManager() {
         return this.scriptManager;
+    }
+
+    public static class THObjectManager{
+
+        private final MultiMap<THObject> storage;
+        private final EntityTHObjectContainer container;
+
+        public THObjectManager(EntityTHObjectContainer container) {
+            this.container = container;
+            this.storage = new MultiMap<>(THObject.class);
+        }
+
+        public void clearStorage(){
+            this.storage.clear();
+        }
+
+        public void addTHObject(THObject object){
+            if(this.storage.size() >= this.container.getMaxObjectAmount()){
+                //THDanmakuCraftCore.LOGGER.warn("{}'s object pool is full! {} (Max is {})",this.container,this.storage.size(),this.container.getMaxObjectAmount());
+                return;
+            }
+            this.storage.add(object);
+        }
+
+        public void addTHObjects(List<THObject> objects){
+            this.storage.addAll(objects);
+        }
+
+        public void removeTHObject(THObject object){
+            this.storage.remove(object);
+        }
+
+        public void sortTHObjects(Comparator<THObject> comparator){
+            this.storage.sort(comparator);
+        }
+
+        public void removeTHObject(int index){
+            this.storage.remove(this.getTHObject(index));
+        }
+
+        public THObject getTHObject(int index){
+            return this.getTHObjects().get(index);
+        }
+
+        public List<THObject> getTHObjects(){
+            return this.storage.getAllInstances();
+        }
+
+        public List<THObject> getTHObjectsForRender(){
+            List<THObject> list = new ArrayList<>();
+            list.addAll(this.getTHObjects());
+            return list;
+        }
+
+        public void recreate(List<THObject> objects){
+            this.clearStorage();
+            this.addTHObjects(objects);
+        }
+
+        public boolean contains(THObject object){
+            return this.storage.contains(object);
+        }
+
+        public boolean isEmpty(){
+            return this.storage.isEmpty();
+        }
+
+        public CompoundTag save(){
+            return THObjectListToTag(this.getTHObjects());
+        }
+
+        public void load(CompoundTag tag){
+            this.recreate(TagToTHObjectList(tag,this.container));
+        }
+
+        public void writeData(FriendlyByteBuf buffer){
+            List<THObject> objects = this.getTHObjects();
+            buffer.writeInt(objects.size());
+            for(THObject object:this.getTHObjects()){
+                //buffer.writeRegistryId(THDanmakuCraftRegistries.THOBJECT_TYPE,object.getType());
+                buffer.writeResourceLocation(object.getType().getKey());
+                object.writeData(buffer);
+            }
+        }
+
+        public void readData(FriendlyByteBuf buffer){
+            int listSize = buffer.readInt();
+            List<THObject> objects = Lists.newArrayList();
+            for(int i=0;i<listSize;i++){
+                //THObject object = buffer.readRegistryIdSafe(THObjectType.class).create(this.container);
+                THObject object = THObjectType.getValue(buffer.readResourceLocation()).create(this.container);
+                assert object != null;
+                object.readData(buffer);
+                objects.add(object);
+            }
+            this.recreate(objects);
+        }
+
+        public static CompoundTag THObjectListToTag(List<THObject> objects){
+            CompoundTag tag = new CompoundTag();
+            int index = 0;
+            for (THObject object:objects) {
+                if (object.shouldSave) {
+                    CompoundTag tag2 = new CompoundTag();
+                    tag2.putString("type", object.getType().getKey().toString());
+                    tag.put("object_" + index, object.save(tag2));
+                    index++;
+                }
+            }
+            return tag;
+        }
+
+        public static List<THObject> TagToTHObjectList(CompoundTag tag, EntityTHObjectContainer container){
+            int list_size = tag.getAllKeys().size();
+            List<THObject> objectList = Lists.newArrayList();
+            for (int i=0;i<list_size;i++){
+                CompoundTag objectTag = tag.getCompound("object_"+i);
+                ResourceLocation object_type = new ResourceLocation(objectTag.getString("type"));
+                THObjectType<? extends THObject> type = THObjectType.getValue(object_type);
+                if(type != null){
+                    THObject object = type.create(container);
+                    object.load(objectTag);
+                    objectList.add(object);
+                }
+            }
+            return objectList;
+        }
     }
 }

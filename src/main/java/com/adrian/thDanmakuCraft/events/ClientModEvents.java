@@ -1,4 +1,4 @@
-package com.adrian.thDanmakuCraft.event;
+package com.adrian.thDanmakuCraft.events;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.client.renderer.entity.EntityExampleRenderer;

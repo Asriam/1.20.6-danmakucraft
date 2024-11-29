@@ -3,6 +3,8 @@ package com.adrian.thDanmakuCraft;
 import com.adrian.thDanmakuCraft.init.*;
 import com.adrian.thDanmakuCraft.util.JSLoader;
 import com.mojang.logging.LogUtils;
+import net.minecraft.client.Minecraft;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -21,6 +23,7 @@ public class THDanmakuCraftCore
     // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
     //public static JSLoader JSLOADER;
+    public static final ResourceManager RESOURCE_MANAGER = Minecraft.getInstance().getResourceManager();
 
     public THDanmakuCraftCore(FMLJavaModLoadingContext context) {
         IEventBus modEventBus = context.getModEventBus();
@@ -36,7 +39,8 @@ public class THDanmakuCraftCore
     private void commonSetup(final FMLCommonSetupEvent event) {
         JSLoader.init();
         JSCore.init();
-        LuaCore.init();
+        //new ShaderLoader();
+        //LuaCore.init();
     }
 
     @SubscribeEvent

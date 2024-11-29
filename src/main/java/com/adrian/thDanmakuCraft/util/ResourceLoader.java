@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 public class ResourceLoader {
 
-    private static final ResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
+    private static final ResourceManager resourceManager = THDanmakuCraftCore.RESOURCE_MANAGER;
 
     @Nullable
     public static JsonObject loadJson(ResourceLocation resourceLocation) {
