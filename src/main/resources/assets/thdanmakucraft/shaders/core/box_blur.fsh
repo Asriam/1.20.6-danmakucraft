@@ -23,6 +23,7 @@ void main() {
     blurred += texture(DiffuseSampler, texCoord + sampleStep * actualRadius) / 2.0;
     fragColor = blurred / (actualRadius + 0.5);
 
+    //fragColor.r *= 0.1f;
     /*
     fragColor = texture(DiffuseSampler, texCoord);
 

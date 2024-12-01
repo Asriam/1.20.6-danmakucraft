@@ -402,7 +402,7 @@ public class THObject implements IScript, IScriptTHObjectAPI{
 
         if (type == HitResult.Type.ENTITY && result instanceof EntityHitResult entityHitResult) {
             Entity entity = entityHitResult.getEntity();
-            if (entity instanceof EntityTHObjectContainer || !this.canHitUser && entity.equals(this.container.getUser()))
+            if (entity instanceof EntityTHObjectContainer || (!this.canHitUser && entity.equals(this.container.getUser())))
                 return;
             this.onHitEntity(entityHitResult);
         }
@@ -677,11 +677,9 @@ public class THObject implements IScript, IScriptTHObjectAPI{
         return this.scriptManager;
     }
 
+
     public static class Color{
-        public int r;
-        public int g;
-        public int b;
-        public int a;
+        public int r,g,b,a;
 
         public static final Color WHITE(){
             return new Color(255,255,255,255);

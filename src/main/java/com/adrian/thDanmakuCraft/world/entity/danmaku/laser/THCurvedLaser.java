@@ -114,7 +114,7 @@ public class THCurvedLaser extends THObject {
         );
 
         Color coreColor = this.color;
-        renderCurvedLaser(renderer,laserPos,bufferSource.getBuffer(THRenderType.LIGHTNING),poseStack,this.nodeManager.getNodes(),this.width,this.width*0.5f,edge, 3, color, coreColor,partialTicks,combinedOverlay,1.0f,0.95f);
+        renderCurvedLaser(renderer,laserPos,bufferSource.getBuffer(THRenderType.LIGHTNING),poseStack,this.nodeManager.getNodes(),this.width,this.width*0.5f,edge, 1, color, coreColor,partialTicks,combinedOverlay,1.0f,0.95f);
         poseStack.popPose();
     }
 

@@ -2,7 +2,6 @@ package com.adrian.thDanmakuCraft.events;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderHighlightEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
@@ -14,7 +13,7 @@ import java.util.Map;
 
 @Mod.EventBusSubscriber(modid = THDanmakuCraftCore.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class RenderEvents {
-    private static final Map<String,RenderHelper2> renderHelpers = new HashMap<>();
+    private static final Map<String, RenderLevelStageTask> renderLevelStageTasks = new HashMap<>();
 
     @SubscribeEvent
     public static void renderLevelStage(RenderLevelStageEvent event) {
@@ -22,9 +21,9 @@ public class RenderEvents {
         poseStack.mulPose(event.getPoseStack());
         float partialTick = event.getPartialTick();
 
-        for (RenderHelper2 renderHelper:renderHelpers.values()){
+        for (RenderLevelStageTask renderHelper: renderLevelStageTasks.values()){
             if (event.getStage() == renderHelper.stage){
-                renderHelper.renderHelper.render(poseStack,partialTick);
+                renderHelper.renderTask.render(poseStack,partialTick);
             }
         }
         /*
@@ -34,36 +33,36 @@ public class RenderEvents {
     }
 
     @SubscribeEvent
-    public static void aaa(RenderHighlightEvent event){}
+    public static void RenderHighlight(RenderHighlightEvent event){
+
+    }
 
 
-    public static void registryRenderLevelStageTask(String name, RenderLevelStageEvent.Stage stage, RenderHelper renderHelper){
-        if(renderHelpers.get(name) == null) {
-            renderHelpers.put(name, new RenderHelper2(stage, renderHelper));
-        }else {
-            //THDanmakuCraftCore.LOGGER.warn("");
+    public static void registryRenderLevelStageTask(String name, RenderLevelStageEvent.Stage stage, RenderTask renderHelper){
+        if(renderLevelStageTasks.get(name) == null) {
+            renderLevelStageTasks.put(name, new RenderLevelStageTask(stage, renderHelper));
         }
     }
 
     public static void clearRenderLevelStage(String name){
-        renderHelpers.remove(name);
+        renderLevelStageTasks.remove(name);
     }
 
     public static void clearAllRenderLevelStage(){
-        renderHelpers.clear();
+        renderLevelStageTasks.clear();
     }
 
-    static class RenderHelper2{
+    static class RenderLevelStageTask {
         RenderLevelStageEvent.Stage stage;
-        RenderHelper renderHelper;
+        RenderTask renderTask;
 
-        RenderHelper2(RenderLevelStageEvent.Stage stage, RenderHelper renderHelper){
+        RenderLevelStageTask(RenderLevelStageEvent.Stage stage, RenderTask renderHelper){
             this.stage = stage;
-            this.renderHelper = renderHelper;
+            this.renderTask = renderHelper;
         }
     }
 
-    public interface RenderHelper {
+    public interface RenderTask {
 
         void render(PoseStack poseStack,float partialTick);
     }

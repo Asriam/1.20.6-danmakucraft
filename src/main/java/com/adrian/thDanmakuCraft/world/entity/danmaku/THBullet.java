@@ -150,7 +150,7 @@ public class THBullet extends THObject {
         butterfly,
         square,
         ball_small,
-        ball_mid(TEXTURE_BALL_MID,DEFAULT_SIZE),
+        ball_mid(TEXTURE_BALL_MID,DEFAULT_SIZE,false, THBulletRenderer.BulletRenderers::ball_mid),
         ball_mid_c,
         ball_big(TEXTURE_BALL_MID,DEFAULT_SIZE,false, THBulletRenderer.BulletRenderers::ball_big),
         ball_huge,
@@ -226,6 +226,7 @@ public class THBullet extends THObject {
 
     @OnlyIn(Dist.CLIENT)
     public enum BULLET_QUALITY_LEVEL {
+        VERY_VERY_CLOSE(12,12,false),
         VERY_CLOSE(10,10,false),
         CLOSE(8,8,false),
         MEDIUM(6,6,false),
@@ -254,15 +255,17 @@ public class THBullet extends THObject {
             }
             d4 *= d4;
 
-            double[] distOfLevel = {8.0D,16.0D,32.0D,48.0D};
+            double[] distOfLevel = {4.0D,8.0D,16.0D,32.0D,48.0D,60.0D};
 
             if(distSquare < d4*distOfLevel[0]*distOfLevel[0]){
-                return VERY_CLOSE;
+                return VERY_VERY_CLOSE;
             }else if(distSquare < d4*distOfLevel[1]*distOfLevel[1]){
-                return CLOSE;
+                return VERY_CLOSE;
             }else if(distSquare < d4*distOfLevel[2]*distOfLevel[2]){
-                return MEDIUM;
+                return CLOSE;
             }else if(distSquare < d4*distOfLevel[3]*distOfLevel[3]){
+                return MEDIUM;
+            }else if(distSquare < d4*distOfLevel[4]*distOfLevel[4]){
                 return FAR;
             }
             return VERY_FAR;

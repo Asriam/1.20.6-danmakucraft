@@ -2,8 +2,7 @@ package com.adrian.thDanmakuCraft.client.renderer.entity;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.events.RenderEvents;
-import com.adrian.thDanmakuCraft.ShaderLoader;
-import com.adrian.thDanmakuCraft.world.entity.danmaku.THBullet;
+import com.adrian.thDanmakuCraft.client.renderer.ShaderLoader;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.laser.THCurvedLaser;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.THObject;
@@ -30,11 +29,10 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+import org.lwjgl.opengl.GL40;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 @OnlyIn(Dist.CLIENT)
 public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObjectContainer> {
@@ -42,68 +40,76 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
     public EntityRenderDispatcher dispatcher;
     public static final RenderTarget testRenderTarget = new TextureTarget(1000,1000,true,true);
     public static final RenderTarget outTarget = new MainTarget(1000,1000);
-    public ShaderInstance customShader;
-    public EffectInstance testShader;
 
     public EntityTHObjectContainerRenderer(EntityRendererProvider.Context context) {
         super(context);
-        //renderTarget.enableStencil();
         this.dispatcher = this.entityRenderDispatcher;
 
-        this.customShader = ShaderLoader.loadShader(new ResourceLocation(THDanmakuCraftCore.MODID,"box_blur"), DefaultVertexFormat.POSITION_TEX_COLOR);
         RenderEvents.registryRenderLevelStageTask("test_shader_1", RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS, (poseStack, partialTick) -> {
             testRenderTarget.setClearColor(0.0f,0.0f,0.0f,0.0f);
             testRenderTarget.clear(true);
         });
 
         RenderEvents.registryRenderLevelStageTask("test_shader_2", RenderLevelStageEvent.Stage.AFTER_ENTITIES, (poseStack, partialTick) -> {
-            if (customShader != null) {
-                Window window = Minecraft.getInstance().getWindow();
-                RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
-                RenderTarget inTarget = this.testRenderTarget;
-                RenderTarget outTarget = mainRenderTarget;
-                mainRenderTarget.unbindWrite();
-
-                int inSize[] = {inTarget.width, inTarget.height};
-                int outSize[] = {outTarget.width , outTarget.height};
-
-                outTarget.bindWrite(true);
-                customShader.setSampler("DiffuseSampler", inTarget.getColorTextureId());
-                Matrix4f projMat = new Matrix4f().setOrtho(0.0F, (float) outSize[0], 0.0F, (float) outSize[1], 0.1F, 1000.0F);
-                customShader.safeGetUniform("ProjMat").set(projMat);
-                customShader.safeGetUniform("InSize").set((float) inSize[0], (float) inSize[1]);
-                customShader.safeGetUniform("OutSize").set((float) outSize[0], (float) outSize[1]);
-                customShader.safeGetUniform("BlurDir").set(1.0f,1.0f);
-                customShader.safeGetUniform("Radius").set(1.0f);
-                customShader.safeGetUniform("RadiusMultiplier").set(1.0f);
-                customShader.apply();
-                RenderSystem.enableBlend();
-                RenderSystem.blendFuncSeparate(
-                        GlStateManager.SourceFactor.SRC_ALPHA,
-                        GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
-                        GlStateManager.SourceFactor.ONE,
-                        GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
-                );
-
-                RenderSystem.depthFunc(519);
-                BufferBuilder bufferbuilder = RenderSystem.renderThreadTesselator().getBuilder();
-                bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-
-                bufferbuilder.vertex(0.0, 0.0, 0.0).endVertex();
-                bufferbuilder.vertex((double)outSize[0], 0.0, 0.0).endVertex();
-                bufferbuilder.vertex((double)outSize[0], (double)outSize[1], 0.0).endVertex();
-                bufferbuilder.vertex(0.0, (double)outSize[1], 0.0).endVertex();
-                BufferUploader.draw(bufferbuilder.end());
-                customShader.clear();
-                RenderSystem.depthFunc(515);
-                RenderSystem.disableBlend();
-                RenderSystem.defaultBlendFunc();
-                outTarget.unbindWrite();
-
-                mainRenderTarget.bindWrite(true);
-            }
-
+            //ShaderInstance customShader = ShaderLoader.loadShader(new ResourceLocation(THDanmakuCraftCore.MODID,"box_blur"), DefaultVertexFormat.POSITION);
+            //ShaderInstance customShader = ShaderLoader.getShader(new ResourceLocation(THDanmakuCraftCore.MODID,"box_blur"));
+            //this.applyShader();
         });
+    }
+
+    public void applyShader(){
+        ShaderInstance customShader = ShaderLoader.getShader(new ResourceLocation(THDanmakuCraftCore.MODID,"box_blur"));
+        if (customShader != null && false) {
+            //THDanmakuCraftCore.LOGGER.info("sbbbbbbbbbbbbbbbbb");
+            Window window = Minecraft.getInstance().getWindow();
+            RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
+            RenderTarget inTarget = this.testRenderTarget;
+            RenderTarget outTarget = mainRenderTarget;
+            mainRenderTarget.unbindWrite();
+
+            int inSize[] = {inTarget.width, inTarget.height};
+            int outSize[] = {outTarget.width , outTarget.height};
+
+            outTarget.bindWrite(true);
+            customShader.setSampler("DiffuseSampler", inTarget.getColorTextureId());
+            customShader.setSampler("DepthBuffer"   , inTarget.getDepthTextureId());
+            Matrix4f projMat = new Matrix4f().setOrtho(0.0F, (float) outSize[0], 0.0F, (float) outSize[1], 0.1F, 1000.0F);
+
+            customShader.safeGetUniform("ProjMat").set(projMat);
+            //customShader.safeGetUniform("ProjMat").set(RenderSystem.getProjectionMatrix());
+            //customShader.safeGetUniform("ModelViewMat").set(new Matrix4f().translation(0.0F, 0.0F, -2000.0F));
+            customShader.safeGetUniform("ModelViewMat").set(RenderSystem.getModelViewMatrix());
+            customShader.safeGetUniform("InSize").set((float) inSize[0], (float) inSize[1]);
+            customShader.safeGetUniform("OutSize").set((float) outSize[0], (float) outSize[1]);
+            customShader.safeGetUniform("BlurDir").set(1.0f,1.0f);
+            customShader.safeGetUniform("Radius").set(1.0f);
+            customShader.safeGetUniform("RadiusMultiplier").set(1.0f);
+            customShader.apply();
+            RenderSystem.enableBlend();
+            RenderSystem.blendFuncSeparate(
+                    GlStateManager.SourceFactor.SRC_ALPHA,
+                    GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+                    GlStateManager.SourceFactor.ONE,
+                    GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
+            );
+
+            RenderSystem.depthFunc(519);
+            BufferBuilder bufferbuilder = RenderSystem.renderThreadTesselator().getBuilder();
+            bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+
+            bufferbuilder.vertex(0.0, 0.0, 0.0).endVertex();
+            bufferbuilder.vertex((double)outSize[0], 0.0, 0.0).endVertex();
+            bufferbuilder.vertex((double)outSize[0], (double)outSize[1], 0.0).endVertex();
+            bufferbuilder.vertex(0.0, (double)outSize[1], 0.0).endVertex();
+            BufferUploader.draw(bufferbuilder.end());
+            customShader.clear();
+            RenderSystem.depthFunc(515);
+            RenderSystem.disableBlend();
+            RenderSystem.defaultBlendFunc();
+            outTarget.unbindWrite();
+
+            mainRenderTarget.bindWrite(true);
+        }
     }
 
     @Override
@@ -124,9 +130,21 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
 
         ProfilerFiller profiler = InactiveProfiler.INSTANCE;
         RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
+        //final List<THObject> objectList = layerObjects(entity.getObjectManager().getTHObjectsForRender(),camX,camY,camZ);
+        final List<THObject> objectList = entity.getObjectManager().getTHObjectsForRender();
+
+        Predicate<THObject> predicate = (object) -> (
+                object != null && (object instanceof THCurvedLaser || this.shouldRenderTHObject(object, this.frustum, camX, camY, camZ))
+        );
+
+        ShaderInstance shader = ShaderLoader.getShader(new ResourceLocation(THDanmakuCraftCore.MODID,"depth_outline"));
+        if(shader != null) {
+            testRenderTarget.copyDepthFrom(mainRenderTarget);
+            shader.setSampler("DepthBuffer", testRenderTarget.getDepthTextureId());
+            mainRenderTarget.bindWrite(true);
+        }
 
         boolean flag = false;
-
         if (flag) {
             mainRenderTarget.unbindWrite();
             testRenderTarget.copyDepthFrom(mainRenderTarget);
@@ -134,12 +152,8 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
         }
         profiler.push("danmaku");
         RenderSystem.enableBlend();
-        //final List<THObject> objectList = entity.getObjectManager().getTHObjectsForRender();
-        final List<THObject> objectList = layerObjects(entity.getObjectManager().getTHObjectsForRender(),camX,camY,camZ);
 
-        Predicate<THObject> predicate = (object) -> (
-                object != null && (object instanceof THCurvedLaser || this.shouldRenderTHObject(object, this.frustum, camX, camY, camZ))
-        );
+
 
         if (!objectList.isEmpty()) {
             //layerObjects(objectList,camX,camY,camZ);
@@ -176,11 +190,11 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
         RenderSystem.disableBlend();
         RenderSystem.defaultBlendFunc();
 
-        profiler.pop();
         if(flag) {
             testRenderTarget.unbindWrite();
             mainRenderTarget.copyDepthFrom(testRenderTarget);
             mainRenderTarget.bindWrite(true);
+            testRenderTarget.blitToScreen(mainRenderTarget.width,mainRenderTarget.height,true);
         }
 
         poseStack.popPose();
@@ -189,13 +203,14 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
         poseStack.translate(entityPos.x-camX, entityPos.y-camY, entityPos.z-camZ);
     }
 
+    /*
     public void renderObject(THObject object,float partialTicks,PoseStack poseStack,MultiBufferSource bufferSource,double camX,double camY,double camZ,int combinedOverlay){
         poseStack.pushPose();
         Vec3 objectPos = object.getOffsetPosition(partialTicks);
         poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
         object.onRender(this, objectPos, partialTicks, poseStack, bufferSource, combinedOverlay);
         poseStack.popPose();
-    }
+    }*/
 
 
     private static void renderTHObjectsHitBox(THObject object, PoseStack poseStack, VertexConsumer vertexConsumer) {
@@ -230,26 +245,30 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
     }
 
     public static List<THObject> layerObjects(List<THObject> list, double camX, double camY, double camZ){
-        list.sort((o1, o2) -> {
-            if (o1 == null || o2 == null){
-                return 0;
-            }
-            Vec3 pos1 = o1.getPosition();
-            Vec3 pos2 = o2.getPosition();
-            double d1x = pos1.x - camX;
-            double d1y = pos1.y - camY;
-            double d1z = pos1.z - camZ;
-            double dist1Square = (d1x * d1x + d1y * d1y + d1z * d1z);
-            double d2x = pos2.x - camX;
-            double d2y = pos2.y - camY;
-            double d2z = pos2.z - camZ;
-            double dist2Square = (d2x * d2x + d2y * d2y + d2z * d2z);
-            if (dist1Square < dist2Square){
-                return 1;
-            }else {
-                return -1;
-            }
-        });
+        try {
+            list.sort((o1, o2) -> {
+                if (o1 == null || o2 == null) {
+                    return 0;
+                }
+                Vec3 pos1 = o1.getPosition();
+                Vec3 pos2 = o2.getPosition();
+                double d1x = pos1.x - camX;
+                double d1y = pos1.y - camY;
+                double d1z = pos1.z - camZ;
+                double dist1Square = (d1x * d1x + d1y * d1y + d1z * d1z);
+                double d2x = pos2.x - camX;
+                double d2y = pos2.y - camY;
+                double d2z = pos2.z - camZ;
+                double dist2Square = (d2x * d2x + d2y * d2y + d2z * d2z);
+                if (dist1Square < dist2Square) {
+                    return 1;
+                } else {
+                    return -1;
+                }
+            });
+        }catch (Exception e){
+
+        }
         return list;
     }
 

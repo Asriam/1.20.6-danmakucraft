@@ -1,15 +1,22 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
+import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.client.renderer.entity.EntityTHObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.THBullet;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.THObject;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.*;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.joml.Matrix4f;
 
 @OnlyIn(Dist.CLIENT)
 public class THBulletRenderer {
@@ -76,6 +83,7 @@ public class THBulletRenderer {
             THBullet.BULLET_QUALITY_LEVEL cull = THBullet.BULLET_QUALITY_LEVEL.getQualityLevel(bullet,camPos.x,camPos.y,camPos.z);
             int edgeA = cull.edgeANum;
             int edgeB = cull.edgeBNum;
+            /*
             VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.LIGHTNING);
             THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,1,
                     Vec3.ZERO,
@@ -84,7 +92,8 @@ public class THBulletRenderer {
                     Vec2.ZERO,
                     Vec2.ONE,
                     coreColor.multiply(0.8f),coreColor.multiply(0.8f));
-            //vertexconsumer = bufferSource.getBuffer(THRenderType.LIGHTNING2);
+             */
+            VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE);
             THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,1,
                     Vec3.ZERO,
                     scale,
@@ -94,15 +103,16 @@ public class THBulletRenderer {
                     color,color);
         }
 
-        public static void ball_big(EntityTHObjectContainerRenderer renderer, THBullet bullet, MultiBufferSource bufferSource, PoseStack poseStack, int p_254296_,float partialTicks,THObject.Color color,THObject.Color coreColor){
+        public static void ball_big(EntityTHObjectContainerRenderer renderer, THBullet bullet, MultiBufferSource bufferSource, PoseStack poseStack, int p_254296_,float partialTicks,THObject.Color color,THObject.Color coreColor) {
             poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
-            Vec3 scale = new Vec3(0.8f,0.8f,0.8f);
-            Vec3 coreScale = scale.multiply(0.8f,0.8f,0.8f);
+            Vec3 scale = new Vec3(0.8f, 0.8f, 0.8f);
+            Vec3 coreScale = scale.multiply(0.8f, 0.8f, 0.8f);
             PoseStack.Pose posestack_pose = poseStack.last();
             Vec3 camPos = renderer.dispatcher.camera.getPosition();
-            THBullet.BULLET_QUALITY_LEVEL cull = THBullet.BULLET_QUALITY_LEVEL.getQualityLevel(bullet,camPos.x,camPos.y,camPos.z);
+            THBullet.BULLET_QUALITY_LEVEL cull = THBullet.BULLET_QUALITY_LEVEL.getQualityLevel(bullet, camPos.x, camPos.y, camPos.z);
             int edgeA = cull.edgeANum;
             int edgeB = cull.edgeBNum;
+            /*
             VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.LIGHTNING);
             THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,1,
                     Vec3.ZERO,
@@ -110,15 +120,62 @@ public class THBulletRenderer {
                     edgeA,edgeB,false,
                     Vec2.ZERO,
                     Vec2.ONE,
-                    coreColor.multiply(0.8f),coreColor.multiply(0.8f));
-            //vertexconsumer = bufferSource.getBuffer(THRenderType.LIGHTNING2);
-            THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,1,
+                    coreColor.multiply(0.8f),coreColor.multiply(0.8f));3
+            */
+            VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE);
+            THObjectRenderHelper.renderSphere(vertexconsumer, posestack_pose, p_254296_, 1,
                     Vec3.ZERO,
                     scale,
-                    edgeA,edgeB,false,
+                    edgeA, edgeB, false,
                     Vec2.ZERO,
                     Vec2.ONE,
-                    color,color);
+                    color, color);
+
+
+            /*
+            RenderTarget inTarget = Minecraft.getInstance().getMainRenderTarget();
+            int inSize[] = {inTarget.width, inTarget.height};
+            int outSize[] = {inTarget.width , inTarget.height};
+            ShaderInstance customShader = ShaderLoader.getShader(new ResourceLocation(THDanmakuCraftCore.MODID,"depth_outline"));
+            if(customShader != null) {
+
+                customShader.setSampler("Sampler0", inTarget.getColorTextureId());
+                customShader.setSampler("Sampler1", inTarget.getDepthTextureId());
+                customShader.safeGetUniform("ProjMat").set(RenderSystem.getProjectionMatrix());
+                customShader.safeGetUniform("ModelViewMat").set(RenderSystem.getModelViewMatrix());
+                customShader.safeGetUniform("InSize").set((float) inSize[0], (float) inSize[1]);
+                customShader.safeGetUniform("OutSize").set((float) outSize[0], (float) outSize[1]);
+                customShader.apply();
+
+                RenderSystem.enableBlend();
+                RenderSystem.blendFuncSeparate(
+                        GlStateManager.SourceFactor.SRC_ALPHA,
+                        GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+                        GlStateManager.SourceFactor.ONE,
+                        GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
+                );
+                RenderSystem.depthFunc(515);
+
+                BufferBuilder bufferbuilder = RenderSystem.renderThreadTesselator().getBuilder();
+                bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_NORMAL);
+
+                THObjectRenderHelper.renderSphere(bufferbuilder, posestack_pose, p_254296_, 1,
+                        Vec3.ZERO,
+                        scale,
+                        edgeA, edgeB, false,
+                        Vec2.ZERO,
+                        Vec2.ONE,
+                        color.multiply(0.0f), color);
+
+                BufferUploader.draw(bufferbuilder.end());
+
+                customShader.clear();
+                RenderSystem.disableBlend();
+                RenderSystem.defaultBlendFunc();
+                RenderSystem.depthFunc(515);
+            }
+            */
+
         }
 
         public static void ellipse(EntityTHObjectContainerRenderer renderer, THBullet bullet, MultiBufferSource bufferSource, PoseStack poseStack, int p_254296_,float partialTicks,THObject.Color color,THObject.Color coreColor){
@@ -130,6 +187,7 @@ public class THBulletRenderer {
             THBullet.BULLET_QUALITY_LEVEL cull = THBullet.BULLET_QUALITY_LEVEL.getQualityLevel(bullet,camPos.x,camPos.y,camPos.z);
             int edgeA = cull.edgeANum;
             int edgeB = cull.edgeBNum;
+            /*
             VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.LIGHTNING);
             THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,1,
                     Vec3.ZERO,
@@ -138,7 +196,8 @@ public class THBulletRenderer {
                     Vec2.ZERO,
                     Vec2.ONE,
                     coreColor.multiply(0.8f),0);
-            //vertexconsumer = bufferSource.getBuffer(THRenderType.LIGHTNING2);
+             */
+            VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE);
             THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,1,
                     Vec3.ZERO,
                     scale,
@@ -158,6 +217,7 @@ public class THBulletRenderer {
             int edgeA = cull.edgeANum;
             int edgeB = cull.edgeBNum;
             Vec3 offset = new Vec3(0.0f,-0.1f,0.0f);
+            /*
             VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.LIGHTNING);
             THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,2,
                     offset.add(0.0f,0.06f,0.0f),
@@ -166,7 +226,8 @@ public class THBulletRenderer {
                     Vec2.ZERO,
                     Vec2.ONE,
                     coreColor.multiply(0.8f), 0);
-            //vertexconsumer = bufferSource.getBuffer(THRenderType.LIGHTNING2);
+             */
+            VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE);
             THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,2,
                     offset,
                     scale,
@@ -185,6 +246,7 @@ public class THBulletRenderer {
             THBullet.BULLET_QUALITY_LEVEL cull = THBullet.BULLET_QUALITY_LEVEL.getQualityLevel(bullet,camPos.x,camPos.y,camPos.z);
             int edgeA = 4;
             int edgeB = 4;
+            /*
             VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.LIGHTNING);
             THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,2,
                     Vec3.ZERO,
@@ -192,8 +254,9 @@ public class THBulletRenderer {
                     edgeA,edgeB,false,
                     Vec2.ZERO,
                     Vec2.ONE,
-                    coreColor.multiply(0.8f), 0);
-            //vertexconsumer = bufferSource.getBuffer(THRenderType.LIGHTNING2);
+                    coreColor, 0);
+             */
+            VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE);
             THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,2,
                     Vec3.ZERO,
                     scale,

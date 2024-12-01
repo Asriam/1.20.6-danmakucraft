@@ -1,12 +1,19 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
+import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.google.common.collect.ImmutableMap;
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormatElement;
 import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -71,6 +78,35 @@ public class THRenderType extends RenderStateShard{
                     .setLightmapState(NO_LIGHTMAP)
                     .setOverlayState(OVERLAY)
                     //.setWriteMaskState(COLOR_WRITE)
+                    .createCompositeState(false)
+    );
+
+     public static VertexFormat TEST_FORMAT = new VertexFormat(
+            ImmutableMap.<String, VertexFormatElement>builder()
+                    .put("Position", DefaultVertexFormat.ELEMENT_POSITION)
+                    .put("Color"   , DefaultVertexFormat.ELEMENT_COLOR)
+                    .put("Normal"  , DefaultVertexFormat.ELEMENT_NORMAL)
+                    .build()
+    );
+
+    public static final RenderType TEST_RENDER_TYPE = RenderType.create("lightning_3", TEST_FORMAT, VertexFormat.Mode.QUADS, 786432, false, true,
+            RenderType.CompositeState.builder()
+                    .setShaderState(new ShaderStateShard(() -> {
+                        ShaderInstance shader = ShaderLoader.getShader(new ResourceLocation(THDanmakuCraftCore.MODID,"depth_outline"));
+                        /*
+                        RenderTarget target = Minecraft.getInstance().getMainRenderTarget();
+                        if(shader != null) {
+                            shader.setSampler("DepthBuffer", target.getDepthTextureId());
+                            //shader.safeGetUniform("ScreenSize").set(1.0f,1.0f);
+                        }*/
+                        return shader;
+                    }))
+                    .setTransparencyState(LIGHTNING_TRANSPARENCY)
+                    .setLightmapState(NO_LIGHTMAP)
+                    .setOverlayState(OVERLAY)
+                    .setWriteMaskState(COLOR_DEPTH_WRITE)
+                    //.setWriteMaskState(COLOR_WRITE)
+                    .setOutputState(TRANSLUCENT_TARGET)
                     .createCompositeState(false)
     );
 

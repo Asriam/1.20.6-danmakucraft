@@ -110,7 +110,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
         this.setBound(this.position(),this.bound);
         this.loadUserAndTarget();
 
-        if(this.objectManager.isEmpty() && false) {
+        if(this.objectManager.isEmpty() && true) {
             for (int j = 0; j< THBullet.BULLET_STYLE.class.getEnumConstants().length; j++) {
                 for (int i = 0; i < 16; i++) {
                     THObject a = (THObject) new THBullet(this,THBullet.BULLET_STYLE.getStyleByIndex(j),THBullet.BULLET_COLOR.getColorByIndex(i + 1))
@@ -126,7 +126,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
             }
         }
 
-        if(/*(this.timer+2)%1==0 &&*/ true) {
+        if(/*(this.timer+2)%1==0 &&*/ false) {
             Vec3 pos = this.position();
             Vec3 rotation = Vec3.directionFromRotation(0.0f,0.0f);
             Vec2 rotate = new Vec2(Mth.DEG_TO_RAD*((float) Math.pow(this.timer*0.1f,2)+360.0f/5),-Mth.DEG_TO_RAD*((float) Math.pow(this.timer*0.08f,2)+360.0f/5));

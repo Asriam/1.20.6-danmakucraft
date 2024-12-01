@@ -52,7 +52,7 @@ public class THObjectRenderHelper {
                 .color(color.r, color.g, color.b, color.a)
                 .uv(u, v)
                 .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(uv2)
-                .normal(pose, 0.0F, 1.0F, 0.0F)
+                .normal(pose, x, y, z)
                 .endVertex();
     }
 

@@ -1,4 +1,4 @@
-package com.adrian.thDanmakuCraft;
+package com.adrian.thDanmakuCraft.client.renderer;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.google.common.collect.ImmutableMap;
@@ -32,11 +32,9 @@ public class ShaderLoader {
     public ShaderLoader() {
     }
 
-    @SubscribeEvent
-    public static void onRegisterShaders(RegisterShadersEvent event) {
+    public static void registryShaders(){
         registryShader(new ResourceLocation(THDanmakuCraftCore.MODID,"box_blur"), DefaultVertexFormat.POSITION);
-
-
+        registryShader(new ResourceLocation(THDanmakuCraftCore.MODID,"depth_outline"), THRenderType.TEST_FORMAT);
         registryShader(new ResourceLocation(THDanmakuCraftCore.MODID,"test_shader"), new VertexFormat(
                 ImmutableMap.<String, VertexFormatElement>builder()
                         .put("Position", DefaultVertexFormat.ELEMENT_POSITION)
@@ -47,6 +45,11 @@ public class ShaderLoader {
                         .put("Normal"  , DefaultVertexFormat.ELEMENT_NORMAL)
                         .build()
         ));
+    }
+
+    @SubscribeEvent
+    public static void onRegisterShaders(RegisterShadersEvent event) {
+        registryShaders();
         /*
         Map<ResourceLocation, Resource> resourceMap =  resourceManager.listResources(new ResourceLocation(THDanmakuCraftCore.MODID,"shaders/core").getPath(), path -> path.toString().startsWith(THDanmakuCraftCore.MODID) && path.toString().endsWith("json"));
         resourceMap.forEach((resourceLocation, resource) -> {
@@ -54,15 +57,22 @@ public class ShaderLoader {
             registryShader(new ResourceLocation(THDanmakuCraftCore.MODID,resourceLocation.getPath().replace("shaders/core/","").replace(".json","")), DefaultVertexFormat.POSITION_TEX_COLOR);
         });*/
 
+        /*
         for(ShaderInstance shaderInstance:shaderMap.values()){
             event.registerShader(shaderInstance, shader -> {
-                THDanmakuCraftCore.LOGGER.info("Shader loaded successfully!");
+                THDanmakuCraftCore.LOGGER.info("Shader: {} loaded successfully!",shader.getName());
             });
-        }
+        }*/
+        THDanmakuCraftCore.LOGGER.info("Shader loaded successfully!");
+
     }
 
     public static void registryShader(ResourceLocation resourceLocation, VertexFormat vertexFormat){
         shaderMap.put(resourceLocation,loadShader(resourceLocation,vertexFormat));
+    }
+
+    public static void clearShaders(){
+        shaderMap.clear();
     }
 
     public static ShaderInstance loadShader(ResourceLocation resourceLocation, VertexFormat vertexFormat) {
