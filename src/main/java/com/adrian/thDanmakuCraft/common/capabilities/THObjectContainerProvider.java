@@ -12,7 +12,7 @@ public class THObjectContainerProvider implements ICapabilityProvider{
 
 
     @Override
-    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, net.minecraft.core.@Nullable Direction side) {
+    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, net.minecraft.core.Direction side) {
         return null;
     }
 }

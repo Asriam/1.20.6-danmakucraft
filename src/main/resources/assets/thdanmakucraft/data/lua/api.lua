@@ -4,9 +4,9 @@
 --- DateTime: 2024/11/25 下午 12:43
 ---
 
-Mth  = luajava.bindClass('net.minecraft.util.Mth')
-Vec2 = luajava.bindClass('net.minecraft.world.phys.Vec2')
-Vec3 = luajava.bindClass('net.minecraft.world.phys.Vec3')
-THObject = luajava.bindClass('com.adrian.thDanmakuCraft.world.entity.danmaku.THObject')
-THBullet = luajava.bindClass('com.adrian.thDanmakuCraft.world.entity.danmaku.THBullet')
-THCurvedLaser = luajava.bindClass('com.adrian.thDanmakuCraft.world.entity.danmaku.laser.THCurvedLaser')
+Mth             = luajava.bindClass('net.minecraft.util.Mth')
+Vec2            = luajava.bindClass('net.minecraft.world.phys.Vec2')
+Vec3            = luajava.bindClass('net.minecraft.world.phys.Vec3')
+THObject        = luajava.bindClass('com.adrian.thDanmakuCraft.world.entity.danmaku.THObject')
+THBullet        = luajava.bindClass('com.adrian.thDanmakuCraft.world.entity.danmaku.THBullet')
+THCurvedLaser   = luajava.bindClass('com.adrian.thDanmakuCraft.world.entity.danmaku.laser.THCurvedLaser')

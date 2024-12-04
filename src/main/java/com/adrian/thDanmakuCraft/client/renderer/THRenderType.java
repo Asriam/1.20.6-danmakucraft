@@ -85,28 +85,20 @@ public class THRenderType extends RenderStateShard{
             ImmutableMap.<String, VertexFormatElement>builder()
                     .put("Position", DefaultVertexFormat.ELEMENT_POSITION)
                     .put("Color"   , DefaultVertexFormat.ELEMENT_COLOR)
+                    .put("Color2"  , DefaultVertexFormat.ELEMENT_COLOR)
                     .put("Normal"  , DefaultVertexFormat.ELEMENT_NORMAL)
                     .build()
     );
 
     public static final RenderType TEST_RENDER_TYPE = RenderType.create("lightning_3", TEST_FORMAT, VertexFormat.Mode.QUADS, 786432, false, true,
             RenderType.CompositeState.builder()
-                    .setShaderState(new ShaderStateShard(() -> {
-                        ShaderInstance shader = ShaderLoader.getShader(new ResourceLocation(THDanmakuCraftCore.MODID,"depth_outline"));
-                        /*
-                        RenderTarget target = Minecraft.getInstance().getMainRenderTarget();
-                        if(shader != null) {
-                            shader.setSampler("DepthBuffer", target.getDepthTextureId());
-                            //shader.safeGetUniform("ScreenSize").set(1.0f,1.0f);
-                        }*/
-                        return shader;
-                    }))
+                    .setShaderState(new ShaderStateShard(() -> ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER))
                     .setTransparencyState(LIGHTNING_TRANSPARENCY)
                     .setLightmapState(NO_LIGHTMAP)
                     .setOverlayState(OVERLAY)
-                    .setWriteMaskState(COLOR_DEPTH_WRITE)
-                    //.setWriteMaskState(COLOR_WRITE)
-                    .setOutputState(TRANSLUCENT_TARGET)
+                    //.setWriteMaskState(COLOR_DEPTH_WRITE)
+                    .setWriteMaskState(COLOR_WRITE)
+                    //.setOutputState(TRANSLUCENT_TARGET)
                     .createCompositeState(false)
     );
 

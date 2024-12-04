@@ -15,16 +15,44 @@ import java.lang.Math;
 
 @OnlyIn(Dist.CLIENT)
 public class THObjectRenderHelper {
+    public static Vector3f calculateNormal(Vector3f vertex1, Vector3f vertex2, Vector3f vertex3, Vector3f vertex4){
+        Vector3f edge1_1 = new Vector3f(vertex2).sub(vertex1);
+        Vector3f edge2_1 = new Vector3f(vertex3).sub(vertex1);
+        Vector3f normal1 = edge1_1.cross(edge2_1);
+
+        // Triangle 2: vertices v0, v2, v3
+        Vector3f edge1_2 = new Vector3f(vertex3).sub(vertex1);
+        Vector3f edge2_2 = new Vector3f(vertex4).sub(vertex1);
+        Vector3f normal2 = edge1_2.cross(edge2_2);
+
+        return new Vector3f(
+                (normal1.x + normal2.x) / 2,
+                (normal1.y + normal2.y) / 2,
+                (normal1.z + normal2.z) / 2
+        ).normalize();
+    }
+
     public static void renderTexture(VertexConsumer consumer, PoseStack.Pose pose, int p_254296_,
                                      Vector3f vertex1, Vector2f uv1, THObject.Color color,
                                      Vector3f vertex2, Vector2f uv2, THObject.Color color2,
                                      Vector3f vertex3, Vector2f uv3, THObject.Color color3,
-                                     Vector3f vertex4, Vector2f uv4, THObject.Color color4
-                                     ) {
-        vertex(consumer, pose, p_254296_, vertex1, uv1, color);
-        vertex(consumer, pose, p_254296_, vertex2, uv2, color2);
-        vertex(consumer, pose, p_254296_, vertex3, uv3, color3);
-        vertex(consumer, pose, p_254296_, vertex4, uv4, color4);
+                                     Vector3f vertex4, Vector2f uv4, THObject.Color color4){
+        Vector3f finalNormal = calculateNormal(vertex1,vertex2,vertex3,vertex4);
+        vertex(consumer, pose, p_254296_, vertex1, finalNormal, uv1, color);
+        vertex(consumer, pose, p_254296_, vertex2, finalNormal, uv2, color2);
+        vertex(consumer, pose, p_254296_, vertex3, finalNormal, uv3, color3);
+        vertex(consumer, pose, p_254296_, vertex4, finalNormal, uv4, color4);
+    }
+
+    public static void renderTexture(VertexConsumer consumer, PoseStack.Pose pose, int p_254296_,
+                                     Vector3f vertex1, Vector2f uv1, THObject.Color color, THObject.Color coreColor,
+                                     Vector3f vertex2, Vector2f uv2, THObject.Color color2,THObject.Color coreColor2,
+                                     Vector3f vertex3, Vector2f uv3, THObject.Color color3,THObject.Color coreColor3,
+                                     Vector3f vertex4, Vector2f uv4, THObject.Color color4,THObject.Color coreColor4){
+        vertex(consumer, pose, p_254296_, vertex1, vertex1, uv1, color, coreColor);
+        vertex(consumer, pose, p_254296_, vertex2, vertex2, uv2, color2,coreColor2);
+        vertex(consumer, pose, p_254296_, vertex3, vertex3, uv3, color3,coreColor3);
+        vertex(consumer, pose, p_254296_, vertex4, vertex4, uv4, color4,coreColor4);
     }
 
     public static void renderTexture(VertexConsumer consumer, PoseStack.Pose pose, int p_254296_, Vector3f vertex1, Vector2f uv1, Vector3f vertex2, Vector2f uv2, Vector3f vertex3, Vector2f uv3, Vector3f vertex4, Vector2f uv4, THObject.Color color) {
@@ -56,7 +84,27 @@ public class THObjectRenderHelper {
                 .endVertex();
     }
 
-    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, int p_254296_, float pow, Vec3 offsetPosition, Vec3 scale, final int edgeA, final int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, THObject.Color color, THObject.Color endColor) {
+    public static void vertex(VertexConsumer consumer, PoseStack.Pose pose, int uv2, Vector3f vertex, Vector3f normal, Vector2f uv, THObject.Color color) {
+        consumer.vertex(pose.pose(), vertex.x, vertex.y, vertex.z)
+                .color(color.r, color.g, color.b, color.a)
+                .color(0.5f,0.5f,0.5f,0.5f)
+                .uv(uv.x, uv.y)
+                .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(uv2)
+                .normal(pose, normal.x, normal.y, normal.z)
+                .endVertex();
+    }
+
+    public static void vertex(VertexConsumer consumer, PoseStack.Pose pose, int uv2, Vector3f vertex, Vector3f normal, Vector2f uv, THObject.Color color, THObject.Color coreColor) {
+        consumer.vertex(pose.pose(), vertex.x, vertex.y, vertex.z)
+                .color(color.r, color.g, color.b, color.a)
+                .color(coreColor.r, coreColor.g, coreColor.b, coreColor.a)
+                .uv(uv.x, uv.y)
+                .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(uv2)
+                .normal(pose, normal.x, normal.y, normal.z)
+                .endVertex();
+    }
+
+    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, int p_254296_, float pow, Vec3 offsetPosition, Vec3 scale, final int edgeA, final int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, THObject.Color color, THObject.Color endColor, THObject.Color coreColor) {
         THObject.Color startColor = color;
         THObject.Color deColor = THObject.Color(0,0,0,0);
         int edgeADiv2 = Mth.floor(edgeA / 2.0f);
@@ -71,18 +119,18 @@ public class THObjectRenderHelper {
 
         angle2 = Mth.DEG_TO_RAD * (360.0f/edgeB);
 
-        int edge3 = edgeADiv2;
+        int edge3 = edgeADiv2-1;
         if (startColor.r != endColor.r){
-            deColor.r = (startColor.r - endColor.r)/edge3;
+            deColor.r = (startColor.r - endColor.r)/ edge3;
         }
         if (startColor.g != endColor.g){
-            deColor.g = (startColor.g - endColor.g)/edge3;
+            deColor.g = (startColor.g - endColor.g)/ edge3;
         }
         if (startColor.b != endColor.b){
-            deColor.b = (startColor.b - endColor.b)/edge3;
+            deColor.b = (startColor.b - endColor.b)/ edge3;
         }
         if (startColor.a != endColor.a){
-            deColor.a = (startColor.a - endColor.a)/edge3;
+            deColor.a = (startColor.a - endColor.a)/ edge3;
         }
 
         for (int j = 0; j < edgeB; j++) {
@@ -116,16 +164,16 @@ public class THObjectRenderHelper {
 
                 renderTexture(consumer, pose, p_254296_,
                         new Vector3f(x1*sin1,cos1,z1*sin1).mul(scaleF).add(offsetPositionF),
-                        new Vector2f(uvStart.x, uvStart.y),startColor,
+                        new Vector2f(uvStart.x, uvStart.y),startColor,coreColor,
 
                         new Vector3f(x2*sin1,cos1,z2*sin1).mul(scaleF).add(offsetPositionF),
-                        new Vector2f(uvEnd.x,   uvStart.y),startColor,
+                        new Vector2f(uvEnd.x,   uvStart.y),startColor,coreColor,
 
                         new Vector3f(x2*sin2,cos2,z2*sin2).mul(scaleF).add(offsetPositionF),
-                        new Vector2f(uvEnd.x,   uvEnd.y),  finalColor,
+                        new Vector2f(uvEnd.x,   uvEnd.y),  finalColor,coreColor,
 
                         new Vector3f(x1*sin2,cos2,z1*sin2).mul(scaleF).add(offsetPositionF),
-                        new Vector2f(uvStart.x, uvEnd.y),  finalColor
+                        new Vector2f(uvStart.x, uvEnd.y),  finalColor,coreColor
                 );
 
                 /*
@@ -156,7 +204,7 @@ public class THObjectRenderHelper {
         }
     }
 
-    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, int p_254296_, float pow, Vec3 offsetPosition, Vec3 scale, int edgeA, int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, THObject.Color color, int alpha) {
-        renderSphere(consumer,pose,p_254296_,pow,offsetPosition,scale,edgeA,edgeB,isHalf,uvStart,uvEnd,color,THObject.Color(color.r,color.g,color.b,alpha));
+    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, int p_254296_, float pow, Vec3 offsetPosition, Vec3 scale, int edgeA, int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, THObject.Color color, int alpha, THObject.Color coreColor) {
+        renderSphere(consumer,pose,p_254296_,pow,offsetPosition,scale,edgeA,edgeB,isHalf,uvStart,uvEnd,color,THObject.Color(color.r,color.g,color.b,alpha),coreColor);
     }
 }

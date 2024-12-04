@@ -1,6 +1,7 @@
 package com.adrian.thDanmakuCraft.world.entity.danmaku;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.api.script.IScriptTHObjectAPI;
 import com.adrian.thDanmakuCraft.client.renderer.THObjectRenderHelper;
 import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
 import com.adrian.thDanmakuCraft.client.renderer.entity.EntityTHObjectContainerRenderer;
@@ -28,7 +29,7 @@ import org.joml.*;
 import java.lang.Math;
 import java.util.List;
 
-public class THObject implements IScript, IScriptTHObjectAPI{
+public class THObject implements IScript, IScriptTHObjectAPI {
     private final THObjectType<? extends THObject> type;
     private final ScriptManager scriptManager;
     private Level level;
@@ -157,7 +158,7 @@ public class THObject implements IScript, IScriptTHObjectAPI{
         this.setVelocity(speed, Vec3.directionFromRotation(isDeg ? rotation : rotation.scale(Mth.RAD_TO_DEG)), false);
 
         if (setRotation){
-            this.setRotation(isDeg? rotation.scale(-Mth.DEG_TO_RAD) : rotation);
+            this.setRotation(isDeg? rotation.scale(Mth.DEG_TO_RAD) : rotation);
         }
     }
 
@@ -191,7 +192,12 @@ public class THObject implements IScript, IScriptTHObjectAPI{
     public static Vec2 VectorAngleToRadAngle(Vec3 formDir){
         float y = (float) Mth.atan2(formDir.x,formDir.z);
         float x = (float) Mth.atan2(formDir.y,Mth.sqrt((float) (formDir.x*formDir.x+formDir.z*formDir.z)));
-        return new Vec2(-x,y);
+        return new Vec2(x,y);
+    }
+
+    public static Vec2 VectorAngleToRadAngleInverseX(Vec3 formDir){
+        Vec2 vec2 = VectorAngleToRadAngle(formDir);
+        return new Vec2(-vec2.x,vec2.y);
     }
 
     public static Vec2 VectorAngleToEulerDegAngle(Vec3 formDir){
@@ -683,6 +689,10 @@ public class THObject implements IScript, IScriptTHObjectAPI{
 
         public static final Color WHITE(){
             return new Color(255,255,255,255);
+        }
+
+        public static final Color GRAY(){
+            return new Color(255,255,255,255).multiply(0.5f);
         }
 
         public static final Color BLACK(){

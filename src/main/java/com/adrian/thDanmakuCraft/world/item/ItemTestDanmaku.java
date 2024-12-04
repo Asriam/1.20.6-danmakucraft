@@ -38,6 +38,7 @@ public class ItemTestDanmaku extends Item {
 
         String script = null;
         try {
+            //script = ResourceLoader.readRescource(JSLoader.getResource(new ResourceLocation(THDanmakuCraftCore.MODID,"data/js/api/test.js")));
             script = ResourceLoader.readRescource(JSLoader.getResource(new ResourceLocation(THDanmakuCraftCore.MODID,"data/js/api/test.js")));
         } catch (IOException e) {
             e.printStackTrace();

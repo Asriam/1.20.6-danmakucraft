@@ -5,24 +5,23 @@
 ---
 
 ---@class Vec3
-local M={}
-
-local vec3 = {
+local Vec3 = {
     x,
     y,
-    z,
+    z
 }
 
-function M:vectorTo(vec3)
-
+---@param vec3 Vec3
+---@return Vec3
+function Vec3:vectorTo(vec3)
 end
 
-function M:normalize()
-
+---@param vec3 Vec3
+---@return Vec3
+function Vec3:normalize(vec3)
 end
 
-function M:dot(vec3)
-
+---@param vec3 Vec3
+---@return Vec3
+function Vec3:dot(vec3)
 end
-
-

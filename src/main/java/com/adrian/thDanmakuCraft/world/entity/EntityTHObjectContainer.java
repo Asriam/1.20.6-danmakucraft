@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.world.entity;
 
+import com.adrian.thDanmakuCraft.api.script.IScriptTHObjectContainerAPI;
 import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
 import com.adrian.thDanmakuCraft.init.EntityInit;
 import com.adrian.thDanmakuCraft.script.IScript;
@@ -30,12 +31,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
-public class EntityTHObjectContainer extends Entity implements IEntityAdditionalSpawnData, IScript {
+public class EntityTHObjectContainer extends Entity implements IEntityAdditionalSpawnData, IScript, IScriptTHObjectContainerAPI {
 
-    private @Nullable Entity user;
-    private @Nullable Entity target;
-    private @Nullable UUID userUUID;
-    private @Nullable UUID targetUUID;
+    private @Nullable Entity user,    target;
+    private @Nullable UUID   userUUID,targetUUID;
 
     protected final JSManager scriptManager;
     protected final THObjectManager objectManager;
@@ -110,7 +109,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
         this.setBound(this.position(),this.bound);
         this.loadUserAndTarget();
 
-        if(this.objectManager.isEmpty() && true) {
+        if(this.objectManager.isEmpty() && false) {
             for (int j = 0; j< THBullet.BULLET_STYLE.class.getEnumConstants().length; j++) {
                 for (int i = 0; i < 16; i++) {
                     THObject a = (THObject) new THBullet(this,THBullet.BULLET_STYLE.getStyleByIndex(j),THBullet.BULLET_COLOR.getColorByIndex(i + 1))
@@ -132,7 +131,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
             Vec2 rotate = new Vec2(Mth.DEG_TO_RAD*((float) Math.pow(this.timer*0.1f,2)+360.0f/5),-Mth.DEG_TO_RAD*((float) Math.pow(this.timer*0.08f,2)+360.0f/5));
 
             Vec3 angle = rotation.xRot(Mth.DEG_TO_RAD*90.0f).normalize().xRot(rotate.x).yRot(rotate.y);
-            THBullet.BULLET_STYLE style = THBullet.BULLET_STYLE.ball_mid;
+            THBullet.BULLET_STYLE style = THBullet.BULLET_STYLE.arrow_big;
             THObject danmaku = (THObject) new THBullet(this,style, THBullet.BULLET_COLOR.COLOR_PURPLE).initPosition(pos).shoot(
                     0.2f,
                     angle
@@ -343,7 +342,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
         }
 
         public void addTHObject(THObject object){
-            if(this.storage.size() >= this.container.getMaxObjectAmount()){
+            if(this.storage.size() >= this.container.maxObjectAmount){
                 //THDanmakuCraftCore.LOGGER.warn("{}'s object pool is full! {} (Max is {})",this.container,this.storage.size(),this.container.getMaxObjectAmount());
                 return;
             }

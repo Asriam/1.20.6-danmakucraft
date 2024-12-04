@@ -1,4 +1,4 @@
-class bullet {
+class bullet extends THObject{
 
     onTick();
 

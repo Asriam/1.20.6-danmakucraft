@@ -19,4 +19,6 @@ class THObject extends Java.type('com.adrian.thDanmakuCraft.world.entity.danmaku
     onDead(){
         super.onDead();
     }
+
+    getTimer();
 }

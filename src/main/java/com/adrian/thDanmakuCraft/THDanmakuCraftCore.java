@@ -42,8 +42,6 @@ public class THDanmakuCraftCore
     private void commonSetup(final FMLCommonSetupEvent event) {
         JSLoader.init();
         JSCore.init();
-        //new ShaderLoader();
-        //LuaCore.init();
     }
 
     public static Map<String,Runnable> onServerStartingTask = new HashMap();
@@ -52,6 +50,7 @@ public class THDanmakuCraftCore
     public void onServerStarting(final ServerStartingEvent event) {
         LOGGER.info("HELLO from server starting");
         LOGGER.info("loading JS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        JSLoader.init();
         for(Runnable task:onServerStartingTask.values()){
             task.run();
         }
