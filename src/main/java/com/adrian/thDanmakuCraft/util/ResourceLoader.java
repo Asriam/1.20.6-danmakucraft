@@ -56,7 +56,8 @@ public class ResourceLoader {
     }
 
     public static Map<ResourceLocation,Resource> loadAllResourcesInFolder(ResourceLocation folderPath, String suffix){
-        Map<ResourceLocation, Resource> resourceMap=  resourceManager.listResources(folderPath.getPath(), path -> path.toString().endsWith(suffix));
+        Map<ResourceLocation, Resource> resourceMap =  resourceManager.listResources(folderPath.getPath(), path -> path.toString().endsWith(suffix));
+        /*
         Map<ResourceLocation, Resource> map1 = new HashMap<>();
         resourceMap.forEach((resourceLocation, resource) -> {
             try (InputStream inputstream = resource.open()) {
@@ -69,6 +70,8 @@ public class ResourceLoader {
             }
 
         });
-        return map1;
+
+         */
+        return resourceMap;
     }
 }

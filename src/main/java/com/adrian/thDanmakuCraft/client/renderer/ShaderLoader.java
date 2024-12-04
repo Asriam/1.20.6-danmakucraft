@@ -2,24 +2,18 @@ package com.adrian.thDanmakuCraft.client.renderer;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.google.common.collect.ImmutableMap;
-import com.mojang.blaze3d.shaders.Program;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterShadersEvent;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,12 +23,14 @@ public class ShaderLoader {
     private static final ResourceManager resourceManager = THDanmakuCraftCore.RESOURCE_MANAGER;
     private static final Map<ResourceLocation,ShaderInstance> shaderMap = new HashMap<>();
 
+    public static ShaderInstance DANMAKU_DEPTH_OUTLINE_SHADER;
+
     public ShaderLoader() {
     }
 
     public static void registryShaders(){
         registryShader(new ResourceLocation(THDanmakuCraftCore.MODID,"box_blur"), DefaultVertexFormat.POSITION);
-        registryShader(new ResourceLocation(THDanmakuCraftCore.MODID,"depth_outline"), THRenderType.TEST_FORMAT);
+        DANMAKU_DEPTH_OUTLINE_SHADER = registryShader(new ResourceLocation(THDanmakuCraftCore.MODID,"rendertype_danmaku_depth_outline"), THRenderType.TEST_FORMAT);
         registryShader(new ResourceLocation(THDanmakuCraftCore.MODID,"test_shader"), new VertexFormat(
                 ImmutableMap.<String, VertexFormatElement>builder()
                         .put("Position", DefaultVertexFormat.ELEMENT_POSITION)
@@ -63,12 +59,13 @@ public class ShaderLoader {
                 THDanmakuCraftCore.LOGGER.info("Shader: {} loaded successfully!",shader.getName());
             });
         }*/
-        THDanmakuCraftCore.LOGGER.info("Shader loaded successfully!");
+        THDanmakuCraftCore.LOGGER.info("Shaders loaded successfully!");
 
     }
 
-    public static void registryShader(ResourceLocation resourceLocation, VertexFormat vertexFormat){
+    public static ShaderInstance registryShader(ResourceLocation resourceLocation, VertexFormat vertexFormat){
         shaderMap.put(resourceLocation,loadShader(resourceLocation,vertexFormat));
+        return shaderMap.get(resourceLocation);
     }
 
     public static void clearShaders(){

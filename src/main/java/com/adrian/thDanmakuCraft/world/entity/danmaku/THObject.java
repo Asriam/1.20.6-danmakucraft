@@ -1,6 +1,7 @@
 package com.adrian.thDanmakuCraft.world.entity.danmaku;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.api.script.IScriptTHObjectAPI;
 import com.adrian.thDanmakuCraft.client.renderer.THObjectRenderHelper;
 import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
 import com.adrian.thDanmakuCraft.client.renderer.entity.EntityTHObjectContainerRenderer;
@@ -8,7 +9,7 @@ import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.script.IScript;
 import com.adrian.thDanmakuCraft.script.ScriptManager;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
-import com.adrian.thDanmakuCraft.script.JSManager;
+import com.adrian.thDanmakuCraft.script.js.JSManager;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -17,6 +18,7 @@ import net.minecraft.nbt.*;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -28,10 +30,11 @@ import org.joml.*;
 import java.lang.Math;
 import java.util.List;
 
-public class THObject implements IScript, IScriptTHObjectAPI{
+public class THObject implements IScript, IScriptTHObjectAPI {
     private final THObjectType<? extends THObject> type;
     private final ScriptManager scriptManager;
-    private Level level;
+    protected final RandomSource random;
+    private final Level level;
     private EntityTHObjectContainer container;
     public static final ResourceLocation TEXTURE_WHITE = new ResourceLocation(THDanmakuCraftCore.MODID, "textures/white.png");
     protected ResourceLocation TEXTURE = TEXTURE_WHITE;
@@ -47,7 +50,7 @@ public class THObject implements IScript, IScriptTHObjectAPI{
     protected Vec3 size = new Vec3(0.5f, 0.5f, 0.5f);                  //Hitbox size
     protected Vector3f scale = new Vector3f(1.0f, 1.0f, 1.0f);                             //Render scale
     //public Vector3f rotation = new Vector3f(0.0f,0.0f,0.0f);                                   //Euler Angles
-    protected float damage = 0.0f;
+    protected float damage = 1.0f;
     protected float xRot = 0.0f;
     protected float yRot = 0.0f;
     protected float zRot = 0.0f;
@@ -59,8 +62,8 @@ public class THObject implements IScript, IScriptTHObjectAPI{
     public boolean inWater;
     public boolean colli = true;
     public boolean navi = false;
-    public boolean bound = true;
-    public boolean noCulling;
+    //public boolean bound = true;
+    public boolean noCulling = false;
     public boolean shouldTick = true;
     public boolean isDead = false;
     public boolean removeFlag = false;
@@ -71,11 +74,12 @@ public class THObject implements IScript, IScriptTHObjectAPI{
 
     public Color color = Color(255,255,255,255);
     public THRenderType.BLEND blend = THRenderType.BLEND.LIGHTEN;
-
+    public CollisionType collisionType = CollisionType.AABB;
 
     public THObject(THObjectType<? extends THObject> type,EntityTHObjectContainer container) {
         this.type = type;
         this.container = container;
+        this.random = container.random;
         this.level = container.level();
         this.scriptManager = new JSManager();
         this.initPosition(container.position());
@@ -134,6 +138,12 @@ public class THObject implements IScript, IScriptTHObjectAPI{
         this.positionZ = pos.z;
     }
 
+    public void setPosition(double x, double y, double z){
+        this.positionX = x;
+        this.positionY = y;
+        this.positionZ = z;
+    }
+
     public void setScale(Vector3f scale){
         this.scale = scale;
     }
@@ -149,15 +159,15 @@ public class THObject implements IScript, IScriptTHObjectAPI{
         }
     }
 
-    public void setVelocity(float speed, Vec3 rotation, boolean setRotation) {
-        this.setVelocity(rotation.normalize().multiply(speed,speed,speed),setRotation);
+    public void setVelocity(float speed, Vec3 direction, boolean setRotation) {
+        this.setVelocity(direction.normalize().multiply(speed,speed,speed),setRotation);
     }
 
     public void setVelocity(float speed, Vec2 rotation, boolean isDeg, boolean setRotation) {
         this.setVelocity(speed, Vec3.directionFromRotation(isDeg ? rotation : rotation.scale(Mth.RAD_TO_DEG)), false);
 
         if (setRotation){
-            this.setRotation(isDeg? rotation.scale(-Mth.DEG_TO_RAD) : rotation);
+            this.setRotation(isDeg? rotation.scale(Mth.DEG_TO_RAD) : rotation);
         }
     }
 
@@ -165,14 +175,18 @@ public class THObject implements IScript, IScriptTHObjectAPI{
         this.acceleration = acceleration;
     }
 
-    public void setAcceleration(float acceleration, Vec3 rotation){
-        this.setAcceleration(rotation.normalize().multiply(acceleration,acceleration,acceleration));
+    public void setAcceleration(float acceleration, Vec3 direction){
+        this.setAcceleration(direction.normalize().multiply(acceleration,acceleration,acceleration));
     }
 
-    public void setRotation(float x,float y,float z) {
-        this.xRot = x;
-        this.yRot = y;
-        this.zRot = z;
+    public void setAcceleration(float acceleration, Vec2 rotation){
+
+    }
+
+    public void setRotation(float xRot,float yRot,float zRot) {
+        this.xRot = xRot;
+        this.yRot = yRot;
+        this.zRot = zRot;
     }
 
     public void setRotation(Vector3f rotation) {
@@ -191,7 +205,12 @@ public class THObject implements IScript, IScriptTHObjectAPI{
     public static Vec2 VectorAngleToRadAngle(Vec3 formDir){
         float y = (float) Mth.atan2(formDir.x,formDir.z);
         float x = (float) Mth.atan2(formDir.y,Mth.sqrt((float) (formDir.x*formDir.x+formDir.z*formDir.z)));
-        return new Vec2(-x,y);
+        return new Vec2(x,y);
+    }
+
+    public static Vec2 VectorAngleToRadAngleInverseX(Vec3 formDir){
+        Vec2 vec2 = VectorAngleToRadAngle(formDir);
+        return new Vec2(-vec2.x,vec2.y);
     }
 
     public static Vec2 VectorAngleToEulerDegAngle(Vec3 formDir){
@@ -337,10 +356,11 @@ public class THObject implements IScript, IScriptTHObjectAPI{
         if(!this.shouldTick){
             return;
         }
+
         this.positionX += this.velocity.x;
         this.positionY += this.velocity.y;
         this.positionZ += this.velocity.z;
-        setBoundingBox(new Vec3(this.positionX, this.positionY, this.positionZ), this.size);
+        this.setBoundingBox(this.getPosition(), this.size);
         this.velocity = new Vec3(
                 this.velocity.x + this.acceleration.x,
                 this.velocity.y + this.acceleration.y,
@@ -355,7 +375,7 @@ public class THObject implements IScript, IScriptTHObjectAPI{
             this.setRotation(VectorAngleToRadAngle(this.getMotionDirection()));
         }
 
-        if (--this.lifetime < 0 || (this.bound && !this.getContainer().getAabb().contains(this.getPosition()))){
+        if (--this.lifetime < 0 || (/*this.bound &&*/ !this.getContainer().getAabb().contains(this.getPosition()))){
             this.setDead();
         }
 
@@ -363,26 +383,32 @@ public class THObject implements IScript, IScriptTHObjectAPI{
             this.onDead();
         }
 
-        this.timer += 1;
-
-
         this.scriptManager.invokeScript("onTick", (exception)-> {
             if(this.container != null){
                 this.container.remove(Entity.RemovalReason.DISCARDED);
             }
             this.remove();
         }, this);
+
+        this.timer += 1;
     }
 
     public void collision(){
-        List<Entity> entities = this.level.getEntities(this.container,this.getBoundingBox());
-        if(!entities.isEmpty()){
-            for (Entity entity:entities) {
-                this.onHit(new EntityHitResult(entity,this.getPosition()));
+        List<Entity> entitiesInBound = this.container.getEntitiesInBound();
+
+        if (this.collisionType == CollisionType.AABB) {
+            List<Entity> collidedEntities = entitiesInBound.stream().filter(entity ->
+                    entity.getBoundingBox().intersects(this.getBoundingBox())
+            ).toList();
+            if (!collidedEntities.isEmpty()) {
+                collidedEntities.forEach(entity -> this.onHit(new EntityHitResult(entity, this.getPosition())));
             }
+        }else if(this.collisionType == CollisionType.SPHERE){
+            // TODO sphere collision
+        }else if(this.collisionType == CollisionType.CUBOID){
+            // TODO cuboid collision
         }
 
-        //HitResult hitresult = this.level.clip(new ClipContext(this.lastPosition, this.getPosition(), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this.container));
         AABB aabb = this.getBoundingBox();
         HitResult hitresult = this.level.clip(new ClipContext(
                 new Vec3(aabb.minX,aabb.minY,aabb.minZ),
@@ -393,6 +419,7 @@ public class THObject implements IScript, IScriptTHObjectAPI{
         this.onHit(hitresult);
     }
 
+
     public void onHit(HitResult result) {
         HitResult.Type type = result.getType();
 
@@ -402,7 +429,7 @@ public class THObject implements IScript, IScriptTHObjectAPI{
 
         if (type == HitResult.Type.ENTITY && result instanceof EntityHitResult entityHitResult) {
             Entity entity = entityHitResult.getEntity();
-            if (entity instanceof EntityTHObjectContainer || (!this.canHitUser && entity.equals(this.container.getUser())))
+            if (!this.canHitUser && entity.equals(this.container.getUser()))
                 return;
             this.onHitEntity(entityHitResult);
         }
@@ -461,6 +488,7 @@ public class THObject implements IScript, IScriptTHObjectAPI{
         buffer.writeDouble(this.positionX);
         buffer.writeDouble(this.positionY);
         buffer.writeDouble(this.positionZ);
+        buffer.writeVec3(this.lastPosition);
         buffer.writeVec3(this.prePosition);
         buffer.writeFloat(this.xRot);
         buffer.writeFloat(this.yRot);
@@ -480,7 +508,7 @@ public class THObject implements IScript, IScriptTHObjectAPI{
         buffer.writeEnum(this.blend);
         buffer.writeBoolean(this.isDead);
         buffer.writeBoolean(this.colli);
-        buffer.writeBoolean(this.bound);
+        //buffer.writeBoolean(this.bound);
         buffer.writeBoolean(this.shouldSave);
         this.scriptManager.writeData(buffer);
     }
@@ -489,7 +517,7 @@ public class THObject implements IScript, IScriptTHObjectAPI{
         this.positionX = buffer.readDouble();
         this.positionY = buffer.readDouble();
         this.positionZ = buffer.readDouble();
-        this.lastPosition = this.getPosition();
+        this.lastPosition = buffer.readVec3();
         this.prePosition = buffer.readVec3();
         this.xRot = buffer.readFloat();
         this.yRot = buffer.readFloat();
@@ -510,9 +538,11 @@ public class THObject implements IScript, IScriptTHObjectAPI{
         this.blend = buffer.readEnum(THRenderType.BLEND.class);
         this.isDead = buffer.readBoolean();
         this.colli = buffer.readBoolean();
-        this.bound = buffer.readBoolean();
+        //this.bound = buffer.readBoolean();
         this.shouldSave = buffer.readBoolean();
         this.scriptManager.readData(buffer);
+
+        this.setBoundingBox(this.getPosition(), this.size);
     }
 
     public CompoundTag save(CompoundTag tag) {
@@ -677,19 +707,30 @@ public class THObject implements IScript, IScriptTHObjectAPI{
         return this.scriptManager;
     }
 
+    public enum CollisionType{
+        AABB,
+        SPHERE,
+        CUBOID
+    }
 
     public static class Color{
         public int r,g,b,a;
 
-        public static final Color WHITE(){
+        private static final Color WHITE =   new Color(255,255,255,255);
+        private static final Color GRAY =    new Color(255,255,255,255).multiply(0.5f);
+        private static final Color BLACK =   new Color(0,0,0,255);
+        private static final Color VOID =    new Color(0,0,0,0);
+
+        public static Color WHITE(){
             return new Color(255,255,255,255);
         }
-
-        public static final Color BLACK(){
+        public static Color GRAY(){
+            return new Color(255,255,255,255).multiply(0.5f);
+        }
+        public static Color BLACK(){
             return new Color(0,0,0,255);
         }
-
-        public static final Color VOID(){
+        public static Color VOID(){
             return new Color(0,0,0,0);
         }
 
@@ -700,6 +741,13 @@ public class THObject implements IScript, IScriptTHObjectAPI{
             this.a = a;
         }
 
+        Color(Color color){
+            this.r = color.r;
+            this.g = color.g;
+            this.b = color.b;
+            this.a = color.a;
+        }
+
         public Color normalize(){
             int r = Mth.clamp(this.r,0,255);
             int g = Mth.clamp(this.g,0,255);
@@ -708,15 +756,15 @@ public class THObject implements IScript, IScriptTHObjectAPI{
             return new Color(r,g,b,a);
         }
 
-        public Color plus(int r, int g, int b, int a){
+        public Color add(int r, int g, int b, int a){
             return new Color(this.r+r,this.g+g,this.b+b,this.a+a);
         }
 
-        public Color minus(int r, int g, int b, int a){
+        public Color subtract(int r, int g, int b, int a){
             return new Color(this.r-r,this.g-g,this.b-b,this.a-a);
         }
 
-        public Color minus(Color color){
+        public Color subtract(Color color){
             return new Color(this.r-color.r,this.g-color.g,this.b-color.b,this.a-color.a);
         }
 
@@ -734,6 +782,10 @@ public class THObject implements IScript, IScriptTHObjectAPI{
 
         public Color divide(float factor){
             return this.divide(factor,factor,factor,factor);
+        }
+
+        public int[] of(){
+            return new int[] {r,g,b,a};
         }
     }
 

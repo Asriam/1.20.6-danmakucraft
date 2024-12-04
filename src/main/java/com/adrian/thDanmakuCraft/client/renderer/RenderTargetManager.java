@@ -12,28 +12,29 @@ import java.util.Map;
 public class RenderTargetManager {
     private static Map<ResourceLocation, RenderTarget> renderTargetMap = new HashMap();
 
-    public RenderTarget createRenderTarget(ResourceLocation name, int width, int height, boolean overlay){
+    public static RenderTarget createRenderTarget(ResourceLocation name, int width, int height){
         RenderTarget renderTarget = renderTargetMap.get(name);
-        if (!overlay && renderTarget!= null) {
+        if (renderTarget!= null) {
             THDanmakuCraftCore.LOGGER.warn("Render Target {} already exits!",name);
             return renderTarget;
         }
-        return renderTargetMap.put(name,new TextureTarget(width,height,true, Minecraft.ON_OSX));
-    }
-
-    public RenderTarget createRenderTarget(String name, int width, int height, boolean overlay){
-        return this.createRenderTarget(new ResourceLocation(THDanmakuCraftCore.MODID, name),width,height,overlay);
-    }
-
-    public RenderTarget getRenderTarget(ResourceLocation name){
+        renderTargetMap.put(name,new TextureTarget(width,height,true, Minecraft.ON_OSX));
         return renderTargetMap.get(name);
     }
 
-    public RenderTarget getRenderTarget(String name){
-        return this.getRenderTarget(new ResourceLocation(THDanmakuCraftCore.MODID,name));
+    public static RenderTarget createRenderTarget(String name, int width, int height){
+        return createRenderTarget(new ResourceLocation(THDanmakuCraftCore.MODID, name),width,height);
     }
 
-    public void releaseRenderTarget(ResourceLocation name){
+    public static RenderTarget getRenderTarget(ResourceLocation name){
+        return renderTargetMap.get(name);
+    }
+
+    public static RenderTarget getRenderTarget(String name){
+        return getRenderTarget(new ResourceLocation(THDanmakuCraftCore.MODID,name));
+    }
+
+    public static void releaseRenderTarget(ResourceLocation name){
         renderTargetMap.remove(name);
     }
 }

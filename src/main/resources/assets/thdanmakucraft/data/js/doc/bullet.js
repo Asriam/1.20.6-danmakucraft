@@ -1,0 +1,2 @@
+class bullet extends THObject{
+}

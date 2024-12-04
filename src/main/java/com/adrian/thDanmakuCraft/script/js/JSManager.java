@@ -1,7 +1,7 @@
-package com.adrian.thDanmakuCraft.script;
+package com.adrian.thDanmakuCraft.script.js;
 
-import com.adrian.thDanmakuCraft.JSCore;
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.script.ScriptManager;
 import com.adrian.thDanmakuCraft.util.RunnableWithException;
 
 import javax.script.Invocable;
@@ -10,9 +10,6 @@ import javax.script.ScriptEngine;
 public class JSManager extends ScriptManager {
 
     private final ScriptEngine engine = JSCore.getEngine();
-    //private final static ScriptContext emptyContext = THDanmakuCraftCore.getEngine().getContext();
-
-    //private final ScriptEngine engine = new JavaScript().getEngine();
 
     public JSManager(){
         super();

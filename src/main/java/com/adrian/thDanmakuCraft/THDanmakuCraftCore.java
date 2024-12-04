@@ -1,7 +1,10 @@
 package com.adrian.thDanmakuCraft;
 
 import com.adrian.thDanmakuCraft.init.*;
-import com.adrian.thDanmakuCraft.util.JSLoader;
+import com.adrian.thDanmakuCraft.script.js.JSCore;
+import com.adrian.thDanmakuCraft.script.js.JSLoader;
+import com.adrian.thDanmakuCraft.script.lua.LuaCore;
+import com.adrian.thDanmakuCraft.script.lua.LuaLoader;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -42,16 +45,20 @@ public class THDanmakuCraftCore
     private void commonSetup(final FMLCommonSetupEvent event) {
         JSLoader.init();
         JSCore.init();
-        //new ShaderLoader();
-        //LuaCore.init();
+
+        LuaLoader.init();
+        LuaCore.init();
     }
 
     public static Map<String,Runnable> onServerStartingTask = new HashMap();
 
     @SubscribeEvent
     public void onServerStarting(final ServerStartingEvent event) {
-        LOGGER.info("HELLO from server starting");
-        LOGGER.info("loading JS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        JSLoader.init();
+        JSCore.init();
+
+        LuaLoader.init();
+        LuaCore.init();
         for(Runnable task:onServerStartingTask.values()){
             task.run();
         }

@@ -1,10 +1,6 @@
-import org.luaj.vm2.script.LuaScriptEngineFactory;
-
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-
-import static com.adrian.thDanmakuCraft.JSCore.ENGINE_NAME;
+import net.minecraft.server.packs.resources.ReloadableResourceManager;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.PackType;
 
 public class jsTest {
 
@@ -18,6 +14,6 @@ public class jsTest {
         } catch (ScriptException e) {
             e.printStackTrace();
         }*/
-        System.out.print("aaa");
+        //ResourceManager resourceManager = new ReloadableResourceManager(PackType.CLIENT_RESOURCES);
     }
 }

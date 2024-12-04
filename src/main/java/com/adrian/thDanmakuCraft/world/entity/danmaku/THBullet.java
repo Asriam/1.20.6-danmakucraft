@@ -168,8 +168,10 @@ public class THBullet extends THObject {
         private final Vec3 size;
         private final boolean faceCam;
         private boolean is3D;
+
         @Nullable
-        public final THBulletRenderer.THBulletRenderFactory renderFactory;
+        @OnlyIn(Dist.CLIENT)
+        private final THBulletRenderer.THBulletRenderFactory renderFactory;
 
         BULLET_STYLE(ResourceLocation texture, Vec3 size, boolean faceCam, THBulletRenderer.THBulletRenderFactory factory){
             this.texture = texture;
@@ -204,21 +206,21 @@ public class THBullet extends THObject {
         }
 
         @OnlyIn(Dist.CLIENT)
-        public void render(EntityTHObjectContainerRenderer renderer,THBullet object, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, int p_114710_){
+        public void render(EntityTHObjectContainerRenderer renderer,THBullet object, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, int overlay){
             poseStack.pushPose();
             if(this.is3D) {
                 if(this.faceCam) {
                     poseStack.mulPose(renderer.dispatcher.cameraOrientation());
                     poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
                 }else {
-                    poseStack.mulPose(new Quaternionf().rotationYXZ(object.yRot,object.xRot+Mth.DEG_TO_RAD*90.0f,object.zRot));
+                    poseStack.mulPose(new Quaternionf().rotationYXZ(object.yRot,-object.xRot+Mth.DEG_TO_RAD*90.0f,object.zRot));
                 }
-                THBulletRenderer.render3DBullet(renderer, object,this.renderFactory,partialTicks, poseStack, bufferSource, p_114710_);
+                THBulletRenderer.render3DBullet(renderer, object,this.renderFactory,partialTicks, poseStack, bufferSource, overlay);
 
             }else {
                 poseStack.mulPose(renderer.dispatcher.cameraOrientation());
                 poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
-                THBulletRenderer.render2DBullet(renderer, object,partialTicks, poseStack, bufferSource, p_114710_);
+                THBulletRenderer.render2DBullet(renderer, object,partialTicks, poseStack, bufferSource, overlay);
             }
             poseStack.popPose();
         }
@@ -249,7 +251,7 @@ public class THBullet extends THObject {
             double d2 = object.positionZ - camZ;
             double distSquare = (d0 * d0 + d1 * d1 + d2 * d2);
 
-            double d4 = object.getBoundingBox().getSize() * 4.0D;
+            double d4 = object.getBoundingBoxForCulling().getSize() * 4.0D;
             if (Double.isNaN(d4)) {
                 d4 = 4.0D;
             }

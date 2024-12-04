@@ -2,7 +2,7 @@ class Vec2 {
     x : number;
     y : number;
 
-    constructor(x: number, y: number, z: number);
+    constructor(x: number, y: number);
 
     scale(num: number): Vec2;
 

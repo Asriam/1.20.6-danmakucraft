@@ -4,8 +4,8 @@
         "srcrgb": "srcalpha",
         "dstrgb": "1-srcalpha"
     },
-    "vertex": "thdanmakucraft:depth_outline",
-    "fragment": "thdanmakucraft:depth_outline",
+    "vertex": "thdanmakucraft:rendertype_danmaku_depth_outline",
+    "fragment": "thdanmakucraft:rendertype_danmaku_depth_outline",
     "attributes": [ "Position" , "Normal"],
     "samplers": [
         { "name": "DepthBuffer" }
@@ -13,6 +13,7 @@
     "uniforms": [
         { "name": "ModelViewMat","type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
         { "name": "ProjMat",     "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
-        { "name": "ScreenSize",  "type": "float",     "count": 2,  "values": [ 1.0, 1.0 ] }
+        { "name": "ScreenSize",  "type": "float",     "count": 2,  "values": [ 1.0, 1.0 ] },
+        { "name": "CoreColor",   "type": "float",     "count": 4,  "values": [ 1.0 ,0.0, 0.0, 1.0]}
     ]
 }

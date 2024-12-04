@@ -104,7 +104,7 @@ public class THCurvedLaser extends THObject {
         }
 
         poseStack.pushPose();
-        int edge = 4;
+        int edge = 6;
         Color indexColor = this.laserColor.getColor();
         Color color = Color(
                 this.color.r * indexColor.r/255,
@@ -114,17 +114,33 @@ public class THCurvedLaser extends THObject {
         );
 
         Color coreColor = this.color;
-        renderCurvedLaser(renderer,laserPos,bufferSource.getBuffer(THRenderType.LIGHTNING),poseStack,this.nodeManager.getNodes(),this.width,this.width*0.5f,edge, 1, color, coreColor,partialTicks,combinedOverlay,1.0f,0.95f);
+        this.renderCurvedLaser(renderer,laserPos,bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE),poseStack,this.nodeManager.getNodes(),this.width,this.width*0.5f,edge, 1, color, coreColor,partialTicks,combinedOverlay,1.0f,0.95f);
         poseStack.popPose();
     }
 
     //曲線聚光渲染的一坨屎山
-    public static void renderCurvedLaser(EntityTHObjectContainerRenderer renderer, Vec3 laserPos, VertexConsumer vertexConsumer, PoseStack poseStack, List<LaserNode> nodeList, float width, float coreWidth, int edge, int cull,Color laserColor, Color coreColor, float partialTicks, int combinedOverlay, float laserLength, float coreLength) {
+    public void renderCurvedLaser(EntityTHObjectContainerRenderer renderer, Vec3 laserPos, VertexConsumer vertexConsumer, PoseStack poseStack, List<LaserNode> nodeList, float width, float coreWidth, int edge, int cull,Color laserColor, Color coreColor, float partialTicks, int combinedOverlay, float laserLength, float coreLength) {
         if(nodeList.isEmpty() || nodeList.size() < 3){
             return;
         }
-
         PoseStack.Pose pose = poseStack.last();
+
+        //Ball
+        float width2 = width * 3.0f * (nodeList.size()-this.timer)/nodeList.size();
+        if(width2 > 0) {
+            poseStack.pushPose();
+            Vec3 asd = laserPos.vectorTo(nodeList.get(nodeList.size() - 1).getOffsetPosition(partialTicks));
+            poseStack.translate(asd.x, asd.y, asd.z);
+            THObjectRenderHelper.renderSphere(vertexConsumer, poseStack.last(), combinedOverlay, 1,
+                    Vec3.ZERO,
+                    new Vec3(width2, width2, width2),
+                    12, 12, false,
+                    Vec2.ZERO,
+                    Vec2.ONE,
+                    laserColor, laserColor, coreColor);
+            poseStack.popPose();
+        }
+
         final float perAngle = Mth.DEG_TO_RAD * 360.0f/edge;
 
         //external
@@ -134,7 +150,19 @@ public class THCurvedLaser extends THObject {
         Vec3[] lastNodePos_3 = new Vec3[edge];
         Vec3[] lastNodePos_4 = new Vec3[edge];
 
+        /*
+        Vec3 node0Pos   = nodeList.get(0).getOffsetPosition(partialTicks);
+        Vec3 nodeEndPos = nodeList.get(nodeList.size()-1).getOffsetPosition(partialTicks);
+        Vec2 angle00    = THObject.VectorAngleToRadAngle(node0Pos.vectorTo(nodeEndPos));
+        Vec2 angle0     = new Vec2(angle00.x - Mth.DEG_TO_RAD * 90.0f, angle00.y);
+         */
+        THObject.Color coreColor2 = coreColor.multiply(0.5f);
+
+        Vec3 _pos1   = null;
+        Vec3 _pos2   = null;
+
         int index = 0;
+        Color GRAY = THObject.Color.GRAY();
         for(LaserNode node:nodeList){
             if(index+1 >= nodeList.size()){
                 break;
@@ -148,65 +176,99 @@ public class THCurvedLaser extends THObject {
                 Vec2 node1Angle = THObject.VectorAngleToRadAngle(pos1.vectorTo(pos2));
                 Vec2 node2Angle = node3 != null ? THObject.VectorAngleToRadAngle(pos2.vectorTo(node3.getOffsetPosition(partialTicks))) : node1Angle;
 
-                Vec2 angle1 = new Vec2(node1Angle.x - Mth.DEG_TO_RAD * 90.0f, node1Angle.y);
-                Vec2 angle2 = new Vec2(node2Angle.x - Mth.DEG_TO_RAD * 90.0f, node2Angle.y);
+                float right_angle = Mth.DEG_TO_RAD * 90.0f;
+                Vec2 angle1 = new Vec2(node1Angle.x, node1Angle.y);
+                Vec2 angle2 = new Vec2(node2Angle.x , node2Angle.y);
 
-                pos1 = laserPos.vectorTo(pos1);
-                pos2 = laserPos.vectorTo(pos2);
+                _pos1 = laserPos.vectorTo(pos1);
+                _pos2 = laserPos.vectorTo(pos2);
 
                 if (shouldRenderNode(node, node2, renderer.frustum)) {
+                    float nodeWidth1 = circle((float) (index) / (nodeList.size() - 1), laserLength );
+                    float nodeWidth2 = circle((float) (index + 1) / (nodeList.size() - 1), laserLength);
+
+                    float nodeWidth3 = circle((float) (index) / (nodeList.size() - 1), coreLength);
+                    float nodeWidth4 = circle((float) (index + 1) / (nodeList.size() - 1), coreLength);
+
                     for (int i = 0; i < edge; i++) {
                         //external render
-                        float nodeWidth1 = circle((float) (index) / (nodeList.size() - 1), laserLength);
-                        float nodeWidth2 = circle((float) (index + 1) / (nodeList.size() - 1), laserLength);
                         Vec3 posA = new Vec3(nodeWidth1 * width, 0.0d, 0.0d);
                         Vec3 posB = new Vec3(!(index >= nodeList.size() - 2) ? nodeWidth2 * width : 0.0f, 0.0d, 0.0d);
                         if(lastNodePos_1[i] == null){
-                            lastNodePos_1[i] = posA.yRot(i * perAngle).xRot(angle1.x).yRot(angle1.y).add(pos1);
+                            lastNodePos_1[i] = posA.yRot(i * perAngle).       xRot(right_angle+angle1.x).yRot(angle1.y).add(_pos1);
                         }
 
                         if(lastNodePos_2[i] == null){
-                            lastNodePos_2[i] = posA.yRot((i + 1) * perAngle).xRot(angle1.x).yRot(angle1.y).add(pos1);
+                            lastNodePos_2[i] = posA.yRot((i + 1) * perAngle). xRot(right_angle+angle1.x).yRot(angle1.y).add(_pos1);
                         }
                         Vec3 calculatedPos1_1 = lastNodePos_1[i];
                         Vec3 calculatedPos1_2 = lastNodePos_2[i];
 
-                        Vec3 calculatedPos2_1 = posB.yRot(i * perAngle).xRot(angle2.x).yRot(angle2.y).add(pos2);
-                        Vec3 calculatedPos2_2 = posB.yRot((i + 1) * perAngle).xRot(angle2.x).yRot(angle2.y).add(pos2);
-
-                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos1_1.toVector3f(), new Vector2f(0.0f, 0.0f), laserColor);
-                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos2_1.toVector3f(), new Vector2f(0.0f, 0.0f), laserColor);
-                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos2_2.toVector3f(), new Vector2f(0.0f, 0.0f), laserColor);
-                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos1_2.toVector3f(), new Vector2f(0.0f, 0.0f), laserColor);
+                        Vec3 calculatedPos2_1 = posB.yRot(i * perAngle).      xRot(right_angle+angle2.x).yRot(angle2.y).add(_pos2);
+                        Vec3 calculatedPos2_2 = posB.yRot((i + 1) * perAngle).xRot(right_angle+angle2.x).yRot(angle2.y).add(_pos2);
 
                         lastNodePos_1[i] = calculatedPos2_1;
                         lastNodePos_2[i] = calculatedPos2_2;
 
+                        Vec3 posM = _pos1.lerp(_pos2,0.5D);
+
+
+                        //TODO there is a bug in curved laser rendering
+
+                        /*
+                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos1_1.toVector3f(), calculatedPos2_1.subtract(posM).toVector3f(), new Vector2f(0.0f, 0.0f), laserColor, coreColor2);
+                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos2_1.toVector3f(), calculatedPos2_1.subtract(posM).toVector3f(), new Vector2f(0.0f, 0.0f), laserColor, coreColor2);
+                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos2_2.toVector3f(), calculatedPos2_2.subtract(posM).toVector3f(), new Vector2f(0.0f, 0.0f), laserColor, coreColor2);
+                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos1_2.toVector3f(), calculatedPos2_2.subtract(posM).toVector3f(), new Vector2f(0.0f, 0.0f), laserColor, coreColor2);
+                        */
+
+
+                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos1_1.toVector3f(), calculatedPos1_1.subtract(_pos1).toVector3f(), new Vector2f(0.0f, 0.0f), laserColor, coreColor2);
+                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos2_1.toVector3f(), calculatedPos2_1.subtract(_pos2).toVector3f(), new Vector2f(0.0f, 0.0f), laserColor, coreColor2);
+                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos2_2.toVector3f(), calculatedPos2_2.subtract(_pos2).toVector3f(), new Vector2f(0.0f, 0.0f), laserColor, coreColor2);
+                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos1_2.toVector3f(), calculatedPos1_2.subtract(_pos1).toVector3f(), new Vector2f(0.0f, 0.0f), laserColor, coreColor2);
+
+
+                        /*
+                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos1_1.toVector3f(), new Vector2f(0.0f, 0.0f), laserColor);
+                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos2_1.toVector3f(), new Vector2f(0.0f, 0.0f), laserColor);
+                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos2_2.toVector3f(), new Vector2f(0.0f, 0.0f), laserColor);
+                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos1_2.toVector3f(), new Vector2f(0.0f, 0.0f), laserColor);
+                        */
+
                         //core render
-                        float nodeWidth3 = circle((float) (index) / (nodeList.size() - 1), coreLength);
-                        float nodeWidth4 = circle((float) (index + 1) / (nodeList.size() - 1), coreLength);
-                        Vec3 posA1 = new Vec3(nodeWidth3 * coreWidth, 0.0d, 0.0d);
-                        Vec3 posB2 = new Vec3(!(index >= nodeList.size() - 2) ? nodeWidth4 * coreWidth : 0.0f, 0.0d, 0.0d);
-                        if(lastNodePos_3[i] == null){
-                            lastNodePos_3[i] = posA.yRot(i * perAngle).xRot(angle1.x).yRot(angle1.y).add(pos1);
+
+                        if(true) {
+                            Vec3 posA1 = new Vec3(nodeWidth3 * coreWidth, 0.0d, 0.0d);
+                            Vec3 posB2 = new Vec3(!(index >= nodeList.size() - 2) ? nodeWidth4 * coreWidth : 0.0f, 0.0d, 0.0d);
+                            if (lastNodePos_3[i] == null) {
+                                lastNodePos_3[i] = posA1.yRot(i * perAngle).xRot(right_angle + angle1.x).yRot(angle1.y).add(_pos1);
+                            }
+
+                            if (lastNodePos_4[i] == null) {
+                                lastNodePos_4[i] = posA1.yRot((i + 1) * perAngle).xRot(right_angle + angle1.x).yRot(angle1.y).add(_pos1);
+                            }
+                            Vec3 calculatedPos3_1 = lastNodePos_3[i];
+                            Vec3 calculatedPos3_2 = lastNodePos_4[i];
+
+                            Vec3 calculatedPos4_1 = posB2.yRot(i * perAngle).xRot(right_angle + angle2.x).yRot(angle2.y).add(_pos2);
+                            Vec3 calculatedPos4_2 = posB2.yRot((i + 1) * perAngle).xRot(right_angle + angle2.x).yRot(angle2.y).add(_pos2);
+
+                            lastNodePos_3[i] = calculatedPos4_1;
+                            lastNodePos_4[i] = calculatedPos4_2;
+
+                            THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos3_1.toVector3f(), calculatedPos3_1.subtract(_pos1).toVector3f(), new Vector2f(0.0f, 0.0f), coreColor, GRAY);
+                            THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos4_1.toVector3f(), calculatedPos4_1.subtract(_pos2).toVector3f(), new Vector2f(0.0f, 0.0f), coreColor, GRAY);
+                            THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos4_2.toVector3f(), calculatedPos4_2.subtract(_pos2).toVector3f(), new Vector2f(0.0f, 0.0f), coreColor, GRAY);
+                            THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos3_2.toVector3f(), calculatedPos3_2.subtract(_pos1).toVector3f(), new Vector2f(0.0f, 0.0f), coreColor, GRAY);
+
+                            /*
+                            THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos3_1.toVector3f(), new Vector2f(0.0f, 0.0f), coreColor);
+                            THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos4_1.toVector3f(), new Vector2f(0.0f, 0.0f), coreColor);
+                            THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos4_2.toVector3f(), new Vector2f(0.0f, 0.0f), coreColor);
+                            THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos3_2.toVector3f(), new Vector2f(0.0f, 0.0f), coreColor);
+                            */
                         }
-
-                        if(lastNodePos_4[i] == null){
-                            lastNodePos_4[i] = posA.yRot((i + 1) * perAngle).xRot(angle1.x).yRot(angle1.y).add(pos1);
-                        }
-                        Vec3 calculatedPos3_1 = lastNodePos_3[i];
-                        Vec3 calculatedPos3_2 = lastNodePos_4[i];
-
-                        Vec3 calculatedPos4_1 = posB2.yRot(i * perAngle).xRot(angle2.x).yRot(angle2.y).add(pos2);
-                        Vec3 calculatedPos4_2 = posB2.yRot((i + 1) * perAngle).xRot(angle2.x).yRot(angle2.y).add(pos2);
-
-                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos3_1.toVector3f(), new Vector2f(0.0f, 0.0f), coreColor);
-                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos4_1.toVector3f(), new Vector2f(0.0f, 0.0f), coreColor);
-                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos4_2.toVector3f(), new Vector2f(0.0f, 0.0f), coreColor);
-                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos3_2.toVector3f(), new Vector2f(0.0f, 0.0f), coreColor);
-
-                        lastNodePos_3[i] = calculatedPos4_1;
-                        lastNodePos_4[i] = calculatedPos4_2;
                     }
                 }
             }

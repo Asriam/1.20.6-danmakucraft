@@ -1,6 +1,7 @@
-package com.adrian.thDanmakuCraft.util;
+package com.adrian.thDanmakuCraft.script.js;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.util.ResourceLoader;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 
@@ -17,10 +18,11 @@ public class JSLoader {
 
     public JSLoader(){
         this.resourceMap = ResourceLoader.loadAllResourcesInFolder(new ResourceLocation(THDanmakuCraftCore.MODID,"data/js"),"js");
-
+        THDanmakuCraftCore.LOGGER.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
         for (var resourceLocation:this.resourceMap.keySet()){
             try {
-                var resource = resourceMap.get(resourceLocation);
+                THDanmakuCraftCore.LOGGER.info("Loading JS: {}",resourceLocation);
+                Resource resource = resourceMap.get(resourceLocation);
                 resourceMap2.put(resourceLocation,ResourceLoader.readRescource(resource));
             } catch (Exception e) {
                 THDanmakuCraftCore.LOGGER.warn("Failed to read resource {}",resourceLocation,e);

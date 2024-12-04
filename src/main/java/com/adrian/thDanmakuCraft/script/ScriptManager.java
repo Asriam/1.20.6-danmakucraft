@@ -8,7 +8,7 @@ public abstract class ScriptManager {
     protected String script = "";
     protected boolean shouldExecuteScript = false;
 
-    ScriptManager(){
+    public ScriptManager(){
         this.disableScript();
     }
 

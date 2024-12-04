@@ -1,0 +1,2 @@
+
+core.info("ffasdasfhjasb fsadbfnnasgnfyadisufg ")

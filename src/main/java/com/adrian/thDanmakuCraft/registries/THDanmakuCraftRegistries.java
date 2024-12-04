@@ -11,7 +11,7 @@ public class THDanmakuCraftRegistries {
     public static final IForgeRegistry<THObjectType> THOBJECT_TYPE = active(Keys.THOBJECT_TYPE);
     public class Keys {
         /**
-         * com.asrian.thDanmakuCraft.event.newRegistry;
+         * com.adrian.thDanmakuCraft.event.newRegistry;
          */
         public static final ResourceKey<Registry<THObjectType>> THOBJECT_TYPE = key("th_object");
 
