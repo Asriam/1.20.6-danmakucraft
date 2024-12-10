@@ -23,7 +23,7 @@ public class RenderTargetManager {
     }
 
     public static RenderTarget createRenderTarget(String name, int width, int height){
-        return createRenderTarget(new ResourceLocation(THDanmakuCraftCore.MODID, name),width,height);
+        return createRenderTarget(new ResourceLocation(THDanmakuCraftCore.MOD_ID, name),width,height);
     }
 
     public static RenderTarget getRenderTarget(ResourceLocation name){
@@ -31,7 +31,7 @@ public class RenderTargetManager {
     }
 
     public static RenderTarget getRenderTarget(String name){
-        return getRenderTarget(new ResourceLocation(THDanmakuCraftCore.MODID,name));
+        return getRenderTarget(new ResourceLocation(THDanmakuCraftCore.MOD_ID,name));
     }
 
     public static void releaseRenderTarget(ResourceLocation name){

@@ -2,5 +2,5 @@ package com.adrian.thDanmakuCraft.util;
 
 public interface RunnableWithException{
 
-    void run(Exception excpetion);
+    void run(Exception exception);
 }

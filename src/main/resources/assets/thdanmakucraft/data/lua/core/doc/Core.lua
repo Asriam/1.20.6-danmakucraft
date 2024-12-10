@@ -8,14 +8,14 @@
 local core = {}
 
 ---@param path string
-function core:doFile(path) end
+function core.doFile(path) end
 
 ---@param object userdata
-function core:isValid(object) end
+---@return boolean
+function core.isValid(object) end
 
 ---@param msg string
----@see
-function core:info(msg) end
+function core.info(msg) end
 
 ---@param msg string
-function core:warn(msg) end
+function core.warn(msg) end

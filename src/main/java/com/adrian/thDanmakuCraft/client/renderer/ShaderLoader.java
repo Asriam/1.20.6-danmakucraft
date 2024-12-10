@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-@Mod.EventBusSubscriber(modid = THDanmakuCraftCore.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = THDanmakuCraftCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ShaderLoader {
 
     private static final ResourceManager resourceManager = THDanmakuCraftCore.RESOURCE_MANAGER;
@@ -29,9 +29,9 @@ public class ShaderLoader {
     }
 
     public static void registryShaders(){
-        registryShader(new ResourceLocation(THDanmakuCraftCore.MODID,"box_blur"), DefaultVertexFormat.POSITION);
-        DANMAKU_DEPTH_OUTLINE_SHADER = registryShader(new ResourceLocation(THDanmakuCraftCore.MODID,"rendertype_danmaku_depth_outline"), THRenderType.TEST_FORMAT);
-        registryShader(new ResourceLocation(THDanmakuCraftCore.MODID,"test_shader"), new VertexFormat(
+        registryShader(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"box_blur"), DefaultVertexFormat.POSITION);
+        DANMAKU_DEPTH_OUTLINE_SHADER = registryShader(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"rendertype_danmaku_depth_outline"), THRenderType.TEST_FORMAT);
+        registryShader(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"test_shader"), new VertexFormat(
                 ImmutableMap.<String, VertexFormatElement>builder()
                         .put("Position", DefaultVertexFormat.ELEMENT_POSITION)
                         .put("Color"   , DefaultVertexFormat.ELEMENT_COLOR)

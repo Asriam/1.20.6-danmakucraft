@@ -17,11 +17,11 @@ public class LuaLoader {
     private final Map<ResourceLocation,String>   resourceMap2 = new HashMap<>();
 
     public LuaLoader(){
-        this.resourceMap = ResourceLoader.loadAllResourcesInFolder(new ResourceLocation(THDanmakuCraftCore.MODID,"data/lua"),"lua");
+        this.resourceMap = ResourceLoader.loadAllResourcesInFolder(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"data/lua"),"lua");
         this.resourceMap.forEach(((resourceLocation, resource) -> {
             try {
                 THDanmakuCraftCore.LOGGER.info("Loading resource {}",resourceLocation);
-                resourceMap2.put(resourceLocation,ResourceLoader.readRescource(resource));
+                resourceMap2.put(resourceLocation,ResourceLoader.readResource(resource));
             } catch (Exception e) {
                 THDanmakuCraftCore.LOGGER.warn("Failed to load resource {}",resourceLocation,e);
             }

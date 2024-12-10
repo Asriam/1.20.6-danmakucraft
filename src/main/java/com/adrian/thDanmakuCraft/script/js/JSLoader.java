@@ -17,13 +17,13 @@ public class JSLoader {
     private final Map<ResourceLocation,String>   resourceMap2 = new HashMap<>();
 
     public JSLoader(){
-        this.resourceMap = ResourceLoader.loadAllResourcesInFolder(new ResourceLocation(THDanmakuCraftCore.MODID,"data/js"),"js");
+        this.resourceMap = ResourceLoader.loadAllResourcesInFolder(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"data/js"),"js");
         THDanmakuCraftCore.LOGGER.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
         for (var resourceLocation:this.resourceMap.keySet()){
             try {
                 THDanmakuCraftCore.LOGGER.info("Loading JS: {}",resourceLocation);
                 Resource resource = resourceMap.get(resourceLocation);
-                resourceMap2.put(resourceLocation,ResourceLoader.readRescource(resource));
+                resourceMap2.put(resourceLocation,ResourceLoader.readResource(resource));
             } catch (Exception e) {
                 THDanmakuCraftCore.LOGGER.warn("Failed to read resource {}",resourceLocation,e);
             }

@@ -36,7 +36,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
     protected final RandomSource random;
     private final Level level;
     private EntityTHObjectContainer container;
-    public static final ResourceLocation TEXTURE_WHITE = new ResourceLocation(THDanmakuCraftCore.MODID, "textures/white.png");
+    public static final ResourceLocation TEXTURE_WHITE = new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/white.png");
     protected ResourceLocation TEXTURE = TEXTURE_WHITE;
     protected static final AABB INITIAL_AABB = new AABB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
     protected AABB bb = INITIAL_AABB;
@@ -97,7 +97,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
     }
 
     public THObject shoot(float speed, Vec3 vectorRotation) {
-        this.setVelocity(speed,vectorRotation,true);
+        this.setVelocityFromDirection(speed,vectorRotation,true);
         this.spawn();
         return this;
     }
@@ -109,7 +109,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
     }
 
     public THObject shoot(float speed, Vec2 rotation, boolean isDeg){
-        this.setVelocity(speed, rotation, isDeg,true);
+        this.setVelocityFromRotation(speed, rotation, isDeg,true);
         this.spawn();
         return this;
     }
@@ -159,12 +159,12 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         }
     }
 
-    public void setVelocity(float speed, Vec3 direction, boolean setRotation) {
+    public void setVelocityFromDirection(float speed, Vec3 direction, boolean setRotation) {
         this.setVelocity(direction.normalize().multiply(speed,speed,speed),setRotation);
     }
 
-    public void setVelocity(float speed, Vec2 rotation, boolean isDeg, boolean setRotation) {
-        this.setVelocity(speed, Vec3.directionFromRotation(isDeg ? rotation : rotation.scale(Mth.RAD_TO_DEG)), false);
+    public void setVelocityFromRotation(float speed, Vec2 rotation, boolean isDeg, boolean setRotation) {
+        this.setVelocityFromDirection(speed, Vec3.directionFromRotation(isDeg ? rotation : rotation.scale(Mth.RAD_TO_DEG)), false);
 
         if (setRotation){
             this.setRotation(isDeg? rotation.scale(Mth.DEG_TO_RAD) : rotation);
@@ -175,12 +175,12 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         this.acceleration = acceleration;
     }
 
-    public void setAcceleration(float acceleration, Vec3 direction){
+    public void setAccelerationFromDirection(float acceleration, Vec3 direction){
         this.setAcceleration(direction.normalize().multiply(acceleration,acceleration,acceleration));
     }
 
-    public void setAcceleration(float acceleration, Vec2 rotation){
-
+    public void setAccelerationFromRotation(float acceleration, Vec2 rotation, boolean isDeg){
+        this.setAccelerationFromDirection(acceleration, Vec3.directionFromRotation(isDeg ? rotation : rotation.scale(Mth.RAD_TO_DEG)));
     }
 
     public void setRotation(float xRot,float yRot,float zRot) {
@@ -508,6 +508,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         buffer.writeEnum(this.blend);
         buffer.writeBoolean(this.isDead);
         buffer.writeBoolean(this.colli);
+        buffer.writeEnum(this.collisionType);
         //buffer.writeBoolean(this.bound);
         buffer.writeBoolean(this.shouldSave);
         this.scriptManager.writeData(buffer);
@@ -538,6 +539,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         this.blend = buffer.readEnum(THRenderType.BLEND.class);
         this.isDead = buffer.readBoolean();
         this.colli = buffer.readBoolean();
+        this.collisionType = buffer.readEnum(THObject.CollisionType.class);
         //this.bound = buffer.readBoolean();
         this.shouldSave = buffer.readBoolean();
         this.scriptManager.readData(buffer);
@@ -560,6 +562,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         tag.putInt("Blend",this.blend.ordinal());
         tag.putBoolean("IsDead", this.isDead);
         tag.putBoolean("Collision",this.colli);
+        tag.putInt("CollisionType",this.collisionType.ordinal());
         this.scriptManager.save(tag);
         return tag;
     }
@@ -588,6 +591,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         this.blend = THRenderType.BLEND.class.getEnumConstants()[tag.getInt("Blend")];
         this.isDead = tag.getBoolean("IsDead");
         this.colli = tag.getBoolean("Collision");
+        this.collisionType = THObject.CollisionType.class.getEnumConstants()[tag.getInt("CollisionType")];
         this.scriptManager.load(tag);
     }
 
@@ -607,14 +611,6 @@ public class THObject implements IScript, IScriptTHObjectAPI {
 
         d0 *= distance;
         return sqrDist < d0 * d0;
-    }
-
-    public class renderer{
-        private final THObject object;
-
-        public renderer(THObject object) {
-            this.object = object;
-        }
     }
 
     @OnlyIn(value = Dist.CLIENT)
@@ -716,10 +712,12 @@ public class THObject implements IScript, IScriptTHObjectAPI {
     public static class Color{
         public int r,g,b,a;
 
+        /*
         private static final Color WHITE =   new Color(255,255,255,255);
         private static final Color GRAY =    new Color(255,255,255,255).multiply(0.5f);
         private static final Color BLACK =   new Color(0,0,0,255);
         private static final Color VOID =    new Color(0,0,0,0);
+        */
 
         public static Color WHITE(){
             return new Color(255,255,255,255);

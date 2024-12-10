@@ -1,7 +1,6 @@
 package com.adrian.thDanmakuCraft.client.renderer.entity;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
-import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
 import com.adrian.thDanmakuCraft.events.RenderEvents;
 import com.adrian.thDanmakuCraft.client.renderer.ShaderLoader;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.laser.THCurvedLaser;
@@ -55,7 +54,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
     }
 
     public void applyShader(){
-        ShaderInstance customShader = ShaderLoader.getShader(new ResourceLocation(THDanmakuCraftCore.MODID,"box_blur"));
+        ShaderInstance customShader = ShaderLoader.getShader(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"box_blur"));
         if (customShader != null) {
             RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
             RenderTarget inTarget = testRenderTarget;

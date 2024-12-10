@@ -21,11 +21,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 // The value here should match an entry in the META-INF/mods.toml file
-@Mod(THDanmakuCraftCore.MODID)
+@Mod(THDanmakuCraftCore.MOD_ID)
 public class THDanmakuCraftCore
 {
     // Define mod id in a common place for everything to reference
-    public static final String MODID = "thdanmakucraft";
+    public static final String MOD_ID = "thdanmakucraft";
     // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
     //public static JSLoader JSLOADER;
@@ -50,7 +50,7 @@ public class THDanmakuCraftCore
         LuaCore.init();
     }
 
-    public static Map<String,Runnable> onServerStartingTask = new HashMap();
+    public static Map<String,Runnable> onServerStartingTask = new HashMap<>();
 
     @SubscribeEvent
     public void onServerStarting(final ServerStartingEvent event) {

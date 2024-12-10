@@ -190,7 +190,7 @@ public class THObjectRenderHelper {
                 Vector3f scaleF          = scale.toVector3f();
                 Vector3f offsetPositionF = offsetPosition.toVector3f();
 
-                /*
+
                 Vector3f vertex = new Vector3f(x1*sin1,cos1,z1*sin1).mul(scaleF).add(offsetPositionF);
                 consumer.vertex(pose.pose(),vertex.x,vertex.y,vertex.z)
                         .color(startColor.r, startColor.g, startColor.b, startColor.a)
@@ -226,46 +226,6 @@ public class THObjectRenderHelper {
                         .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(overlay)
                         .normal(pose, vertex.x, vertex.y, vertex.z)
                         .endVertex();
-
-                /*
-                renderTexture(consumer, pose, p_254296_,
-                        new Vector3f(x1*sin1,cos1,z1*sin1).mul(scaleF).add(offsetPositionF),
-                        new Vector2f(uvStart.x, uvStart.y),startColor,coreColor,
-
-                        new Vector3f(x2*sin1,cos1,z2*sin1).mul(scaleF).add(offsetPositionF),
-                        new Vector2f(uvEnd.x,   uvStart.y),startColor,coreColor,
-
-                        new Vector3f(x2*sin2,cos2,z2*sin2).mul(scaleF).add(offsetPositionF),
-                        new Vector2f(uvEnd.x,   uvEnd.y),  finalColor,coreColor,
-
-                        new Vector3f(x1*sin2,cos2,z1*sin2).mul(scaleF).add(offsetPositionF),
-                        new Vector2f(uvStart.x, uvEnd.y),  finalColor,coreColor
-                );*/
-
-
-
-                /*
-                renderTexture(consumer, pose, p_254296_,
-                        new Vector3f((float) (x1*sin1*scale.x+offsetPosition.x),
-                                     (float) (cos1*scale.y+offsetPosition.y),
-                                     (float) (z1*sin1*scale.z+offsetPosition.z)),
-                        new Vector2f(uvStart.x, uvStart.y),startColor,
-
-                        new Vector3f((float) (x2*sin1*scale.x+offsetPosition.x),
-                                     (float) (cos1*scale.y+offsetPosition.y),
-                                     (float) (z2*sin1*scale.z+offsetPosition.z)),
-                        new Vector2f(uvEnd.x,   uvStart.y),startColor,
-
-                        new Vector3f((float) (x2*sin2*scale.x+offsetPosition.x),
-                                     (float) (cos2*scale.y+offsetPosition.y),
-                                     (float) (z2*sin2*scale.z+offsetPosition.z)),
-                        new Vector2f(uvEnd.x,   uvEnd.y),  color1,
-
-                        new Vector3f((float) (x1*sin2*scale.x+offsetPosition.x),
-                                     (float) (cos2*scale.y+offsetPosition.y),
-                                     (float) (z1*sin2*scale.z+offsetPosition.z)),
-                        new Vector2f(uvStart.x, uvEnd.y),  color1
-                );*/
 
                 startColor = finalColor;
             }

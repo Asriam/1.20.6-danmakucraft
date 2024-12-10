@@ -17,7 +17,7 @@ import javax.script.ScriptException;
 public class JSCore {
     private static JSCore JAVASCRIPT;
 
-    public static final String ENGINE_NAME = new ResourceLocation(THDanmakuCraftCore.MODID,"js").toString();
+    public static final String ENGINE_NAME = new ResourceLocation(THDanmakuCraftCore.MOD_ID,"js").toString();
     private final ScriptEngine scriptEngine;
 
     public JSCore() {
@@ -38,7 +38,7 @@ public class JSCore {
 
     public void loadScript(String path){
         try {
-            String script = JSLoader.getResourceAsString(new ResourceLocation(THDanmakuCraftCore.MODID,"data/js/"+path));
+            String script = JSLoader.getResourceAsString(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"data/js/"+path));
             this.scriptEngine.eval(script);
         } catch (ScriptException e) {
             e.printStackTrace();

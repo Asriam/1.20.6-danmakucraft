@@ -17,8 +17,8 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
 public class EntityExampleRenderer extends EntityRenderer<EntityExample> {
-    private static final ResourceLocation TEXTURE_LOCATION = new ResourceLocation(THDanmakuCraftCore.MODID,"textures/danmaku/ball_mid.png");
-    private static final ResourceLocation TEXTURE_LOCATION2 = new ResourceLocation(THDanmakuCraftCore.MODID,"textures/danmaku/arrow_big.png");
+    private static final ResourceLocation TEXTURE_LOCATION = new ResourceLocation(THDanmakuCraftCore.MOD_ID,"textures/danmaku/ball_mid.png");
+    private static final ResourceLocation TEXTURE_LOCATION2 = new ResourceLocation(THDanmakuCraftCore.MOD_ID,"textures/danmaku/arrow_big.png");
     //private static final ResourceLocation TEXTURE_LOCATION = new ResourceLocation("textures/entity/fishing_hook.png");
     private static final RenderType RENDER_TYPE = RenderType.entityCutout(TEXTURE_LOCATION);
 

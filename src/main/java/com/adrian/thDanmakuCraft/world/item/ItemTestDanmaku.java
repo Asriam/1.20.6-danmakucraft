@@ -30,14 +30,25 @@ public class ItemTestDanmaku extends Item {
 
         container.task.add(()->{
             THDanmakuCraftCore.LOGGER.info("fffffffffffff");
+        });
 
-        },1);
+        container.task.wait(10);
+
+        container.task.add(()->{
+            THDanmakuCraftCore.LOGGER.info("fffffffffffff2");
+        });
+
+        container.task.wait(10);
+
+        container.task.add(()->{
+            THDanmakuCraftCore.LOGGER.info("fffffffffffff3");
+        });
 
         String script = "";
         try {
             //script = ResourceLoader.readRescource(JSLoader.getResource(new ResourceLocation(THDanmakuCraftCore.MODID,"data/js/api/testLaserScript.js")));
             //script = JSLoader.getResourceAsString(new ResourceLocation(THDanmakuCraftCore.MODID,"testLaserScript.js"));
-            script = JSLoader.getResourceAsString(new ResourceLocation(THDanmakuCraftCore.MODID,"data/js/test.js"));
+            script = JSLoader.getResourceAsString(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"data/js/test.js"));
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -492,6 +492,7 @@ public class THCurvedLaser extends THObject {
         public void readData(FriendlyByteBuf byteBuf){
             this.position = byteBuf.readVec3();
             this.lastPosition = byteBuf.readVec3();
+            this.setBoundingBox(this.position,this.size);
         }
 
         public CompoundTag save(CompoundTag tag){
@@ -505,6 +506,7 @@ public class THCurvedLaser extends THObject {
             ListTag LastPosTag = tag.getList("LastPos", Tag.TAG_DOUBLE);
             this.position = new Vec3(posTag.getDouble(0),posTag.getDouble(1),posTag.getDouble(2));
             this.lastPosition = new Vec3(LastPosTag.getDouble(0),LastPosTag.getDouble(1),LastPosTag.getDouble(2));
+            this.setBoundingBox(this.position,this.size);
         }
     }
 }

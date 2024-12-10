@@ -16,11 +16,12 @@ public interface IScriptTHObjectAPI {
     void setSize(Vec3 size);
 
     void setVelocity(Vec3 velocity, boolean setRotation);
-    void setVelocity(float speed, Vec3 direction, boolean setRotation);
-    void setVelocity(float speed, Vec2 rotation, boolean isDeg, boolean setRotation);
+    void setVelocityFromDirection(float speed, Vec3 direction, boolean setRotation);
+    void setVelocityFromRotation(float speed, Vec2 rotation, boolean isDeg, boolean setRotation);
 
-    public void setAcceleration(Vec3 acceleration);
-    public void setAcceleration(float acceleration, Vec3 direction);
+    void setAcceleration(Vec3 acceleration);
+    void setAccelerationFromDirection(float acceleration, Vec3 direction);
+    void setAccelerationFromRotation(float acceleration, Vec2 rotation, boolean isDeg);
 
     void setColor(int r, int g, int b, int a);
     THObject.Color getColor();

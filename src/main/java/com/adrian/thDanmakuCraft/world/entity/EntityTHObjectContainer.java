@@ -42,17 +42,18 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     protected int timer = 0;
     public AABB aabb = new AABB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
     public AABB bound = new AABB(-60.0D,-60.0D,-60.0D,60.0D,60.0D,60.0D);
-    public boolean positionBinding = false;
+    public boolean bindingToUserPosition = false;
     public boolean autoRemove = true;
     public int autoRemoveLife = 60;
-    public final THTask task = new THTask();
+    public final THTasker task = new THTasker();
     public final RandomSource random = RandomSource.create();
-    private List<Entity> entitiesInBound = new ArrayList<>();
+    private List<Entity> entitiesInBound;
 
     public EntityTHObjectContainer(EntityType<? extends EntityTHObjectContainer> type, Level level) {
         super(type, level);
         this.objectManager = new THObjectManager(this);
         this.scriptManager = new JSManager();
+        this.entitiesInBound = new ArrayList<>();
         this.noCulling = true;
     }
 
@@ -103,8 +104,8 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     @Override
     public void tick() {
         super.tick();
-        this.task.tick();
-        if(this.positionBinding && this.user != null){
+        this.task.resume();
+        if(this.bindingToUserPosition && this.user != null){
             this.setPos(this.user.position());
         }
         this.setBound(this.position(),this.bound);
@@ -126,7 +127,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
             }
         }
 
-        if(/*(this.timer+2)%1==0 &&*/ true) {
+        if(/*(this.timer+2)%1==0 &&*/ false) {
             Vec3 pos = this.position();
             Vec3 rotation = Vec3.directionFromRotation(0.0f,0.0f);
             Vec2 rotate = new Vec2(Mth.DEG_TO_RAD*((float) Math.pow(this.timer*0.1f,2)+360.0f/5),-Mth.DEG_TO_RAD*((float) Math.pow(this.timer*0.08f,2)+360.0f/5));
@@ -138,7 +139,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
                     angle
             );
 
-            danmaku.setAcceleration(0.02f,angle);
+            danmaku.setAccelerationFromDirection(0.02f,angle);
             danmaku.setLifetime(120);
 
             //danmaku.getScriptManager().enableScript();
@@ -153,7 +154,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
                             0.2f,
                             angle3
                     );
-                    danmaku2.setAcceleration(0.02f, angle3);
+                    danmaku2.setAccelerationFromDirection(0.02f, angle3);
                     danmaku2.setLifetime(120);
                     //danmaku2.setBlend(THRenderType.BLEND.NONE);
                 }
@@ -165,7 +166,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
                     0.2f,
                     angle3
             );
-            danmaku3.setAcceleration(0.02f, angle3);
+            danmaku3.setAccelerationFromDirection(0.02f, angle3);
             danmaku3.setLifetime(120);
         }
 
@@ -284,7 +285,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
         buffer.writeVarInt(this.target != null ? this.target.getId() : 0);
         buffer.writeInt(this.maxObjectAmount);
         buffer.writeInt(this.timer);
-        buffer.writeBoolean(this.positionBinding);
+        buffer.writeBoolean(this.bindingToUserPosition);
         this.objectManager.writeData(buffer);
         this.scriptManager.writeData(buffer);
     }
@@ -297,16 +298,16 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
         this.setTarget(target);
         this.maxObjectAmount = additionalData.readInt();
         this.timer = additionalData.readInt();
-        this.positionBinding = additionalData.readBoolean();
+        this.bindingToUserPosition = additionalData.readBoolean();
         this.objectManager.readData(additionalData);
         this.scriptManager.readData(additionalData);
     }
 
     @Override
-    protected void addAdditionalSaveData(@NotNull CompoundTag compoundTag) {
+    protected void addAdditionalSaveData(CompoundTag compoundTag) {
         compoundTag.putInt("Timer",this.timer);
         compoundTag.putInt("MaxObjectAmount",this.maxObjectAmount);
-        compoundTag.putBoolean("PositionBinding",this.positionBinding);
+        compoundTag.putBoolean("PositionBinding",this.bindingToUserPosition);
         compoundTag.put("object_storage", this.objectManager.save());
         compoundTag.put("script",this.scriptManager.save(new CompoundTag()));
         String user = this.user != null ? this.user.getUUID().toString() : "";
@@ -319,13 +320,13 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     protected void readAdditionalSaveData(CompoundTag compoundTag) {
         this.timer = compoundTag.getInt("Timer");
         this.maxObjectAmount = compoundTag.getInt("MaxObjectAmount");
-        this.positionBinding = compoundTag.getBoolean("PositionBinding");
+        this.bindingToUserPosition = compoundTag.getBoolean("PositionBinding");
         this.objectManager.load(compoundTag.getCompound("object_storage"));
         this.scriptManager.load(compoundTag.getCompound("script"));
         String userUUID = compoundTag.getString("UserUUID");
         String targetUUID = compoundTag.getString("TargetUUID");
-        this.userUUID = !userUUID.equals("") ? UUID.fromString(userUUID) : null;
-        this.targetUUID = !targetUUID.equals("") ? UUID.fromString(targetUUID) : null;
+        this.userUUID = !userUUID.isEmpty() ? UUID.fromString(userUUID) : null;
+        this.targetUUID = !targetUUID.isEmpty() ? UUID.fromString(targetUUID) : null;
     }
 
     @Override
@@ -333,20 +334,39 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
         return this.scriptManager;
     }
 
+    
+    /**
+     * The THObjectManager class is responsible for managing the collection of THObjects associated with the EntityTHObjectContainer.
+     * It provides methods to add, remove, sort, and manipulate these objects within the collection.
+     */
     public static class THObjectManager{
 
         private final MultiMap<THObject> storage;
         private final EntityTHObjectContainer container;
 
+        /**
+         * Constructs a THObjectManager associated with a specific EntityTHObjectContainer.
+         * 
+         * @param container The entity container that holds the THObjects.
+         */
         public THObjectManager(EntityTHObjectContainer container) {
             this.container = container;
             this.storage = new MultiMap<>(THObject.class);
         }
 
+        /**
+         * Clears all THObjects from the storage.
+         */
         public void clearStorage(){
             this.storage.clear();
         }
 
+        /**
+         * Adds a single THObject to the storage.
+         * If the storage exceeds its maximum capacity, the object is not added.
+         *
+         * @param object The THObject to be added.
+         */
         public void addTHObject(THObject object){
             if(this.storage.size() >= this.container.maxObjectAmount){
                 //THDanmakuCraftCore.LOGGER.warn("{}'s object pool is full! {} (Max is {})",this.container,this.storage.size(),this.container.getMaxObjectAmount());
@@ -355,57 +375,124 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
             this.storage.add(object);
         }
 
+        /**
+         * Adds a list of THObjects to the storage.
+         *
+         * @param objects The list of THObjects to be added.
+         */
         public void addTHObjects(List<THObject> objects){
             this.storage.addAll(objects);
         }
 
+        /**
+         * Removes a specified THObject from the storage.
+         *
+         * @param object The THObject to be removed.
+         */
         public void removeTHObject(THObject object){
             this.storage.remove(object);
         }
 
+        /**
+         * Sorts the THObjects in the storage based on the provided comparator.
+         *
+         * @param comparator The comparator used to define the order of the objects.
+         */
         public void sortTHObjects(Comparator<THObject> comparator){
             this.storage.sort(comparator);
         }
 
+        /**
+         * Removes a THObject at a specified index from the storage.
+         *
+         * @param index The index of the THObject to be removed.
+         */
         public void removeTHObject(int index){
             this.storage.remove(this.getTHObject(index));
         }
 
+        /**
+         * Retrieves a THObject from the storage at a specific index.
+         *
+         * @param index The index of the THObject to retrieve.
+         * @return The THObject at the specified index.
+         */
         public THObject getTHObject(int index){
             return this.getTHObjects().get(index);
         }
 
+        /**
+         * Retrieves a list of all THObjects contained in the storage.
+         *
+         * @return The list of THObjects.
+         */
         public List<THObject> getTHObjects(){
             return this.storage.getAllInstances();
         }
 
+        /**
+         * Retrieves a list of THObjects intended for rendering.
+         *
+         * @return The list of THObjects for rendering.
+         */
         public List<THObject> getTHObjectsForRender(){
             List<THObject> list = new ArrayList<>();
             list.addAll(this.getTHObjects());
             return list;
         }
 
+        /**
+         * Clears the current storage and replaces it with a new list of THObjects.
+         *
+         * @param objects The list of new THObjects to store.
+         */
         public void recreate(List<THObject> objects){
             this.clearStorage();
             this.addTHObjects(objects);
         }
 
+        /**
+         * Checks if the storage contains a specific THObject.
+         *
+         * @param object The THObject to check for.
+         * @return True if the object is present in the storage, otherwise false.
+         */
         public boolean contains(THObject object){
             return this.storage.contains(object);
         }
 
+        /**
+         * Determines whether the storage is empty.
+         *
+         * @return True if the storage is empty, otherwise false.
+         */
         public boolean isEmpty(){
             return this.storage.isEmpty();
         }
 
+        /**
+         * Saves the current list of THObjects to a CompoundTag for persistence.
+         *
+         * @return A CompoundTag representing the saved state of the THObjects.
+         */
         public CompoundTag save(){
             return THObjectListToTag(this.getTHObjects());
         }
 
+        /**
+         * Loads a list of THObjects from a CompoundTag, replacing the current storage.
+         *
+         * @param tag The CompoundTag containing the THObjects to load.
+         */
         public void load(CompoundTag tag){
             this.recreate(TagToTHObjectList(tag,this.container));
         }
 
+        /**
+         * Writes the details of all THObjects into a FriendlyByteBuf for network transmission.
+         *
+         * @param buffer The buffer where the THObject data is written.
+         */
         public void writeData(FriendlyByteBuf buffer){
             List<THObject> objects = this.getTHObjects();
             buffer.writeInt(objects.size());
@@ -416,6 +503,11 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
             }
         }
 
+        /**
+         * Reads THObject data from a FriendlyByteBuf and reconstructs the THObjects in storage.
+         *
+         * @param buffer The buffer containing the serialized THObject data.
+         */
         public void readData(FriendlyByteBuf buffer){
             int listSize = buffer.readInt();
             List<THObject> objects = Lists.newArrayList();
@@ -429,6 +521,12 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
             this.recreate(objects);
         }
 
+        /**
+         * Converts a list of THObjects into a CompoundTag for saving to disk.
+         *
+         * @param objects The list of THObjects to convert.
+         * @return A CompoundTag that represents the list of THObjects.
+         */
         public static CompoundTag THObjectListToTag(List<THObject> objects){
             CompoundTag tag = new CompoundTag();
             int index = 0;
@@ -443,6 +541,13 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
             return tag;
         }
 
+        /**
+         * Converts a CompoundTag back into a list of THObjects.
+         *
+         * @param tag       The CompoundTag to convert.
+         * @param container The EntityTHObjectContainer to which the THObjects belong.
+         * @return A list of THObjects reconstructed from the CompoundTag.
+         */
         public static List<THObject> TagToTHObjectList(CompoundTag tag, EntityTHObjectContainer container){
             int list_size = tag.getAllKeys().size();
             List<THObject> objectList = Lists.newArrayList();

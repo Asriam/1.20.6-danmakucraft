@@ -139,8 +139,8 @@ public class THBullet extends THObject {
         }
     }
 
-    public static final ResourceLocation TEXTURE_BALL_MID = new ResourceLocation(THDanmakuCraftCore.MODID, "textures/danmaku/ball_mid.png");
-    public static final ResourceLocation TEXTURE_ARROW_BIG = new ResourceLocation(THDanmakuCraftCore.MODID, "textures/danmaku/arrow_big.png");
+    public static final ResourceLocation TEXTURE_BALL_MID = new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/danmaku/ball_mid.png");
+    public static final ResourceLocation TEXTURE_ARROW_BIG = new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/danmaku/arrow_big.png");
     private static final Vec3 DEFAULT_SIZE = new Vec3(0.5f,0.5f,0.5f);
     public enum BULLET_STYLE {
         arrow_big(TEXTURE_ARROW_BIG,new Vec3(0.15f,0.15f,0.15f),false, THBulletRenderer.BulletRenderers::arrow_big),

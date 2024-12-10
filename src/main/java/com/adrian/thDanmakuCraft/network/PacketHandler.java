@@ -10,7 +10,7 @@ import net.minecraftforge.network.SimpleChannel;
 public class PacketHandler {
     private static final int PROTOCOL_VERSION = 1;
     public static final SimpleChannel INSTANCE = ChannelBuilder.named(
-            new ResourceLocation(THDanmakuCraftCore.MODID, "main"))
+            new ResourceLocation(THDanmakuCraftCore.MOD_ID, "main"))
             .serverAcceptedVersions((status, version) -> true)
             .clientAcceptedVersions((status, version) -> true)
             .networkProtocolVersion(PROTOCOL_VERSION)
