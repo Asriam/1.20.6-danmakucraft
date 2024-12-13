@@ -18,7 +18,6 @@ public class JSLoader {
 
     public JSLoader(){
         this.resourceMap = ResourceLoader.loadAllResourcesInFolder(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"data/js"),"js");
-        THDanmakuCraftCore.LOGGER.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
         for (var resourceLocation:this.resourceMap.keySet()){
             try {
                 THDanmakuCraftCore.LOGGER.info("Loading JS: {}",resourceLocation);

@@ -1,6 +1,7 @@
-package com.adrian.thDanmakuCraft.client.renderer;
+package com.adrian.thDanmakuCraft.client.renderer.danmaku;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.client.renderer.THObjectRenderHelper;
+import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
 import com.adrian.thDanmakuCraft.client.renderer.entity.EntityTHObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.THBullet;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.THObject;
@@ -8,15 +9,13 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.ShaderInstance;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
-public class THBulletRenderer {
+public class THBulletRenderers {
     public static void render2DBullet(EntityTHObjectContainerRenderer renderer, THBullet bullet, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, int p_114710_) {
         //poseStack.mulPose(renderer.dispatcher.cameraOrientation());
         //poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
@@ -30,7 +29,7 @@ public class THBulletRenderer {
                 bullet.getColor());
     }
 
-    public static void render3DBullet(EntityTHObjectContainerRenderer renderer, THBullet bullet, THBulletRenderer.THBulletRenderFactory factory, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, int p_114710_) {
+    public static void render3DBullet(EntityTHObjectContainerRenderer renderer, THBullet bullet, THBulletRenderers.THBulletRenderFactory factory, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, int p_114710_) {
         THObject.Color indexColor = bullet.getBulletColor().getColor();
         THObject.Color color = THObject.Color(
                 bullet.color.r * indexColor.r/255,
@@ -48,7 +47,7 @@ public class THBulletRenderer {
             Vec3 scale = new Vec3(0.4f,0.8f,0.4f);
             Vec3 coreScale = scale.multiply(0.4f,0.4f,0.4f);
             PoseStack.Pose posestack_pose = poseStack.last();
-            Vec3 camPos = renderer.dispatcher.camera.getPosition();
+            Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
             THBullet.BULLET_QUALITY_LEVEL cull = THBullet.BULLET_QUALITY_LEVEL.getQualityLevel(bullet,camPos.x,camPos.y,camPos.z);
             int edgeA = cull.edgeANum;
             int edgeB = cull.edgeBNum;
@@ -77,14 +76,14 @@ public class THBulletRenderer {
                     offset.add(0.0f,0.4f,0.0f),
                     coreScale,
                     edgeA,edgeB,false,
-                    Vec2.ZERO,
+                    new Vec2(0.5f,0.4f),
                     Vec2.ONE,
                     coreColor.multiply(0.6f),0,THBullet.Color.WHITE().multiply(0.5f));
             THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,1.2f,
                     offset,
                     scale,
                     edgeA,edgeB,true,
-                    Vec2.ZERO,
+                    new Vec2(0.5f,0.6f),
                     Vec2.ONE,
                     color, 0,coreColor.multiply(0.4f));
 
@@ -95,7 +94,7 @@ public class THBulletRenderer {
             Vec3 scale = new Vec3(0.5f,0.5f,0.5f);
             //Vec3 coreScale = scale.multiply(0.6f,0.6f,0.6f);
             PoseStack.Pose posestack_pose = poseStack.last();
-            Vec3 camPos = renderer.dispatcher.camera.getPosition();
+            Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
             THBullet.BULLET_QUALITY_LEVEL cull = THBullet.BULLET_QUALITY_LEVEL.getQualityLevel(bullet,camPos.x,camPos.y,camPos.z);
             int edgeA = cull.edgeANum;
             int edgeB = cull.edgeBNum;
@@ -114,7 +113,7 @@ public class THBulletRenderer {
                     Vec3.ZERO,
                     scale,
                     edgeA,edgeB,false,
-                    Vec2.ZERO,
+                    new Vec2(0.5f,0.0f),
                     Vec2.ONE,
                     color,color,coreColor);
 
@@ -126,7 +125,7 @@ public class THBulletRenderer {
             Vec3 scale = new Vec3(0.8f, 0.8f, 0.8f);
             Vec3 coreScale = scale.multiply(0.8f, 0.8f, 0.8f);
             PoseStack.Pose posestack_pose = poseStack.last();
-            Vec3 camPos = renderer.dispatcher.camera.getPosition();
+            Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
             THBullet.BULLET_QUALITY_LEVEL cull = THBullet.BULLET_QUALITY_LEVEL.getQualityLevel(bullet, camPos.x, camPos.y, camPos.z);
             int edgeA = cull.edgeANum;
             int edgeB = cull.edgeBNum;
@@ -145,55 +144,9 @@ public class THBulletRenderer {
                     Vec3.ZERO,
                     scale,
                     edgeA, edgeB, false,
-                    Vec2.ZERO,
+                    new Vec2(0.7f,-0.1f),
                     Vec2.ONE,
                     color, color, coreColor);
-
-
-            /*
-            RenderTarget inTarget = Minecraft.getInstance().getMainRenderTarget();
-            int inSize[] = {inTarget.width, inTarget.height};
-            int outSize[] = {inTarget.width , inTarget.height};
-            ShaderInstance customShader = ShaderLoader.getShader(new ResourceLocation(THDanmakuCraftCore.MODID,"depth_outline"));
-            if(customShader != null) {
-
-                customShader.setSampler("Sampler0", inTarget.getColorTextureId());
-                customShader.setSampler("Sampler1", inTarget.getDepthTextureId());
-                customShader.safeGetUniform("ProjMat").set(RenderSystem.getProjectionMatrix());
-                customShader.safeGetUniform("ModelViewMat").set(RenderSystem.getModelViewMatrix());
-                customShader.safeGetUniform("InSize").set((float) inSize[0], (float) inSize[1]);
-                customShader.safeGetUniform("OutSize").set((float) outSize[0], (float) outSize[1]);
-                customShader.apply();
-
-                RenderSystem.enableBlend();
-                RenderSystem.blendFuncSeparate(
-                        GlStateManager.SourceFactor.SRC_ALPHA,
-                        GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
-                        GlStateManager.SourceFactor.ONE,
-                        GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
-                );
-                RenderSystem.depthFunc(515);
-
-                BufferBuilder bufferbuilder = RenderSystem.renderThreadTesselator().getBuilder();
-                bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_NORMAL);
-
-                THObjectRenderHelper.renderSphere(bufferbuilder, posestack_pose, p_254296_, 1,
-                        Vec3.ZERO,
-                        scale,
-                        edgeA, edgeB, false,
-                        Vec2.ZERO,
-                        Vec2.ONE,
-                        color.multiply(0.0f), color);
-
-                BufferUploader.draw(bufferbuilder.end());
-
-                customShader.clear();
-                RenderSystem.disableBlend();
-                RenderSystem.defaultBlendFunc();
-                RenderSystem.depthFunc(515);
-            }
-            */
-
         }
 
         public static void ellipse(EntityTHObjectContainerRenderer renderer, THBullet bullet, MultiBufferSource bufferSource, PoseStack poseStack, int p_254296_,float partialTicks,THObject.Color color,THObject.Color coreColor){
@@ -201,7 +154,7 @@ public class THBulletRenderer {
             Vec3 scale = new Vec3(0.5f,1.0f,0.5f);
             Vec3 coreScale = scale.multiply(0.7f,0.7f,0.7f);
             PoseStack.Pose posestack_pose = poseStack.last();
-            Vec3 camPos = renderer.dispatcher.camera.getPosition();
+            Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
             THBullet.BULLET_QUALITY_LEVEL cull = THBullet.BULLET_QUALITY_LEVEL.getQualityLevel(bullet,camPos.x,camPos.y,camPos.z);
             int edgeA = cull.edgeANum;
             int edgeB = cull.edgeBNum;
@@ -220,9 +173,9 @@ public class THBulletRenderer {
                     Vec3.ZERO,
                     scale,
                     edgeA,edgeB,false,
-                    Vec2.ZERO,
+                    new Vec2(0.8f,0.1f),
                     Vec2.ONE,
-                    color, 0, coreColor);
+                    color, color.multiply(0.8f), coreColor.multiply(0.9f));
         }
 
         public static void grain_a(EntityTHObjectContainerRenderer renderer, THBullet bullet, MultiBufferSource bufferSource, PoseStack poseStack, int p_254296_,float partialTicks,THObject.Color color,THObject.Color coreColor){
@@ -230,7 +183,7 @@ public class THBulletRenderer {
             Vec3 scale = new Vec3(0.2f,0.4f,0.2f);
             Vec3 coreScale = scale.multiply(0.6f,0.6f,0.6f);
             PoseStack.Pose posestack_pose = poseStack.last();
-            Vec3 camPos = renderer.dispatcher.camera.getPosition();
+            Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
             THBullet.BULLET_QUALITY_LEVEL cull = THBullet.BULLET_QUALITY_LEVEL.getQualityLevel(bullet,camPos.x,camPos.y,camPos.z);
             int edgeA = cull.edgeANum;
             int edgeB = cull.edgeBNum;
@@ -250,9 +203,9 @@ public class THBulletRenderer {
                     offset,
                     scale,
                     edgeA,edgeB,false,
-                    Vec2.ZERO,
+                    new Vec2(0.5f,0.0f),
                     Vec2.ONE,
-                    color, color.multiply(0.4f), coreColor);
+                    color, color.multiply(0.5f), coreColor);
         }
 
         public static void grain_b(EntityTHObjectContainerRenderer renderer, THBullet bullet, MultiBufferSource bufferSource, PoseStack poseStack, int p_254296_,float partialTicks,THObject.Color color,THObject.Color coreColor){
@@ -260,7 +213,7 @@ public class THBulletRenderer {
             Vec3 scale = new Vec3(0.25f,0.5f,0.25f);
             Vec3 coreScale = scale.multiply(0.6f,0.6f,0.6f);
             PoseStack.Pose posestack_pose = poseStack.last();
-            Vec3 camPos = renderer.dispatcher.camera.getPosition();
+            Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
             THBullet.BULLET_QUALITY_LEVEL cull = THBullet.BULLET_QUALITY_LEVEL.getQualityLevel(bullet,camPos.x,camPos.y,camPos.z);
             int edgeA = 4;
             int edgeB = 4;
@@ -280,14 +233,14 @@ public class THBulletRenderer {
                     Vec3.ZERO,
                     coreScale,
                     edgeA,edgeB,false,
-                    Vec2.ZERO,
+                    new Vec2(0.5f,0.0f),
                     Vec2.ONE,
                     coreColor, coreColor.multiply(0.5f), coreColor.multiply(0.5f));
             THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,2,
                     Vec3.ZERO,
                     scale,
                     edgeA,edgeB,false,
-                    Vec2.ZERO,
+                    new Vec2(0.5f,0.1f),
                     Vec2.ONE,
                     color, color.multiply(0.5f), coreColor.multiply(0.4f));
         }

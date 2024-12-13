@@ -1,7 +1,8 @@
 package com.adrian.thDanmakuCraft.client.renderer.entity;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
-import com.adrian.thDanmakuCraft.events.RenderEvents;
+import com.adrian.thDanmakuCraft.client.renderer.THObjectRenderHelper;
+import com.adrian.thDanmakuCraft.client.renderer.RenderEvents;
 import com.adrian.thDanmakuCraft.client.renderer.ShaderLoader;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.laser.THCurvedLaser;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
@@ -19,12 +20,14 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
-import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -32,7 +35,6 @@ import java.util.function.Predicate;
 @OnlyIn(Dist.CLIENT)
 public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObjectContainer> {
     public Frustum frustum;
-    public EntityRenderDispatcher dispatcher;
 
     private static final RenderTarget testRenderTarget = new TextureTarget(1000,1000,true,true);
     private static final RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
@@ -40,7 +42,6 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
 
     public EntityTHObjectContainerRenderer(EntityRendererProvider.Context context) {
         super(context);
-        this.dispatcher = this.entityRenderDispatcher;
 
         RenderEvents.registryRenderLevelStageTask("test_shader_clear", RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS, (poseStack, partialTick) -> {
             testRenderTarget.resize(mainRenderTarget.width , mainRenderTarget.height, false);
@@ -56,7 +57,6 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
     public void applyShader(){
         ShaderInstance customShader = ShaderLoader.getShader(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"box_blur"));
         if (customShader != null) {
-            RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
             RenderTarget inTarget = testRenderTarget;
             RenderTarget outTarget = mainRenderTarget;
             mainRenderTarget.unbindWrite();
@@ -72,7 +72,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
             customShader.safeGetUniform("InSize").set((float) inSize[0], (float) inSize[1]);
             customShader.safeGetUniform("OutSize").set((float) outSize[0], (float) outSize[1]);
             customShader.safeGetUniform("BlurDir").set(1.0f,1.0f);
-            customShader.safeGetUniform("Radius").set(1.0f);
+            customShader.safeGetUniform("Radius").set(0.0f);
             customShader.safeGetUniform("RadiusMultiplier").set(1.0f);
             customShader.apply();
             RenderSystem.enableBlend();
@@ -201,11 +201,35 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
 
     private static void renderTHObjectsHitBox(THObject object, PoseStack poseStack, VertexConsumer vertexConsumer) {
         AABB aabb = object.getBoundingBox().move(-object.getX(), -object.getY(), -object.getZ());
-        LevelRenderer.renderLineBox(poseStack, vertexConsumer, aabb, 0.0F, 1.0F, 1.0F, 1.0F);
+        if(object.getCollisionType() == THObject.CollisionType.AABB) {
+            LevelRenderer.renderLineBox(poseStack, vertexConsumer, aabb, 0.0F, 1.0F, 1.0F, 1.0F);
+        }else if(object.getCollisionType() == THObject.CollisionType.SPHERE){
+            THObject.Color color = THObject.Color(0,255,255,255);
+            THObjectRenderHelper.renderSphere(vertexConsumer,poseStack.last(), 0,1,
+                    Vec3.ZERO,
+                    new Vec3(object.getSize().x,object.getSize().x,object.getSize().x),
+                    6,6,false,
+                    Vec2.ZERO,
+                    Vec2.ONE,
+                    color,color,color);
+        }else if(object.getCollisionType() == THObject.CollisionType.ELLIPSOID){
+            poseStack.pushPose();
+            Vector3f rotation = object.getRotation();
+            poseStack.mulPose(new Quaternionf().rotationYXZ(rotation.y,-rotation.x,rotation.z));
+            THObject.Color color = THObject.Color(0,255,255,255);
+            THObjectRenderHelper.renderSphere(vertexConsumer,poseStack.last(), 0,1,
+                    Vec3.ZERO,
+                    object.getSize(),
+                    6,6,false,
+                    Vec2.ZERO,
+                    Vec2.ONE,
+                    color,color,color);
+            poseStack.popPose();
+        }
 
         Vec3 vec31 = object.getMotionDirection();
         Matrix4f matrix4f = poseStack.last().pose();
-        Matrix3f matrix3f = poseStack.last().normal();
+        //Matrix3f matrix3f = poseStack.last().normal();
         vertexConsumer.vertex(matrix4f, 0.0F, 0.0F, 0.0F).color(0, 0, 255, 255).normal(poseStack.last(), (float)vec31.x, (float)vec31.y, (float)vec31.z).endVertex();
         vertexConsumer.vertex(matrix4f, (float)(vec31.x * 2.0D), (float)((vec31.y * 2.0D)), (float)(vec31.z * 2.0D)).color(0, 0, 255, 255).normal(poseStack.last(), (float)vec31.x, (float)vec31.y, (float)vec31.z).endVertex();
     }
@@ -219,7 +243,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
                 aabb = new AABB(pos.x() - 2.0D, pos.y() - 2.0D, pos.z() - 2.0D, pos.x() + 2.0D, pos.y() + 2.0D, pos.z() + 2.0D);
             }
 
-            if (frustum.isVisible(aabb)) {
+            if (node.isValid() && frustum.isVisible(aabb)) {
                 poseStack.pushPose();
                 AABB aabb2 = node.getBoundingBox().move(-pos.x(), -pos.y(), -pos.z());
                 Vec3 offsetPos = laserPos.vectorTo(node.getOffsetPosition(partialTicks));
@@ -283,6 +307,10 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
 
             return frustum.isVisible(aabb);
         }
+    }
+
+    public EntityRenderDispatcher getRenderDispatcher(){
+        return this.entityRenderDispatcher;
     }
 
     @Override

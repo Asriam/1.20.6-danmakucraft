@@ -1,8 +1,7 @@
 package com.adrian.thDanmakuCraft.util;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -10,13 +9,12 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ResourceLoader {
 
-    private static final ResourceManager resourceManager = THDanmakuCraftCore.RESOURCE_MANAGER;
+    private static final ResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
 
     @Nullable
     public static String loadFileAsString(ResourceLocation resourceLocation) {
@@ -34,10 +32,6 @@ public class ResourceLoader {
 
     public static Resource loadResource(ResourceLocation resourceLocation) throws RuntimeException{
             return resourceManager.getResource(resourceLocation).orElseThrow(() -> new RuntimeException("Resource not found: " + resourceLocation));
-    }
-
-    public static List<Resource> loadRescourceStack(ResourceLocation resourceLocation){
-        return resourceManager.getResourceStack(resourceLocation);
     }
 
     public static Map<ResourceLocation,Resource> loadAllResourcesInFolder(ResourceLocation folderPath, String suffix){

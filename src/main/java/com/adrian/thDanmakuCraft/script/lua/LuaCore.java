@@ -29,7 +29,7 @@ public class LuaCore {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     private static LuaCore LUA = new LuaCore();
-    public final Globals GLOBALS;
+    private final Globals GLOBALS;
 
     public LuaCore() {
         GLOBALS = JsePlatform.standardGlobals();
@@ -38,7 +38,11 @@ public class LuaCore {
 
     public static void init(){
         LUA = new LuaCore();
-        core.doFile("main.lua");
+        //core.doFile("main.lua");
+        String path = "main.lua";
+        String script = LuaLoader.getResourceAsString(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"data/lua/"+path));
+        LuaValue value = LuaCore.getInstance().GLOBALS.load(script,path);
+        value.call().checkfunction().invoke();
     }
 
     public void putAPI(){
@@ -59,6 +63,10 @@ public class LuaCore {
     public void bindClass(String key, Class<?> Class) throws Exception {
         //this.GLOBALS.load(key + " = luajava.bindClass('"+Class.getName()+"');").call();
         this.GLOBALS.set(key, CoerceJavaToLua.coerce(Class));
+    }
+
+    public static Globals getGlobals(){
+        return LUA.GLOBALS;
     }
 
     public static LuaCore getInstance(){

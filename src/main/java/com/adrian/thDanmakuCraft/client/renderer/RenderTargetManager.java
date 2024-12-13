@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RenderTargetManager {
-    private static Map<ResourceLocation, RenderTarget> renderTargetMap = new HashMap();
+    private static final Map<ResourceLocation, RenderTarget> renderTargetMap = new HashMap<>();
 
     public static RenderTarget createRenderTarget(ResourceLocation name, int width, int height){
         RenderTarget renderTarget = renderTargetMap.get(name);

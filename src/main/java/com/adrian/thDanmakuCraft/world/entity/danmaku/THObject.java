@@ -8,6 +8,7 @@ import com.adrian.thDanmakuCraft.client.renderer.entity.EntityTHObjectContainerR
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.script.IScript;
 import com.adrian.thDanmakuCraft.script.ScriptManager;
+import com.adrian.thDanmakuCraft.util.CollisionHelper;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.adrian.thDanmakuCraft.script.js.JSManager;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -50,16 +51,16 @@ public class THObject implements IScript, IScriptTHObjectAPI {
     protected Vec3 size = new Vec3(0.5f, 0.5f, 0.5f);                  //Hitbox size
     protected Vector3f scale = new Vector3f(1.0f, 1.0f, 1.0f);                             //Render scale
     //public Vector3f rotation = new Vector3f(0.0f,0.0f,0.0f);                                   //Euler Angles
-    protected float damage = 1.0f;
     protected float xRot = 0.0f;
     protected float yRot = 0.0f;
     protected float zRot = 0.0f;
+    protected float damage = 1.0f;
     protected int timer = 0;
     protected int lifetime = 120;
-    private int deathLastsTime = 10;
+    private int deathLastingTime = 10;
     public boolean shouldSave = true;
     public boolean deathAnimation = true;
-    public boolean inWater;
+    public boolean spawnAnimation = true;
     public boolean colli = true;
     public boolean navi = false;
     //public boolean bound = true;
@@ -74,7 +75,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
 
     public Color color = Color(255,255,255,255);
     public THRenderType.BLEND blend = THRenderType.BLEND.LIGHTEN;
-    public CollisionType collisionType = CollisionType.AABB;
+    protected CollisionType collisionType = CollisionType.AABB;
 
     public THObject(THObjectType<? extends THObject> type,EntityTHObjectContainer container) {
         this.type = type;
@@ -126,6 +127,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
 
     public void setDead() {
         this.isDead = true;
+        //this.onDead();
     }
 
     public void remove() {
@@ -300,6 +302,14 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         return !this.isDead;
     }
 
+    public CollisionType getCollisionType(){
+        return this.collisionType;
+    }
+
+    public void setCollisionType(CollisionType type){
+        this.collisionType = type;
+    }
+
     public final void setBoundingBox(AABB boundingBox) {
         this.bb = boundingBox;
     }
@@ -395,19 +405,30 @@ public class THObject implements IScript, IScriptTHObjectAPI {
 
     public void collision(){
         List<Entity> entitiesInBound = this.container.getEntitiesInBound();
-
-        if (this.collisionType == CollisionType.AABB) {
-            List<Entity> collidedEntities = entitiesInBound.stream().filter(entity ->
-                    entity.getBoundingBox().intersects(this.getBoundingBox())
-            ).toList();
-            if (!collidedEntities.isEmpty()) {
-                collidedEntities.forEach(entity -> this.onHit(new EntityHitResult(entity, this.getPosition())));
-            }
-        }else if(this.collisionType == CollisionType.SPHERE){
-            // TODO sphere collision
-        }else if(this.collisionType == CollisionType.CUBOID){
-            // TODO cuboid collision
+        if(entitiesInBound.isEmpty()){
+            return;
         }
+
+        this.collisionType = CollisionType.ELLIPSOID;
+        //this.setSize(new Vec3(0.5f,0.5f,2.0f));
+
+        entitiesInBound.forEach(entity -> {
+            if (this.collisionType == CollisionType.AABB) {
+                if (entity.getBoundingBox().intersects(this.getBoundingBox())) {
+                    this.onHit(new EntityHitResult(entity, this.getPosition()));
+                }
+            } else if (this.collisionType == CollisionType.SPHERE) {
+                if(CollisionHelper.isCollidingSphereBox(this.getPosition(), this.size.x,entity.getBoundingBox())){
+                    this.onHit(new EntityHitResult(entity, this.getPosition()));
+                }
+            } else if (this.collisionType == CollisionType.ELLIPSOID) {
+                if(CollisionHelper.isCollidingOrientedEllipsoidBox(this.getPosition(), this.size, this.getRotation(),entity.getBoundingBox())){
+                    this.onHit(new EntityHitResult(entity, this.getPosition()));
+                }
+            } else if (this.collisionType == CollisionType.CUBOID) {
+                // TODO cuboid collision
+            }
+        });
 
         AABB aabb = this.getBoundingBox();
         HitResult hitresult = this.level.clip(new ClipContext(
@@ -418,7 +439,6 @@ public class THObject implements IScript, IScriptTHObjectAPI {
                 this.container));
         this.onHit(hitresult);
     }
-
 
     public void onHit(HitResult result) {
         HitResult.Type type = result.getType();
@@ -437,9 +457,8 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         if (type == HitResult.Type.BLOCK && result instanceof BlockHitResult blockHitResult) {
             this.onHitBlock(blockHitResult);
         }
+
         this.setDead();
-
-
     }
 
     public void onHitEntity(EntityHitResult result) {
@@ -456,10 +475,21 @@ public class THObject implements IScript, IScriptTHObjectAPI {
 
     public void onDead(){
         this.colli = false;
+        /*
+        THTasker tasker = this.container.taskerManager.create();
+        for(int i=0;i<10;i++) {
+            tasker.add(() -> {
+                this.color.a -= 255 / 10;
+            });
+            tasker.wait(1);
+        }
+        tasker.add(this::remove);
+        tasker.lock();
+         */
         this.setVelocity(Vec3.ZERO,false);
         if (this.deathAnimation) {
-            this.deathLastsTime--;
-            if (this.deathLastsTime <= 0) {
+            this.deathLastingTime--;
+            if (this.deathLastingTime <= 0) {
                 this.remove();
             }
             this.color.a -= 255/10;
@@ -504,7 +534,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         buffer.writeInt(c.a);
         buffer.writeInt(this.timer);
         buffer.writeInt(this.lifetime);
-        buffer.writeInt(this.deathLastsTime);
+        buffer.writeInt(this.deathLastingTime);
         buffer.writeEnum(this.blend);
         buffer.writeBoolean(this.isDead);
         buffer.writeBoolean(this.colli);
@@ -535,7 +565,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         this.color = Color(r,g,b,a);
         this.timer = buffer.readInt();
         this.lifetime = buffer.readInt();
-        this.deathLastsTime = buffer.readInt();
+        this.deathLastingTime = buffer.readInt();
         this.blend = buffer.readEnum(THRenderType.BLEND.class);
         this.isDead = buffer.readBoolean();
         this.colli = buffer.readBoolean();
@@ -543,7 +573,6 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         //this.bound = buffer.readBoolean();
         this.shouldSave = buffer.readBoolean();
         this.scriptManager.readData(buffer);
-
         this.setBoundingBox(this.getPosition(), this.size);
     }
 
@@ -558,7 +587,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         tag.put("Size", newVec3(this.size));
         Color c = this.color;
         tag.put("Color", newIntList(c.r,c.g,c.b,c.a));
-        tag.put("Timers", newIntList(this.timer,this.lifetime,this.deathLastsTime));
+        tag.put("Timers", newIntList(this.timer,this.lifetime,this.deathLastingTime));
         tag.putInt("Blend",this.blend.ordinal());
         tag.putBoolean("IsDead", this.isDead);
         tag.putBoolean("Collision",this.colli);
@@ -587,7 +616,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         this.setColor(colorTag.getInt(0),colorTag.getInt(1),colorTag.getInt(2),colorTag.getInt(3));
         this.timer = timerTag.getInt(0);
         this.lifetime = timerTag.getInt(1);
-        this.deathLastsTime = timerTag.getInt(2);
+        this.deathLastingTime = timerTag.getInt(2);
         this.blend = THRenderType.BLEND.class.getEnumConstants()[tag.getInt("Blend")];
         this.isDead = tag.getBoolean("IsDead");
         this.colli = tag.getBoolean("Collision");
@@ -621,7 +650,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
 
         poseStack.pushPose();
         if(this.faceCamera) {
-            poseStack.mulPose(renderer.dispatcher.cameraOrientation());
+            poseStack.mulPose(renderer.getRenderDispatcher().cameraOrientation());
             poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
         }else {
             poseStack.mulPose(new Quaternionf().rotationYXZ(this.yRot,this.xRot,this.zRot));
@@ -706,6 +735,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
     public enum CollisionType{
         AABB,
         SPHERE,
+        ELLIPSOID,
         CUBOID
     }
 

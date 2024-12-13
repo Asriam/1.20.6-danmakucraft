@@ -5,9 +5,11 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterShadersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -20,7 +22,7 @@ import java.util.Map;
 @Mod.EventBusSubscriber(modid = THDanmakuCraftCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ShaderLoader {
 
-    private static final ResourceManager resourceManager = THDanmakuCraftCore.RESOURCE_MANAGER;
+    //private static final ResourceManager RESOURCE_MANAGER = Minecraft.getInstance().getResourceManager();
     private static final Map<ResourceLocation,ShaderInstance> shaderMap = new HashMap<>();
 
     public static ShaderInstance DANMAKU_DEPTH_OUTLINE_SHADER;
@@ -28,10 +30,10 @@ public class ShaderLoader {
     public ShaderLoader() {
     }
 
-    public static void registryShaders(){
-        registryShader(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"box_blur"), DefaultVertexFormat.POSITION);
-        DANMAKU_DEPTH_OUTLINE_SHADER = registryShader(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"rendertype_danmaku_depth_outline"), THRenderType.TEST_FORMAT);
-        registryShader(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"test_shader"), new VertexFormat(
+    public static void registryShaders(ResourceProvider resourceProvider){
+        registryShader(resourceProvider,new ResourceLocation(THDanmakuCraftCore.MOD_ID,"box_blur"), DefaultVertexFormat.POSITION);
+        DANMAKU_DEPTH_OUTLINE_SHADER = registryShader(resourceProvider,new ResourceLocation(THDanmakuCraftCore.MOD_ID,"rendertype_danmaku_depth_outline"), THRenderType.TEST_FORMAT);
+        registryShader(resourceProvider,new ResourceLocation(THDanmakuCraftCore.MOD_ID,"test_shader"), new VertexFormat(
                 ImmutableMap.<String, VertexFormatElement>builder()
                         .put("Position", DefaultVertexFormat.ELEMENT_POSITION)
                         .put("Color"   , DefaultVertexFormat.ELEMENT_COLOR)
@@ -45,7 +47,7 @@ public class ShaderLoader {
 
     @SubscribeEvent
     public static void onRegisterShaders(RegisterShadersEvent event) {
-        registryShaders();
+        registryShaders(event.getResourceProvider());
         /*
         Map<ResourceLocation, Resource> resourceMap =  resourceManager.listResources(new ResourceLocation(THDanmakuCraftCore.MODID,"shaders/core").getPath(), path -> path.toString().startsWith(THDanmakuCraftCore.MODID) && path.toString().endsWith("json"));
         resourceMap.forEach((resourceLocation, resource) -> {
@@ -63,8 +65,8 @@ public class ShaderLoader {
 
     }
 
-    public static ShaderInstance registryShader(ResourceLocation resourceLocation, VertexFormat vertexFormat){
-        shaderMap.put(resourceLocation,loadShader(resourceLocation,vertexFormat));
+    public static ShaderInstance registryShader(ResourceProvider resourceProvider, ResourceLocation resourceLocation, VertexFormat vertexFormat){
+        shaderMap.put(resourceLocation,loadShader(resourceProvider,resourceLocation,vertexFormat));
         return shaderMap.get(resourceLocation);
     }
 
@@ -72,9 +74,9 @@ public class ShaderLoader {
         shaderMap.clear();
     }
 
-    public static ShaderInstance loadShader(ResourceLocation resourceLocation, VertexFormat vertexFormat) {
+    public static ShaderInstance loadShader(ResourceProvider resourceProvider, ResourceLocation resourceLocation, VertexFormat vertexFormat) {
         try {
-            return new ShaderInstance(resourceManager,resourceLocation,vertexFormat);
+            return new ShaderInstance(resourceProvider,resourceLocation,vertexFormat);
         } catch (IOException e) {
             THDanmakuCraftCore.LOGGER.info("Failed load shader {}",resourceLocation,e);
         }

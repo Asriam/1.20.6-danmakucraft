@@ -43,6 +43,10 @@ local co1 = coroutine.create(function()
     print("2aaaaaaaaaaaaa")
     coroutine.yield()
     print("3aaaaaaaaaaaaaaaaaaaaaaa")
+    coroutine.yield()
+    print("4aaaaaaaaaaaaaaaaaaaaaaa")
+    coroutine.yield()
+    print("5aaaaaaaaaaaaaaaaaaaaaaa")
 end)
 
 coroutine.resume(co1)
@@ -50,3 +54,11 @@ print("asffasdasd")
 coroutine.resume(co1)
 print("asffasdasd")
 coroutine.resume(co1)
+
+
+function ss()
+    coroutine.resume(co1)
+end
+
+return ss
+

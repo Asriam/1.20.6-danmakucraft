@@ -195,7 +195,7 @@ public class THObjectRenderHelper {
                 consumer.vertex(pose.pose(),vertex.x,vertex.y,vertex.z)
                         .color(startColor.r, startColor.g, startColor.b, startColor.a)
                         .color(coreColor.r, coreColor.g, coreColor.b, coreColor.a)
-                        .uv(0.0f, 0.0f)
+                        .uv(uvStart.x, uvStart.y)
                         .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(overlay)
                         .normal(pose, vertex.x, vertex.y, vertex.z)
                         .endVertex();
@@ -204,7 +204,7 @@ public class THObjectRenderHelper {
                 consumer.vertex(pose.pose(),vertex.x,vertex.y,vertex.z)
                         .color(startColor.r, startColor.g, startColor.b, startColor.a)
                         .color(coreColor.r, coreColor.g, coreColor.b, coreColor.a)
-                        .uv(0.0f, 0.0f)
+                        .uv(uvStart.x, uvStart.y)
                         .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(overlay)
                         .normal(pose, vertex.x, vertex.y, vertex.z)
                         .endVertex();
@@ -213,7 +213,7 @@ public class THObjectRenderHelper {
                 consumer.vertex(pose.pose(),vertex.x,vertex.y,vertex.z)
                         .color(finalColor.r, finalColor.g, finalColor.b, finalColor.a)
                         .color(coreColor.r, coreColor.g, coreColor.b, coreColor.a)
-                        .uv(0.0f, 0.0f)
+                        .uv(uvStart.x, uvStart.y)
                         .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(overlay)
                         .normal(pose, vertex.x, vertex.y, vertex.z)
                         .endVertex();
@@ -222,7 +222,7 @@ public class THObjectRenderHelper {
                 consumer.vertex(pose.pose(),vertex.x,vertex.y,vertex.z)
                         .color(finalColor.r, finalColor.g, finalColor.b, finalColor.a)
                         .color(coreColor.r, coreColor.g, coreColor.b, coreColor.a)
-                        .uv(0.0f, 0.0f)
+                        .uv(uvStart.x, uvStart.y)
                         .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(overlay)
                         .normal(pose, vertex.x, vertex.y, vertex.z)
                         .endVertex();

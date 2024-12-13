@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.world.entity.danmaku;
 
-import com.adrian.thDanmakuCraft.client.renderer.THBulletRenderer;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.THBulletRenderers;
 import com.adrian.thDanmakuCraft.client.renderer.entity.EntityTHObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
@@ -29,9 +29,10 @@ public class THBullet extends THObject {
 
     public THBullet(EntityTHObjectContainer container, BULLET_STYLE style, BULLET_COLOR bulletColor) {
         this(THObjectInit.TH_BULLET.get(), container);
-        this.style = style;
-        this.size = style.size;
-        this.bulletColor = bulletColor;
+        this.style         = style;
+        this.size          = style.size;
+        this.collisionType = style.collisionType;
+        this.bulletColor   = bulletColor;
     }
 
     public void setBulletColor(BULLET_COLOR bulletColor){
@@ -77,7 +78,7 @@ public class THBullet extends THObject {
     public void load(CompoundTag tag){
         super.load(tag);
         this.bulletColor = BULLET_COLOR.class.getEnumConstants()[tag.getInt("BulletColor")];
-        this.style = BULLET_STYLE.class.getEnumConstants()[tag.getInt("Style")];
+        this.style       = BULLET_STYLE.class.getEnumConstants()[tag.getInt("Style")];
     }
 
     @Override
@@ -143,40 +144,43 @@ public class THBullet extends THObject {
     public static final ResourceLocation TEXTURE_ARROW_BIG = new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/danmaku/arrow_big.png");
     private static final Vec3 DEFAULT_SIZE = new Vec3(0.5f,0.5f,0.5f);
     public enum BULLET_STYLE {
-        arrow_big(TEXTURE_ARROW_BIG,new Vec3(0.15f,0.15f,0.15f),false, THBulletRenderer.BulletRenderers::arrow_big),
+        arrow_big(TEXTURE_ARROW_BIG,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.SPHERE, THBulletRenderers.BulletRenderers::arrow_big),
         arrow_mid,
         arrow_small,
         gun_bullet,
         butterfly,
         square,
         ball_small,
-        ball_mid(TEXTURE_BALL_MID,DEFAULT_SIZE,false, THBulletRenderer.BulletRenderers::ball_mid),
+        ball_mid(TEXTURE_BALL_MID,new Vec3(0.3f,0.3f,0.3f),false, CollisionType.SPHERE, THBulletRenderers.BulletRenderers::ball_mid),
         ball_mid_c,
-        ball_big(TEXTURE_BALL_MID,DEFAULT_SIZE,false, THBulletRenderer.BulletRenderers::ball_big),
+        ball_big(TEXTURE_BALL_MID,new Vec3(0.5f,0.5f,0.5f),false, CollisionType.SPHERE, THBulletRenderers.BulletRenderers::ball_big),
         ball_huge,
         ball_light,
-        star_small, star_big,
-        grain_a(TEXTURE_WHITE,new Vec3(0.15f,0.15f,0.15f),false, THBulletRenderer.BulletRenderers::grain_a),
-        grain_b(TEXTURE_WHITE,new Vec3(0.2f,0.2f,0.2f),false, THBulletRenderer.BulletRenderers::grain_b),
+        star_small,
+        star_big,
+        grain_a(TEXTURE_WHITE,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.SPHERE, THBulletRenderers.BulletRenderers::grain_a),
+        grain_b(TEXTURE_WHITE,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.SPHERE, THBulletRenderers.BulletRenderers::grain_b),
         grain_c, kite, knife, knife_b,
         water_drop, mildew,
-        ellipse(TEXTURE_WHITE,DEFAULT_SIZE,false, THBulletRenderer.BulletRenderers::ellipse),
+        ellipse(TEXTURE_WHITE,new Vec3(0.4f,0.4f,0.5f),false, CollisionType.ELLIPSOID, THBulletRenderers.BulletRenderers::ellipse),
         heart, money, music, silence,
         water_drop_dark, ball_huge_dark, ball_light_dark;
 
         private final ResourceLocation texture;
         private final Vec3 size;
         private final boolean faceCam;
-        private boolean is3D;
+        private final boolean is3D;
+        private final CollisionType collisionType;
 
         @Nullable
         @OnlyIn(Dist.CLIENT)
-        private final THBulletRenderer.THBulletRenderFactory renderFactory;
+        private final THBulletRenderers.THBulletRenderFactory renderFactory;
 
-        BULLET_STYLE(ResourceLocation texture, Vec3 size, boolean faceCam, THBulletRenderer.THBulletRenderFactory factory){
+        BULLET_STYLE(ResourceLocation texture, Vec3 size, boolean faceCam, CollisionType collisionType,@Nullable THBulletRenderers.THBulletRenderFactory factory){
             this.texture = texture;
             this.size = size;
             this.faceCam = faceCam;
+            this.collisionType = collisionType;
             this.renderFactory = factory;
             this.is3D = factory != null;
         }
@@ -185,6 +189,7 @@ public class THBullet extends THObject {
             this.texture = texture;
             this.size = size;
             this.faceCam = false;
+            this.collisionType = CollisionType.AABB;
             this.renderFactory = null;
             this.is3D = false;
         }
@@ -201,6 +206,10 @@ public class THBullet extends THObject {
             return this.size;
         }
 
+        public CollisionType getCollisionType(){
+            return this.collisionType;
+        }
+
         public static BULLET_STYLE getStyleByIndex(int index){
             return BULLET_STYLE.class.getEnumConstants()[index];
         }
@@ -210,17 +219,17 @@ public class THBullet extends THObject {
             poseStack.pushPose();
             if(this.is3D) {
                 if(this.faceCam) {
-                    poseStack.mulPose(renderer.dispatcher.cameraOrientation());
+                    poseStack.mulPose(renderer.getRenderDispatcher().cameraOrientation());
                     poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
                 }else {
                     poseStack.mulPose(new Quaternionf().rotationYXZ(object.yRot,-object.xRot+Mth.DEG_TO_RAD*90.0f,object.zRot));
                 }
-                THBulletRenderer.render3DBullet(renderer, object,this.renderFactory,partialTicks, poseStack, bufferSource, overlay);
+                THBulletRenderers.render3DBullet(renderer, object,this.renderFactory,partialTicks, poseStack, bufferSource, overlay);
 
             }else {
-                poseStack.mulPose(renderer.dispatcher.cameraOrientation());
+                poseStack.mulPose(renderer.getRenderDispatcher().cameraOrientation());
                 poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
-                THBulletRenderer.render2DBullet(renderer, object,partialTicks, poseStack, bufferSource, overlay);
+                THBulletRenderers.render2DBullet(renderer, object,partialTicks, poseStack, bufferSource, overlay);
             }
             poseStack.popPose();
         }
@@ -257,7 +266,7 @@ public class THBullet extends THObject {
             }
             d4 *= d4;
 
-            double[] distOfLevel = {4.0D,8.0D,16.0D,32.0D,48.0D,60.0D};
+            double[] distOfLevel = {2.0D,4.0D,8.0D,16.0D,32.0D,48.0D,60.0D};
 
             if(distSquare < d4*distOfLevel[0]*distOfLevel[0]){
                 return VERY_VERY_CLOSE;

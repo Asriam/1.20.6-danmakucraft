@@ -45,13 +45,14 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     public boolean bindingToUserPosition = false;
     public boolean autoRemove = true;
     public int autoRemoveLife = 60;
-    public final THTasker task = new THTasker();
+    public final THTasker.THTaskerManager taskerManager;
     public final RandomSource random = RandomSource.create();
     private List<Entity> entitiesInBound;
 
     public EntityTHObjectContainer(EntityType<? extends EntityTHObjectContainer> type, Level level) {
         super(type, level);
         this.objectManager = new THObjectManager(this);
+        this.taskerManager = new THTasker.THTaskerManager(this);
         this.scriptManager = new JSManager();
         this.entitiesInBound = new ArrayList<>();
         this.noCulling = true;
@@ -59,7 +60,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
 
     public EntityTHObjectContainer(@Nullable LivingEntity user, Level level, Vec3 pos) {
         this(EntityInit.ENTITY_THDANMAKU_CONTAINER.get(), level);
-        this.user = user;
+        //this.setUser(user);
         this.setPos(pos);
     }
 
@@ -71,6 +72,12 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     @Override
     public void onAddedToWorld() {
         super.onAddedToWorld();
+    }
+
+    @Override
+    public void onRemovedFromWorld() {
+        super.onRemovedFromWorld();
+        this.taskerManager.close();
     }
 
     public int getMaxObjectAmount() {
@@ -104,14 +111,14 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     @Override
     public void tick() {
         super.tick();
-        this.task.resume();
+        this.taskerManager.resume();
         if(this.bindingToUserPosition && this.user != null){
             this.setPos(this.user.position());
         }
         this.setBound(this.position(),this.bound);
         this.loadUserAndTarget();
 
-        if(this.objectManager.isEmpty() && false) {
+        if(this.objectManager.isEmpty() && true) {
             for (int j = 0; j< THBullet.BULLET_STYLE.class.getEnumConstants().length; j++) {
                 for (int i = 0; i < 16; i++) {
                     THObject a = (THObject) new THBullet(this,THBullet.BULLET_STYLE.getStyleByIndex(j),THBullet.BULLET_COLOR.getColorByIndex(i + 1))
@@ -120,6 +127,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
                             0.0f,
                             Vec3.ZERO
                     );
+                    //a.setRotationByDirectionalVector(new Vec3(0.0f,1.0f,0.0f));
                     a.setLifetime(3600);
                     a.colli = true;
                     a.blend = THRenderType.BLEND.NONE;
@@ -181,33 +189,6 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
             }
         }
     }
-
-    /*
-    @OnlyIn(Dist.CLIENT)
-    public void layerObjects(double camX, double camY, double camZ){
-        this.objectManager.sortTHObjects((o1, o2) -> {
-            if (o1 == null || o2 == null){
-                return 0;
-            }
-            Vec3 pos1 = o1.getPosition();
-            Vec3 pos2 = o2.getPosition();
-            double d1x = pos1.x - camX;
-            double d1y = pos1.y - camY;
-            double d1z = pos1.z - camZ;
-            double dist1Square = (d1x * d1x + d1y * d1y + d1z * d1z);
-            double d2x = pos2.x - camX;
-            double d2y = pos2.y - camY;
-            double d2z = pos2.z - camZ;
-            double dist2Square = (d2x * d2x + d2y * d2y + d2z * d2z);
-            if (dist1Square < dist2Square){
-                return 1;
-            }else {
-                return -1;
-            }
-        });
-    }*/
-
-
 
     public void updateObjects(){
         if(this.objectManager.isEmpty()){
@@ -281,26 +262,29 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
 
     @Override
     public void writeSpawnData(FriendlyByteBuf buffer) {
-        buffer.writeVarInt(this.user != null ? this.user.getId() : 0);
+        buffer.writeVarInt(this.user   != null ? this.user.getId() : 0);
         buffer.writeVarInt(this.target != null ? this.target.getId() : 0);
         buffer.writeInt(this.maxObjectAmount);
         buffer.writeInt(this.timer);
         buffer.writeBoolean(this.bindingToUserPosition);
         this.objectManager.writeData(buffer);
         this.scriptManager.writeData(buffer);
+        this.taskerManager.writeData(buffer);
     }
 
     @Override
     public void readSpawnData(FriendlyByteBuf additionalData) {
-        Entity user = this.level().getEntity(additionalData.readVarInt());
-        this.setUser(user);
+        Entity user   = this.level().getEntity(additionalData.readVarInt());
         Entity target = this.level().getEntity(additionalData.readVarInt());
+        this.setUser(user);
         this.setTarget(target);
         this.maxObjectAmount = additionalData.readInt();
         this.timer = additionalData.readInt();
         this.bindingToUserPosition = additionalData.readBoolean();
         this.objectManager.readData(additionalData);
         this.scriptManager.readData(additionalData);
+        this.taskerManager.readData(additionalData);
+        this.setBound(this.position(),this.bound);
     }
 
     @Override

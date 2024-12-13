@@ -33,7 +33,7 @@ public class THRenderType extends RenderStateShard{
                 .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
                 .setCullState(CULL)
                 .setLightmapState(NO_LIGHTMAP)
-                .setOverlayState(OVERLAY)
+                .setOverlayState(NO_OVERLAY)
                 .setWriteMaskState(COLOR_DEPTH_WRITE)
                 .createCompositeState(false);
         return RenderType.create("blend_none", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, false, false, compositestate);
@@ -46,7 +46,7 @@ public class THRenderType extends RenderStateShard{
                 .setTransparencyState(LIGHTNING_TRANSPARENCY)
                 .setCullState(CULL)
                 .setLightmapState(NO_LIGHTMAP)
-                .setOverlayState(OVERLAY)
+                .setOverlayState(NO_OVERLAY)
                 .setWriteMaskState(COLOR_DEPTH_WRITE)
                 .createCompositeState(false);
         return RenderType.create("blend_lighten", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, false, true, compositestate);
@@ -65,7 +65,7 @@ public class THRenderType extends RenderStateShard{
                 }))
                 .setCullState(CULL)
                 .setLightmapState(NO_LIGHTMAP)
-                .setOverlayState(OVERLAY)
+                .setOverlayState(NO_OVERLAY)
                 .setWriteMaskState(COLOR_WRITE)
                 .createCompositeState(false);
         return RenderType.create("blend_multiply", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, false, false, compositestate);
@@ -76,7 +76,7 @@ public class THRenderType extends RenderStateShard{
                     .setShaderState(RENDERTYPE_LIGHTNING_SHADER)
                     .setTransparencyState(LIGHTNING_TRANSPARENCY)
                     .setLightmapState(NO_LIGHTMAP)
-                    .setOverlayState(OVERLAY)
+                    .setOverlayState(NO_OVERLAY)
                     //.setWriteMaskState(COLOR_WRITE)
                     .createCompositeState(false)
     );
@@ -102,7 +102,7 @@ public class THRenderType extends RenderStateShard{
                     .setShaderState(DANMAKU_DEPTH_OUTLINE_SHADER)
                     .setTransparencyState(LIGHTNING_TRANSPARENCY)
                     .setLightmapState(NO_LIGHTMAP)
-                    .setOverlayState(OVERLAY)
+                    .setOverlayState(NO_OVERLAY)
                     //.setWriteMaskState(COLOR_DEPTH_WRITE)
                     .setWriteMaskState(COLOR_WRITE)
                     //.setOutputState(TRANSLUCENT_TARGET)
@@ -114,7 +114,7 @@ public class THRenderType extends RenderStateShard{
                     .setShaderState(shader)
                     .setTransparencyState(LIGHTNING_TRANSPARENCY)
                     .setLightmapState(NO_LIGHTMAP)
-                    .setOverlayState(OVERLAY)
+                    .setOverlayState(NO_OVERLAY)
                     //.setWriteMaskState(COLOR_DEPTH_WRITE)
                     .setWriteMaskState(COLOR_WRITE)
                     //.setOutputState(TRANSLUCENT_TARGET)
@@ -127,7 +127,7 @@ public class THRenderType extends RenderStateShard{
                     .setShaderState(RENDERTYPE_LIGHTNING_SHADER)
                     .setTransparencyState(LIGHTNING_TRANSPARENCY)
                     .setLightmapState(NO_LIGHTMAP)
-                    .setOverlayState(OVERLAY)
+                    .setOverlayState(NO_OVERLAY)
                     //.setWriteMaskState(COLOR_WRITE)
                     .createCompositeState(false)
     );
@@ -138,7 +138,7 @@ public class THRenderType extends RenderStateShard{
                     .setTransparencyState(LIGHTNING_TRANSPARENCY)
                     .setCullState(NO_CULL)
                     .setLightmapState(NO_LIGHTMAP)
-                    .setOverlayState(OVERLAY)
+                    .setOverlayState(NO_OVERLAY)
                     //.setWriteMaskState(COLOR_WRITE)
                     .createCompositeState(false)
     );

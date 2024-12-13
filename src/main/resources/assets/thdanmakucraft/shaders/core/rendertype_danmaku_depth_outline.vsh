@@ -15,6 +15,7 @@ out vec3 normal;
 out vec3 viewDir;
 out vec4 vertexColor;
 out vec4 coreColor;
+out vec2 vertCoord;
 
 void main() {
     mat3 normalMat = mat3(transpose(inverse(ModelViewMat)));
@@ -27,4 +28,5 @@ void main() {
     vertexColor = Color;
     coreColor = Color2;
     //normal = Normal;
+    vertCoord = UV;
 }

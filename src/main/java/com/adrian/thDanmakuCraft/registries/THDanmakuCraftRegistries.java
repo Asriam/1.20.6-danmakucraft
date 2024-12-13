@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.registries;
 
+import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.THObjectType;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
@@ -9,14 +10,14 @@ import net.minecraftforge.registries.*;
 public class THDanmakuCraftRegistries {
 
     public static final IForgeRegistry<THObjectType> THOBJECT_TYPE = active(Keys.THOBJECT_TYPE);
-    public class Keys {
+    public static class Keys {
         /**
          * com.adrian.thDanmakuCraft.event.newRegistry;
          */
         public static final ResourceKey<Registry<THObjectType>> THOBJECT_TYPE = key("th_object");
 
         private static <T> ResourceKey<Registry<T>> key(String name) {
-            return ResourceKey.createRegistryKey(new ResourceLocation(name));
+            return ResourceKey.createRegistryKey(new ResourceLocation(THDanmakuCraftCore.MOD_ID,name));
         }
     }
 
