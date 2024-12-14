@@ -12,7 +12,7 @@ minecraft.Vec2            = luajava.bindClass('net.minecraft.world.phys.Vec2')
 minecraft.Vec3            = luajava.bindClass('net.minecraft.world.phys.Vec3')
 minecraft.THObject        = luajava.bindClass('com.adrian.thDanmakuCraft.world.entity.danmaku.THObject')
 minecraft.THBullet        = luajava.bindClass('com.adrian.thDanmakuCraft.world.entity.danmaku.THBullet')
-minecraft.THCurvedLaser   = luajava.bindClass('com.adrian.thDanmakuCraft.world.entity.danmaku.laser.THCurvedLaser')
+minecraft.THCurvedLaser   = luajava.bindClass('com.adrian.thDanmakuCraft.world.entity.danmaku.THCurvedLaser')
 
 Mth = minecraft.Mth
 ]]

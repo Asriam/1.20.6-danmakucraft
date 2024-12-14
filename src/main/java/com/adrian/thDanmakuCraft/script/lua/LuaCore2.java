@@ -3,15 +3,13 @@ package com.adrian.thDanmakuCraft.script.lua;
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.THBullet;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.THObject;
-import com.adrian.thDanmakuCraft.world.entity.danmaku.laser.THCurvedLaser;
+import com.adrian.thDanmakuCraft.world.entity.danmaku.THCurvedLaser;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
-import org.luaj.vm2.Globals;
-import org.luaj.vm2.lib.jse.JsePlatform;
 import org.luaj.vm2.script.LuaScriptEngine;
 
 import javax.script.ScriptException;

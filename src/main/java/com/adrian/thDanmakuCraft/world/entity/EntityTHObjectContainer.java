@@ -56,6 +56,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
         this.scriptManager = new JSManager();
         this.entitiesInBound = new ArrayList<>();
         this.noCulling = true;
+        this.setMaxObjectAmount(2000);
     }
 
     public EntityTHObjectContainer(@Nullable LivingEntity user, Level level, Vec3 pos) {
@@ -118,7 +119,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
         this.setBound(this.position(),this.bound);
         this.loadUserAndTarget();
 
-        if(this.objectManager.isEmpty() && true) {
+        if(this.objectManager.isEmpty() && false) {
             for (int j = 0; j< THBullet.BULLET_STYLE.class.getEnumConstants().length; j++) {
                 for (int i = 0; i < 16; i++) {
                     THObject a = (THObject) new THBullet(this,THBullet.BULLET_STYLE.getStyleByIndex(j),THBullet.BULLET_COLOR.getColorByIndex(i + 1))
@@ -129,20 +130,20 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
                     );
                     //a.setRotationByDirectionalVector(new Vec3(0.0f,1.0f,0.0f));
                     a.setLifetime(3600);
-                    a.colli = true;
+                    a.collision = true;
                     a.blend = THRenderType.BLEND.NONE;
                 }
             }
         }
 
-        if(/*(this.timer+2)%1==0 &&*/ false) {
+        if(/*(this.timer+2)%1==0 &&*/ true) {
             Vec3 pos = this.position();
             Vec3 rotation = Vec3.directionFromRotation(0.0f,0.0f);
             Vec2 rotate = new Vec2(Mth.DEG_TO_RAD*((float) Math.pow(this.timer*0.1f,2)+360.0f/5),-Mth.DEG_TO_RAD*((float) Math.pow(this.timer*0.08f,2)+360.0f/5));
 
             Vec3 angle = rotation.xRot(Mth.DEG_TO_RAD*90.0f).normalize().xRot(rotate.x).yRot(rotate.y);
             THBullet.BULLET_STYLE style = THBullet.BULLET_STYLE.ball_mid;
-            THObject danmaku = (THObject) new THBullet(this,style, THBullet.BULLET_COLOR.COLOR_PURPLE).initPosition(pos).shoot(
+            THObject danmaku = new THBullet(this,style, THBullet.BULLET_COLOR.COLOR_PURPLE).initPosition(pos).shoot(
                     0.2f,
                     angle
             );
@@ -318,39 +319,21 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
         return this.scriptManager;
     }
 
-    
-    /**
-     * The THObjectManager class is responsible for managing the collection of THObjects associated with the EntityTHObjectContainer.
-     * It provides methods to add, remove, sort, and manipulate these objects within the collection.
-     */
+
     public static class THObjectManager{
 
         private final MultiMap<THObject> storage;
         private final EntityTHObjectContainer container;
 
-        /**
-         * Constructs a THObjectManager associated with a specific EntityTHObjectContainer.
-         * 
-         * @param container The entity container that holds the THObjects.
-         */
         public THObjectManager(EntityTHObjectContainer container) {
             this.container = container;
             this.storage = new MultiMap<>(THObject.class);
         }
 
-        /**
-         * Clears all THObjects from the storage.
-         */
         public void clearStorage(){
             this.storage.clear();
         }
 
-        /**
-         * Adds a single THObject to the storage.
-         * If the storage exceeds its maximum capacity, the object is not added.
-         *
-         * @param object The THObject to be added.
-         */
         public void addTHObject(THObject object){
             if(this.storage.size() >= this.container.maxObjectAmount){
                 //THDanmakuCraftCore.LOGGER.warn("{}'s object pool is full! {} (Max is {})",this.container,this.storage.size(),this.container.getMaxObjectAmount());
@@ -359,124 +342,57 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
             this.storage.add(object);
         }
 
-        /**
-         * Adds a list of THObjects to the storage.
-         *
-         * @param objects The list of THObjects to be added.
-         */
         public void addTHObjects(List<THObject> objects){
             this.storage.addAll(objects);
         }
 
-        /**
-         * Removes a specified THObject from the storage.
-         *
-         * @param object The THObject to be removed.
-         */
         public void removeTHObject(THObject object){
             this.storage.remove(object);
         }
 
-        /**
-         * Sorts the THObjects in the storage based on the provided comparator.
-         *
-         * @param comparator The comparator used to define the order of the objects.
-         */
+
         public void sortTHObjects(Comparator<THObject> comparator){
             this.storage.sort(comparator);
         }
 
-        /**
-         * Removes a THObject at a specified index from the storage.
-         *
-         * @param index The index of the THObject to be removed.
-         */
+
         public void removeTHObject(int index){
             this.storage.remove(this.getTHObject(index));
         }
 
-        /**
-         * Retrieves a THObject from the storage at a specific index.
-         *
-         * @param index The index of the THObject to retrieve.
-         * @return The THObject at the specified index.
-         */
         public THObject getTHObject(int index){
             return this.getTHObjects().get(index);
         }
 
-        /**
-         * Retrieves a list of all THObjects contained in the storage.
-         *
-         * @return The list of THObjects.
-         */
         public List<THObject> getTHObjects(){
             return this.storage.getAllInstances();
         }
 
-        /**
-         * Retrieves a list of THObjects intended for rendering.
-         *
-         * @return The list of THObjects for rendering.
-         */
         public List<THObject> getTHObjectsForRender(){
-            List<THObject> list = new ArrayList<>();
-            list.addAll(this.getTHObjects());
-            return list;
+            return new ArrayList<>(this.getTHObjects());
         }
 
-        /**
-         * Clears the current storage and replaces it with a new list of THObjects.
-         *
-         * @param objects The list of new THObjects to store.
-         */
         public void recreate(List<THObject> objects){
             this.clearStorage();
             this.addTHObjects(objects);
         }
 
-        /**
-         * Checks if the storage contains a specific THObject.
-         *
-         * @param object The THObject to check for.
-         * @return True if the object is present in the storage, otherwise false.
-         */
         public boolean contains(THObject object){
             return this.storage.contains(object);
         }
 
-        /**
-         * Determines whether the storage is empty.
-         *
-         * @return True if the storage is empty, otherwise false.
-         */
         public boolean isEmpty(){
             return this.storage.isEmpty();
         }
 
-        /**
-         * Saves the current list of THObjects to a CompoundTag for persistence.
-         *
-         * @return A CompoundTag representing the saved state of the THObjects.
-         */
         public CompoundTag save(){
             return THObjectListToTag(this.getTHObjects());
         }
 
-        /**
-         * Loads a list of THObjects from a CompoundTag, replacing the current storage.
-         *
-         * @param tag The CompoundTag containing the THObjects to load.
-         */
         public void load(CompoundTag tag){
             this.recreate(TagToTHObjectList(tag,this.container));
         }
 
-        /**
-         * Writes the details of all THObjects into a FriendlyByteBuf for network transmission.
-         *
-         * @param buffer The buffer where the THObject data is written.
-         */
         public void writeData(FriendlyByteBuf buffer){
             List<THObject> objects = this.getTHObjects();
             buffer.writeInt(objects.size());
@@ -487,11 +403,6 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
             }
         }
 
-        /**
-         * Reads THObject data from a FriendlyByteBuf and reconstructs the THObjects in storage.
-         *
-         * @param buffer The buffer containing the serialized THObject data.
-         */
         public void readData(FriendlyByteBuf buffer){
             int listSize = buffer.readInt();
             List<THObject> objects = Lists.newArrayList();
@@ -505,12 +416,6 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
             this.recreate(objects);
         }
 
-        /**
-         * Converts a list of THObjects into a CompoundTag for saving to disk.
-         *
-         * @param objects The list of THObjects to convert.
-         * @return A CompoundTag that represents the list of THObjects.
-         */
         public static CompoundTag THObjectListToTag(List<THObject> objects){
             CompoundTag tag = new CompoundTag();
             int index = 0;
@@ -525,13 +430,6 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
             return tag;
         }
 
-        /**
-         * Converts a CompoundTag back into a list of THObjects.
-         *
-         * @param tag       The CompoundTag to convert.
-         * @param container The EntityTHObjectContainer to which the THObjects belong.
-         * @return A list of THObjects reconstructed from the CompoundTag.
-         */
         public static List<THObject> TagToTHObjectList(CompoundTag tag, EntityTHObjectContainer container){
             int list_size = tag.getAllKeys().size();
             List<THObject> objectList = Lists.newArrayList();

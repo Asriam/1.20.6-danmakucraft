@@ -38,7 +38,7 @@ public class RenderEvents {
     }
 
 
-    public static void registryRenderLevelStageTask(String name, RenderLevelStageEvent.Stage stage, RenderTask renderHelper){
+    public static void addRenderLevelStageTask(String name, RenderLevelStageEvent.Stage stage, RenderTask renderHelper){
         if(renderLevelStageTasks.get(name) == null) {
             renderLevelStageTasks.put(name, new RenderLevelStageTask(stage, renderHelper));
         }

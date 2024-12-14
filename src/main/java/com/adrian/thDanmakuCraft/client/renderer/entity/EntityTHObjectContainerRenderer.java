@@ -4,9 +4,13 @@ import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.client.renderer.THObjectRenderHelper;
 import com.adrian.thDanmakuCraft.client.renderer.RenderEvents;
 import com.adrian.thDanmakuCraft.client.renderer.ShaderLoader;
-import com.adrian.thDanmakuCraft.world.entity.danmaku.laser.THCurvedLaser;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.AbstractTHObjectRenderer;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRendererProvider;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRenderers;
+import com.adrian.thDanmakuCraft.world.entity.danmaku.THCurvedLaser;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.THObject;
+import com.adrian.thDanmakuCraft.world.entity.danmaku.THObjectType;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -30,26 +34,28 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
 @OnlyIn(Dist.CLIENT)
 public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObjectContainer> {
-    public Frustum frustum;
-
     private static final RenderTarget testRenderTarget = new TextureTarget(1000,1000,true,true);
     private static final RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
     //public static final RenderTarget DEPTH_BUFFER = new TextureTarget(1000,1000,true,true);
+    private final Map<THObjectType<?>, AbstractTHObjectRenderer<?>> thobjectRenderers;
+    private Frustum frustum;
 
     public EntityTHObjectContainerRenderer(EntityRendererProvider.Context context) {
         super(context);
+        this.thobjectRenderers = THObjectRenderers.createEntityRenderers(new THObjectRendererProvider.Context(this));
 
-        RenderEvents.registryRenderLevelStageTask("test_shader_clear", RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS, (poseStack, partialTick) -> {
+        RenderEvents.addRenderLevelStageTask("test_shader_clear", RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS, (poseStack, partialTick) -> {
             testRenderTarget.resize(mainRenderTarget.width , mainRenderTarget.height, false);
             testRenderTarget.setClearColor(0.0f,0.0f,0.0f,0.0f);
             testRenderTarget.clear(true);
         });
 
-        RenderEvents.registryRenderLevelStageTask("test_shader_applier", RenderLevelStageEvent.Stage.AFTER_WEATHER, (poseStack, partialTick) -> {
+        RenderEvents.addRenderLevelStageTask("test_shader_applier", RenderLevelStageEvent.Stage.AFTER_WEATHER, (poseStack, partialTick) -> {
             this.applyShader();
         });
     }
@@ -122,7 +128,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
 
         //ProfilerFiller profiler = InactiveProfiler.INSTANCE;
         //final List<THObject> objectList = layerObjects(entity.getObjectManager().getTHObjectsForRender(),camX,camY,camZ);
-        final List<THObject> objectList = entity.getObjectManager().getTHObjectsForRender();
+        final List<? extends THObject> objectList = entity.getObjectManager().getTHObjectsForRender();
 
         Predicate<THObject> predicate = (object) -> (
                 object != null && (object instanceof THCurvedLaser || this.shouldRenderTHObject(object, this.frustum, camX, camY, camZ))
@@ -138,6 +144,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
         }*/
 
         boolean flag = true;
+
         if (flag) {
             mainRenderTarget.unbindWrite();
             testRenderTarget.copyDepthFrom(mainRenderTarget);
@@ -154,7 +161,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
                         poseStack.pushPose();
                         Vec3 objectPos = object.getOffsetPosition(partialTicks);
                         poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
-                        if (object.colli) {
+                        if (object.collision) {
                             if (object instanceof THCurvedLaser laser) {
                                 renderTHCurvedLaserHitBoxes(laser, objectPos, poseStack, bufferSource.getBuffer(RenderType.lines()), partialTicks, this.frustum, cameraPosition);
                             } else {
@@ -172,9 +179,8 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
                     poseStack.pushPose();
                     Vec3 objectPos = object.getOffsetPosition(partialTicks);
                     poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
-
-                    object.onRender(this, objectPos, partialTicks, poseStack, bufferSource, combinedOverlay);
-
+                    this.getTHObjectRenderer(object).render(object, objectPos, partialTicks, poseStack, bufferSource, combinedOverlay);
+                    //this.thobjectRenderers.get(object).render(object, objectPos, partialTicks, poseStack, bufferSource, combinedOverlay);
                     poseStack.popPose();
                 }
             }
@@ -197,6 +203,10 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
         poseStack.pushPose();
         Vec3 entityPos = entity.getPosition(partialTicks);
         poseStack.translate(entityPos.x-camX, entityPos.y-camY, entityPos.z-camZ);
+    }
+
+    public <T extends THObject> AbstractTHObjectRenderer<T> getTHObjectRenderer(T object) {
+        return (AbstractTHObjectRenderer<T>) this.thobjectRenderers.get(object.getType());
     }
 
     private static void renderTHObjectsHitBox(THObject object, PoseStack poseStack, VertexConsumer vertexConsumer) {
@@ -311,6 +321,10 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
 
     public EntityRenderDispatcher getRenderDispatcher(){
         return this.entityRenderDispatcher;
+    }
+
+    public Frustum getFrustum(){
+        return this.frustum;
     }
 
     @Override

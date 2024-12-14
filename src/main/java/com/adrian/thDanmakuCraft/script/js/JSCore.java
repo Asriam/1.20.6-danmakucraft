@@ -3,7 +3,7 @@ package com.adrian.thDanmakuCraft.script.js;
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.THBullet;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.THObject;
-import com.adrian.thDanmakuCraft.world.entity.danmaku.laser.THCurvedLaser;
+import com.adrian.thDanmakuCraft.world.entity.danmaku.THCurvedLaser;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;

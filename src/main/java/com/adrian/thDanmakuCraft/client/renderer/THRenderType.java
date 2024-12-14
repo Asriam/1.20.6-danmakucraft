@@ -21,9 +21,9 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import java.util.function.Function;
 
 @OnlyIn(Dist.CLIENT)
-public class THRenderType extends RenderStateShard{
-    public THRenderType(String p_110161_, Runnable p_110162_, Runnable p_110163_) {
-        super(p_110161_, p_110162_, p_110163_);
+public class THRenderType extends RenderType{
+    public THRenderType(String string, VertexFormat vertexFormat, VertexFormat.Mode mode, int i, boolean bl, boolean bl2, Runnable runnable, Runnable runnable2) {
+        super(string, vertexFormat, mode, i, bl, bl2, runnable, runnable2);
     }
 
     public static final Function<ResourceLocation, RenderType> BLEND_NONE = Util.memoize((texture) -> {
