@@ -29,13 +29,13 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 
 @OnlyIn(Dist.CLIENT)
 public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObjectContainer> {
@@ -56,11 +56,11 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
         });
 
         RenderEvents.addRenderLevelStageTask("test_shader_applier", RenderLevelStageEvent.Stage.AFTER_WEATHER, (poseStack, partialTick) -> {
-            this.applyShader();
+            applyShader();
         });
     }
 
-    public void applyShader(){
+    public static void applyShader(){
         ShaderInstance customShader = ShaderLoader.getShader(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"box_blur"));
         if (customShader != null) {
             RenderTarget inTarget = testRenderTarget;
@@ -85,7 +85,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
             RenderSystem.blendFuncSeparate(
                     GlStateManager.SourceFactor.SRC_ALPHA,
                     GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
-                    GlStateManager.SourceFactor.ONE,
+                    GlStateManager.SourceFactor.SRC_ALPHA,
                     GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
             );
 
@@ -94,9 +94,9 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
             BufferBuilder bufferbuilder = RenderSystem.renderThreadTesselator().getBuilder();
             bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
             bufferbuilder.vertex(0.0, 0.0, 0.0).endVertex();
-            bufferbuilder.vertex((double)outSize[0], 0.0, 0.0).endVertex();
-            bufferbuilder.vertex((double)outSize[0], (double)outSize[1], 0.0).endVertex();
-            bufferbuilder.vertex(0.0, (double)outSize[1], 0.0).endVertex();
+            bufferbuilder.vertex(outSize[0], 0.0, 0.0).endVertex();
+            bufferbuilder.vertex(outSize[0], outSize[1], 0.0).endVertex();
+            bufferbuilder.vertex(0.0, outSize[1], 0.0).endVertex();
             BufferUploader.draw(bufferbuilder.end());
 
             customShader.clear();
@@ -108,6 +108,16 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
             mainRenderTarget.bindWrite(true);
 
         }
+    }
+
+    public void drawOnScreen(float screenWidth, float screenHeight){
+        BufferBuilder bufferbuilder = RenderSystem.renderThreadTesselator().getBuilder();
+        bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+        bufferbuilder.vertex(0.0, 0.0, 0.0).endVertex();
+        bufferbuilder.vertex(screenWidth, 0.0, 0.0).endVertex();
+        bufferbuilder.vertex(screenWidth, screenHeight, 0.0).endVertex();
+        bufferbuilder.vertex(0.0, screenHeight, 0.0).endVertex();
+        BufferUploader.draw(bufferbuilder.end());
     }
 
     @Override
@@ -126,13 +136,13 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
         double camY = cameraPosition.y;
         double camZ = cameraPosition.z;
 
-        //ProfilerFiller profiler = InactiveProfiler.INSTANCE;
-        //final List<THObject> objectList = layerObjects(entity.getObjectManager().getTHObjectsForRender(),camX,camY,camZ);
+        //final List<? extends THObject> objectList = layerObjects(entity.getObjectManager().getTHObjectsForRender(),camX,camY,camZ);
         final List<? extends THObject> objectList = entity.getObjectManager().getTHObjectsForRender();
 
-        Predicate<THObject> predicate = (object) -> (
+        /*
+        Predicate<THObject> shouldRenderTHObject = (object) -> (
                 object != null && (object instanceof THCurvedLaser || this.shouldRenderTHObject(object, this.frustum, camX, camY, camZ))
-        );
+        );*/
 
         RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
         /*
@@ -143,21 +153,22 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
             mainRenderTarget.bindWrite(true);
         }*/
 
-        boolean flag = true;
+        boolean flag = false;
 
         if (flag) {
             mainRenderTarget.unbindWrite();
             testRenderTarget.copyDepthFrom(mainRenderTarget);
             testRenderTarget.bindWrite(true);
         }
-        //profiler.push("danmaku");
 
         RenderSystem.enableBlend();
         if (!objectList.isEmpty()) {
             //layerObjects(objectList,camX,camY,camZ);
+
+            //Render Collision Graphics
             if (this.entityRenderDispatcher.shouldRenderHitBoxes()) {
                 for (THObject object:objectList) {
-                    if (predicate.test(object)) {
+                    if (object != null && (object instanceof THCurvedLaser || this.shouldRenderTHObject(object, this.frustum, camX, camY, camZ))/*shouldRenderTHObject.test(object)*/) {
                         poseStack.pushPose();
                         Vec3 objectPos = object.getOffsetPosition(partialTicks);
                         poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
@@ -165,7 +176,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
                             if (object instanceof THCurvedLaser laser) {
                                 renderTHCurvedLaserHitBoxes(laser, objectPos, poseStack, bufferSource.getBuffer(RenderType.lines()), partialTicks, this.frustum, cameraPosition);
                             } else {
-                                renderTHObjectsHitBox(object, poseStack, bufferSource.getBuffer(RenderType.lines()));
+                                renderTHObjectsHitBox(object, poseStack, bufferSource.getBuffer(RenderType.lineStrip()));
                             }
                         }
                         poseStack.popPose();
@@ -173,12 +184,16 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
                 }
             }
 
-
+            //Render THObject
             for (THObject object:objectList) {
-                if (predicate.test(object)) {
+                if (object != null && (object instanceof THCurvedLaser || this.shouldRenderTHObject(object, this.frustum, camX, camY, camZ))/*shouldRenderTHObject.test(object)*/) {
                     poseStack.pushPose();
                     Vec3 objectPos = object.getOffsetPosition(partialTicks);
                     poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
+
+                    //applyTHObejctBlendMode(object);
+                    //THObjectRenderHelper.parseBlend(THObject.Blend.normal).apply();
+
                     this.getTHObjectRenderer(object).render(object, objectPos, partialTicks, poseStack, bufferSource, combinedOverlay);
                     //this.thobjectRenderers.get(object).render(object, objectPos, partialTicks, poseStack, bufferSource, combinedOverlay);
                     poseStack.popPose();
@@ -205,11 +220,11 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
         poseStack.translate(entityPos.x-camX, entityPos.y-camY, entityPos.z-camZ);
     }
 
-    public <T extends THObject> AbstractTHObjectRenderer<T> getTHObjectRenderer(T object) {
+    public <T extends THObject> AbstractTHObjectRenderer<T> getTHObjectRenderer(@NotNull T object) {
         return (AbstractTHObjectRenderer<T>) this.thobjectRenderers.get(object.getType());
     }
 
-    private static void renderTHObjectsHitBox(THObject object, PoseStack poseStack, VertexConsumer vertexConsumer) {
+    private static void renderTHObjectsHitBox(@NotNull THObject object, PoseStack poseStack, VertexConsumer vertexConsumer) {
         AABB aabb = object.getBoundingBox().move(-object.getX(), -object.getY(), -object.getZ());
         if(object.getCollisionType() == THObject.CollisionType.AABB) {
             LevelRenderer.renderLineBox(poseStack, vertexConsumer, aabb, 0.0F, 1.0F, 1.0F, 1.0F);
@@ -223,6 +238,14 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
                     Vec2.ONE,
                     color,color,color);
         }else if(object.getCollisionType() == THObject.CollisionType.ELLIPSOID){
+            /*
+            double length = Mth.absMax(Mth.absMax(object.getSize().x,object.getSize().y),object.getSize().z);
+            AABB aabb1 = new AABB(
+                    object.getPosition().add(-length,-length,-length),
+                    object.getPosition().add(length,length,length)
+            ).move(-object.getX(), -object.getY(), -object.getZ());
+            LevelRenderer.renderLineBox(poseStack, vertexConsumer, aabb1, 0.0F, 1.0F, 1.0F, 1.0F);
+            */
             poseStack.pushPose();
             Vector3f rotation = object.getRotation();
             poseStack.mulPose(new Quaternionf().rotationYXZ(rotation.y,-rotation.x,rotation.z));
@@ -235,6 +258,8 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
                     Vec2.ONE,
                     color,color,color);
             poseStack.popPose();
+
+
         }
 
         Vec3 vec31 = object.getMotionDirection();
@@ -299,7 +324,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
     }
 
     @Override
-    public boolean shouldRender(EntityTHObjectContainer entity, Frustum frustum, double camX, double camY, double camZ) {
+    public boolean shouldRender(@NotNull EntityTHObjectContainer entity, @NotNull Frustum frustum, double camX, double camY, double camZ) {
         this.frustum = frustum;
         return true;
     }

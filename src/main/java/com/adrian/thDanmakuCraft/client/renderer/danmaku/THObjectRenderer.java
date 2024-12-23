@@ -1,6 +1,7 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku;
 
 import com.adrian.thDanmakuCraft.client.renderer.THObjectRenderHelper;
+import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.THObject;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -36,7 +37,7 @@ public class THObjectRenderer extends AbstractTHObjectRenderer<THObject> {
         Vector3f scale = object.getScale();
         poseStack.scale(scale.x, scale.y, scale.z);
         PoseStack.Pose posestack$pose = poseStack.last();
-        VertexConsumer vertexconsumer = bufferSource.getBuffer(object.blend.renderType.apply(object.getTexture()));
+        VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.BLEND_NONE.apply(object.getTexture()));
 
         THObjectRenderHelper.renderTexture(vertexconsumer, posestack$pose, combinedOverlay,
                 new Vector3f(-0.5f, -0.5f, 0.0f), new Vector2f(0.0f, 1.0f),

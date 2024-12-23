@@ -23,16 +23,16 @@ import java.util.Map;
 public class ShaderLoader {
 
     //private static final ResourceManager RESOURCE_MANAGER = Minecraft.getInstance().getResourceManager();
-    private static final Map<ResourceLocation,ShaderInstance> shaderMap = new HashMap<>();
+    private static final Map<ResourceLocation,MyShaderInstance> shaderMap = new HashMap<>();
 
-    public static ShaderInstance DANMAKU_DEPTH_OUTLINE_SHADER;
+    public static MyShaderInstance DANMAKU_DEPTH_OUTLINE_SHADER;
 
     public ShaderLoader() {
     }
 
     public static void registryShaders(ResourceProvider resourceProvider){
-        registryShader(resourceProvider,new ResourceLocation(THDanmakuCraftCore.MOD_ID,"box_blur"), DefaultVertexFormat.POSITION);
         DANMAKU_DEPTH_OUTLINE_SHADER = registryShader(resourceProvider,new ResourceLocation(THDanmakuCraftCore.MOD_ID,"rendertype_danmaku_depth_outline"), THRenderType.TEST_FORMAT);
+        registryShader(resourceProvider,new ResourceLocation(THDanmakuCraftCore.MOD_ID,"box_blur"), DefaultVertexFormat.POSITION);
         registryShader(resourceProvider,new ResourceLocation(THDanmakuCraftCore.MOD_ID,"test_shader"), new VertexFormat(
                 ImmutableMap.<String, VertexFormatElement>builder()
                         .put("Position", DefaultVertexFormat.ELEMENT_POSITION)
@@ -65,7 +65,7 @@ public class ShaderLoader {
 
     }
 
-    public static ShaderInstance registryShader(ResourceProvider resourceProvider, ResourceLocation resourceLocation, VertexFormat vertexFormat){
+    public static MyShaderInstance registryShader(ResourceProvider resourceProvider, ResourceLocation resourceLocation, VertexFormat vertexFormat){
         shaderMap.put(resourceLocation,loadShader(resourceProvider,resourceLocation,vertexFormat));
         return shaderMap.get(resourceLocation);
     }
@@ -74,16 +74,16 @@ public class ShaderLoader {
         shaderMap.clear();
     }
 
-    public static ShaderInstance loadShader(ResourceProvider resourceProvider, ResourceLocation resourceLocation, VertexFormat vertexFormat) {
+    public static MyShaderInstance loadShader(ResourceProvider resourceProvider, ResourceLocation resourceLocation, VertexFormat vertexFormat) {
         try {
-            return new ShaderInstance(resourceProvider,resourceLocation,vertexFormat);
+            return new MyShaderInstance(resourceProvider,resourceLocation,vertexFormat);
         } catch (IOException e) {
             THDanmakuCraftCore.LOGGER.info("Failed load shader {}",resourceLocation,e);
         }
         return null;
     }
 
-    public static ShaderInstance getShader(ResourceLocation resourceLocation){
+    public static MyShaderInstance getShader(ResourceLocation resourceLocation){
         return shaderMap.get(resourceLocation);
     }
 }

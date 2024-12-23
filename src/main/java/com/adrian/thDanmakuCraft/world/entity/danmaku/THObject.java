@@ -2,13 +2,15 @@ package com.adrian.thDanmakuCraft.world.entity.danmaku;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.api.script.IScriptTHObjectAPI;
-import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.script.IScript;
 import com.adrian.thDanmakuCraft.script.ScriptManager;
 import com.adrian.thDanmakuCraft.util.CollisionHelper;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.adrian.thDanmakuCraft.script.js.JSManager;
+import com.mojang.blaze3d.shaders.BlendMode;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.*;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -27,10 +29,10 @@ import java.util.List;
 public class THObject implements IScript, IScriptTHObjectAPI {
     private final THObjectType<? extends THObject> type;
     private final ScriptManager scriptManager;
-    protected final RandomSource random;
     private final Level level;
+    protected final RandomSource random;
     private EntityTHObjectContainer container;
-    public static final ResourceLocation TEXTURE_WHITE = new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/white.png");
+    protected static final ResourceLocation TEXTURE_WHITE = new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/white.png");
     protected ResourceLocation TEXTURE = TEXTURE_WHITE;
     protected static final AABB INITIAL_AABB = new AABB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
     protected AABB bb = INITIAL_AABB;
@@ -38,7 +40,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
     protected double positionY;
     protected double positionZ;
     protected Vec3 prePosition;
-    public Vec3 lastPosition;
+    protected Vec3 lastPosition;
     protected Vec3 velocity = new Vec3(0.0d, 0.0d, 0.0d);
     protected Vec3 acceleration = new Vec3(0.0d, 0.0d, 0.0d);
     protected Vec3 size = new Vec3(0.5f, 0.5f, 0.5f);                  //Hitbox size
@@ -50,7 +52,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
     protected float damage = 1.0f;
     protected int timer = 0;
     protected int lifetime = 120;
-    private int deathLastingTime = 10;
+    protected int deathLastingTime = 10;
     public boolean shouldSave = true;
     public boolean deathAnimation = true;
     public boolean spawnAnimation = true;
@@ -67,7 +69,8 @@ public class THObject implements IScript, IScriptTHObjectAPI {
     public int layer = 0;
 
     public Color color = Color(255, 255, 255, 255);
-    public THRenderType.BLEND blend = THRenderType.BLEND.LIGHTEN;
+    //public THRenderType.BLEND blend = THRenderType.BLEND.LIGHTEN;
+    protected Blend blend = Blend.add;
     protected CollisionType collisionType = CollisionType.AABB;
 
     public THObject(THObjectType<? extends THObject> type, EntityTHObjectContainer container) {
@@ -292,6 +295,11 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         return this.size;
     }
 
+    @NotNull
+    public Blend getBlend(){
+        return this.blend;
+    }
+
     public boolean getIsDead() {
         return this.isDead;
     }
@@ -398,7 +406,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
             this.remove();
         }, this);
 
-        this.timer += 1;
+        this.timer++;
     }
 
     public void collision() {
@@ -407,55 +415,66 @@ public class THObject implements IScript, IScriptTHObjectAPI {
             return;
         }
 
-        //this.collisionType = CollisionType.ELLIPSOID;
-        //this.setSize(new Vec3(0.5f,0.5f,2.0f));
+        /*
+        this.collisionType = CollisionType.ELLIPSOID;
+        this.setSize(new Vec3(0.5f,0.5f,2.0f));
+        this.setRotation(this.timer/40.0f,this.timer/10.0f,0.0f);
+
+         */
 
         entitiesInBound.forEach(entity -> {
             if (this.collisionType == CollisionType.AABB) {
-                if (entity.getBoundingBox().intersects(this.getBoundingBox())) {
+                AABB aabb = this.getBoundingBox();
+                if (entity.getBoundingBox().intersects(aabb)) {
                     this.onHit(new EntityHitResult(entity, this.getPosition()));
                 }
-            } else if (this.collisionType == CollisionType.SPHERE) {
-                if (CollisionHelper.isCollidingSphereBox(this.getPosition(), this.size.x, entity.getBoundingBox())) {
-                    this.onHit(new EntityHitResult(entity, this.getPosition()));
-                }
-            } else if (this.collisionType == CollisionType.ELLIPSOID) {
-                if (CollisionHelper.isCollidingOrientedEllipsoidBox(this.getPosition(), this.size, this.getRotation(), entity.getBoundingBox())) {
-                    this.onHit(new EntityHitResult(entity, this.getPosition()));
-                }
-            } else if (this.collisionType == CollisionType.CUBOID) {
-                // TODO cuboid collision
+            }else if (this.collisionType.collisionEntity(this,entity)) {
+                var result = new EntityHitResult(entity, this.getPosition());
+                this.onHitEntity(result);
+                this.onHit(result);
             }
         });
 
-        AABB aabb = this.getBoundingBox();
-        HitResult hitresult = this.level.clip(new ClipContext(
-                new Vec3(aabb.minX, aabb.minY, aabb.minZ),
-                new Vec3(aabb.maxX, aabb.maxY, aabb.maxZ),
-                ClipContext.Block.COLLIDER,
-                ClipContext.Fluid.NONE,
-                this.container));
-        this.onHit(hitresult);
+        if(this.collisionType == CollisionType.AABB){
+            AABB aabb = this.getBoundingBox();
+            BlockHitResult result = this.level.clip(new ClipContext(
+                    new Vec3(aabb.minX, aabb.minY, aabb.minZ),
+                    new Vec3(aabb.maxX, aabb.maxY, aabb.maxZ),
+                    ClipContext.Block.COLLIDER,
+                    ClipContext.Fluid.NONE,
+                    this.container));
+             if(result.getType() != HitResult.Type.MISS) {
+                 this.onHitBlock(result);
+                 this.onHit(result);
+             }
+        }else {
+            double length = Mth.absMax(Mth.absMax(size.x,size.y),size.z);
+            AABB box = new AABB(
+                    this.getPosition().subtract(length,length,length),
+                    this.getPosition().add(length,length,length)
+            );
+            for (double z = box.minZ; z <= box.maxZ; z += 1) {
+                for (double y = box.minY; y <= box.maxY; y += 1) {
+                    for (double x = box.minX; x <= box.maxX; x += 1) {
+                        BlockPos pos = new BlockPos(Mth.floor(x), Mth.floor(y), Mth.floor(z));
+                        if (!this.level.getBlockState(pos).isAir()) {
+                            if (this.collisionType.collisionBlock(this, pos)) {
+                                BlockHitResult result = new BlockHitResult(
+                                        new Vec3(box.maxX, box.maxY, box.maxZ),
+                                        Direction.getNearest(new Vec3(box.minX, box.minY, box.minZ)),
+                                        pos, true);
+                                this.onHitBlock(result);
+                                this.onHit(result);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
     public void onHit(@NotNull HitResult result) {
-        HitResult.Type type = result.getType();
-
-        if (type == HitResult.Type.MISS) {
-            return;
-        }
-
-        if (type == HitResult.Type.ENTITY && result instanceof EntityHitResult entityHitResult) {
-            Entity entity = entityHitResult.getEntity();
-            if (!this.canHitUser && entity.equals(this.container.getUser()))
-                return;
-            this.onHitEntity(entityHitResult);
-        }
-
-        if (type == HitResult.Type.BLOCK && result instanceof BlockHitResult blockHitResult) {
-            this.onHitBlock(blockHitResult);
-        }
-
         this.setDead();
     }
 
@@ -468,7 +487,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
     }
 
     public void onHitBlock(BlockHitResult result) {
-        //this.level.removeBlock(result.getBlockPos(),true);
+        this.level.removeBlock(result.getBlockPos(),true);
     }
 
     public void onDead() {
@@ -500,7 +519,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
 
     }
 
-    public void setBlend(THRenderType.BLEND blend) {
+    public void setBlend(Blend blend) {
         this.blend = blend;
     }
 
@@ -539,6 +558,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         buffer.writeEnum(this.collisionType);
         //buffer.writeBoolean(this.bound);
         buffer.writeBoolean(this.shouldSave);
+        //this.blend.writeData(buffer);
         this.scriptManager.writeData(buffer);
     }
 
@@ -564,12 +584,13 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         this.timer = buffer.readInt();
         this.lifetime = buffer.readInt();
         this.deathLastingTime = buffer.readInt();
-        this.blend = buffer.readEnum(THRenderType.BLEND.class);
+        this.blend = buffer.readEnum(Blend.class);
         this.isDead = buffer.readBoolean();
         this.collision = buffer.readBoolean();
         this.collisionType = buffer.readEnum(THObject.CollisionType.class);
         //this.bound = buffer.readBoolean();
         this.shouldSave = buffer.readBoolean();
+        //this.blend.readData(buffer);
         this.scriptManager.readData(buffer);
         this.setBoundingBox(this.getPosition(), this.size);
     }
@@ -591,6 +612,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         tag.putBoolean("Collision", this.collision);
         tag.putInt("CollisionType", this.collisionType.ordinal());
         this.scriptManager.save(tag);
+        //this.blend.save(tag);
         return tag;
     }
 
@@ -615,11 +637,12 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         this.timer = timerTag.getInt(0);
         this.lifetime = timerTag.getInt(1);
         this.deathLastingTime = timerTag.getInt(2);
-        this.blend = THRenderType.BLEND.class.getEnumConstants()[tag.getInt("Blend")];
+        this.blend = Blend.class.getEnumConstants()[tag.getInt("Blend")];
         this.isDead = tag.getBoolean("IsDead");
         this.collision = tag.getBoolean("Collision");
         this.collisionType = THObject.CollisionType.class.getEnumConstants()[tag.getInt("CollisionType")];
         this.scriptManager.load(tag);
+        //this.blend.load(tag);
     }
 
     public boolean shouldRender(double camX, double camY, double camZ) {
@@ -678,6 +701,14 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         return listtag;
     }
 
+    protected static ListTag newStringList(String... value) {
+        ListTag listtag = new ListTag();
+        for(String i : value) {
+            listtag.add(StringTag.valueOf(i));
+        }
+        return listtag;
+    }
+
     protected static ListTag newVec2(Vec2 vec2) {
         return newFloatList(vec2.x,vec2.y);
     }
@@ -700,10 +731,57 @@ public class THObject implements IScript, IScriptTHObjectAPI {
     }
 
     public enum CollisionType{
-        AABB,
-        SPHERE,
-        ELLIPSOID,
-        CUBOID
+        AABB(CollisionType::AABB),
+        SPHERE(CollisionType::SPHERE),
+        ELLIPSOID(CollisionType::Ellipsoid),
+        CUBOID(CollisionType::CUBOID),;
+
+        private final CollisionFactory factory;
+        CollisionType(CollisionFactory factory){
+            this.factory = factory;
+        }
+
+        public void collisionEntity(THObject object, Entity entity, Runnable whenColling){
+            if (this.factory.collision(object.getPosition(),object.getSize(),object.getRotation(),entity.getBoundingBox())){
+                whenColling.run();
+            }
+        }
+
+        public boolean collision(THObject object, AABB aabb){
+            return this.factory.collision(object.getPosition(),object.getSize(),object.getRotation(),aabb);
+        }
+
+        public boolean collisionEntity(THObject object, Entity entity){
+            return this.factory.collision(object.getPosition(),object.getSize(),object.getRotation(),entity.getBoundingBox());
+        }
+
+        public boolean collisionBlock(THObject object, BlockPos pos){
+            return this.factory.collision(object.getPosition(),object.getSize(),object.getRotation(),
+                    new AABB(pos.getX(),pos.getY(),pos.getZ(),
+                            pos.getX()+1,pos.getY()+1,pos.getZ()+1));
+        }
+
+        public static boolean AABB(Vec3 center, Vec3 size, Vector3f rotation, AABB aabb){
+            return CollisionHelper.isCollidingAABB(center,size,aabb);
+        }
+
+        public static boolean SPHERE(Vec3 center, Vec3 scale, Vector3f rotation, AABB aabb){
+            return CollisionHelper.isCollidingSphereBox(center,scale.x,aabb);
+        }
+
+        public static boolean Ellipsoid(Vec3 center, Vec3 scale, Vector3f rotation, AABB aabb){
+            return CollisionHelper.isCollidingOrientedEllipsoidBox(center,scale,rotation,aabb);
+        }
+
+        public static boolean CUBOID(Vec3 center, Vec3 scale, Vector3f rotation, AABB aabb){
+            return CollisionHelper.isCollidingAABB(center,scale,aabb);
+        }
+
+        public
+
+        interface CollisionFactory{
+            boolean collision(Vec3 center, Vec3 scale, Vector3f rotation, AABB aabb);
+        }
     }
 
     public static class Color{
@@ -790,5 +868,139 @@ public class THObject implements IScript, IScriptTHObjectAPI {
 
     public static Color Color(int r, int g, int b){
         return Color(r,g,b,255);
+    }
+
+    public enum Blend {
+        /*
+        public static int ADD = 32774;
+        public static int SUBTRACT = 32778;
+        public static int REVERSE_SUBTRACT = 32779;
+        public static int MIN = 32775;
+        public static int MAX = 32776;
+
+        public static int ZERO = 0;
+        public static int ONE = 1;
+        public static int SRC_COLOR = 768;
+        public static int ONE_MINUS_SRC_COLOR = 769;
+        public static int DST_COLOR = 774;
+        public static int ONE_MINUS_DST_COLOR = 775;
+        public static int SRC_ALPHA = 770;
+        public static int ONE_MINUS_SRC_ALPHA = 771;
+        public static int DST_ALPHA = 772;
+        public static int ONE_MINUS_DST_ALPHA = 773;
+
+        public static Blend add = new Blend(
+
+                SRC_ALPHA,
+                ONE_MINUS_SRC_ALPHA
+        );*/
+
+        normal("add","src_alpha","one_minus_src_alpha","one","one_minus_src_alpha"),
+        add("add","src_alpha","one"),
+        sub("subtract","src_alpha","one_minus_src_alpha"),
+        max("max","src_alpha","one_minus_src_alpha"),
+        min("min","src_alpha","one_minus_src_alpha"),
+        mul_add("add","dst_color","1-srcalpha","one","1-srcalpha"),
+        mul_rev("reverse_subtract","dstcolor","1-srcalpha","one","1-srcalpha");
+
+        private final String blendFunc,
+                srcColorFactor,
+                dstColorFactor,
+                srcAlphaFactor,
+                dstAlphaFactor;
+        private final boolean separateBlend;
+
+        Blend(boolean separateBlend,String blendFunc, String srcColor, String dstColor, String srcAlpha, String dstAlpha) {
+            this.separateBlend = separateBlend;
+            this.blendFunc = blendFunc;
+            this.srcColorFactor = srcColor;
+            this.dstColorFactor = dstColor;
+            this.srcAlphaFactor = srcAlpha;
+            this.dstAlphaFactor = dstAlpha;
+        }
+
+        Blend(String blendFunc, String src, String dst) {
+            this(false,blendFunc,src,dst,src,dst);
+            /*
+            this.blendFunc = blendFunc;
+            this.srcColorFactor = src;
+            this.dstColorFactor = dst;
+            this.srcAlphaFactor = src;
+            this.dstAlphaFactor = dst;
+            this.separateBlend = false;
+
+             */
+        }
+
+        Blend(String blendFunc, String srcColor, String dstColor, String srcAlpha, String dstAlpha) {
+            this(true,blendFunc,srcColor,dstColor,srcAlpha,dstAlpha);
+            /*
+            this.blendFunc = blendFunc;
+            this.srcColorFactor = srcColor;
+            this.dstColorFactor = dstColor;
+            this.srcAlphaFactor = srcAlpha;
+            this.dstAlphaFactor = dstAlpha;
+            this.separateBlend = true;
+
+             */
+        }
+
+        public String getBlendFunc() {
+            return this.blendFunc;
+        }
+
+        public String getSrcColor() {
+            return this.srcColorFactor;
+        }
+
+        public String getDstColor() {
+            return this.dstColorFactor;
+        }
+
+        public String getSrcAlpha() {
+            return this.srcAlphaFactor;
+        }
+
+        public String getDstAlpha() {
+            return this.dstAlphaFactor;
+        }
+
+        public boolean isSeparateBlend() {
+            return this.separateBlend;
+        }
+
+        public String[] getALL(){
+            return new String[]{
+                    blendFunc,
+                    srcColorFactor,
+                    dstColorFactor,
+                    srcAlphaFactor,
+                    dstAlphaFactor
+            };
+        }
+
+        /*
+        public void writeData(FriendlyByteBuf buffer) {
+            buffer.writeUtf(this.function);
+            buffer.writeUtf(this.src);
+            buffer.writeUtf(this.dst);
+        }
+
+        public void readData(FriendlyByteBuf buffer) {
+            this.function = buffer.readUtf();
+            this.src = buffer.readUtf();
+            this.dst = buffer.readUtf();
+        }
+
+        public void save(CompoundTag tag) {
+            tag.put("Blend", newStringList(this.function, this.src, this.dst));
+        }
+
+        public void load(CompoundTag tag) {
+            ListTag blendTag = tag.getList("Blend", Tag.TAG_STRING);
+            this.function = blendTag.getString(0);
+            this.src = blendTag.getString(1);
+            this.dst = blendTag.getString(2);
+        }*/
     }
 }

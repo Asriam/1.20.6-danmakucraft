@@ -9,34 +9,43 @@ import org.joml.Vector3f;
 public class CollisionHelper {
 
     // 檢查球與盒子的碰撞
-    public static boolean isCollidingSphereBox(Vec3 sphereCenter, double sphereRadius, AABB box) {
-        // 獲取球到盒子的最近點
-        double nearestX = Mth.clamp(sphereCenter.x, box.minX, box.maxX);
-        double nearestY = Mth.clamp(sphereCenter.y, box.minY, box.maxY);
-        double nearestZ = Mth.clamp(sphereCenter.z, box.minZ, box.maxZ);
 
-        // 計算球中心與最近點之間的距離平方
-        double distanceSquared = distanceSquared(sphereCenter.x, sphereCenter.y, sphereCenter.z, nearestX, nearestY, nearestZ);
-        // 比較距離平方 (避免使用 Math.sqrt, 提升性能)
-        return distanceSquared <= (sphereRadius * sphereRadius);
+    public static boolean isCollidingAABB(AABB box0, AABB box1) {
+        return box1.intersects(box0);
     }
 
-    public static boolean isCollidingEllipsoidBox(Vec3 ellipsoidCenter, Vec3 radii, AABB box) {
+    public static boolean isCollidingAABB(Vec3 center, Vec3 scale, AABB box1) {
+        return box1.intersects(new AABB(center, scale));
+    }
+
+    public static boolean isCollidingSphereBox(Vec3 center, double radius, AABB box) {
+        // 獲取球到盒子的最近點
+        double nearestX = Mth.clamp(center.x, box.minX, box.maxX);
+        double nearestY = Mth.clamp(center.y, box.minY, box.maxY);
+        double nearestZ = Mth.clamp(center.z, box.minZ, box.maxZ);
+
+        // 計算球中心與最近點之間的距離平方
+        double distanceSquared = distanceSquared(center.x, center.y, center.z, nearestX, nearestY, nearestZ);
+        // 比較距離平方 (避免使用 Math.sqrt, 提升性能)
+        return distanceSquared <= (radius * radius);
+    }
+
+    public static boolean isCollidingEllipsoidBox(Vec3 center, Vec3 scale, AABB box) {
         // 縮放盒子內的每個維度到椭球的單位球，計算歸一化空間內的最近點
-        double nearestX = Mth.clamp((box.minX - ellipsoidCenter.x) / radii.x, -1, 1) * radii.x + ellipsoidCenter.x;
-        double nearestY = Mth.clamp((box.minY - ellipsoidCenter.y) / radii.y, -1, 1) * radii.y + ellipsoidCenter.y;
-        double nearestZ = Mth.clamp((box.minZ - ellipsoidCenter.z) / radii.z, -1, 1) * radii.z + ellipsoidCenter.z;
+        double nearestX = Mth.clamp((box.minX - center.x) / scale.x, -1, 1) * scale.x + center.x;
+        double nearestY = Mth.clamp((box.minY - center.y) / scale.y, -1, 1) * scale.y + center.y;
+        double nearestZ = Mth.clamp((box.minZ - center.z) / scale.z, -1, 1) * scale.z + center.z;
 
         // 計算椭球中心與最近點之間的距離平方
-        double distanceSquared = distanceSquared(ellipsoidCenter.x, ellipsoidCenter.y, ellipsoidCenter.z,
+        double distanceSquared = distanceSquared(center.x, center.y, center.z,
                 nearestX, nearestY, nearestZ);
         // 當距離小於等於椭球的 1（縮放單位），則視為碰撞
         return distanceSquared <= 1.0;
     }
 
-    public static boolean isCollidingOrientedEllipsoidBox(Vec3 ellipsoidCenter, Vec3 radii, Vector3f rotationAngles, AABB box) {
+    public static boolean isCollidingOrientedEllipsoidBox(Vec3 center, Vec3 scale, Vector3f rotationAngles, AABB box) {
         // 创建旋转矩阵
-        Matrix3x3d rotationMatrix = createRotationMatrix(rotationAngles);
+        Matrix3x3d rotationMatrix = createRotationMatrix(new Vector3f(rotationAngles.x,-rotationAngles.y,rotationAngles.z));
         /*
         // 遍历盒子的所有顶点，检测是否与椭球碰撞
         Vec3[] boxVertices = getVertices(box);
@@ -51,7 +60,7 @@ public class CollisionHelper {
         }
          */
         // 如果没有顶点在椭球内，检查椭球中心到盒子最近点
-        return checkClosestPointOnBoxToEllipsoid(ellipsoidCenter, radii, rotationMatrix, box);
+        return checkClosestPointOnBoxToEllipsoid(center, scale, rotationMatrix, box);
     }
 
     // 创建旋转矩阵 (基于 x, y, z 的欧拉角)
@@ -98,6 +107,13 @@ public class CollisionHelper {
         Vec3 closestPoint = getClosestPoint(box,ellipsoidCenter); // 获取盒子上最近点
         Vec3 localClosestPoint = transformToLocal(closestPoint, ellipsoidCenter, rotationMatrix);
         return isPointInUnitEllipsoid(localClosestPoint, radii);
+    }
+
+    public static Vec3 Matrix3DmultipleVec3(Matrix3d matrix3d, Vec3 vec) {
+        double x = vec.x * matrix3d.m00 + vec.y * matrix3d.m01 + vec.z * matrix3d.m02;
+        double y = vec.x * matrix3d.m10 + vec.y * matrix3d.m11 + vec.z * matrix3d.m12;
+        double z = vec.x * matrix3d.m20 + vec.y * matrix3d.m21 + vec.z * matrix3d.m22;
+        return new Vec3(x,y,z);
     }
 
     private static double distanceSquared(double x1, double y1, double z1,

@@ -1,6 +1,9 @@
 #version 150
 
 uniform sampler2D DepthBuffer;
+uniform vec2 ScreenSize;
+uniform float Near;
+uniform float Far;
 
 in vec3 normal;
 in vec3 viewDir;
@@ -8,11 +11,14 @@ in vec4 vertexColor;
 in vec4 coreColor;
 in vec2 vertCoord;
 
-uniform vec2 ScreenSize;
-
 out vec4 fragColor;
 
-float near = 1.0f;
+/*
+float near = Near;
+float far = Far;
+*/
+
+float near = -1.0f;
 float far = 1000.0f;
 
 float LinearizeDepth(float depth) {
@@ -53,7 +59,7 @@ void main() {
 
     float distance = abs(bubbleDepth - sceneDepth); // linear difference in depth
 
-    float threshold = 0.005f;
+    float threshold = 0.01f;
     float normalizedDistance = clamp(distance / threshold, 0.0, 1.0); // [0, threshold] -> [0, 1]
 
     vec4 intersection = mix(vec4(1), vec4(0), pow(normalizedDistance,2)); // white to transparent gradient
@@ -63,5 +69,5 @@ void main() {
     fragColor = max(vec4(1.0-(clamp(rim,0.0f,1.0f)+max(intersection,0.0f))),0.0f)*1.6f*bubbleBase + max(vec4(1.0-(rim2+clamp(intersection,0.0f,1.0f))),0.0f)*1.6f*(coreColor*2.0f-1.0f);
     //fragColor = vec4(normal,1.0f);
 
-    //fragColor = vec4(vertCoord,1.0f,1.0f);
+    //fragColor = vec4(vec3(distance),1.0f);
 }

@@ -1,9 +1,7 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.THObject;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.shaders.BlendMode;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -13,8 +11,10 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.joml.*;
+import org.lwjgl.opengl.GL11;
 
 import java.lang.Math;
+import java.util.Locale;
 
 @OnlyIn(Dist.CLIENT)
 public class THObjectRenderHelper {
@@ -35,37 +35,37 @@ public class THObjectRenderHelper {
         ).normalize();
     }
 
-    public static void renderTexture(VertexConsumer consumer, PoseStack.Pose pose, int p_254296_,
+    public static void renderTexture(VertexConsumer consumer, PoseStack.Pose pose, int combinedOverlay,
                                      Vector3f vertex1, Vector2f uv1, THObject.Color color,
                                      Vector3f vertex2, Vector2f uv2, THObject.Color color2,
                                      Vector3f vertex3, Vector2f uv3, THObject.Color color3,
                                      Vector3f vertex4, Vector2f uv4, THObject.Color color4){
         Vector3f finalNormal = calculateNormal(vertex1,vertex2,vertex3,vertex4);
-        vertex(consumer, pose, p_254296_, vertex1, finalNormal, uv1, color);
-        vertex(consumer, pose, p_254296_, vertex2, finalNormal, uv2, color2);
-        vertex(consumer, pose, p_254296_, vertex3, finalNormal, uv3, color3);
-        vertex(consumer, pose, p_254296_, vertex4, finalNormal, uv4, color4);
+        vertex(consumer, pose, combinedOverlay, vertex1, finalNormal, uv1, color);
+        vertex(consumer, pose, combinedOverlay, vertex2, finalNormal, uv2, color2);
+        vertex(consumer, pose, combinedOverlay, vertex3, finalNormal, uv3, color3);
+        vertex(consumer, pose, combinedOverlay, vertex4, finalNormal, uv4, color4);
     }
 
-    public static void renderTexture(VertexConsumer consumer, PoseStack.Pose pose, int p_254296_,
+    public static void renderTexture(VertexConsumer consumer, PoseStack.Pose pose, int combinedOverlay,
                                      Vector3f vertex1, Vector2f uv1, THObject.Color color, THObject.Color coreColor,
                                      Vector3f vertex2, Vector2f uv2, THObject.Color color2,THObject.Color coreColor2,
                                      Vector3f vertex3, Vector2f uv3, THObject.Color color3,THObject.Color coreColor3,
                                      Vector3f vertex4, Vector2f uv4, THObject.Color color4,THObject.Color coreColor4){
-        vertex(consumer, pose, p_254296_, vertex1, vertex1, uv1, color, coreColor);
-        vertex(consumer, pose, p_254296_, vertex2, vertex2, uv2, color2,coreColor2);
-        vertex(consumer, pose, p_254296_, vertex3, vertex3, uv3, color3,coreColor3);
-        vertex(consumer, pose, p_254296_, vertex4, vertex4, uv4, color4,coreColor4);
+        vertex(consumer, pose, combinedOverlay, vertex1, vertex1, uv1, color, coreColor);
+        vertex(consumer, pose, combinedOverlay, vertex2, vertex2, uv2, color2,coreColor2);
+        vertex(consumer, pose, combinedOverlay, vertex3, vertex3, uv3, color3,coreColor3);
+        vertex(consumer, pose, combinedOverlay, vertex4, vertex4, uv4, color4,coreColor4);
     }
 
-    public static void renderTexture(VertexConsumer consumer, PoseStack.Pose pose, int p_254296_, Vector3f vertex1, Vector2f uv1, Vector3f vertex2, Vector2f uv2, Vector3f vertex3, Vector2f uv3, Vector3f vertex4, Vector2f uv4, THObject.Color color) {
-        renderTexture(consumer,pose,p_254296_, vertex1,uv1,color, vertex2,uv2,color, vertex3,uv3,color, vertex4,uv4,color);
+    public static void renderTexture(VertexConsumer consumer, PoseStack.Pose pose, int combinedOverlay, Vector3f vertex1, Vector2f uv1, Vector3f vertex2, Vector2f uv2, Vector3f vertex3, Vector2f uv3, Vector3f vertex4, Vector2f uv4, THObject.Color color) {
+        renderTexture(consumer,pose,combinedOverlay, vertex1,uv1,color, vertex2,uv2,color, vertex3,uv3,color, vertex4,uv4,color);
     }
 
-    public static void renderTexture(VertexConsumer consumer, PoseStack.Pose pose, int p_254296_,
+    public static void renderTexture(VertexConsumer consumer, PoseStack.Pose pose, int combinedOverlay,
                                      Vec3 offSetPos, Vec2 scale, Vec2 uvStart, Vec2 uvEnd, THObject.Color color){
         Vector3f pos = offSetPos.toVector3f();
-        renderTexture(consumer, pose, p_254296_,
+        renderTexture(consumer, pose, combinedOverlay,
                 new Vector3f(-0.5f*scale.x+pos.x, -0.5f*scale.y+pos.y, pos.z),   new Vector2f(uvStart.x, uvStart.y),color,
                 new Vector3f(0.5f*scale.x+pos.x, -0.5f*scale.y+pos.y, pos.z),    new Vector2f(uvEnd.x, uvStart.y),  color,
                 new Vector3f(0.5f*scale.x+pos.x, 0.5f*scale.y+pos.y, pos.z),     new Vector2f(uvEnd.x, uvEnd.y),    color,
@@ -107,7 +107,7 @@ public class THObjectRenderHelper {
                 .endVertex();
     }
 
-    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, int overlay, float pow, Vec3 offsetPosition, Vec3 scale, final int edgeA, final int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, THObject.Color color, THObject.Color endColor, THObject.Color coreColor) {
+    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, int combinedOverlay, float pow, Vec3 offsetPosition, Vec3 scale, final int edgeA, final int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, THObject.Color color, THObject.Color endColor, THObject.Color coreColor) {
         //THDanmakuCraftCore.LOGGER.info(THObjectRenderHelper.class.getName());
 
         THObject.Color startColor = color;
@@ -191,40 +191,55 @@ public class THObjectRenderHelper {
                 Vector3f offsetPositionF = offsetPosition.toVector3f();
 
 
-                Vector3f vertex = new Vector3f(x1*sin1,cos1,z1*sin1).mul(scaleF).add(offsetPositionF);
-                consumer.vertex(pose.pose(),vertex.x,vertex.y,vertex.z)
+                //Vector3f vertex = new Vector3f(x1*sin1,cos1,z1*sin1).mul(scaleF).add(offsetPositionF);
+                //Vector3f normal = new Vector3f(x1*sin1,cos1,z1*sin1).mul(scaleF).normalize();
+                Vector3f[] vertex = new Vector3f[] {
+                        new Vector3f(x1*sin1,cos1,z1*sin1).mul(scaleF).add(offsetPositionF),
+                        new Vector3f(x2*sin1,cos1,z2*sin1).mul(scaleF).add(offsetPositionF),
+                        new Vector3f(x2*sin2,cos2,z2*sin2).mul(scaleF).add(offsetPositionF),
+                        new Vector3f(x1*sin2,cos2,z1*sin2).mul(scaleF).add(offsetPositionF),
+                };
+                Vector3f[] normal = vertex;
+                /*
+                Vector3f[] normal = new Vector3f[] {
+                        new Vector3f(x1*sin1,cos1,z1*sin1).mul(scaleF).normalize(),
+                        new Vector3f(x2*sin1,cos1,z2*sin1).mul(scaleF).normalize(),
+                        new Vector3f(x2*sin2,cos2,z2*sin2).mul(scaleF).normalize(),
+                        new Vector3f(x1*sin2,cos2,z1*sin2).mul(scaleF).normalize(),
+                };*/
+                consumer.vertex(pose.pose(),vertex[0].x,vertex[0].y,vertex[0].z)
                         .color(startColor.r, startColor.g, startColor.b, startColor.a)
                         .color(coreColor.r, coreColor.g, coreColor.b, coreColor.a)
                         .uv(uvStart.x, uvStart.y)
-                        .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(overlay)
-                        .normal(pose, vertex.x, vertex.y, vertex.z)
+                        .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(combinedOverlay)
+                        .normal(pose, normal[0].x, normal[0].y, normal[0].z)
                         .endVertex();
 
-                vertex = new Vector3f(x2*sin1,cos1,z2*sin1).mul(scaleF).add(offsetPositionF);
-                consumer.vertex(pose.pose(),vertex.x,vertex.y,vertex.z)
+                //vertex = new Vector3f(x2*sin1,cos1,z2*sin1).mul(scaleF).add(offsetPositionF);
+                consumer.vertex(pose.pose(),vertex[1].x,vertex[1].y,vertex[1].z)
                         .color(startColor.r, startColor.g, startColor.b, startColor.a)
                         .color(coreColor.r, coreColor.g, coreColor.b, coreColor.a)
                         .uv(uvStart.x, uvStart.y)
-                        .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(overlay)
-                        .normal(pose, vertex.x, vertex.y, vertex.z)
+                        .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(combinedOverlay)
+                        .normal(pose, normal[1].x, normal[1].y, normal[1].z)
                         .endVertex();
 
-                vertex = new Vector3f(x2*sin2,cos2,z2*sin2).mul(scaleF).add(offsetPositionF);
-                consumer.vertex(pose.pose(),vertex.x,vertex.y,vertex.z)
+                //vertex = new Vector3f(x2*sin2,cos2,z2*sin2).mul(scaleF).add(offsetPositionF);
+                consumer.vertex(pose.pose(),vertex[2].x,vertex[2].y,vertex[2].z)
                         .color(finalColor.r, finalColor.g, finalColor.b, finalColor.a)
                         .color(coreColor.r, coreColor.g, coreColor.b, coreColor.a)
                         .uv(uvStart.x, uvStart.y)
-                        .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(overlay)
-                        .normal(pose, vertex.x, vertex.y, vertex.z)
+                        .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(combinedOverlay)
+                        .normal(pose, normal[2].x, normal[2].y, normal[2].z)
                         .endVertex();
 
-                vertex = new Vector3f(x1*sin2,cos2,z1*sin2).mul(scaleF).add(offsetPositionF);
-                consumer.vertex(pose.pose(),vertex.x,vertex.y,vertex.z)
+                //vertex = new Vector3f(x1*sin2,cos2,z1*sin2).mul(scaleF).add(offsetPositionF);
+                consumer.vertex(pose.pose(),vertex[3].x,vertex[3].y,vertex[3].z)
                         .color(finalColor.r, finalColor.g, finalColor.b, finalColor.a)
                         .color(coreColor.r, coreColor.g, coreColor.b, coreColor.a)
                         .uv(uvStart.x, uvStart.y)
-                        .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(overlay)
-                        .normal(pose, vertex.x, vertex.y, vertex.z)
+                        .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(combinedOverlay)
+                        .normal(pose, normal[3].x, normal[3].y, normal[3].z)
                         .endVertex();
 
                 startColor = finalColor;
@@ -232,7 +247,80 @@ public class THObjectRenderHelper {
         }
     }
 
-    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, int p_254296_, float pow, Vec3 offsetPosition, Vec3 scale, int edgeA, int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, THObject.Color color, int alpha, THObject.Color coreColor) {
-        renderSphere(consumer,pose,p_254296_,pow,offsetPosition,scale,edgeA,edgeB,isHalf,uvStart,uvEnd,color,THObject.Color(color.r,color.g,color.b,alpha),coreColor);
+    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, int combinedOverlay, float pow, Vec3 offsetPosition, Vec3 scale, int edgeA, int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, THObject.Color color, int alpha, THObject.Color coreColor) {
+        renderSphere(consumer,pose,combinedOverlay,pow,offsetPosition,scale,edgeA,edgeB,isHalf,uvStart,uvEnd,color,THObject.Color(color.r,color.g,color.b,alpha),coreColor);
     }
+
+    public static void renderCuboid(VertexConsumer consumer, PoseStack.Pose pose,int combinedOverlay, Vec3 posOffset, Vec3 scale){
+
+    }
+
+    public static BlendMode parseBlendNode(String blendFunc, String srcColor, String dstColor, String srcAlpha, String dstAlpha) {
+        return new BlendMode(
+                BlendMode.stringToBlendFactor(srcColor),
+                BlendMode.stringToBlendFactor(dstColor),
+                BlendMode.stringToBlendFactor(srcAlpha),
+                BlendMode.stringToBlendFactor(dstAlpha),
+                BlendMode.stringToBlendFunc(blendFunc));
+    }
+
+    public static BlendMode parseBlend(THObject.Blend blend) {
+        return blend.isSeparateBlend() ? new BlendMode(
+                BlendMode.stringToBlendFactor(blend.getSrcColor()),
+                BlendMode.stringToBlendFactor(blend.getDstColor()),
+                BlendMode.stringToBlendFactor(blend.getSrcAlpha()),
+                BlendMode.stringToBlendFactor(blend.getDstAlpha()),
+                BlendMode.stringToBlendFunc(blend.getBlendFunc()))
+                : new BlendMode(
+                BlendMode.stringToBlendFactor(blend.getSrcColor()),
+                BlendMode.stringToBlendFactor(blend.getDstColor()),
+                BlendMode.stringToBlendFunc(blend.getBlendFunc()));
+    }
+
+    /*
+    public static int stringToBlendFunc(String p_85528_) {
+        String s = p_85528_.trim().toLowerCase(Locale.ROOT);
+        if ("add".equals(s)) {
+            return 32774;
+        } else if ("subtract".equals(s)) {
+            return 32778;
+        } else if ("reversesubtract".equals(s)) {
+            return 32779;
+        } else if ("reverse_subtract".equals(s)) {
+            return 32779;
+        } else if ("min".equals(s)) {
+            return 32775;
+        } else {
+            return "max".equals(s) ? 32776 : 32774;
+        }
+    }
+
+    public static int stringToBlendFactor(String p_85531_) {
+        String s = p_85531_.trim().toLowerCase(Locale.ROOT);
+        s = s.replaceAll("_", "");
+        s = s.replaceAll("one", "1");
+        s = s.replaceAll("zero", "0");
+        s = s.replaceAll("minus", "-");
+        if ("0".equals(s)) {
+            return GL11.GL_ZERO;
+        } else if ("1".equals(s)) {
+            return GL11.GL_ONE;
+        } else if ("srccolor".equals(s)) {
+            return GL11.GL_SRC_COLOR;
+        } else if ("1-srccolor".equals(s)) {
+            return GL11.GL_ONE_MINUS_SRC_COLOR;
+        } else if ("dstcolor".equals(s)) {
+            return GL11.GL_DST_COLOR;
+        } else if ("1-dstcolor".equals(s)) {
+            return GL11.GL_ONE_MINUS_DST_COLOR;
+        } else if ("srcalpha".equals(s)) {
+            return GL11.GL_SRC_ALPHA;
+        } else if ("1-srcalpha".equals(s)) {
+            return GL11.GL_ONE_MINUS_SRC_ALPHA;
+        } else if ("dstalpha".equals(s)) {
+            return GL11.GL_ONE_MINUS_DST_ALPHA;
+        } else {
+            return "1-dstalpha".equals(s) ? GL11.GL_ONE_MINUS_DST_ALPHA : GL11.GL_ZERO;
+        }
+    }*/
 }

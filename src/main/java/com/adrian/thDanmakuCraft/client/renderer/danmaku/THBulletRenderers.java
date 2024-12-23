@@ -5,25 +5,37 @@ import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.THBullet;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.THObject;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import java.util.EnumMap;
 import java.util.Map;
 
 @OnlyIn(Dist.CLIENT)
 public class THBulletRenderers {
+
     public static void render2DBullet(THBulletRenderer renderer, THBullet bullet, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, int p_114710_) {
         //poseStack.mulPose(renderer.dispatcher.cameraOrientation());
         //poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
         poseStack.scale(bullet.getScale().x, bullet.getScale().y,bullet.getScale().z);
         PoseStack.Pose posestack_pose = poseStack.last();
-        VertexConsumer vertexconsumer = bufferSource.getBuffer(bullet.blend.renderType.apply(bullet.getTexture()));
+        VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.BLEND_NONE.apply(bullet.getTexture()));
+
+        /*
+        new THObject.BlendMode(
+                THObject.BlendMode.ADD,
+                THObject.BlendMode.ONE,
+                THObject.BlendMode.ZERO
+        ).getBlendMode().apply();
+
+         */
+
+
         int index = bullet.getBulletColor().getIndex();
         THObjectRenderHelper.renderTexture(vertexconsumer, posestack_pose, p_114710_, Vec3.ZERO, Vec2.ONE,
                 new Vec2(0.0f,1.0f/16*(index-1)),
@@ -43,7 +55,13 @@ public class THBulletRenderers {
         factory.render(renderer,bullet, bufferSource,poseStack,p_114710_,partialTicks,color,coreColor);
     }
 
-    public static class BulletRenderers {
+    public static RenderType getRenderType(THObject.Blend blend, boolean shouldCull) {
+        //return THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(THObjectRenderHelper.parseBlend(blend),shouldCull);
+        return THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(THObjectRenderHelper.parseBlend(blend),shouldCull);
+        //return THRenderType.TEST_RENDER_TYPE;
+    }
+
+    public static class Renderers {
         public static void arrow_big(THBulletRenderer renderer, THBullet bullet, MultiBufferSource bufferSource, PoseStack poseStack, int p_254296_,float partialTicks,THObject.Color color,THObject.Color coreColor) {
             poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
             Vec3 scale = new Vec3(0.4f,0.8f,0.4f);
@@ -54,33 +72,8 @@ public class THBulletRenderers {
             int edgeA = cull.edgeANum;
             int edgeB = cull.edgeBNum;
             Vec3 offset = new Vec3(0.0f,-0.45f,0.0f);
-            /*
-            VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.LIGHTNING_NO_CULL);
-            THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,2,
-                    offset.add(0.0f,0.4,0.0f),
-                    coreScale,
-                    edgeA,edgeB,false,
-                    Vec2.ZERO,
-                    Vec2.ONE,
-                    coreColor.multiply(0.6f),0,coreColor);
-            //vertexconsumer = bufferSource.getBuffer(THRenderType.LIGHTNING2);
-            THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,1.2f,
-                    offset,
-                    scale,
-                    edgeA,edgeB,true,
-                    Vec2.ZERO,
-                    Vec2.ONE,
-                    color.multiply(0.9f), 0,coreColor);
-             */
-            VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE);
-            RenderSystem.disableCull();
-            THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,2,
-                    offset.add(0.0f,0.4f,0.0f),
-                    coreScale,
-                    edgeA,edgeB,false,
-                    new Vec2(0.5f,0.4f),
-                    Vec2.ONE,
-                    coreColor.multiply(0.6f),0,THBullet.Color.WHITE().multiply(0.5f));
+            //VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE);
+            VertexConsumer vertexconsumer = bufferSource.getBuffer(getRenderType(bullet.getBlend(),false));
             THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,1.2f,
                     offset,
                     scale,
@@ -88,7 +81,37 @@ public class THBulletRenderers {
                     new Vec2(0.5f,0.6f),
                     Vec2.ONE,
                     color, 0,coreColor.multiply(0.4f));
-
+            THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,2,
+                    offset.add(0.0f,0.4f,0.0f),
+                    coreScale,
+                    edgeA,edgeB,false,
+                    new Vec2(0.5f,0.4f),
+                    Vec2.ONE,
+                    coreColor.multiply(0.6f),0,THBullet.Color.WHITE().multiply(0.5f));
+            /*
+            RenderType renderType = getRenderType(bullet.getBlend(),true);
+            BufferBuilder vertexconsumer = (BufferBuilder) bufferSource.getBuffer(renderType);
+            THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,1.2f,
+                    offset,
+                    scale,
+                    edgeA,edgeB,true,
+                    new Vec2(0.5f,0.6f),
+                    Vec2.ONE,
+                    color, 0,coreColor.multiply(0.4f));
+            renderType.setupRenderState();
+            BufferUploader.drawWithShader(vertexconsumer.end());
+            vertexconsumer.begin(VertexFormat.Mode.QUADS,renderType.format());
+            THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,2,
+                    offset.add(0.0f,0.4f,0.0f),
+                    coreScale,
+                    edgeA,edgeB,false,
+                    new Vec2(0.5f,0.4f),
+                    Vec2.ONE,
+                    coreColor.multiply(0.6f),0,THBullet.Color.WHITE().multiply(0.5f));
+            BufferUploader.drawWithShader(vertexconsumer.end());
+            renderType.clearRenderState();
+            vertexconsumer.begin(VertexFormat.Mode.QUADS,renderType.format());
+             */
         }
 
         public static void ball_mid(THBulletRenderer renderer, THBullet bullet, MultiBufferSource bufferSource, PoseStack poseStack, int p_254296_,float partialTicks,THObject.Color color,THObject.Color coreColor){
@@ -110,7 +133,8 @@ public class THBulletRenderers {
                     Vec2.ONE,
                     coreColor.multiply(0.8f),coreColor.multiply(0.8f));
              */
-            VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE);
+            //VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE);
+            VertexConsumer vertexconsumer = bufferSource.getBuffer(getRenderType(bullet.getBlend(),true));
             THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,1,
                     Vec3.ZERO,
                     scale,
@@ -118,7 +142,6 @@ public class THBulletRenderers {
                     new Vec2(0.5f,0.0f),
                     Vec2.ONE,
                     color,color,coreColor);
-
             //RenderSystem.depthFunc(515);
         }
 
@@ -141,7 +164,8 @@ public class THBulletRenderers {
                     Vec2.ONE,
                     coreColor.multiply(0.8f),coreColor.multiply(0.8f));3
             */
-            VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE);
+            //VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE);
+            VertexConsumer vertexconsumer = bufferSource.getBuffer(getRenderType(bullet.getBlend(),true));
             THObjectRenderHelper.renderSphere(vertexconsumer, posestack_pose, p_254296_, 1,
                     Vec3.ZERO,
                     scale,
@@ -170,7 +194,8 @@ public class THBulletRenderers {
                     Vec2.ONE,
                     coreColor.multiply(0.8f),0);
              */
-            VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE);
+            //VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE);
+            VertexConsumer vertexconsumer = bufferSource.getBuffer(getRenderType(bullet.getBlend(),true));
             THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,1,
                     Vec3.ZERO,
                     scale,
@@ -200,7 +225,8 @@ public class THBulletRenderers {
                     Vec2.ONE,
                     coreColor.multiply(0.8f), 0);
              */
-            VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE);
+            //VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE);
+            VertexConsumer vertexconsumer = bufferSource.getBuffer(getRenderType(bullet.getBlend(),true));
             THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,2,
                     offset,
                     scale,
@@ -230,14 +256,8 @@ public class THBulletRenderers {
                     color, 0, coreColor);
 
              */
-            VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE);
-            THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,2,
-                    Vec3.ZERO,
-                    coreScale,
-                    edgeA,edgeB,false,
-                    new Vec2(0.5f,0.0f),
-                    Vec2.ONE,
-                    coreColor, coreColor.multiply(0.5f), coreColor.multiply(0.5f));
+            //VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE);
+            VertexConsumer vertexconsumer = bufferSource.getBuffer(getRenderType(bullet.getBlend(),true));
             THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,2,
                     Vec3.ZERO,
                     scale,
@@ -245,10 +265,17 @@ public class THBulletRenderers {
                     new Vec2(0.5f,0.1f),
                     Vec2.ONE,
                     color, color.multiply(0.5f), coreColor.multiply(0.4f));
+            THObjectRenderHelper.renderSphere(vertexconsumer,posestack_pose, p_254296_,2,
+                    Vec3.ZERO,
+                    coreScale,
+                    edgeA,edgeB,false,
+                    new Vec2(0.5f,0.0f),
+                    Vec2.ONE,
+                    coreColor, coreColor.multiply(0.5f), coreColor.multiply(0.5f));
         }
     }
 
-    public static Map<THBullet.BULLET_STYLE, THBulletRendererFactory> bulletRenderers = new Object2ObjectOpenHashMap<>();
+    private static final Map<THBullet.BULLET_STYLE, THBulletRendererFactory> bulletRenderers = new EnumMap<>(THBullet.BULLET_STYLE.class);
 
     public static void register(THBullet.BULLET_STYLE bulletStyle, THBulletRendererFactory factory){
         bulletRenderers.put(bulletStyle,factory);
@@ -259,11 +286,12 @@ public class THBulletRenderers {
     }
 
     static {
-        register(THBullet.BULLET_STYLE.arrow_big,BulletRenderers::arrow_big);
-        register(THBullet.BULLET_STYLE.ball_mid,BulletRenderers::arrow_big);
-        register(THBullet.BULLET_STYLE.ball_big,BulletRenderers::arrow_big);
-        register(THBullet.BULLET_STYLE.grain_a,BulletRenderers::arrow_big);
-        register(THBullet.BULLET_STYLE.grain_b,BulletRenderers::arrow_big);
+        register(THBullet.BULLET_STYLE.arrow_big, Renderers::arrow_big);
+        register(THBullet.BULLET_STYLE.ball_mid, Renderers::ball_mid);
+        register(THBullet.BULLET_STYLE.ball_big, Renderers::ball_big);
+        register(THBullet.BULLET_STYLE.grain_a, Renderers::grain_a);
+        register(THBullet.BULLET_STYLE.grain_b, Renderers::grain_b);
+        register(THBullet.BULLET_STYLE.ellipse, Renderers::ellipse);
     }
 
     public interface THBulletRendererFactory {

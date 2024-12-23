@@ -1,7 +1,9 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku;
 
+import com.adrian.thDanmakuCraft.client.renderer.THObjectRenderHelper;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.THBullet;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.THObject;
+import com.mojang.blaze3d.shaders.BlendMode;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -25,6 +27,16 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
             return;
         }
         poseStack.pushPose();
+        /*
+        THObject.Blend blend = bullet.getBlend();
+        THObjectRenderHelper.parseBlendNode(
+                blend.getBlendFunc(),
+                blend.getSrcColor(),
+                blend.getDstColor(),
+                blend.getSrcAlpha(),
+                blend.getDstColor()
+        ).apply();
+        */
         this.renderTHBullet(bullet.getStyle(), bullet, partialTicks, poseStack, bufferSource, combinedOverlay);
         poseStack.popPose();
     }
@@ -50,15 +62,16 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
         poseStack.popPose();
     }
 
-    @OnlyIn(Dist.CLIENT)
+    //@OnlyIn(Dist.CLIENT)
     public enum BULLET_QUALITY_LEVEL {
         VERY_VERY_CLOSE(12,12,false),
         VERY_CLOSE(10,10,false),
         CLOSE(8,8,false),
         MEDIUM(6,6,false),
-        FAR(6,5,false),
+        FAR(5,5,false),
         VERY_FAR(4,4,true);
 
+        public static final double[] distOfLevel = {4.0D,8.0D,16.0D,32.0D,48.0D,60.0D};
         public final int edgeANum;
         public final int edgeBNum;
         public boolean is2D;
@@ -81,8 +94,6 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
                 d4 = 4.0D;
             }
             d4 *= d4;
-
-            double[] distOfLevel = {2.0D,4.0D,8.0D,16.0D,32.0D,48.0D,60.0D};
 
             if(distSquare < d4*distOfLevel[0]*distOfLevel[0]){
                 return VERY_VERY_CLOSE;

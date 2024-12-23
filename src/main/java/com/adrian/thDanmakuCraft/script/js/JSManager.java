@@ -2,7 +2,7 @@ package com.adrian.thDanmakuCraft.script.js;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.script.ScriptManager;
-import com.adrian.thDanmakuCraft.util.RunnableWithException;
+import com.adrian.thDanmakuCraft.util.ResourceLoader;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
@@ -24,7 +24,7 @@ public class JSManager extends ScriptManager {
     }
 
     @Override
-    public Object invokeScript(String functionName, RunnableWithException whenException, Object... args){
+    public Object invokeScript(String functionName, ResourceLoader.RunnableWithException whenException, Object... args){
         if (!this.hasScript() && !this.shouldExecuteScript)
             return null;
         try {

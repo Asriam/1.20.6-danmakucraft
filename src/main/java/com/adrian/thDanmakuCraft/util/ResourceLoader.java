@@ -21,7 +21,7 @@ public class ResourceLoader {
         try {
             return readResource(loadResource(resourceLocation));
         } catch (IOException e) {
-            e.printStackTrace();
+            THDanmakuCraftCore.LOGGER.warn("Failed to load resource: {}", resourceLocation, e);
         }
         return null;
     }
@@ -36,5 +36,10 @@ public class ResourceLoader {
 
     public static Map<ResourceLocation,Resource> loadAllResourcesInFolder(ResourceLocation folderPath, String suffix){
         return resourceManager.listResources(folderPath.getPath(), path -> path.toString().endsWith(suffix));
+    }
+
+    public static interface RunnableWithException{
+
+        void run(Exception exception);
     }
 }

@@ -1,16 +1,19 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.world.entity.danmaku.THObject;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.shaders.BlendMode;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
@@ -18,6 +21,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 @OnlyIn(Dist.CLIENT)
@@ -35,6 +39,7 @@ public class THRenderType extends RenderType{
                 .setLightmapState(NO_LIGHTMAP)
                 .setOverlayState(NO_OVERLAY)
                 .setWriteMaskState(COLOR_DEPTH_WRITE)
+                .setOutputState(TRANSLUCENT_TARGET)
                 .createCompositeState(false);
         return RenderType.create("blend_none", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, false, false, compositestate);
     });
@@ -48,6 +53,7 @@ public class THRenderType extends RenderType{
                 .setLightmapState(NO_LIGHTMAP)
                 .setOverlayState(NO_OVERLAY)
                 .setWriteMaskState(COLOR_DEPTH_WRITE)
+                .setOutputState(TRANSLUCENT_TARGET)
                 .createCompositeState(false);
         return RenderType.create("blend_lighten", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, false, true, compositestate);
     });
@@ -67,6 +73,7 @@ public class THRenderType extends RenderType{
                 .setLightmapState(NO_LIGHTMAP)
                 .setOverlayState(NO_OVERLAY)
                 .setWriteMaskState(COLOR_WRITE)
+                .setOutputState(TRANSLUCENT_TARGET)
                 .createCompositeState(false);
         return RenderType.create("blend_multiply", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, false, false, compositestate);
     });
@@ -82,8 +89,11 @@ public class THRenderType extends RenderType{
     );
 
     public static final ShaderStateShard DANMAKU_DEPTH_OUTLINE_SHADER = new ShaderStateShard(() -> {
-        ShaderInstance shader = ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER;
+        MyShaderInstance shader = ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER;
         shader.setSampler("DepthBuffer",Minecraft.getInstance().getMainRenderTarget().getDepthTextureId());
+        shader.safeGetUniform("Near").set(GameRenderer.PROJECTION_Z_NEAR);
+        shader.safeGetUniform("Far").set(Minecraft.getInstance().gameRenderer.getDepthFar());
+        //THDanmakuCraftCore.LOGGER.info(""+Minecraft.getInstance().gameRenderer.getDepthFar());
         return shader;
     });
 
@@ -103,24 +113,43 @@ public class THRenderType extends RenderType{
                     .setTransparencyState(LIGHTNING_TRANSPARENCY)
                     .setLightmapState(NO_LIGHTMAP)
                     .setOverlayState(NO_OVERLAY)
-                    //.setWriteMaskState(COLOR_DEPTH_WRITE)
                     .setWriteMaskState(COLOR_WRITE)
+                    //.setDepthTestState(EQUAL_DEPTH_TEST)
+                    //.setWriteMaskState(COLOR_WRITE)
                     //.setOutputState(TRANSLUCENT_TARGET)
                     .createCompositeState(false)
     );
 
-    public static final Function<ShaderStateShard,RenderType> TEST_RENDER_TYPE_FUNCTION = Util.memoize((shader) -> {
-            RenderType.CompositeState compositestate = RenderType.CompositeState.builder()
-                    .setShaderState(shader)
-                    .setTransparencyState(LIGHTNING_TRANSPARENCY)
+    public static final BiFunction<BlendMode,Boolean,RenderType> TEST_RENDER_TYPE_FUNCTION = Util.memoize((blendMode,shouldCull) -> RenderType.create("lightning_3", TEST_FORMAT, VertexFormat.Mode.QUADS, 786432, false, true,
+            RenderType.CompositeState.builder()
+                    .setShaderState(DANMAKU_DEPTH_OUTLINE_SHADER
+                            /*
+                            new ShaderStateShard(() -> {
+                                MyShaderInstance shader = ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER;
+                                shader.setSampler("DepthBuffer",Minecraft.getInstance().getMainRenderTarget().getDepthTextureId());
+                                shader.safeGetUniform("Near").set(GameRenderer.PROJECTION_Z_NEAR);
+                                shader.safeGetUniform("Far").set(Minecraft.getInstance().gameRenderer.getDepthFar());
+                                shader.setBlendMode(blendMode);
+                                return shader;
+                            })*/)
+                    .setTransparencyState(/*LIGHTNING_TRANSPARENCY*/
+                        new RenderStateShard.TransparencyStateShard("custom_transparency", () -> {
+                            RenderSystem.enableBlend();
+                            blendMode.apply();
+                        }, () -> {
+                            RenderSystem.disableBlend();
+                            RenderSystem.defaultBlendFunc();
+                        }))
+                    .setCullState(new RenderStateShard.CullStateShard(shouldCull))
                     .setLightmapState(NO_LIGHTMAP)
                     .setOverlayState(NO_OVERLAY)
-                    //.setWriteMaskState(COLOR_DEPTH_WRITE)
                     .setWriteMaskState(COLOR_WRITE)
-                    //.setOutputState(TRANSLUCENT_TARGET)
-                    .createCompositeState(false);
-            return RenderType.create("lightning_3", TEST_FORMAT, VertexFormat.Mode.QUADS, 786432, false, true,compositestate);
-    });
+                    //.setWriteMaskState(COLOR_DEPTH_WRITE)
+                    //.setDepthTestState(LEQUAL_DEPTH_TEST)
+                    .setOutputState(TRANSLUCENT_TARGET)
+                    .createCompositeState(false)
+            )
+    );
 
     public static final RenderType LIGHTNING2 = RenderType.create("lightning_2", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS, 786432, false, true,
             RenderType.CompositeState.builder()

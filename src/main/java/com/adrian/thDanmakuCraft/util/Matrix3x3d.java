@@ -1,6 +1,7 @@
 package com.adrian.thDanmakuCraft.util;
 
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix3d;
 
 public class Matrix3x3d {
     private final double[][] values;

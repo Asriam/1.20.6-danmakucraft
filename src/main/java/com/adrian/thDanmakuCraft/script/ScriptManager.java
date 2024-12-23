@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.script;
 
-import com.adrian.thDanmakuCraft.util.RunnableWithException;
+import com.adrian.thDanmakuCraft.util.ResourceLoader;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 
@@ -14,7 +14,7 @@ public abstract class ScriptManager {
 
     public abstract Object invokeScript(String functionName, Object... args) throws Exception;
 
-    public abstract Object invokeScript(String functionName, RunnableWithException whenException, Object... args);
+    public abstract Object invokeScript(String functionName, ResourceLoader.RunnableWithException whenException, Object... args);
 
     public boolean hasScript(){
         return this.script != null && !this.script.equals("");

@@ -61,7 +61,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
 
     public EntityTHObjectContainer(@Nullable LivingEntity user, Level level, Vec3 pos) {
         this(EntityInit.ENTITY_THDANMAKU_CONTAINER.get(), level);
-        //this.setUser(user);
+        this.setUser(user);
         this.setPos(pos);
     }
 
@@ -123,15 +123,17 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
             for (int j = 0; j< THBullet.BULLET_STYLE.class.getEnumConstants().length; j++) {
                 for (int i = 0; i < 16; i++) {
                     THObject a = (THObject) new THBullet(this,THBullet.BULLET_STYLE.getStyleByIndex(j),THBullet.BULLET_COLOR.getColorByIndex(i + 1))
-                    .initPosition(this.position().add(i, 0.0d, j*2))
+                    .initPosition(this.position().add(i*2, 0.0d, j*1))
                     .shoot(
                             0.0f,
                             Vec3.ZERO
                     );
                     //a.setRotationByDirectionalVector(new Vec3(0.0f,1.0f,0.0f));
-                    a.setLifetime(3600);
-                    a.collision = true;
-                    a.blend = THRenderType.BLEND.NONE;
+                    a.setLifetime(100);
+                    //a.collision = false;
+                    a.setBlend(THObject.Blend.normal);
+                    //a.setBlend(THObject.Blend.class.getEnumConstants()[(int) ((THObject.Blend.class.getEnumConstants().length)*random.nextFloat())]);
+                    //a.blend = THObject.BlendMode.add;
                 }
             }
         }
@@ -142,7 +144,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
             Vec2 rotate = new Vec2(Mth.DEG_TO_RAD*((float) Math.pow(this.timer*0.1f,2)+360.0f/5),-Mth.DEG_TO_RAD*((float) Math.pow(this.timer*0.08f,2)+360.0f/5));
 
             Vec3 angle = rotation.xRot(Mth.DEG_TO_RAD*90.0f).normalize().xRot(rotate.x).yRot(rotate.y);
-            THBullet.BULLET_STYLE style = THBullet.BULLET_STYLE.ball_mid;
+            THBullet.BULLET_STYLE style = THBullet.BULLET_STYLE.arrow_big;
             THObject danmaku = new THBullet(this,style, THBullet.BULLET_COLOR.COLOR_PURPLE).initPosition(pos).shoot(
                     0.2f,
                     angle
@@ -165,7 +167,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
                     );
                     danmaku2.setAccelerationFromDirection(0.02f, angle3);
                     danmaku2.setLifetime(120);
-                    //danmaku2.setBlend(THRenderType.BLEND.NONE);
+                    danmaku2.setBlend(THObject.Blend.class.getEnumConstants()[(int) ((THObject.Blend.class.getEnumConstants().length)*random.nextFloat())]);
                 }
             }
 
