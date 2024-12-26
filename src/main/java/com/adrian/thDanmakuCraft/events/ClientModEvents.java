@@ -17,7 +17,7 @@ public class ClientModEvents {
     @SubscribeEvent
     public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event){
         event.registerEntityRenderer(EntityInit.EXAMPLE_ENTITY.get(), EntityExampleRenderer::new);
-        event.registerEntityRenderer(EntityInit.ENTITY_THDANMAKU_CONTAINER.get(), EntityTHObjectContainerRenderer::new);
+        event.registerEntityRenderer(EntityInit.ENTITY_THOBJECT_CONTAINER.get(), EntityTHObjectContainerRenderer::new);
     }
 
     @SubscribeEvent

@@ -4,9 +4,11 @@ import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.client.renderer.THObjectRenderHelper;
 import com.adrian.thDanmakuCraft.client.renderer.RenderEvents;
 import com.adrian.thDanmakuCraft.client.renderer.ShaderLoader;
+import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRenderers;
+import com.adrian.thDanmakuCraft.world.entity.danmaku.THBullet;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.THCurvedLaser;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.THObject;
@@ -34,38 +36,40 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @OnlyIn(Dist.CLIENT)
 public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObjectContainer> {
-    private static final RenderTarget testRenderTarget = new TextureTarget(1000,1000,true,true);
-    private static final RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
-    //public static final RenderTarget DEPTH_BUFFER = new TextureTarget(1000,1000,true,true);
+    private static final RenderTarget TEST_RENDER_TARGET = new TextureTarget(1000,1000,true,true);
+    private static final RenderTarget MAIN_RENDER_TARGET = Minecraft.getInstance().getMainRenderTarget();
+    private static final RenderTarget DEPTH_BUFFER = new TextureTarget(1000,1000,true,true);
     private final Map<THObjectType<?>, AbstractTHObjectRenderer<?>> thobjectRenderers;
-    private Frustum frustum;
+    //private Frustum frustum;
 
     public EntityTHObjectContainerRenderer(EntityRendererProvider.Context context) {
         super(context);
         this.thobjectRenderers = THObjectRenderers.createEntityRenderers(new THObjectRendererProvider.Context(this));
 
-        RenderEvents.addRenderLevelStageTask("test_shader_clear", RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS, (poseStack, partialTick) -> {
-            testRenderTarget.resize(mainRenderTarget.width , mainRenderTarget.height, false);
-            testRenderTarget.setClearColor(0.0f,0.0f,0.0f,0.0f);
-            testRenderTarget.clear(true);
+        RenderEvents.registerRenderLevelStageTask("test_effect_clear", RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS, (poseStack, partialTick) -> {
+            TEST_RENDER_TARGET.resize(MAIN_RENDER_TARGET.width , MAIN_RENDER_TARGET.height, false);
+            TEST_RENDER_TARGET.setClearColor(0.0f,0.0f,0.0f,0.0f);
+            TEST_RENDER_TARGET.clear(true);
         });
 
-        RenderEvents.addRenderLevelStageTask("test_shader_applier", RenderLevelStageEvent.Stage.AFTER_WEATHER, (poseStack, partialTick) -> {
-            applyShader();
+        RenderEvents.registerRenderLevelStageTask("test_effect_applier", RenderLevelStageEvent.Stage.AFTER_WEATHER, (poseStack, partialTick) -> {
+            applyEffect();
         });
     }
 
-    public static void applyShader(){
+    public static void applyEffect(){
         ShaderInstance customShader = ShaderLoader.getShader(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"box_blur"));
         if (customShader != null) {
-            RenderTarget inTarget = testRenderTarget;
-            RenderTarget outTarget = mainRenderTarget;
-            mainRenderTarget.unbindWrite();
+            RenderTarget inTarget = TEST_RENDER_TARGET;
+            RenderTarget outTarget = MAIN_RENDER_TARGET;
+            MAIN_RENDER_TARGET.unbindWrite();
 
             int[] inSize = {inTarget.width, inTarget.height};
             int[] outSize = {outTarget.width , outTarget.height};
@@ -88,9 +92,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
                     GlStateManager.SourceFactor.SRC_ALPHA,
                     GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
             );
-
-            //RenderSystem.depthFunc(519);
-
+            RenderSystem.depthFunc(519);
             BufferBuilder bufferbuilder = RenderSystem.renderThreadTesselator().getBuilder();
             bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
             bufferbuilder.vertex(0.0, 0.0, 0.0).endVertex();
@@ -98,14 +100,13 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
             bufferbuilder.vertex(outSize[0], outSize[1], 0.0).endVertex();
             bufferbuilder.vertex(0.0, outSize[1], 0.0).endVertex();
             BufferUploader.draw(bufferbuilder.end());
-
             customShader.clear();
-            //RenderSystem.depthFunc(515);
+            RenderSystem.depthFunc(515);
             RenderSystem.disableBlend();
             RenderSystem.defaultBlendFunc();
             outTarget.unbindWrite();
 
-            mainRenderTarget.bindWrite(true);
+            MAIN_RENDER_TARGET.bindWrite(true);
 
         }
     }
@@ -136,47 +137,38 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
         double camY = cameraPosition.y;
         double camZ = cameraPosition.z;
 
-        //final List<? extends THObject> objectList = layerObjects(entity.getObjectManager().getTHObjectsForRender(),camX,camY,camZ);
-        final List<? extends THObject> objectList = entity.getObjectManager().getTHObjectsForRender();
-
-        /*
-        Predicate<THObject> shouldRenderTHObject = (object) -> (
-                object != null && (object instanceof THCurvedLaser || this.shouldRenderTHObject(object, this.frustum, camX, camY, camZ))
-        );*/
-
-        RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
-        /*
+        RenderTarget mainRenderTarget = MAIN_RENDER_TARGET;
         ShaderInstance shader = ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER;
         if(shader != null) {
-            //DEPTH_BUFFER.copyDepthFrom(mainRenderTarget);
-            shader.setSampler("DepthBuffer", mainRenderTarget.getDepthTextureId());
+            DEPTH_BUFFER.copyDepthFrom(mainRenderTarget);
+            shader.setSampler("DepthBuffer", DEPTH_BUFFER.getDepthTextureId());
             mainRenderTarget.bindWrite(true);
-        }*/
+        }
 
-        boolean flag = false;
+        boolean shouldApplyEffect = false;
 
-        if (flag) {
+        if (shouldApplyEffect) {
             mainRenderTarget.unbindWrite();
-            testRenderTarget.copyDepthFrom(mainRenderTarget);
-            testRenderTarget.bindWrite(true);
+            TEST_RENDER_TARGET.copyDepthFrom(mainRenderTarget);
+            TEST_RENDER_TARGET.bindWrite(true);
         }
 
         RenderSystem.enableBlend();
+        //final List<? extends THObject> objectList = layerObjects(entity.getObjectManager().getTHObjectsForRender(),camX,camY,camZ);
+        final List<? extends THObject> objectList = entity.getObjectManager().getTHObjectsForRender();
         if (!objectList.isEmpty()) {
-            //layerObjects(objectList,camX,camY,camZ);
-
-            //Render Collision Graphics
+            Frustum frustum = this.getFrustum();
             if (this.entityRenderDispatcher.shouldRenderHitBoxes()) {
                 for (THObject object:objectList) {
-                    if (object != null && (object instanceof THCurvedLaser || this.shouldRenderTHObject(object, this.frustum, camX, camY, camZ))/*shouldRenderTHObject.test(object)*/) {
+                    if (object != null && (object instanceof THCurvedLaser || this.shouldRenderTHObject(object, frustum, camX, camY, camZ))/*shouldRenderTHObject.test(object)*/) {
                         poseStack.pushPose();
                         Vec3 objectPos = object.getOffsetPosition(partialTicks);
                         poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
                         if (object.collision) {
                             if (object instanceof THCurvedLaser laser) {
-                                renderTHCurvedLaserHitBoxes(laser, objectPos, poseStack, bufferSource.getBuffer(RenderType.lines()), partialTicks, this.frustum, cameraPosition);
+                                renderTHCurvedLaserHitBoxes(laser, objectPos, poseStack, bufferSource.getBuffer(RenderType.lines()), partialTicks, frustum, cameraPosition);
                             } else {
-                                renderTHObjectsHitBox(object, poseStack, bufferSource.getBuffer(RenderType.lineStrip()));
+                                renderTHObjectsHitBox(object, poseStack, bufferSource.getBuffer(RenderType.lines()));
                             }
                         }
                         poseStack.popPose();
@@ -184,32 +176,65 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
                 }
             }
 
-            //Render THObject
+            Map<RenderType,List<THObject>> map = new HashMap<>();
             for (THObject object:objectList) {
-                if (object != null && (object instanceof THCurvedLaser || this.shouldRenderTHObject(object, this.frustum, camX, camY, camZ))/*shouldRenderTHObject.test(object)*/) {
-                    poseStack.pushPose();
-                    Vec3 objectPos = object.getOffsetPosition(partialTicks);
-                    poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
-
-                    //applyTHObejctBlendMode(object);
-                    //THObjectRenderHelper.parseBlend(THObject.Blend.normal).apply();
-
-                    this.getTHObjectRenderer(object).render(object, objectPos, partialTicks, poseStack, bufferSource, combinedOverlay);
-                    //this.thobjectRenderers.get(object).render(object, objectPos, partialTicks, poseStack, bufferSource, combinedOverlay);
-                    poseStack.popPose();
+                RenderType renderType;// = getRenderType(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THObjectRenderHelper.parseBlend(object.getBlend()), false));
+                if (object.getClass() == THObject.class) {
+                    renderType = THRenderType.RENDER_TYPE_2D_DANMAKU.apply(new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(
+                            object.getTexture(),
+                            THObjectRenderHelper.parseBlend(object.getBlend()))
+                    );
+                }else if(object instanceof THBullet bullet) {
+                    if(bullet.getStyle().getIs3D()){
+                        boolean shouldCull = bullet.getStyle() != THBullet.BULLET_STYLE.arrow_big;
+                        renderType = getRenderType(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THObjectRenderHelper.parseBlend(object.getBlend()), shouldCull));
+                    }else {
+                        renderType = THRenderType.RENDER_TYPE_2D_DANMAKU.apply(new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(
+                                bullet.getTexture(),
+                                THObjectRenderHelper.parseBlend(bullet.getBlend()))
+                        );
+                    }
+                }else{
+                    renderType = getRenderType(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THObjectRenderHelper.parseBlend(object.getBlend()), true));
                 }
+                map.computeIfAbsent(renderType, (key) -> new ArrayList<>());
+                List<THObject> list1 = map.get(renderType);
+                list1.add(object);
             }
 
-            bufferSource.getBuffer(RenderType.lines());
+            map.forEach((renderType, list) -> {
+                var list1 = layerObjects(list,camX,camY,camZ);
+                BufferBuilder vertexConsumer = (BufferBuilder) bufferSource.getBuffer(renderType);
+                for (THObject object:list1) {
+                    if (object != null && (object instanceof THCurvedLaser || this.shouldRenderTHObject(object, frustum, camX, camY, camZ))) {
+                        poseStack.pushPose();
+                        Vec3 objectPos = object.getOffsetPosition(partialTicks);
+                        poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
+                        this.getTHObjectRenderer(object).render(object, objectPos, partialTicks, poseStack, vertexConsumer, combinedOverlay);
+                        poseStack.popPose();
+                    }
+                }
+                renderType.setupRenderState();
+                if(shouldApplyEffect) {
+                    TEST_RENDER_TARGET.bindWrite(true);
+                }
+                BufferUploader.drawWithShader(vertexConsumer.end());
+                if(shouldApplyEffect) {
+                    TEST_RENDER_TARGET.unbindWrite();
+                }
+                renderType.clearRenderState();
+                //vertexConsumer.begin(renderType.mode(),renderType.format());
+            });
+            //bufferSource.getBuffer(RenderType.lines());
         }
         RenderSystem.disableBlend();
         RenderSystem.defaultBlendFunc();
 
         //profiler.pop();
 
-        if(flag) {
-            testRenderTarget.unbindWrite();
-            mainRenderTarget.copyDepthFrom(testRenderTarget);
+        if(shouldApplyEffect) {
+            TEST_RENDER_TARGET.unbindWrite();
+            mainRenderTarget.copyDepthFrom(TEST_RENDER_TARGET);
             mainRenderTarget.bindWrite(true);
             //testRenderTarget.blitToScreen(mainRenderTarget.width,mainRenderTarget.height,true);
         }
@@ -218,6 +243,11 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
         poseStack.pushPose();
         Vec3 entityPos = entity.getPosition(partialTicks);
         poseStack.translate(entityPos.x-camX, entityPos.y-camY, entityPos.z-camZ);
+    }
+
+    public static RenderType getRenderType(THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT context) {
+        return THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(context);
+        //return THRenderType.TEST_RENDER_TYPE;
     }
 
     public <T extends THObject> AbstractTHObjectRenderer<T> getTHObjectRenderer(@NotNull T object) {
@@ -238,14 +268,6 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
                     Vec2.ONE,
                     color,color,color);
         }else if(object.getCollisionType() == THObject.CollisionType.ELLIPSOID){
-            /*
-            double length = Mth.absMax(Mth.absMax(object.getSize().x,object.getSize().y),object.getSize().z);
-            AABB aabb1 = new AABB(
-                    object.getPosition().add(-length,-length,-length),
-                    object.getPosition().add(length,length,length)
-            ).move(-object.getX(), -object.getY(), -object.getZ());
-            LevelRenderer.renderLineBox(poseStack, vertexConsumer, aabb1, 0.0F, 1.0F, 1.0F, 1.0F);
-            */
             poseStack.pushPose();
             Vector3f rotation = object.getRotation();
             poseStack.mulPose(new Quaternionf().rotationYXZ(rotation.y,-rotation.x,rotation.z));
@@ -312,7 +334,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
                 }
             });
         }catch (Exception e){
-
+            THDanmakuCraftCore.LOGGER.error(e.toString());
         }
         return list;
     }
@@ -325,7 +347,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
 
     @Override
     public boolean shouldRender(@NotNull EntityTHObjectContainer entity, @NotNull Frustum frustum, double camX, double camY, double camZ) {
-        this.frustum = frustum;
+        //this.frustum = frustum;
         return true;
     }
 
@@ -349,11 +371,12 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
     }
 
     public Frustum getFrustum(){
-        return this.frustum;
+        return Minecraft.getInstance().levelRenderer.getFrustum();
     }
 
     @Override
-    public ResourceLocation getTextureLocation(EntityTHObjectContainer container) {
+    @NotNull
+    public ResourceLocation getTextureLocation(@NotNull EntityTHObjectContainer container) {
         return null;
     }
 }

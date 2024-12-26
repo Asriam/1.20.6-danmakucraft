@@ -21,7 +21,7 @@ public class THObjectRenderer extends AbstractTHObjectRenderer<THObject> {
         super(context);
     }
 
-    public void render(THObject object, Vec3 objectPos, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, int combinedOverlay) {
+    public void render(THObject object, Vec3 objectPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer, int combinedOverlay) {
         if (object.color.a <= 0) {
             return;
         }
@@ -37,9 +37,9 @@ public class THObjectRenderer extends AbstractTHObjectRenderer<THObject> {
         Vector3f scale = object.getScale();
         poseStack.scale(scale.x, scale.y, scale.z);
         PoseStack.Pose posestack$pose = poseStack.last();
-        VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.BLEND_NONE.apply(object.getTexture()));
+        //VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.BLEND_NONE.apply(object.getTexture()));
 
-        THObjectRenderHelper.renderTexture(vertexconsumer, posestack$pose, combinedOverlay,
+        THObjectRenderHelper.renderTexture(vertexConsumer, posestack$pose, combinedOverlay,
                 new Vector3f(-0.5f, -0.5f, 0.0f), new Vector2f(0.0f, 1.0f),
                 new Vector3f(0.5f, -0.5f, 0.0f), new Vector2f(1.0f, 1.0f),
                 new Vector3f(0.5f, 0.5f, 0.0f), new Vector2f(1.0f, 0.0f),

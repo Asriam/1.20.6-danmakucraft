@@ -5,6 +5,7 @@ import com.adrian.thDanmakuCraft.world.entity.danmaku.THBullet;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.THObject;
 import com.mojang.blaze3d.shaders.BlendMode;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.util.Mth;
@@ -22,26 +23,16 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
     }
 
     @Override
-    public void render(THBullet bullet, Vec3 bulletPos, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, int combinedOverlay) {
+    public void render(THBullet bullet, Vec3 bulletPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer, int combinedOverlay) {
         if (bullet.color.a <= 0) {
             return;
         }
         poseStack.pushPose();
-        /*
-        THObject.Blend blend = bullet.getBlend();
-        THObjectRenderHelper.parseBlendNode(
-                blend.getBlendFunc(),
-                blend.getSrcColor(),
-                blend.getDstColor(),
-                blend.getSrcAlpha(),
-                blend.getDstColor()
-        ).apply();
-        */
-        this.renderTHBullet(bullet.getStyle(), bullet, partialTicks, poseStack, bufferSource, combinedOverlay);
+        this.renderTHBullet(bullet.getStyle(), bullet, partialTicks, poseStack, vertexConsumer, combinedOverlay);
         poseStack.popPose();
     }
 
-    public void renderTHBullet(THBullet.BULLET_STYLE style, THBullet object, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, int overlay) {
+    public void renderTHBullet(THBullet.BULLET_STYLE style, THBullet object, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer, int overlay) {
         poseStack.pushPose();
         THBulletRenderers.THBulletRendererFactory factory = THBulletRenderers.getRenderFactory(style);
         if (style.getIs3D() && factory != null) {
@@ -52,12 +43,12 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
                 Vector3f rotation = object.getRotation();
                 poseStack.mulPose(new Quaternionf().rotationYXZ(rotation.y, -rotation.x + Mth.DEG_TO_RAD * 90.0f, rotation.z));
             }
-            THBulletRenderers.render3DBullet(this, object, factory, partialTicks, poseStack, bufferSource, overlay);
+            THBulletRenderers.render3DBullet(this, object, poseStack, vertexConsumer, factory, partialTicks, overlay);
 
         } else {
             poseStack.mulPose(this.getRenderDispatcher().cameraOrientation());
             poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
-            THBulletRenderers.render2DBullet(this, object, partialTicks, poseStack, bufferSource, overlay);
+            THBulletRenderers.render2DBullet(this, object, poseStack, vertexConsumer, partialTicks, overlay);
         }
         poseStack.popPose();
     }

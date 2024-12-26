@@ -27,7 +27,7 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
     }
 
     @Override
-    public void render(THCurvedLaser laser, Vec3 laserPos, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, int combinedOverlay) {
+    public void render(THCurvedLaser laser, Vec3 laserPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer, int combinedOverlay) {
         if (laser.color.a <= 0) {
             return;
         }
@@ -43,7 +43,7 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
         );
         THObject.Color coreColor = laser.color;
 
-        VertexConsumer vertexConsumer = bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE);
+        //VertexConsumer vertexConsumer = bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE);
 
         var nodes0 = laser.nodeManager.getNodes();
         float width2 = laser.width * 3.0f * (nodes0.size() - laser.getTimer()) / nodes0.size();

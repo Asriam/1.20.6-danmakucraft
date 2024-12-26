@@ -1,7 +1,6 @@
 package com.adrian.thDanmakuCraft.world.entity;
 
 import com.adrian.thDanmakuCraft.api.script.IScriptTHObjectContainerAPI;
-import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
 import com.adrian.thDanmakuCraft.init.EntityInit;
 import com.adrian.thDanmakuCraft.script.IScript;
 import com.adrian.thDanmakuCraft.script.js.JSManager;
@@ -60,7 +59,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     }
 
     public EntityTHObjectContainer(@Nullable LivingEntity user, Level level, Vec3 pos) {
-        this(EntityInit.ENTITY_THDANMAKU_CONTAINER.get(), level);
+        this(EntityInit.ENTITY_THOBJECT_CONTAINER.get(), level);
         this.setUser(user);
         this.setPos(pos);
     }
@@ -112,14 +111,14 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     @Override
     public void tick() {
         super.tick();
-        this.taskerManager.resume();
+        //this.taskerManager.resume();
         if(this.bindingToUserPosition && this.user != null){
             this.setPos(this.user.position());
         }
         this.setBound(this.position(),this.bound);
         this.loadUserAndTarget();
 
-        if(this.objectManager.isEmpty() && false) {
+        if(this.objectManager.isEmpty() && true) {
             for (int j = 0; j< THBullet.BULLET_STYLE.class.getEnumConstants().length; j++) {
                 for (int i = 0; i < 16; i++) {
                     THObject a = (THObject) new THBullet(this,THBullet.BULLET_STYLE.getStyleByIndex(j),THBullet.BULLET_COLOR.getColorByIndex(i + 1))
@@ -131,20 +130,20 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
                     //a.setRotationByDirectionalVector(new Vec3(0.0f,1.0f,0.0f));
                     a.setLifetime(100);
                     //a.collision = false;
-                    a.setBlend(THObject.Blend.normal);
+                    a.setBlend(THObject.Blend.mul_rev2);
                     //a.setBlend(THObject.Blend.class.getEnumConstants()[(int) ((THObject.Blend.class.getEnumConstants().length)*random.nextFloat())]);
                     //a.blend = THObject.BlendMode.add;
                 }
             }
         }
 
-        if(/*(this.timer+2)%1==0 &&*/ true) {
+        if(/*(this.timer+2)%1==0 &&*/ false) {
             Vec3 pos = this.position();
             Vec3 rotation = Vec3.directionFromRotation(0.0f,0.0f);
             Vec2 rotate = new Vec2(Mth.DEG_TO_RAD*((float) Math.pow(this.timer*0.1f,2)+360.0f/5),-Mth.DEG_TO_RAD*((float) Math.pow(this.timer*0.08f,2)+360.0f/5));
 
             Vec3 angle = rotation.xRot(Mth.DEG_TO_RAD*90.0f).normalize().xRot(rotate.x).yRot(rotate.y);
-            THBullet.BULLET_STYLE style = THBullet.BULLET_STYLE.arrow_big;
+            THBullet.BULLET_STYLE style = THBullet.BULLET_STYLE.grain_b;
             THObject danmaku = new THBullet(this,style, THBullet.BULLET_COLOR.COLOR_PURPLE).initPosition(pos).shoot(
                     0.2f,
                     angle
@@ -156,7 +155,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
             //danmaku.getScriptManager().enableScript();
 
             int way = 8;
-            for(int i=1;i<=2;i++){
+            for(int i=1;i<=3;i++){
                 Vec3 angle2 = rotation.xRot(Mth.DEG_TO_RAD*90.0f-Mth.DEG_TO_RAD*60.0f*i).yRot(Mth.DEG_TO_RAD*(180.0f/way)*i);
                 for(int j=0;j<way;j++) {
                     Vec3 angle3 = angle2.yRot(-Mth.DEG_TO_RAD * (360.0f/way)*j).normalize().xRot(rotate.x).yRot(rotate.y);
@@ -167,7 +166,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
                     );
                     danmaku2.setAccelerationFromDirection(0.02f, angle3);
                     danmaku2.setLifetime(120);
-                    danmaku2.setBlend(THObject.Blend.class.getEnumConstants()[(int) ((THObject.Blend.class.getEnumConstants().length)*random.nextFloat())]);
+                    //danmaku2.setBlend(THObject.Blend.class.getEnumConstants()[(int) ((THObject.Blend.class.getEnumConstants().length)*random.nextFloat())]);
                 }
             }
 
@@ -447,5 +446,10 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
             }
             return objectList;
         }
+    }
+
+    public static class TargetUserManager{
+
+
     }
 }

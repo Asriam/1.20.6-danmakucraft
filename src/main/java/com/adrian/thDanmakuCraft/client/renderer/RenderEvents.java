@@ -38,10 +38,9 @@ public class RenderEvents {
     }
 
 
-    public static void addRenderLevelStageTask(String name, RenderLevelStageEvent.Stage stage, RenderTask renderHelper){
-        if(renderLevelStageTasks.get(name) == null) {
-            renderLevelStageTasks.put(name, new RenderLevelStageTask(stage, renderHelper));
-        }
+    public static void registerRenderLevelStageTask(String name, RenderLevelStageEvent.Stage stage, RenderTask renderHelper){
+        //if(renderLevelStageTasks.get(name) == null) renderLevelStageTasks.put(name, new RenderLevelStageTask(stage, renderHelper));
+        renderLevelStageTasks.computeIfAbsent(name, k -> new RenderLevelStageTask(stage, renderHelper));
     }
 
     public static void clearRenderLevelStage(String name){

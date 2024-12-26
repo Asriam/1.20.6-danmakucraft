@@ -295,10 +295,11 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         return this.size;
     }
 
-    @NotNull
     public Blend getBlend(){
         return this.blend;
     }
+
+
 
     public boolean getIsDead() {
         return this.isDead;
@@ -521,6 +522,10 @@ public class THObject implements IScript, IScriptTHObjectAPI {
 
     public void setBlend(Blend blend) {
         this.blend = blend;
+    }
+
+    public void setBlend(String blend){
+        this.blend = Blend.valueOf(blend);
     }
 
     public boolean hasContainer() {
@@ -857,7 +862,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
             return this.divide(factor,factor,factor,factor);
         }
 
-        public int[] of(){
+        public int[] getAll(){
             return new int[] {r,g,b,a};
         }
     }
@@ -888,20 +893,15 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         public static int ONE_MINUS_SRC_ALPHA = 771;
         public static int DST_ALPHA = 772;
         public static int ONE_MINUS_DST_ALPHA = 773;
-
-        public static Blend add = new Blend(
-
-                SRC_ALPHA,
-                ONE_MINUS_SRC_ALPHA
-        );*/
-
+         */
         normal("add","src_alpha","one_minus_src_alpha","one","one_minus_src_alpha"),
         add("add","src_alpha","one"),
         sub("subtract","src_alpha","one_minus_src_alpha"),
         max("max","src_alpha","one_minus_src_alpha"),
         min("min","src_alpha","one_minus_src_alpha"),
         mul_add("add","dst_color","1-srcalpha","one","1-srcalpha"),
-        mul_rev("reverse_subtract","dstcolor","1-srcalpha","one","1-srcalpha");
+        mul_rev("reverse_subtract","dstcolor","1-srcalpha","one","1-srcalpha"),
+        mul_rev2("reverse_subtract","src_alpha","one_minus_src_alpha","one","one_minus_src_alpha");
 
         private final String blendFunc,
                 srcColorFactor,
@@ -921,28 +921,10 @@ public class THObject implements IScript, IScriptTHObjectAPI {
 
         Blend(String blendFunc, String src, String dst) {
             this(false,blendFunc,src,dst,src,dst);
-            /*
-            this.blendFunc = blendFunc;
-            this.srcColorFactor = src;
-            this.dstColorFactor = dst;
-            this.srcAlphaFactor = src;
-            this.dstAlphaFactor = dst;
-            this.separateBlend = false;
-
-             */
         }
 
         Blend(String blendFunc, String srcColor, String dstColor, String srcAlpha, String dstAlpha) {
             this(true,blendFunc,srcColor,dstColor,srcAlpha,dstAlpha);
-            /*
-            this.blendFunc = blendFunc;
-            this.srcColorFactor = srcColor;
-            this.dstColorFactor = dstColor;
-            this.srcAlphaFactor = srcAlpha;
-            this.dstAlphaFactor = dstAlpha;
-            this.separateBlend = true;
-
-             */
         }
 
         public String getBlendFunc() {
@@ -978,29 +960,5 @@ public class THObject implements IScript, IScriptTHObjectAPI {
                     dstAlphaFactor
             };
         }
-
-        /*
-        public void writeData(FriendlyByteBuf buffer) {
-            buffer.writeUtf(this.function);
-            buffer.writeUtf(this.src);
-            buffer.writeUtf(this.dst);
-        }
-
-        public void readData(FriendlyByteBuf buffer) {
-            this.function = buffer.readUtf();
-            this.src = buffer.readUtf();
-            this.dst = buffer.readUtf();
-        }
-
-        public void save(CompoundTag tag) {
-            tag.put("Blend", newStringList(this.function, this.src, this.dst));
-        }
-
-        public void load(CompoundTag tag) {
-            ListTag blendTag = tag.getList("Blend", Tag.TAG_STRING);
-            this.function = blendTag.getString(0);
-            this.src = blendTag.getString(1);
-            this.dst = blendTag.getString(2);
-        }*/
     }
 }

@@ -78,7 +78,7 @@ public class THBullet extends THObject {
 
     @Override
     public ResourceLocation getTexture() {
-        return this.style.texture;
+        return this.style.getTexture();
     }
 
     public enum BULLET_COLOR {
@@ -131,14 +131,14 @@ public class THBullet extends THObject {
         square,
         ball_small,
         ball_mid(TEXTURE_BALL_MID,new Vec3(0.3f,0.3f,0.3f),false, CollisionType.SPHERE,true),
-        ball_mid_c,
+        ball_mid_c(TEXTURE_BALL_MID),
         ball_big(TEXTURE_BALL_MID,new Vec3(0.5f,0.5f,0.5f),false, CollisionType.SPHERE, true),
         ball_huge,
         ball_light,
         star_small,
         star_big,
-        grain_a(TEXTURE_WHITE,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.SPHERE, true),
-        grain_b(TEXTURE_WHITE,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.SPHERE, true),
+        grain_a(TEXTURE_WHITE,new Vec3(0.1f,0.15f,0.15f),false, CollisionType.AABB, true),
+        grain_b(TEXTURE_WHITE,new Vec3(0.1f,0.15f,0.15f),false, CollisionType.AABB, true),
         grain_c, kite, knife, knife_b,
         water_drop, mildew,
         ellipse(TEXTURE_WHITE,new Vec3(0.4f,0.4f,0.5f),false, CollisionType.ELLIPSOID, true),
@@ -171,6 +171,10 @@ public class THBullet extends THObject {
             this(TEXTURE_WHITE,DEFAULT_SIZE,CollisionType.AABB);
         }
 
+        BULLET_STYLE(ResourceLocation texture){
+            this(texture,DEFAULT_SIZE,CollisionType.AABB);
+        }
+
         public boolean getIs3D(){
             return this.is3D;
         }
@@ -185,6 +189,10 @@ public class THBullet extends THObject {
 
         public boolean getShouldFaceCamera(){
             return this.faceCam;
+        }
+
+        public ResourceLocation getTexture(){
+            return this.texture;
         }
 
         /*

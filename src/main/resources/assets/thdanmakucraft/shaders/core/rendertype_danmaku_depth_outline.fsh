@@ -67,7 +67,7 @@ void main() {
     vec4 bubbleBase = vertexColor;
     //fragColor = max(vec4(vec3(1.0-(clamp(rim,0.0f,1.0f)+max(intersection,0.0f))),1.0f),0.0f)*1.6f*bubbleBase + max(vec4(1.0-(rim2+clamp(intersection,0.0f,1.0f))),0.0f)*1.6f*(coreColor*2.0f-1.0f);
     fragColor = max(vec4(1.0-(clamp(rim,0.0f,1.0f)+max(intersection,0.0f))),0.0f)*1.6f*bubbleBase + max(vec4(1.0-(rim2+clamp(intersection,0.0f,1.0f))),0.0f)*1.6f*(coreColor*2.0f-1.0f);
-    //fragColor = vec4(normal,1.0f);
-
-    //fragColor = vec4(vec3(distance),1.0f);
+    //fragColor = vec4(normal,fragColor.a);
+    //fragColor = vec4(vec3(sceneDepth),1.0f);
+    //fragColor = texture(DepthBuffer, texCoord)*2.0f;
 }

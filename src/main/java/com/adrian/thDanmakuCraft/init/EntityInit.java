@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.init;
 
+import com.adrian.thDanmakuCraft.world.entity.EntitySingleTHObject;
 import com.adrian.thDanmakuCraft.world.entity.spellcard.EntityTHSpellCard;
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.world.entity.EntityExample;
@@ -19,11 +20,18 @@ public class EntityInit {
                     .sized(1.0f,1.0f)
                     .build(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"example_entity").toString())
     );
-    public static final RegistryObject<EntityType<EntityTHObjectContainer>> ENTITY_THDANMAKU_CONTAINER = ENTITIES.register("entity_thdanmaku_container",
+    public static final RegistryObject<EntityType<EntityTHObjectContainer>> ENTITY_THOBJECT_CONTAINER = ENTITIES.register("entity_thobject_container",
             () -> EntityType.Builder.<EntityTHObjectContainer>of(EntityTHObjectContainer::new, MobCategory.MISC)
                     .sized(1.0f,1.0f)
-                    .build(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"entity_thdanmaku_container").toString())
+                    .build(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"entity_thobject_container").toString())
     );
+
+    public static final RegistryObject<EntityType<EntitySingleTHObject>> ENTITY_SINGLE_THOBJECT = ENTITIES.register("entity_single_thobject",
+            () -> EntityType.Builder.<EntitySingleTHObject>of(EntitySingleTHObject::new, MobCategory.MISC)
+                    .sized(1.0f,1.0f)
+                    .build(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"entity_single_thobject").toString())
+    );
+
     public static final RegistryObject<EntityType<EntityTHSpellCard>> ENTITY_THSPELLCARD = ENTITIES.register("entity_thspellcard",
             () -> EntityType.Builder.<EntityTHSpellCard>of(EntityTHSpellCard::new, MobCategory.MISC)
                     .sized(1.0f,1.0f)
