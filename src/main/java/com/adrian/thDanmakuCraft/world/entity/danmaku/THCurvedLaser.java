@@ -98,7 +98,7 @@ public class THCurvedLaser extends THObject {
     }
 
     @Override
-    public void collision(){
+    public void collisionLogic(){
         this.nodeManager.collision();
     }
 
@@ -157,7 +157,7 @@ public class THCurvedLaser extends THObject {
         }
 
         public void collision(){
-            List<Entity> entitiesInBound = laser.getContainer().getEntitiesInBound();
+            List<Entity> entitiesInBound = laser.container.getEntitiesInBound();
             if(entitiesInBound.isEmpty()){
                 return;
             }/*

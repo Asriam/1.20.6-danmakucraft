@@ -8,7 +8,6 @@ import com.adrian.thDanmakuCraft.script.ScriptManager;
 import com.adrian.thDanmakuCraft.util.CollisionHelper;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.adrian.thDanmakuCraft.script.js.JSManager;
-import com.mojang.blaze3d.shaders.BlendMode;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.*;
@@ -20,7 +19,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
-import org.jetbrains.annotations.NotNull;
 import org.joml.*;
 
 import java.lang.Math;
@@ -31,7 +29,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
     private final ScriptManager scriptManager;
     private final Level level;
     protected final RandomSource random;
-    private EntityTHObjectContainer container;
+    protected EntityTHObjectContainer container;
     protected static final ResourceLocation TEXTURE_WHITE = new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/white.png");
     protected ResourceLocation TEXTURE = TEXTURE_WHITE;
     protected static final AABB INITIAL_AABB = new AABB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
@@ -65,6 +63,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
     public boolean removeFlag = false;
     protected boolean faceCamera = true;
     protected boolean canHitUser = false;
+    protected boolean shouldSetDeadWhenCollision = true;
 
     public int layer = 0;
 
@@ -76,10 +75,10 @@ public class THObject implements IScript, IScriptTHObjectAPI {
     public THObject(THObjectType<? extends THObject> type, EntityTHObjectContainer container) {
         this.type = type;
         this.container = container;
-        this.random = container.random;
-        this.level = container.level();
+        this.random = container.getRandomSource();
+        this.level = container.getLevel();
         this.scriptManager = new JSManager();
-        this.initPosition(container.position());
+        this.initPosition(container.getPosition());
     }
 
     public THObject(EntityTHObjectContainer container, Vec3 position) {
@@ -243,6 +242,10 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         return new Vec3(positionX, positionY, positionZ);
     }
 
+    public double[] getPosition2(){
+        return new double[]{positionX, positionY, positionZ};
+    }
+
     public Vec3 getPrePosition() {
         return this.prePosition;
     }
@@ -385,7 +388,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         );
 
         if (this.collision) {
-            this.collision();
+            this.collisionLogic();
         }
 
         if (this.navi && !this.isDead) {
@@ -410,7 +413,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         this.timer++;
     }
 
-    public void collision() {
+    public void collisionLogic() {
         List<Entity> entitiesInBound = this.container.getEntitiesInBound();
         if (entitiesInBound.isEmpty()) {
             return;
@@ -424,14 +427,19 @@ public class THObject implements IScript, IScriptTHObjectAPI {
          */
 
         entitiesInBound.forEach(entity -> {
+            if(!this.canHitUser && entity.equals(this.getContainer().getUser())){
+                return;
+            }
             if (this.collisionType == CollisionType.AABB) {
                 AABB aabb = this.getBoundingBox();
                 if (entity.getBoundingBox().intersects(aabb)) {
-                    this.onHit(new EntityHitResult(entity, this.getPosition()));
+                    var result = new EntityHitResult(entity, this.getPosition());
+                    //this.onHitEntity(result);
+                    this.onHit(result);
                 }
             }else if (this.collisionType.collisionEntity(this,entity)) {
                 var result = new EntityHitResult(entity, this.getPosition());
-                this.onHitEntity(result);
+                //this.onHitEntity(result);
                 this.onHit(result);
             }
         });
@@ -443,9 +451,9 @@ public class THObject implements IScript, IScriptTHObjectAPI {
                     new Vec3(aabb.maxX, aabb.maxY, aabb.maxZ),
                     ClipContext.Block.COLLIDER,
                     ClipContext.Fluid.NONE,
-                    this.container));
+                    this.container.getThis()));
              if(result.getType() != HitResult.Type.MISS) {
-                 this.onHitBlock(result);
+                 //this.onHitBlock(result);
                  this.onHit(result);
              }
         }else {
@@ -464,7 +472,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
                                         new Vec3(box.maxX, box.maxY, box.maxZ),
                                         Direction.getNearest(new Vec3(box.minX, box.minY, box.minZ)),
                                         pos, true);
-                                this.onHitBlock(result);
+                                //this.onHitBlock(result);
                                 this.onHit(result);
                             }
                         }
@@ -475,8 +483,18 @@ public class THObject implements IScript, IScriptTHObjectAPI {
 
     }
 
-    public void onHit(@NotNull HitResult result) {
-        this.setDead();
+    public void onHit(HitResult result) {
+        if(this.shouldSetDeadWhenCollision) {
+            this.setDead();
+        }
+
+        if(result.getType() == HitResult.Type.ENTITY && result instanceof EntityHitResult entityHitResult) {
+            this.onHitEntity(entityHitResult);
+        }
+
+        if(result.getType() == HitResult.Type.BLOCK && result instanceof BlockHitResult blockHitResult) {
+            this.onHitBlock(blockHitResult);
+        }
     }
 
     public void onHitEntity(EntityHitResult result) {

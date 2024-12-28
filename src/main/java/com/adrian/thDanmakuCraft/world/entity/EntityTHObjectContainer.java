@@ -31,29 +31,29 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
-public class EntityTHObjectContainer extends Entity implements IEntityAdditionalSpawnData, IScript, IScriptTHObjectContainerAPI {
+public class EntityTHObjectContainer extends Entity implements ITHObjectContainer , IEntityAdditionalSpawnData, IScript, IScriptTHObjectContainerAPI {
 
-    private @Nullable Entity user,    target;
-    private @Nullable UUID   userUUID,targetUUID;
     private int maxObjectAmount = 2000;
-    protected final JSManager scriptManager;
+    protected final TargetUserManager targetUserManager;
     protected final THObjectManager objectManager;
-    protected int timer = 0;
+    protected final ScriptManager scriptManager;
+    public final THTasker.THTaskerManager taskerManager;
+    public final RandomSource random = RandomSource.create();
+    private int timer = 0;
     public AABB aabb = new AABB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
     public AABB bound = new AABB(-60.0D,-60.0D,-60.0D,60.0D,60.0D,60.0D);
     public boolean bindingToUserPosition = false;
     public boolean autoRemove = true;
     public int autoRemoveLife = 60;
-    public final THTasker.THTaskerManager taskerManager;
-    public final RandomSource random = RandomSource.create();
     private List<Entity> entitiesInBound;
 
     public EntityTHObjectContainer(EntityType<? extends EntityTHObjectContainer> type, Level level) {
         super(type, level);
+        this.targetUserManager = new TargetUserManager(this.level());
         this.objectManager = new THObjectManager(this);
         this.taskerManager = new THTasker.THTaskerManager(this);
         this.scriptManager = new JSManager();
-        this.entitiesInBound = new ArrayList<>();
+        //this.entitiesInBound = new ArrayList<>();
         this.noCulling = true;
         this.setMaxObjectAmount(2000);
     }
@@ -81,7 +81,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     }
 
     public int getMaxObjectAmount() {
-        return maxObjectAmount;
+        return this.maxObjectAmount;
     }
 
     public void setMaxObjectAmount(int maxObjectAmount) {
@@ -96,41 +96,20 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
         this.timer = timer;
     }
 
-    public void loadUserAndTarget(){
-        if(this.user == null && this.userUUID != null) {
-            ServerLevel serverLevel = (ServerLevel) this.level();
-            this.user = serverLevel.getEntity(this.userUUID);
-        }
-
-        if(this.target == null && this.targetUUID != null) {
-            ServerLevel serverLevel = (ServerLevel) this.level();
-            this.target = serverLevel.getEntity(this.targetUUID);
-        }
-    }
-
-    @Override
-    public void tick() {
-        super.tick();
-        //this.taskerManager.resume();
-        if(this.bindingToUserPosition && this.user != null){
-            this.setPos(this.user.position());
-        }
-        this.setBound(this.position(),this.bound);
-        this.loadUserAndTarget();
-
+    public void task(){
         if(this.objectManager.isEmpty() && true) {
             for (int j = 0; j< THBullet.BULLET_STYLE.class.getEnumConstants().length; j++) {
                 for (int i = 0; i < 16; i++) {
                     THObject a = (THObject) new THBullet(this,THBullet.BULLET_STYLE.getStyleByIndex(j),THBullet.BULLET_COLOR.getColorByIndex(i + 1))
-                    .initPosition(this.position().add(i*2, 0.0d, j*1))
-                    .shoot(
-                            0.0f,
-                            Vec3.ZERO
-                    );
+                            .initPosition(this.position().add(i*2, 0.0d, j*1))
+                            .shoot(
+                                    0.0f,
+                                    Vec3.ZERO
+                            );
                     //a.setRotationByDirectionalVector(new Vec3(0.0f,1.0f,0.0f));
                     a.setLifetime(100);
                     //a.collision = false;
-                    a.setBlend(THObject.Blend.mul_rev2);
+                    a.setBlend(THObject.Blend.normal);
                     //a.setBlend(THObject.Blend.class.getEnumConstants()[(int) ((THObject.Blend.class.getEnumConstants().length)*random.nextFloat())]);
                     //a.blend = THObject.BlendMode.add;
                 }
@@ -179,7 +158,20 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
             danmaku3.setAccelerationFromDirection(0.02f, angle3);
             danmaku3.setLifetime(120);
         }
+    }
 
+    @Override
+    public void tick() {
+        //super.tick();
+        //this.taskerManager.resume();
+        //this.bindingToUserPosition = true;
+        if(this.bindingToUserPosition && this.getUser() != null){
+            this.setPos(this.getUser().position());
+        }
+        this.setBound(this.position(),this.bound);
+
+        this.task();
+        //this.loadUserAndTarget();
         this.entitiesInBound = this.level().getEntities(this,this.getAabb()).stream().filter((entity -> !(entity instanceof EntityTHObjectContainer))).toList();
         this.updateObjects();
         this.timer++;
@@ -238,37 +230,38 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
         return this.objectManager;
     }
 
-    public void setUser(@Nullable Entity entity){
-        this.user = entity;
-        this.userUUID = entity != null ? entity.getUUID() : null;
+    public void setUser(Entity entity){
+        this.targetUserManager.setUser(entity);
     }
 
     @Nullable
     public Entity getUser(){
-        return this.user;
+        return this.targetUserManager.safeGetUser();
     }
 
-    public void setTarget(@Nullable Entity target) {
-        this.target = target;
-        this.userUUID = target != null ? target.getUUID() : null;
+    public void setTarget(Entity target) {
+        this.targetUserManager.setTarget(target);
     }
 
     @Nullable
     public Entity getTarget() {
-        return target;
+        return this.targetUserManager.safeGetTarget();
     }
 
     public List<Entity> getEntitiesInBound(){
-        return this.entitiesInBound;
+        return this.entitiesInBound;//this.level().getEntities(this,this.getAabb()).stream().filter((entity -> !(entity instanceof EntityTHObjectContainer))).toList();
+    }
+
+    public Entity getThis(){
+        return this;
     }
 
     @Override
     public void writeSpawnData(FriendlyByteBuf buffer) {
-        buffer.writeVarInt(this.user   != null ? this.user.getId() : 0);
-        buffer.writeVarInt(this.target != null ? this.target.getId() : 0);
         buffer.writeInt(this.maxObjectAmount);
         buffer.writeInt(this.timer);
         buffer.writeBoolean(this.bindingToUserPosition);
+        this.targetUserManager.writeSpawnData(buffer);
         this.objectManager.writeData(buffer);
         this.scriptManager.writeData(buffer);
         this.taskerManager.writeData(buffer);
@@ -276,13 +269,10 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
 
     @Override
     public void readSpawnData(FriendlyByteBuf additionalData) {
-        Entity user   = this.level().getEntity(additionalData.readVarInt());
-        Entity target = this.level().getEntity(additionalData.readVarInt());
-        this.setUser(user);
-        this.setTarget(target);
         this.maxObjectAmount = additionalData.readInt();
         this.timer = additionalData.readInt();
         this.bindingToUserPosition = additionalData.readBoolean();
+        this.targetUserManager.readSpawnData(additionalData);
         this.objectManager.readData(additionalData);
         this.scriptManager.readData(additionalData);
         this.taskerManager.readData(additionalData);
@@ -296,10 +286,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
         compoundTag.putBoolean("PositionBinding",this.bindingToUserPosition);
         compoundTag.put("object_storage", this.objectManager.save());
         compoundTag.put("script",this.scriptManager.save(new CompoundTag()));
-        String user = this.user != null ? this.user.getUUID().toString() : "";
-        String target = this.target != null ? this.target.getUUID().toString() : "";
-        compoundTag.putString("UserUUID",user);
-        compoundTag.putString("TargetUUID",target);
+        this.targetUserManager.save(compoundTag);
     }
 
     @Override
@@ -309,10 +296,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
         this.bindingToUserPosition = compoundTag.getBoolean("PositionBinding");
         this.objectManager.load(compoundTag.getCompound("object_storage"));
         this.scriptManager.load(compoundTag.getCompound("script"));
-        String userUUID = compoundTag.getString("UserUUID");
-        String targetUUID = compoundTag.getString("TargetUUID");
-        this.userUUID = !userUUID.isEmpty() ? UUID.fromString(userUUID) : null;
-        this.targetUUID = !targetUUID.isEmpty() ? UUID.fromString(targetUUID) : null;
+        this.targetUserManager.load(compoundTag);
     }
 
     @Override
@@ -320,6 +304,17 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
         return this.scriptManager;
     }
 
+    public Level getLevel(){
+        return this.level();
+    }
+
+    public RandomSource getRandomSource() {
+        return this.random;
+    }
+
+    public Vec3 getPosition(){
+        return this.position();
+    }
 
     public static class THObjectManager{
 
@@ -449,6 +444,121 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     }
 
     public static class TargetUserManager{
+        private @Nullable Entity user,    target;
+        private @Nullable UUID   userUUID,targetUUID;
+        private final Level level;
+
+        public TargetUserManager(Level level, Entity user, Entity target){
+            this.level = level;
+            this.user = user;
+            this.target = target;
+            this.userUUID = user.getUUID();
+            this.targetUUID = target.getUUID();
+        }
+
+        public TargetUserManager(Level level){
+            this.level = level;
+        }
+
+        public void setUser(@Nullable Entity user){
+            if(user == null){
+                this.user = null;
+                return;
+            }
+            this.user = user;
+            this.userUUID = user.getUUID();
+        }
+
+        public void setTarget(@Nullable Entity target){
+            if(target == null){
+                this.target = null;
+                return;
+            }
+            this.target = target;
+            this.targetUUID = target.getUUID();
+        }
+
+        public Entity getEntityFromUUID(UUID uuid){
+            ServerLevel serverLevel = (ServerLevel) this.level;
+            return serverLevel.getEntity(uuid);
+        }
+
+        @Nullable
+        public Entity safeGetUser(){
+            if(this.user == null && this.userUUID != null){
+                ServerLevel serverLevel = (ServerLevel) this.level;
+                this.user = serverLevel.getEntity(this.userUUID);
+                return this.user;
+            }
+            return this.user;
+        }
+
+        @Nullable
+        public Entity safeGetTarget(){
+            if(this.target == null && this.targetUUID != null){
+                ServerLevel serverLevel = (ServerLevel) this.level;
+                this.target = serverLevel.getEntity(this.targetUUID);
+                return this.target;
+            }
+            return this.target;
+        }
+
+        public Entity setUserFromUUID(UUID uuid){
+            this.user = this.getEntityFromUUID(uuid);
+            return this.user;
+        }
+
+        public Entity setTargetFromUUID(UUID uuid){
+            this.target = this.getEntityFromUUID(uuid);
+            return this.target;
+        }
+
+        @Nullable
+        public Entity unsafeGetUser(){
+            return this.user;
+        }
+
+        @Nullable
+        public Entity unsafeGetTarget(){
+            return this.target;
+        }
+
+        public void writeSpawnData(FriendlyByteBuf buffer){
+            buffer.writeVarInt(this.user   != null ? user.getId() : 0);
+            buffer.writeVarInt(this.target != null ? target.getId() : 0);
+        }
+
+        public void readSpawnData(FriendlyByteBuf buffer){
+            this.setUser(this.level.getEntity(buffer.readVarInt()));
+            this.setTarget(this.level.getEntity(buffer.readVarInt()));
+        }
+
+        public CompoundTag save(CompoundTag compoundTag){
+            String user = this.user != null ? this.user.getUUID().toString() : "";
+            String target = this.target != null ? this.target.getUUID().toString() : "";
+            compoundTag.putString("UserUUID",user);
+            compoundTag.putString("TargetUUID",target);
+            return compoundTag;
+        }
+
+        public void load(CompoundTag compoundTag){
+            String userUUID = compoundTag.getString("UserUUID");
+            String targetUUID = compoundTag.getString("TargetUUID");
+            this.userUUID = userUUID.isEmpty() ? null : UUID.fromString(userUUID);
+            this.targetUUID = targetUUID.isEmpty() ? null : UUID.fromString(targetUUID);
+        }
+
+        public void loadUserAndTarget(Level level){
+            if(this.user == null && this.userUUID != null) {
+                ServerLevel serverLevel = (ServerLevel) level;
+                this.user = serverLevel.getEntity(this.userUUID);
+            }
+
+            if(this.target == null && this.targetUUID != null) {
+                ServerLevel serverLevel = (ServerLevel) level;
+                this.target = serverLevel.getEntity(this.targetUUID);
+            }
+        }
 
 
     }

@@ -45,7 +45,7 @@ import java.util.Map;
 public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObjectContainer> {
     private static final RenderTarget TEST_RENDER_TARGET = new TextureTarget(1000,1000,true,true);
     private static final RenderTarget MAIN_RENDER_TARGET = Minecraft.getInstance().getMainRenderTarget();
-    private static final RenderTarget DEPTH_BUFFER = new TextureTarget(1000,1000,true,true);
+    private static final RenderTarget DEPTH_BUFFER = new TextureTarget(800,800,true,true);
     private final Map<THObjectType<?>, AbstractTHObjectRenderer<?>> thobjectRenderers;
     //private Frustum frustum;
 
@@ -140,6 +140,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
         RenderTarget mainRenderTarget = MAIN_RENDER_TARGET;
         ShaderInstance shader = ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER;
         if(shader != null) {
+            //DEPTH_BUFFER.resize(800,800,false);
             DEPTH_BUFFER.copyDepthFrom(mainRenderTarget);
             shader.setSampler("DepthBuffer", DEPTH_BUFFER.getDepthTextureId());
             mainRenderTarget.bindWrite(true);
@@ -159,6 +160,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
         if (!objectList.isEmpty()) {
             Frustum frustum = this.getFrustum();
             if (this.entityRenderDispatcher.shouldRenderHitBoxes()) {
+                BufferBuilder vertexConsumer = (BufferBuilder) bufferSource.getBuffer(RenderType.lines());
                 for (THObject object:objectList) {
                     if (object != null && (object instanceof THCurvedLaser || this.shouldRenderTHObject(object, frustum, camX, camY, camZ))/*shouldRenderTHObject.test(object)*/) {
                         poseStack.pushPose();
@@ -166,37 +168,26 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
                         poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
                         if (object.collision) {
                             if (object instanceof THCurvedLaser laser) {
-                                renderTHCurvedLaserHitBoxes(laser, objectPos, poseStack, bufferSource.getBuffer(RenderType.lines()), partialTicks, frustum, cameraPosition);
+                                renderTHCurvedLaserHitBoxes(laser, objectPos, poseStack, vertexConsumer, partialTicks, frustum, cameraPosition);
                             } else {
-                                renderTHObjectsHitBox(object, poseStack, bufferSource.getBuffer(RenderType.lines()));
+                                renderTHObjectsHitBox(object, poseStack, vertexConsumer);
                             }
                         }
                         poseStack.popPose();
+
                     }
                 }
+                /*
+                RenderType.lines().setupRenderState();
+                BufferUploader.drawWithShader(vertexConsumer.end());
+                RenderType.lines().clearRenderState();
+                 */
             }
 
             Map<RenderType,List<THObject>> map = new HashMap<>();
             for (THObject object:objectList) {
-                RenderType renderType;// = getRenderType(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THObjectRenderHelper.parseBlend(object.getBlend()), false));
-                if (object.getClass() == THObject.class) {
-                    renderType = THRenderType.RENDER_TYPE_2D_DANMAKU.apply(new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(
-                            object.getTexture(),
-                            THObjectRenderHelper.parseBlend(object.getBlend()))
-                    );
-                }else if(object instanceof THBullet bullet) {
-                    if(bullet.getStyle().getIs3D()){
-                        boolean shouldCull = bullet.getStyle() != THBullet.BULLET_STYLE.arrow_big;
-                        renderType = getRenderType(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THObjectRenderHelper.parseBlend(object.getBlend()), shouldCull));
-                    }else {
-                        renderType = THRenderType.RENDER_TYPE_2D_DANMAKU.apply(new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(
-                                bullet.getTexture(),
-                                THObjectRenderHelper.parseBlend(bullet.getBlend()))
-                        );
-                    }
-                }else{
-                    renderType = getRenderType(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THObjectRenderHelper.parseBlend(object.getBlend()), true));
-                }
+                RenderType renderType = this.getRenderType(object);// = getRenderType(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THObjectRenderHelper.parseBlend(object.getBlend()), false));
+
                 map.computeIfAbsent(renderType, (key) -> new ArrayList<>());
                 List<THObject> list1 = map.get(renderType);
                 list1.add(object);
@@ -245,9 +236,27 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
         poseStack.translate(entityPos.x-camX, entityPos.y-camY, entityPos.z-camZ);
     }
 
-    public static RenderType getRenderType(THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT context) {
-        return THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(context);
-        //return THRenderType.TEST_RENDER_TYPE;
+    public RenderType getRenderType(THObject object) {
+        RenderType renderType;
+        if (object.getClass() == THObject.class) {
+            renderType = THRenderType.RENDER_TYPE_2D_DANMAKU.apply(new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(
+                    object.getTexture(),
+                    THObjectRenderHelper.parseBlend(object.getBlend()))
+            );
+        }else if(object instanceof THBullet bullet) {
+            if(bullet.getStyle().getIs3D()){
+                boolean shouldCull = bullet.getStyle() != THBullet.BULLET_STYLE.arrow_big;
+                renderType = THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THObjectRenderHelper.parseBlend(object.getBlend()), shouldCull));
+            }else {
+                renderType = THRenderType.RENDER_TYPE_2D_DANMAKU.apply(new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(
+                        bullet.getTexture(),
+                        THObjectRenderHelper.parseBlend(bullet.getBlend()))
+                );
+            }
+        }else{
+            renderType = THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THObjectRenderHelper.parseBlend(object.getBlend()), true));
+        }
+        return renderType;
     }
 
     public <T extends THObject> AbstractTHObjectRenderer<T> getTHObjectRenderer(@NotNull T object) {

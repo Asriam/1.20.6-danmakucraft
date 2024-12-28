@@ -5,24 +5,29 @@ import com.adrian.thDanmakuCraft.world.entity.danmaku.THObject;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 
-public class EntitySingleTHObject extends Entity implements IEntityAdditionalSpawnData {
+import java.util.List;
 
-    private Entity user;
-    private Entity target;
-    private final THObject object;
+public class EntitySingleTHObject extends Entity implements ITHObjectContainer , IEntityAdditionalSpawnData {
 
-    public EntitySingleTHObject(EntityType<?> p_19870_, Level p_19871_) {
-        super(p_19870_, p_19871_);
+    protected final EntityTHObjectContainer.TargetUserManager targetUserManager;
+    protected THObject object;
+
+    public EntitySingleTHObject(EntityType<?> type, Level level) {
+        super(type, level);
+        this.targetUserManager = new EntityTHObjectContainer.TargetUserManager(level);
         this.object = null;
     }
 
-    public EntitySingleTHObject(THObject object, Level world) {
-        super(EntityInit.ENTITY_SINGLE_THOBJECT.get(),world);
+    public EntitySingleTHObject(THObject object, Level level) {
+        this(EntityInit.ENTITY_SINGLE_THOBJECT.get(),level);
         this.object = object;
     }
 
@@ -59,5 +64,50 @@ public class EntitySingleTHObject extends Entity implements IEntityAdditionalSpa
     @Override
     public void readSpawnData(FriendlyByteBuf additionalData) {
 
+    }
+
+    @Override
+    public Level getLevel() {
+        return this.level();
+    }
+
+    @Override
+    public RandomSource getRandomSource() {
+        return this.random;
+    }
+
+    @Override
+    public Vec3 getPosition() {
+        return this.position();
+    }
+
+    @Override
+    public EntityTHObjectContainer.THObjectManager getObjectManager() {
+        return null;
+    }
+
+    @Override
+    public AABB getAabb() {
+        return null;
+    }
+
+    @Override
+    public Entity getUser() {
+        return this.targetUserManager.safeGetUser();
+    }
+
+    @Override
+    public Entity getTarget() {
+        return this.targetUserManager.safeGetTarget();
+    }
+
+    @Override
+    public List<Entity> getEntitiesInBound() {
+        return List.of();
+    }
+
+    @Override
+    public Entity getThis() {
+        return null;
     }
 }
