@@ -82,7 +82,7 @@ public class EntitySingleTHObject extends Entity implements ITHObjectContainer ,
     }
 
     @Override
-    public EntityTHObjectContainer.THObjectManager getObjectManager() {
+    public THObjectManager getObjectManager() {
         return null;
     }
 

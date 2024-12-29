@@ -1,13 +1,10 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku;
 
-import com.adrian.thDanmakuCraft.client.renderer.THObjectRenderHelper;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.THBullet;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.THObject;
-import com.mojang.blaze3d.shaders.BlendMode;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
@@ -32,11 +29,11 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
         poseStack.popPose();
     }
 
-    public void renderTHBullet(THBullet.BULLET_STYLE style, THBullet object, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer, int overlay) {
+    public void renderTHBullet(THBullet.DefaultBulletStyle style, THBullet object, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer, int overlay) {
         poseStack.pushPose();
-        THBulletRenderers.THBulletRendererFactory factory = THBulletRenderers.getRenderFactory(style);
-        if (style.getIs3D() && factory != null) {
-            if (style.getShouldFaceCamera()) {
+        THBulletRenderers.THBulletRendererFactory factory = THBulletRenderers.getRenderer(style);
+        if (style.is3D() && factory != null) {
+            if (style.shouldFaceCamera()) {
                 poseStack.mulPose(this.getRenderDispatcher().cameraOrientation());
                 poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
             } else {
@@ -53,16 +50,16 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
         poseStack.popPose();
     }
 
-    //@OnlyIn(Dist.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public enum BULLET_QUALITY_LEVEL {
         VERY_VERY_CLOSE(12,12,false),
         VERY_CLOSE(10,10,false),
         CLOSE(8,8,false),
         MEDIUM(6,6,false),
-        FAR(5,5,false),
+        FAR(5,6,false),
         VERY_FAR(4,4,true);
 
-        public static final double[] distOfLevel = {4.0D,8.0D,16.0D,32.0D,48.0D,60.0D};
+        public static final double[] distOfLevel = {8.0D,16.0D,32.0D,48.0D,60.0D,80.0D};
         public final int edgeANum;
         public final int edgeBNum;
         public boolean is2D;

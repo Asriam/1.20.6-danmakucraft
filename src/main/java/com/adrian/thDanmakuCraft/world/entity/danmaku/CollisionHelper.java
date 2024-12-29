@@ -1,5 +1,6 @@
-package com.adrian.thDanmakuCraft.util;
+package com.adrian.thDanmakuCraft.world.entity.danmaku;
 
+import com.adrian.thDanmakuCraft.util.Matrix3x3d;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;

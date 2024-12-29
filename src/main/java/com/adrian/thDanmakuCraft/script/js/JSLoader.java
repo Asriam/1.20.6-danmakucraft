@@ -40,7 +40,8 @@ public class JSLoader {
 
     @Nullable
     public static String getResourceAsString(ResourceLocation resourceLocation){
-        return jsLoader.resourceMap2.get(resourceLocation);
+        String script = jsLoader.resourceMap2.get(resourceLocation);
+        return script == null ? "" : script;
     }
 
 

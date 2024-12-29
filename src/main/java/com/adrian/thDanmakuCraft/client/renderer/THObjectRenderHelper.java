@@ -1,7 +1,6 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
 import com.adrian.thDanmakuCraft.world.entity.danmaku.THObject;
-import com.mojang.blaze3d.shaders.BlendMode;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -11,10 +10,8 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.joml.*;
-import org.lwjgl.opengl.GL11;
 
 import java.lang.Math;
-import java.util.Locale;
 
 @OnlyIn(Dist.CLIENT)
 public class THObjectRenderHelper {
@@ -254,73 +251,4 @@ public class THObjectRenderHelper {
     public static void renderCuboid(VertexConsumer consumer, PoseStack.Pose pose,int combinedOverlay, Vec3 posOffset, Vec3 scale){
 
     }
-
-    public static BlendMode parseBlendNode(String blendFunc, String srcColor, String dstColor, String srcAlpha, String dstAlpha) {
-        return new BlendMode(
-                BlendMode.stringToBlendFactor(srcColor),
-                BlendMode.stringToBlendFactor(dstColor),
-                BlendMode.stringToBlendFactor(srcAlpha),
-                BlendMode.stringToBlendFactor(dstAlpha),
-                BlendMode.stringToBlendFunc(blendFunc));
-    }
-
-    public static BlendMode parseBlend(THObject.Blend blend) {
-        return blend.isSeparateBlend() ? new BlendMode(
-                BlendMode.stringToBlendFactor(blend.getSrcColor()),
-                BlendMode.stringToBlendFactor(blend.getDstColor()),
-                BlendMode.stringToBlendFactor(blend.getSrcAlpha()),
-                BlendMode.stringToBlendFactor(blend.getDstAlpha()),
-                BlendMode.stringToBlendFunc(blend.getBlendFunc()))
-                : new BlendMode(
-                BlendMode.stringToBlendFactor(blend.getSrcColor()),
-                BlendMode.stringToBlendFactor(blend.getDstColor()),
-                BlendMode.stringToBlendFunc(blend.getBlendFunc()));
-    }
-
-    /*
-    public static int stringToBlendFunc(String p_85528_) {
-        String s = p_85528_.trim().toLowerCase(Locale.ROOT);
-        if ("add".equals(s)) {
-            return 32774;
-        } else if ("subtract".equals(s)) {
-            return 32778;
-        } else if ("reversesubtract".equals(s)) {
-            return 32779;
-        } else if ("reverse_subtract".equals(s)) {
-            return 32779;
-        } else if ("min".equals(s)) {
-            return 32775;
-        } else {
-            return "max".equals(s) ? 32776 : 32774;
-        }
-    }
-
-    public static int stringToBlendFactor(String p_85531_) {
-        String s = p_85531_.trim().toLowerCase(Locale.ROOT);
-        s = s.replaceAll("_", "");
-        s = s.replaceAll("one", "1");
-        s = s.replaceAll("zero", "0");
-        s = s.replaceAll("minus", "-");
-        if ("0".equals(s)) {
-            return GL11.GL_ZERO;
-        } else if ("1".equals(s)) {
-            return GL11.GL_ONE;
-        } else if ("srccolor".equals(s)) {
-            return GL11.GL_SRC_COLOR;
-        } else if ("1-srccolor".equals(s)) {
-            return GL11.GL_ONE_MINUS_SRC_COLOR;
-        } else if ("dstcolor".equals(s)) {
-            return GL11.GL_DST_COLOR;
-        } else if ("1-dstcolor".equals(s)) {
-            return GL11.GL_ONE_MINUS_DST_COLOR;
-        } else if ("srcalpha".equals(s)) {
-            return GL11.GL_SRC_ALPHA;
-        } else if ("1-srcalpha".equals(s)) {
-            return GL11.GL_ONE_MINUS_SRC_ALPHA;
-        } else if ("dstalpha".equals(s)) {
-            return GL11.GL_ONE_MINUS_DST_ALPHA;
-        } else {
-            return "1-dstalpha".equals(s) ? GL11.GL_ONE_MINUS_DST_ALPHA : GL11.GL_ZERO;
-        }
-    }*/
 }

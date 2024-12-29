@@ -1,11 +1,9 @@
 package com.adrian.thDanmakuCraft.client.renderer.entity;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
-import com.adrian.thDanmakuCraft.client.renderer.THObjectRenderHelper;
-import com.adrian.thDanmakuCraft.client.renderer.RenderEvents;
-import com.adrian.thDanmakuCraft.client.renderer.ShaderLoader;
-import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
+import com.adrian.thDanmakuCraft.client.renderer.*;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.AbstractTHObjectRenderer;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.THBulletRenderers;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRenderers;
 import com.adrian.thDanmakuCraft.world.entity.danmaku.THBullet;
@@ -59,12 +57,10 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
             TEST_RENDER_TARGET.clear(true);
         });
 
-        RenderEvents.registerRenderLevelStageTask("test_effect_applier", RenderLevelStageEvent.Stage.AFTER_WEATHER, (poseStack, partialTick) -> {
-            applyEffect();
-        });
+        RenderEvents.registerRenderLevelStageTask("test_effect_applier", RenderLevelStageEvent.Stage.AFTER_WEATHER, EntityTHObjectContainerRenderer::applyEffect);
     }
 
-    public static void applyEffect(){
+    public static void applyEffect(PoseStack poseStack, float partialTick){
         ShaderInstance customShader = ShaderLoader.getShader(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"box_blur"));
         if (customShader != null) {
             RenderTarget inTarget = TEST_RENDER_TARGET;
@@ -122,7 +118,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
     }
 
     @Override
-    public void render(EntityTHObjectContainer entity, float rotationX, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, int combinedOverlay){
+    public void render(EntityTHObjectContainer entity, float rotationX, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int combinedOverlay){
         //super.render(entity, rotationX, partialTicks, poseStack, bufferSource, combinedOverlay);
         if (this.entityRenderDispatcher.shouldRenderHitBoxes()) {
             renderContainerBound(entity, poseStack, bufferSource.getBuffer(RenderType.lines()));
@@ -186,7 +182,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
 
             Map<RenderType,List<THObject>> map = new HashMap<>();
             for (THObject object:objectList) {
-                RenderType renderType = this.getRenderType(object);// = getRenderType(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THObjectRenderHelper.parseBlend(object.getBlend()), false));
+                RenderType renderType = this.getRenderType(object);
 
                 map.computeIfAbsent(renderType, (key) -> new ArrayList<>());
                 List<THObject> list1 = map.get(renderType);
@@ -194,8 +190,10 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
             }
 
             map.forEach((renderType, list) -> {
-                var list1 = layerObjects(list,camX,camY,camZ);
+                List<THObject> list1 = layerObjects(list,camX,camY,camZ);
                 BufferBuilder vertexConsumer = (BufferBuilder) bufferSource.getBuffer(renderType);
+                //vertexConsumer.begin(renderType.mode(),renderType.format());
+
                 for (THObject object:list1) {
                     if (object != null && (object instanceof THCurvedLaser || this.shouldRenderTHObject(object, frustum, camX, camY, camZ))) {
                         poseStack.pushPose();
@@ -214,10 +212,12 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
                     TEST_RENDER_TARGET.unbindWrite();
                 }
                 renderType.clearRenderState();
-                //vertexConsumer.begin(renderType.mode(),renderType.format());
+                vertexConsumer.begin(renderType.mode(),renderType.format());
             });
+            //THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THObjectRenderHelper.parseBlend(THObject.Blend.normal),true));
             //bufferSource.getBuffer(RenderType.lines());
         }
+        RenderSystem.blendEquation(32774);
         RenderSystem.disableBlend();
         RenderSystem.defaultBlendFunc();
 
@@ -240,21 +240,21 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
         RenderType renderType;
         if (object.getClass() == THObject.class) {
             renderType = THRenderType.RENDER_TYPE_2D_DANMAKU.apply(new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(
-                    object.getTexture(),
-                    THObjectRenderHelper.parseBlend(object.getBlend()))
+                    object.getImage().getTextureLocation(),
+                    THBlendMode.getBlendMode(object.getBlend()))
             );
         }else if(object instanceof THBullet bullet) {
-            if(bullet.getStyle().getIs3D()){
-                boolean shouldCull = bullet.getStyle() != THBullet.BULLET_STYLE.arrow_big;
-                renderType = THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THObjectRenderHelper.parseBlend(object.getBlend()), shouldCull));
+            if(bullet.getStyle().is3D()){
+                boolean shouldCull = THBulletRenderers.getRenderer(bullet.getStyle()).shouldCull;
+                renderType = THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(object.getBlend()), shouldCull));
             }else {
                 renderType = THRenderType.RENDER_TYPE_2D_DANMAKU.apply(new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(
-                        bullet.getTexture(),
-                        THObjectRenderHelper.parseBlend(bullet.getBlend()))
+                        bullet.getImage().getTextureLocation(),
+                        THBlendMode.getBlendMode(bullet.getBlend()))
                 );
             }
         }else{
-            renderType = THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THObjectRenderHelper.parseBlend(object.getBlend()), true));
+            renderType = THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(object.getBlend()), true));
         }
         return renderType;
     }
@@ -336,7 +336,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
                 double d2y = pos2.y - camY;
                 double d2z = pos2.z - camZ;
                 double dist2Square = (d2x * d2x + d2y * d2y + d2z * d2z);
-                if (dist1Square < dist2Square) {
+                if (dist1Square <= dist2Square) {
                     return 1;
                 } else {
                     return -1;

@@ -5,7 +5,6 @@ import com.adrian.thDanmakuCraft.api.script.IScriptTHObjectAPI;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.script.IScript;
 import com.adrian.thDanmakuCraft.script.ScriptManager;
-import com.adrian.thDanmakuCraft.util.CollisionHelper;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.adrian.thDanmakuCraft.script.js.JSManager;
 import net.minecraft.core.BlockPos;
@@ -31,7 +30,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
     protected final RandomSource random;
     protected EntityTHObjectContainer container;
     protected static final ResourceLocation TEXTURE_WHITE = new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/white.png");
-    protected ResourceLocation TEXTURE = TEXTURE_WHITE;
+    protected THImage image = new THImage(TEXTURE_WHITE,0.0f,0.0f,1.0f,1.0f);
     protected static final AABB INITIAL_AABB = new AABB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
     protected AABB bb = INITIAL_AABB;
     protected double positionX;                    //Object Position
@@ -55,6 +54,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
     public boolean deathAnimation = true;
     public boolean spawnAnimation = true;
     public boolean collision = true;
+    public boolean shouldCollingWithBlock = true;
     public boolean navi = false;
     //public boolean bound = true;
     public boolean noCulling = false;
@@ -444,43 +444,44 @@ public class THObject implements IScript, IScriptTHObjectAPI {
             }
         });
 
-        if(this.collisionType == CollisionType.AABB){
-            AABB aabb = this.getBoundingBox();
-            BlockHitResult result = this.level.clip(new ClipContext(
-                    new Vec3(aabb.minX, aabb.minY, aabb.minZ),
-                    new Vec3(aabb.maxX, aabb.maxY, aabb.maxZ),
-                    ClipContext.Block.COLLIDER,
-                    ClipContext.Fluid.NONE,
-                    this.container.getThis()));
-             if(result.getType() != HitResult.Type.MISS) {
-                 //this.onHitBlock(result);
-                 this.onHit(result);
-             }
-        }else {
-            double length = Mth.absMax(Mth.absMax(size.x,size.y),size.z);
-            AABB box = new AABB(
-                    this.getPosition().subtract(length,length,length),
-                    this.getPosition().add(length,length,length)
-            );
-            for (double z = box.minZ; z <= box.maxZ; z += 1) {
-                for (double y = box.minY; y <= box.maxY; y += 1) {
-                    for (double x = box.minX; x <= box.maxX; x += 1) {
-                        BlockPos pos = new BlockPos(Mth.floor(x), Mth.floor(y), Mth.floor(z));
-                        if (!this.level.getBlockState(pos).isAir()) {
-                            if (this.collisionType.collisionBlock(this, pos)) {
-                                BlockHitResult result = new BlockHitResult(
-                                        new Vec3(box.maxX, box.maxY, box.maxZ),
-                                        Direction.getNearest(new Vec3(box.minX, box.minY, box.minZ)),
-                                        pos, true);
-                                //this.onHitBlock(result);
-                                this.onHit(result);
+        if(this.shouldCollingWithBlock) {
+            if (this.collisionType == CollisionType.AABB) {
+                AABB aabb = this.getBoundingBox();
+                BlockHitResult result = this.level.clip(new ClipContext(
+                        new Vec3(aabb.minX, aabb.minY, aabb.minZ),
+                        new Vec3(aabb.maxX, aabb.maxY, aabb.maxZ),
+                        ClipContext.Block.COLLIDER,
+                        ClipContext.Fluid.NONE,
+                        this.container.getThis()));
+                if (result.getType() != HitResult.Type.MISS) {
+                    //this.onHitBlock(result);
+                    this.onHit(result);
+                }
+            } else {
+                double length = Mth.absMax(Mth.absMax(size.x, size.y), size.z);
+                AABB box = new AABB(
+                        this.getPosition().subtract(length, length, length),
+                        this.getPosition().add(length, length, length)
+                );
+                for (double z = box.minZ; z <= box.maxZ; z += 1) {
+                    for (double y = box.minY; y <= box.maxY; y += 1) {
+                        for (double x = box.minX; x <= box.maxX; x += 1) {
+                            BlockPos pos = new BlockPos(Mth.floor(x), Mth.floor(y), Mth.floor(z));
+                            if (!this.level.getBlockState(pos).isAir()) {
+                                if (this.collisionType.collisionBlock(this, pos)) {
+                                    BlockHitResult result = new BlockHitResult(
+                                            new Vec3(box.maxX, box.maxY, box.maxZ),
+                                            Direction.getNearest(new Vec3(box.minX, box.minY, box.minZ)),
+                                            pos, true);
+                                    //this.onHitBlock(result);
+                                    this.onHit(result);
+                                }
                             }
                         }
                     }
                 }
             }
         }
-
     }
 
     public void onHit(HitResult result) {
@@ -511,17 +512,6 @@ public class THObject implements IScript, IScriptTHObjectAPI {
 
     public void onDead() {
         this.collision = false;
-        /*
-        THTasker tasker = this.container.taskerManager.create();
-        for(int i=0;i<10;i++) {
-            tasker.add(() -> {
-                this.color.a -= 255 / 10;
-            });
-            tasker.wait(1);
-        }
-        tasker.add(this::remove);
-        tasker.lock();
-         */
         this.setVelocity(Vec3.ZERO, false);
         if (this.deathAnimation) {
             this.deathLastingTime--;
@@ -686,12 +676,12 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         return sqrDist < d0 * d0;
     }
 
-    public void setTEXTURE(ResourceLocation texture) {
-        this.TEXTURE = texture;
+    public void setImage(THImage image) {
+        this.image = image;
     }
     
-    public ResourceLocation getTexture() {
-        return this.TEXTURE;
+    public THImage getImage() {
+        return this.image;
     }
 
     protected static ListTag newDoubleList(double... value) {
@@ -919,7 +909,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         min("min","src_alpha","one_minus_src_alpha"),
         mul_add("add","dst_color","1-srcalpha","one","1-srcalpha"),
         mul_rev("reverse_subtract","dstcolor","1-srcalpha","one","1-srcalpha"),
-        mul_rev2("reverse_subtract","src_alpha","one_minus_src_alpha","one","one_minus_src_alpha");
+        mul_rev2("reverse_subtract","src_alpha","one_minus_src_alpha","zero","one");
 
         private final String blendFunc,
                 srcColorFactor,

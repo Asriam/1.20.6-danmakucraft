@@ -1,6 +1,5 @@
 package com.adrian.thDanmakuCraft.world.entity;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.google.common.collect.Lists;
 import net.minecraft.network.FriendlyByteBuf;
 
@@ -8,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 
@@ -70,7 +68,7 @@ public class THTasker {
         }
 
         public THTasker create(){
-            THDanmakuCraftCore.LOGGER.info("asdsadasd1");
+            //THDanmakuCraftCore.LOGGER.info("asdsadasd1");
             THTasker task = new THTasker();
             taskerList.add(task);
             return task;

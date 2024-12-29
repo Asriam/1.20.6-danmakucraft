@@ -1,13 +1,7 @@
 package com.adrian.thDanmakuCraft.world.entity.danmaku;
 
-import com.adrian.thDanmakuCraft.client.renderer.danmaku.AbstractTHObjectRenderer;
-import com.adrian.thDanmakuCraft.client.renderer.entity.EntityTHObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.world.phys.Vec3;
 
 public class THLaser extends THObject {
 
@@ -20,6 +14,16 @@ public class THLaser extends THObject {
 
     public THLaser(EntityTHObjectContainer container){
         this(THObjectInit.TH_LASER.get(),container);
+    }
+
+    @Override
+    public void onTick(){
+        super.onTick();
+    }
+
+    @Override
+    public void collisionLogic(){
+
     }
 
 

@@ -4,6 +4,8 @@ import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.script.js.JSLoader;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.adrian.thDanmakuCraft.world.entity.THTasker;
+import com.adrian.thDanmakuCraft.world.entity.danmaku.THBullet;
+import com.adrian.thDanmakuCraft.world.entity.danmaku.THCurvedLaser;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -11,6 +13,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
 public class ItemTestDanmaku extends Item {
@@ -43,14 +46,7 @@ public class ItemTestDanmaku extends Item {
             THDanmakuCraftCore.LOGGER.info("fffffffffffff3");
         });
 
-        String script = "";
-        try {
-            //script = ResourceLoader.readRescource(JSLoader.getResource(new ResourceLocation(THDanmakuCraftCore.MODID,"data/js/api/testLaserScript.js")));
-            //script = JSLoader.getResourceAsString(new ResourceLocation(THDanmakuCraftCore.MODID,"testLaserScript.js"));
-            script = JSLoader.getResourceAsString(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"data/js/test.js"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        String script = JSLoader.getResourceAsString(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"data/js/test.js"));
         //THDanmakuCraftCore.LOGGER.info(script);
 
         /*
@@ -60,7 +56,6 @@ public class ItemTestDanmaku extends Item {
             laser.getScriptManager().enableScript();
             laser.injectScript(script);
         }*/
-
         level.addFreshEntity(container);
         return InteractionResultHolder.sidedSuccess(itemstack, level.isClientSide());
     }

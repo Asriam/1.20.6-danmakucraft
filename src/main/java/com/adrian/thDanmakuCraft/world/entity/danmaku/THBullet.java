@@ -1,6 +1,5 @@
 package com.adrian.thDanmakuCraft.world.entity.danmaku;
 
-import com.adrian.thDanmakuCraft.client.renderer.danmaku.THBulletRenderers;
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
@@ -9,20 +8,16 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-
-import javax.annotation.Nullable;
 
 public class THBullet extends THObject {
-    protected BULLET_STYLE style;
+    protected DefaultBulletStyle style;
     protected BULLET_COLOR bulletColor;
 
     public THBullet(THObjectType<THBullet> type, EntityTHObjectContainer container) {
         super(type, container);
     }
 
-    public THBullet(EntityTHObjectContainer container, BULLET_STYLE style, BULLET_COLOR bulletColor) {
+    public THBullet(EntityTHObjectContainer container, DefaultBulletStyle style, BULLET_COLOR bulletColor) {
         this(THObjectInit.TH_BULLET.get(), container);
         this.style         = style;
         this.size          = style.size;
@@ -38,12 +33,12 @@ public class THBullet extends THObject {
         return bulletColor;
     }
 
-    public void setStyle(BULLET_STYLE style) {
+    public void setStyle(DefaultBulletStyle style) {
         this.style = style;
         this.size = style.getSize();
     }
 
-    public BULLET_STYLE getStyle() {
+    public DefaultBulletStyle getStyle() {
         return style;
     }
 
@@ -58,7 +53,7 @@ public class THBullet extends THObject {
     public void readData(FriendlyByteBuf buffer){
         super.readData(buffer);
         this.bulletColor = buffer.readEnum(BULLET_COLOR.class);
-        this.style = buffer.readEnum(BULLET_STYLE.class);
+        this.style = buffer.readEnum(DefaultBulletStyle.class);
     }
 
     @Override
@@ -73,12 +68,12 @@ public class THBullet extends THObject {
     public void load(CompoundTag tag){
         super.load(tag);
         this.bulletColor = BULLET_COLOR.class.getEnumConstants()[tag.getInt("BulletColor")];
-        this.style       = BULLET_STYLE.class.getEnumConstants()[tag.getInt("Style")];
+        this.style       = DefaultBulletStyle.class.getEnumConstants()[tag.getInt("Style")];
     }
 
     @Override
-    public ResourceLocation getTexture() {
-        return this.style.getTexture();
+    public THImage getImage() {
+        return this.style.getImage();
     }
 
     public enum BULLET_COLOR {
@@ -119,63 +114,72 @@ public class THBullet extends THObject {
         }
     }
 
-    public static final ResourceLocation TEXTURE_BALL_MID = new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/danmaku/ball_mid.png");
-    public static final ResourceLocation TEXTURE_ARROW_BIG = new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/danmaku/arrow_big.png");
+    public static final THImage IMAGE_WHITE = new THImage(TEXTURE_WHITE,0.0f,0.0f,1.0f,1.0f);
+    public static final THImage IMAGE_BALL_MID = new THImage(new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/danmaku/ball_mid.png"),0.0f,0.0f,1.0f,1.0f);
+    public static final THImage IMAGE_ARROW_BIG = new THImage(new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/danmaku/arrow_big.png"),0.0f,0.0f,1.0f,1.0f);
     private static final Vec3 DEFAULT_SIZE = new Vec3(0.5f,0.5f,0.5f);
-    public enum BULLET_STYLE {
-        arrow_big(TEXTURE_ARROW_BIG,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.SPHERE, true),
+    public interface IBulletStyle{
+        boolean is3D();
+        boolean shouldFaceCamera();
+        Vec3 getSize();
+        CollisionType getCollisionType();
+        THImage getImage();
+    }
+
+    public enum DefaultBulletStyle implements IBulletStyle{
+        arrow_big(IMAGE_ARROW_BIG,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.SPHERE, true),
         arrow_mid,
         arrow_small,
         gun_bullet,
         butterfly,
         square,
         ball_small,
-        ball_mid(TEXTURE_BALL_MID,new Vec3(0.3f,0.3f,0.3f),false, CollisionType.SPHERE,true),
-        ball_mid_c(TEXTURE_BALL_MID),
-        ball_big(TEXTURE_BALL_MID,new Vec3(0.5f,0.5f,0.5f),false, CollisionType.SPHERE, true),
+        ball_mid(IMAGE_BALL_MID,new Vec3(0.3f,0.3f,0.3f),false, CollisionType.SPHERE,true),
+        ball_mid_c(IMAGE_BALL_MID),
+        ball_big(IMAGE_BALL_MID,new Vec3(0.5f,0.5f,0.5f),false, CollisionType.SPHERE, true),
         ball_huge,
         ball_light,
         star_small,
         star_big,
-        grain_a(TEXTURE_WHITE,new Vec3(0.1f,0.15f,0.15f),false, CollisionType.AABB, true),
-        grain_b(TEXTURE_WHITE,new Vec3(0.1f,0.15f,0.15f),false, CollisionType.AABB, true),
+        grain_a(IMAGE_WHITE,new Vec3(0.1f,0.15f,0.15f),false, CollisionType.AABB, true),
+        grain_b(IMAGE_WHITE,new Vec3(0.1f,0.15f,0.15f),false, CollisionType.AABB, true),
         grain_c, kite, knife, knife_b,
         water_drop, mildew,
-        ellipse(TEXTURE_WHITE,new Vec3(0.4f,0.4f,0.5f),false, CollisionType.ELLIPSOID, true),
+        ellipse(IMAGE_WHITE,new Vec3(0.4f,0.4f,0.5f),false, CollisionType.ELLIPSOID, true),
         heart, money, music, silence,
         water_drop_dark, ball_huge_dark, ball_light_dark;
 
-        private final ResourceLocation texture;
+        private final THImage image;
         private final Vec3 size;
         private final boolean faceCam;
         private final boolean is3D;
         private final CollisionType collisionType;
 
-        BULLET_STYLE(ResourceLocation texture, Vec3 size, boolean faceCam, CollisionType collisionType, boolean is3D){
-            this.texture = texture;
+        DefaultBulletStyle(THImage image, Vec3 size, boolean faceCam, CollisionType collisionType, boolean is3D){
+            this.image = image;
             this.size = size;
             this.faceCam = faceCam;
             this.collisionType = collisionType;
             this.is3D = is3D;
         }
 
-        BULLET_STYLE(ResourceLocation texture, Vec3 size, CollisionType collisionType){
-            this.texture = texture;
+        DefaultBulletStyle(THImage image, Vec3 size, CollisionType collisionType){
+            this.image = image;
             this.size = size;
             this.faceCam = false;
             this.collisionType = collisionType;
             this.is3D = false;
         }
 
-        BULLET_STYLE(){
-            this(TEXTURE_WHITE,DEFAULT_SIZE,CollisionType.AABB);
+        DefaultBulletStyle(){
+            this(IMAGE_WHITE,DEFAULT_SIZE,CollisionType.AABB);
         }
 
-        BULLET_STYLE(ResourceLocation texture){
-            this(texture,DEFAULT_SIZE,CollisionType.AABB);
+        DefaultBulletStyle(THImage image){
+            this(image,DEFAULT_SIZE,CollisionType.AABB);
         }
 
-        public boolean getIs3D(){
+        public boolean is3D(){
             return this.is3D;
         }
 
@@ -187,21 +191,16 @@ public class THBullet extends THObject {
             return this.collisionType;
         }
 
-        public boolean getShouldFaceCamera(){
+        public boolean shouldFaceCamera(){
             return this.faceCam;
         }
 
-        public ResourceLocation getTexture(){
-            return this.texture;
+        public THImage getImage(){
+            return this.image;
         }
 
-        /*
-        public THBulletRenderers.THBulletRenderFactory getRenderFactory(){
-            return this.renderFactory;
-        }*/
-
-        public static BULLET_STYLE getStyleByIndex(int index){
-            return BULLET_STYLE.class.getEnumConstants()[index];
+        public static DefaultBulletStyle getStyleByIndex(int index){
+            return DefaultBulletStyle.class.getEnumConstants()[index];
         }
     }
 

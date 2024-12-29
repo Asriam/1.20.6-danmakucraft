@@ -1,16 +1,7 @@
 package com.adrian.thDanmakuCraft.world.entity.danmaku;
 
-import com.adrian.thDanmakuCraft.client.renderer.THObjectRenderHelper;
-import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
-import com.adrian.thDanmakuCraft.client.renderer.danmaku.AbstractTHObjectRenderer;
-import com.adrian.thDanmakuCraft.client.renderer.entity.EntityTHObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -19,12 +10,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import org.apache.commons.compress.utils.Lists;
-import org.joml.Vector2f;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -50,6 +37,7 @@ public class THCurvedLaser extends THObject {
         this.nodeMount = nodeMount;
         this.nodeManager.initNodeList(nodeMount);
         this.width = width;
+        this.setSize(new Vec3(width,width,width));
     }
 
     @Override
