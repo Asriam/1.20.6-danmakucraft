@@ -1,12 +1,10 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku;
 
 import com.adrian.thDanmakuCraft.client.renderer.THObjectRenderHelper;
-import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
-import com.adrian.thDanmakuCraft.world.entity.danmaku.THCurvedLaser;
-import com.adrian.thDanmakuCraft.world.entity.danmaku.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.THCurvedLaser;
+import com.adrian.thDanmakuCraft.world.danmaku.THObject;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;

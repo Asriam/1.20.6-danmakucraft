@@ -1,14 +1,13 @@
 package com.adrian.thDanmakuCraft.common.capabilities;
 
-import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
+import com.adrian.thDanmakuCraft.world.THObjectContainer;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class THObjectContainerProvider implements ICapabilityProvider{
-    private EntityTHObjectContainer container;
+    private THObjectContainer container;
 
 
     @Override

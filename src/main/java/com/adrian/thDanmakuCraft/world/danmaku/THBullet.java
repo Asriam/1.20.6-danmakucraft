@@ -1,8 +1,8 @@
-package com.adrian.thDanmakuCraft.world.entity.danmaku;
+package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
-import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
+import com.adrian.thDanmakuCraft.world.THObjectContainer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -13,11 +13,11 @@ public class THBullet extends THObject {
     protected DefaultBulletStyle style;
     protected BULLET_COLOR bulletColor;
 
-    public THBullet(THObjectType<THBullet> type, EntityTHObjectContainer container) {
+    public THBullet(THObjectType<THBullet> type, THObjectContainer container) {
         super(type, container);
     }
 
-    public THBullet(EntityTHObjectContainer container, DefaultBulletStyle style, BULLET_COLOR bulletColor) {
+    public THBullet(THObjectContainer container, DefaultBulletStyle style, BULLET_COLOR bulletColor) {
         this(THObjectInit.TH_BULLET.get(), container);
         this.style         = style;
         this.size          = style.size;

@@ -1,4 +1,4 @@
-package com.adrian.thDanmakuCraft.world.entity.danmaku;
+package com.adrian.thDanmakuCraft.world.danmaku;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec2;

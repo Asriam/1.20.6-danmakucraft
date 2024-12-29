@@ -1,4 +1,4 @@
-package com.adrian.thDanmakuCraft.world.entity.danmaku;
+package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.util.Matrix3x3d;
 import net.minecraft.util.Mth;

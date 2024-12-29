@@ -1,8 +1,8 @@
-package com.adrian.thDanmakuCraft.world.entity;
+package com.adrian.thDanmakuCraft.world;
 
 import com.adrian.thDanmakuCraft.util.MultiMap;
-import com.adrian.thDanmakuCraft.world.entity.danmaku.THObject;
-import com.adrian.thDanmakuCraft.world.entity.danmaku.THObjectType;
+import com.adrian.thDanmakuCraft.world.danmaku.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.THObjectType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -15,9 +15,9 @@ import java.util.List;
 public class THObjectManager {
 
     private final MultiMap<THObject> storage;
-    private final EntityTHObjectContainer container;
+    private final THObjectContainer container;
 
-    public THObjectManager(EntityTHObjectContainer container) {
+    public THObjectManager(THObjectContainer container) {
         this.container = container;
         this.storage = new MultiMap<>(THObject.class);
     }
@@ -146,7 +146,7 @@ public class THObjectManager {
         return tag;
     }
 
-    public static List<THObject> TagToTHObjectList(CompoundTag tag, EntityTHObjectContainer container) {
+    public static List<THObject> TagToTHObjectList(CompoundTag tag, THObjectContainer container) {
         int list_size = tag.getAllKeys().size();
         List<THObject> objectList = Lists.newArrayList();
         for (int i = 0; i < list_size; i++) {

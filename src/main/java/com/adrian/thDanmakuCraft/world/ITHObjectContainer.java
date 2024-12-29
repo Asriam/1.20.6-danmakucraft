@@ -1,4 +1,4 @@
-package com.adrian.thDanmakuCraft.world.entity;
+package com.adrian.thDanmakuCraft.world;
 
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSources;
@@ -10,8 +10,6 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 
 public interface ITHObjectContainer {
-
-    Level getLevel  ();
 
     RandomSource getRandomSource();
 

@@ -1,10 +1,10 @@
 package com.adrian.thDanmakuCraft.init;
 
 import com.adrian.thDanmakuCraft.world.entity.EntitySingleTHObject;
+import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.adrian.thDanmakuCraft.world.entity.spellcard.EntityTHSpellCard;
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.world.entity.EntityExample;
-import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;

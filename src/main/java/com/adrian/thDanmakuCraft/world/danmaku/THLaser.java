@@ -1,18 +1,18 @@
-package com.adrian.thDanmakuCraft.world.entity.danmaku;
+package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.init.THObjectInit;
-import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
+import com.adrian.thDanmakuCraft.world.THObjectContainer;
 
 public class THLaser extends THObject {
 
     public float width;
     public float length;
 
-    public THLaser(THObjectType<THLaser> type, EntityTHObjectContainer container) {
+    public THLaser(THObjectType<THLaser> type, THObjectContainer container) {
         super(type, container);
     }
 
-    public THLaser(EntityTHObjectContainer container){
+    public THLaser(THObjectContainer container){
         this(THObjectInit.TH_LASER.get(),container);
     }
 

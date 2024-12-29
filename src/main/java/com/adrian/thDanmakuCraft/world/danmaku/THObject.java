@@ -1,11 +1,11 @@
-package com.adrian.thDanmakuCraft.world.entity.danmaku;
+package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.api.script.IScriptTHObjectAPI;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.script.IScript;
 import com.adrian.thDanmakuCraft.script.ScriptManager;
-import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
+import com.adrian.thDanmakuCraft.world.THObjectContainer;
 import com.adrian.thDanmakuCraft.script.js.JSManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -28,7 +28,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
     private final ScriptManager scriptManager;
     private final Level level;
     protected final RandomSource random;
-    protected EntityTHObjectContainer container;
+    protected THObjectContainer container;
     protected static final ResourceLocation TEXTURE_WHITE = new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/white.png");
     protected THImage image = new THImage(TEXTURE_WHITE,0.0f,0.0f,1.0f,1.0f);
     protected static final AABB INITIAL_AABB = new AABB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
@@ -72,16 +72,16 @@ public class THObject implements IScript, IScriptTHObjectAPI {
     protected Blend blend = Blend.add;
     protected CollisionType collisionType = CollisionType.AABB;
 
-    public THObject(THObjectType<? extends THObject> type, EntityTHObjectContainer container) {
+    public THObject(THObjectType<? extends THObject> type, THObjectContainer container) {
         this.type = type;
         this.container = container;
         this.random = container.getRandomSource();
-        this.level = container.getLevel();
+        this.level = container.level();
         this.scriptManager = new JSManager();
         this.initPosition(container.getPosition());
     }
 
-    public THObject(EntityTHObjectContainer container, Vec3 position) {
+    public THObject(THObjectContainer container, Vec3 position) {
         this(THObjectInit.TH_OBJECT.get(), container);
     }
 
@@ -339,15 +339,15 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         return this.getBoundingBox();
     }
 
-    public EntityTHObjectContainer getContainer() {
+    public THObjectContainer getContainer() {
         return this.container;
     }
 
-    public void setContainer(EntityTHObjectContainer container) {
+    public void setContainer(THObjectContainer container) {
         this.container = container;
     }
 
-    public void setNewContainer(EntityTHObjectContainer container) {
+    public void setNewContainer(THObjectContainer container) {
         if (container.equals(this.container)) {
             return;
         }
@@ -405,7 +405,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
 
         this.scriptManager.invokeScript("onTick", (exception) -> {
             if (this.container != null) {
-                this.container.remove(Entity.RemovalReason.DISCARDED);
+                this.container.getHostEnitity().remove(Entity.RemovalReason.DISCARDED);
             }
             this.remove();
         }, this);
@@ -452,7 +452,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
                         new Vec3(aabb.maxX, aabb.maxY, aabb.maxZ),
                         ClipContext.Block.COLLIDER,
                         ClipContext.Fluid.NONE,
-                        this.container.getThis()));
+                        this.container.getHostEnitity()));
                 if (result.getType() != HitResult.Type.MISS) {
                     //this.onHitBlock(result);
                     this.onHit(result);
@@ -503,7 +503,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         if (this.damage <= 0.0f) {
             return;
         }
-        entity.hurt(this.container.damageSources().magic(), this.damage);
+        entity.hurt(this.level.damageSources().magic(), this.damage);
     }
 
     public void onHitBlock(BlockHitResult result) {
@@ -537,7 +537,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
     }
 
     public boolean hasContainer() {
-        return this.container != null && !this.container.isRemoved();
+        return this.container != null && !this.container.getHostEnitity().isRemoved();
     }
 
     public THObjectType<? extends THObject> getType() {

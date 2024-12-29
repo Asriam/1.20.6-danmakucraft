@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.api.script;
 
-import com.adrian.thDanmakuCraft.world.entity.danmaku.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.THObject;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;

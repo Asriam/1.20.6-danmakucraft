@@ -6,11 +6,11 @@ import com.adrian.thDanmakuCraft.client.renderer.danmaku.AbstractTHObjectRendere
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THBulletRenderers;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRenderers;
-import com.adrian.thDanmakuCraft.world.entity.danmaku.THBullet;
-import com.adrian.thDanmakuCraft.world.entity.danmaku.THCurvedLaser;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
-import com.adrian.thDanmakuCraft.world.entity.danmaku.THObject;
-import com.adrian.thDanmakuCraft.world.entity.danmaku.THObjectType;
+import com.adrian.thDanmakuCraft.world.danmaku.THBullet;
+import com.adrian.thDanmakuCraft.world.danmaku.THCurvedLaser;
+import com.adrian.thDanmakuCraft.world.danmaku.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.THObjectType;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -152,7 +152,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
 
         RenderSystem.enableBlend();
         //final List<? extends THObject> objectList = layerObjects(entity.getObjectManager().getTHObjectsForRender(),camX,camY,camZ);
-        final List<? extends THObject> objectList = entity.getObjectManager().getTHObjectsForRender();
+        final List<? extends THObject> objectList = entity.getContainer().getObjectManager().getTHObjectsForRender();
         if (!objectList.isEmpty()) {
             Frustum frustum = this.getFrustum();
             if (this.entityRenderDispatcher.shouldRenderHitBoxes()) {
@@ -350,7 +350,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
 
 
     private static void renderContainerBound(EntityTHObjectContainer entity, PoseStack poseStack, VertexConsumer vertexConsumer) {
-        AABB aabb = entity.getAabb().move(-entity.getX(), -entity.getY(), -entity.getZ());
+        AABB aabb = entity.getContainer().getAabb().move(-entity.getX(), -entity.getY(), -entity.getZ());
         LevelRenderer.renderLineBox(poseStack, vertexConsumer, aabb, 0.0F, 0.0F, 1.0F, 1.0F);
     }
 

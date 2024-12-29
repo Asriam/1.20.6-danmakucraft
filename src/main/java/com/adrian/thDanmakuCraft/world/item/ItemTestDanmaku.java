@@ -3,9 +3,9 @@ package com.adrian.thDanmakuCraft.world.item;
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.script.js.JSLoader;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
-import com.adrian.thDanmakuCraft.world.entity.THTasker;
-import com.adrian.thDanmakuCraft.world.entity.danmaku.THBullet;
-import com.adrian.thDanmakuCraft.world.entity.danmaku.THCurvedLaser;
+import com.adrian.thDanmakuCraft.world.THObjectContainer;
+import com.adrian.thDanmakuCraft.world.danmaku.THBullet;
+import com.adrian.thDanmakuCraft.world.danmaku.THCurvedLaser;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -26,8 +26,10 @@ public class ItemTestDanmaku extends Item {
     @NotNull
     public InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(hand);
-        EntityTHObjectContainer container = new EntityTHObjectContainer(player,level,player.position());
-
+        EntityTHObjectContainer entityTHObjectContainer = new EntityTHObjectContainer(level, player.position());
+        THObjectContainer container = entityTHObjectContainer.getContainer();
+        container.setUser(player);
+        /*
         THTasker task = container.taskerManager.create();
 
         task.add(()->{
@@ -44,19 +46,16 @@ public class ItemTestDanmaku extends Item {
 
         task.add(()->{
             THDanmakuCraftCore.LOGGER.info("fffffffffffff3");
-        });
+        });*/
 
         String script = JSLoader.getResourceAsString(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"data/js/test.js"));
-        //THDanmakuCraftCore.LOGGER.info(script);
-
-        /*
         for(int i=0;i<1;i++) {
-            THCurvedLaser laser = (THCurvedLaser) new THCurvedLaser(container, THBullet.BULLET_COLOR.COLOR_DEEP_PURPLE, 180, 0.5f).initPosition(container.position()).shoot(new Vec3(0.0f, 0.1f, 0));
+            THCurvedLaser laser = new THCurvedLaser(container, THBullet.BULLET_COLOR.COLOR_DEEP_PURPLE, 180, 0.5f).initPosition(container.position()).shoot(new Vec3(0.0f, 0.1f, 0));
             laser.setLifetime(1200);
             laser.getScriptManager().enableScript();
             laser.injectScript(script);
-        }*/
-        level.addFreshEntity(container);
+        }
+        level.addFreshEntity(entityTHObjectContainer);
         return InteractionResultHolder.sidedSuccess(itemstack, level.isClientSide());
     }
 }

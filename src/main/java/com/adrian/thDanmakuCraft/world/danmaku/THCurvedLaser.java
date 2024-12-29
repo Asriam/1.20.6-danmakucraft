@@ -1,7 +1,7 @@
-package com.adrian.thDanmakuCraft.world.entity.danmaku;
+package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.init.THObjectInit;
-import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
+import com.adrian.thDanmakuCraft.world.THObjectContainer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -26,12 +26,12 @@ public class THCurvedLaser extends THObject {
     public boolean noNodeCulling = false;
     public boolean breakable = true;
 
-    public THCurvedLaser(THObjectType<THCurvedLaser> type, EntityTHObjectContainer container) {
+    public THCurvedLaser(THObjectType<THCurvedLaser> type, THObjectContainer container) {
         super(type, container);
         this.nodeManager = new NodeManager(this);
     }
 
-    public THCurvedLaser(EntityTHObjectContainer container,THBullet.BULLET_COLOR laserColor, int nodeMount, float width){
+    public THCurvedLaser(THObjectContainer container, THBullet.BULLET_COLOR laserColor, int nodeMount, float width){
         this(THObjectInit.TH_CURVED_LASER.get(),container);
         this.laserColor = laserColor;
         this.nodeMount = nodeMount;

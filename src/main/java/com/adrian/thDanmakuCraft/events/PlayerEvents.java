@@ -1,7 +1,7 @@
 package com.adrian.thDanmakuCraft.events;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
-import com.adrian.thDanmakuCraft.world.entity.PlayerTHObjectContainerProvider;
+import com.adrian.thDanmakuCraft.world.PlayerTHObjectContainerProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;

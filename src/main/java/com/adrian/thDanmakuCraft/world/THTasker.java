@@ -1,7 +1,6 @@
-package com.adrian.thDanmakuCraft.world.entity;
+package com.adrian.thDanmakuCraft.world;
 
 import com.google.common.collect.Lists;
-import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,9 +60,9 @@ public class THTasker {
 
         private static final Map<String,THTaskerManager> taskerManagerMap = new WeakHashMap<>();
         private final        List<THTasker>              taskerList       = new ArrayList<>();
-        private final        EntityTHObjectContainer     container;
+        private final THObjectContainer container;
 
-        public THTaskerManager(EntityTHObjectContainer container){
+        public THTaskerManager(THObjectContainer container){
             this.container = container;
         }
 
@@ -85,17 +84,6 @@ public class THTasker {
             });
 
             taskerList.removeAll(removeList);
-        }
-
-        public void writeData(FriendlyByteBuf buffer){
-            String uuid = this.container.getStringUUID();
-            taskerManagerMap.put(uuid,this);
-            buffer.writeUtf(uuid);
-        }
-
-        public void readData(FriendlyByteBuf buffer){
-            String uuid = buffer.readUtf();
-            this.taskerList.addAll(taskerManagerMap.get(uuid).taskerList);
         }
 
         public void close(){

@@ -1,4 +1,4 @@
-package com.adrian.thDanmakuCraft.world.entity;
+package com.adrian.thDanmakuCraft.world;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -14,10 +14,10 @@ import org.jetbrains.annotations.Nullable;
 public class PlayerTHObjectContainerProvider implements ICapabilityProvider, INBTSerializable<CompoundTag> {
 
     public static Capability<PlayerTHObjectContainerProvider> PLAYER_THOBJECT_CONTAINER_CAPABILITY = CapabilityManager.get(new CapabilityToken<PlayerTHObjectContainerProvider>() { });
-    private EntityTHObjectContainer container = null;
-    private final LazyOptional<EntityTHObjectContainer> optional = LazyOptional.of(this::createTHObjectContainer);
+    private THObjectContainer container = null;
+    private final LazyOptional<THObjectContainer> optional = LazyOptional.of(this::createTHObjectContainer);
 
-    public EntityTHObjectContainer createTHObjectContainer() {
+    public THObjectContainer createTHObjectContainer() {
         return null;
     }
 

@@ -1,7 +1,7 @@
-package com.adrian.thDanmakuCraft.world.entity.danmaku;
+package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.registries.THDanmakuCraftRegistries;
-import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
+import com.adrian.thDanmakuCraft.world.THObjectContainer;
 import net.minecraft.resources.ResourceLocation;
 
 import org.jetbrains.annotations.Nullable;
@@ -25,7 +25,7 @@ public record THObjectType<T extends THObject>(THObjectFactory<T> factory) {
         return THDanmakuCraftRegistries.THOBJECT_TYPE.getValue(key);
     }
 
-    public T create(EntityTHObjectContainer container) {
+    public T create(THObjectContainer container) {
         return this.factory.create(this, container);
     }
 
@@ -41,6 +41,6 @@ public record THObjectType<T extends THObject>(THObjectFactory<T> factory) {
     }
 
     public interface THObjectFactory<T extends THObject> {
-        T create(THObjectType<T> type, EntityTHObjectContainer container);
+        T create(THObjectType<T> type, THObjectContainer container);
     }
 }

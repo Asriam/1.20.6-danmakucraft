@@ -1,8 +1,8 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku;
 
 import com.adrian.thDanmakuCraft.client.renderer.THObjectRenderHelper;
-import com.adrian.thDanmakuCraft.world.entity.danmaku.THBullet;
-import com.adrian.thDanmakuCraft.world.entity.danmaku.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.THBullet;
+import com.adrian.thDanmakuCraft.world.danmaku.THObject;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
