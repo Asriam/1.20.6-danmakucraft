@@ -1,8 +1,11 @@
-package com.adrian.thDanmakuCraft.world.danmaku;
+package com.adrian.thDanmakuCraft.world.danmaku.bullet;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.world.THObjectContainer;
+import com.adrian.thDanmakuCraft.world.danmaku.THImage;
+import com.adrian.thDanmakuCraft.world.danmaku.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.THObjectType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -29,8 +32,16 @@ public class THBullet extends THObject {
         this.bulletColor = bulletColor;
     }
 
+    public void setBulletColor(int color){
+        this.bulletColor = BULLET_COLOR.getColorByIndex(color);
+    }
+
     public BULLET_COLOR getBulletColor() {
         return bulletColor;
+    }
+
+    public int getBulletColorIndex(){
+        return bulletColor.getIndex();
     }
 
     public void setStyle(DefaultBulletStyle style) {
@@ -38,8 +49,17 @@ public class THBullet extends THObject {
         this.size = style.getSize();
     }
 
+    public void setStyle(String style) {
+        this.style = DefaultBulletStyle.valueOf(style);
+        this.size = this.style.getSize();
+    }
+
     public DefaultBulletStyle getStyle() {
-        return style;
+        return this.style;
+    }
+
+    public String getStyleName() {
+        return this.style.name();
     }
 
     @Override

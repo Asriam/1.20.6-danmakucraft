@@ -52,4 +52,10 @@ public abstract class ScriptManager {
         this.shouldExecuteScript = tag.getBoolean("ShouldExecuteScript");
         this.script = tag.getString("Script");
     }
+
+    public abstract ScriptType type();
+
+    public enum ScriptType{
+        JAVASCRIPT,LUA
+    }
 }

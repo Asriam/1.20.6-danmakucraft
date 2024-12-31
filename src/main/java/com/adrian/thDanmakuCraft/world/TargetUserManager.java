@@ -9,7 +9,7 @@ import net.minecraft.world.level.Level;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-public class TargetUserManager {
+public class TargetUserManager implements IDataStorage{
     private @Nullable Entity user,    target;
     private @Nullable UUID userUUID,targetUUID;
     private final Level level;
@@ -93,12 +93,12 @@ public class TargetUserManager {
         return this.target;
     }
 
-    public void writeSpawnData(FriendlyByteBuf buffer){
+    public void writeData(FriendlyByteBuf buffer){
         buffer.writeVarInt(this.user   != null ? user.getId() : 0);
         buffer.writeVarInt(this.target != null ? target.getId() : 0);
     }
 
-    public void readSpawnData(FriendlyByteBuf buffer){
+    public void readData(FriendlyByteBuf buffer){
         this.setUser(this.level.getEntity(buffer.readVarInt()));
         this.setTarget(this.level.getEntity(buffer.readVarInt()));
     }

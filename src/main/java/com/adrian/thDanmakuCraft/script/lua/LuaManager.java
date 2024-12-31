@@ -3,14 +3,19 @@ package com.adrian.thDanmakuCraft.script.lua;
 import com.adrian.thDanmakuCraft.script.ScriptManager;
 import com.adrian.thDanmakuCraft.util.ResourceLoader;
 import org.luaj.vm2.Globals;
+import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.jse.CoerceJavaToLua;
+
+import javax.swing.plaf.PanelUI;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LuaManager extends ScriptManager {
 
     private final Globals GLOBALS = LuaCore.getGlobals();
 
-    LuaManager(){
+    public LuaManager(){
         super();
     }
 
@@ -20,18 +25,27 @@ public class LuaManager extends ScriptManager {
             return null;
         }
 
-        LuaValue[] values = new LuaValue[args.length];
-        int index = 0;
+        List<LuaValue> values = new ArrayList<>();
         for(Object arg:args){
-            values[index] = CoerceJavaToLua.coerce(arg);
-            index++;
+            values.add(CoerceJavaToLua.coerce(arg));
         }
-        GLOBALS.load(this.script).get(functionName).checkfunction().invoke(values);
-        return null;
+        LuaFunction function = GLOBALS.load(this.script).call().get(functionName).checkfunction();
+        return function.invoke(values.toArray(new LuaValue[0]));
+        //return function.invoke(CoerceJavaToLua.coerce(args[0]));
     }
 
     @Override
     public Object invokeScript(String functionName, ResourceLoader.RunnableWithException whenException, Object... args){
+        try{
+            return this.invokeScript(functionName,args);
+        } catch (Exception e) {
+            whenException.run(e);
+        }
         return null;
+    }
+
+    @Override
+    public ScriptType type() {
+        return ScriptType.LUA;
     }
 }

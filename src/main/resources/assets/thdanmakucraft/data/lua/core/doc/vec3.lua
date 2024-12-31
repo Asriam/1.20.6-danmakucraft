@@ -4,14 +4,6 @@
 --- DateTime: 2024/1/18 上午 04:26
 ---
 
----@param x number
----@param y number
----@param z number
----@return Vec3
-function Vec3(x,y,z)
-    return luajava.new(minecraft.Vec3,x,y,z)
-end
-
 ---@class Vec3
 ---@field x number
 ---@field y number

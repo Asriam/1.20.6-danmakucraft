@@ -36,4 +36,9 @@ public class JSManager extends ScriptManager {
         }
         return null;
     }
+
+    @Override
+    public ScriptType type() {
+        return ScriptType.JAVASCRIPT;
+    }
 }

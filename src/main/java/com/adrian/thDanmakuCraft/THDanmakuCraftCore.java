@@ -63,12 +63,8 @@ public class THDanmakuCraftCore
     @SubscribeEvent
     public void onServerStarting(final @NotNull ServerStartingEvent event) {
         THDanmakuCraftCore.LOGGER.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
-        /*
-        ResourceManager resourceManager = event.getServer().getResourceManager();
-        THDanmakuCraftCore.LOGGER.info(resourceManager.toString());
-        JSLoader.init(resourceManager);
-        LuaLoader.init(resourceManager);
-        */
+        JSLoader.init();
+        LuaLoader.init();
         JSCore.init();
         LuaCore.init();
 

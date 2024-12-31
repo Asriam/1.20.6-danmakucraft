@@ -17,5 +17,6 @@ public class CreativeModeTabInit {
                 output.accept(ItemInit.EXAMPLE_ITEM.get());
                 output.accept(BlockInit.EXAMPLE_BLOCK_ITEM.get()); // Add the example item to the tab. For your own tabs, this method is preferred over the event
                 output.accept(ItemInit.TESTDANMAKU.get());
+                output.accept(ItemInit.TEST_CURVED_LASER_ITEM.get());
             }).build());
 }

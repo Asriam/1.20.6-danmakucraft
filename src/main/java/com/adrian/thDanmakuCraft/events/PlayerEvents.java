@@ -31,9 +31,10 @@ public class PlayerEvents {
         }
     }
 
+    /*
     @SubscribeEvent
     public static void onPlayerCloned(PlayerEvent.Clone event) {
-    }
+    }*/
 
     @SubscribeEvent
     public static void onRegisterCapabilities(RegisterCapabilitiesEvent event) {

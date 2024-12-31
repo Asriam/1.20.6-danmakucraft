@@ -48,24 +48,23 @@ public class EntitySingleTHObject extends Entity implements IEntityAdditionalSpa
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
 
     }
-
     @Override
-    protected void readAdditionalSaveData(CompoundTag tag) {
-
+    protected void addAdditionalSaveData(CompoundTag tag) {
+        this.object.save(tag);
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag tag) {
-
+    protected void readAdditionalSaveData(CompoundTag tag) {
+        this.object.load(tag);
     }
 
     @Override
     public void writeSpawnData(FriendlyByteBuf buffer) {
-
+        this.object.writeData(buffer);
     }
 
     @Override
     public void readSpawnData(FriendlyByteBuf additionalData) {
-
+        this.object.readData(additionalData);
     }
 }

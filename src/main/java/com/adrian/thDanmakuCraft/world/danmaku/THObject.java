@@ -1,12 +1,11 @@
 package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
-import com.adrian.thDanmakuCraft.api.script.IScriptTHObjectAPI;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.script.IScript;
 import com.adrian.thDanmakuCraft.script.ScriptManager;
+import com.adrian.thDanmakuCraft.script.lua.LuaManager;
 import com.adrian.thDanmakuCraft.world.THObjectContainer;
-import com.adrian.thDanmakuCraft.script.js.JSManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.*;
@@ -19,11 +18,14 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
 import org.joml.*;
+import org.luaj.vm2.LuaValue;
+import org.luaj.vm2.lib.OneArgFunction;
 
 import java.lang.Math;
 import java.util.List;
+import java.util.UUID;
 
-public class THObject implements IScript, IScriptTHObjectAPI {
+public class THObject implements IScript{
     private final THObjectType<? extends THObject> type;
     private final ScriptManager scriptManager;
     private final Level level;
@@ -64,6 +66,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
     protected boolean faceCamera = true;
     protected boolean canHitUser = false;
     protected boolean shouldSetDeadWhenCollision = true;
+    public UUID uuid;
 
     public int layer = 0;
 
@@ -77,7 +80,8 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         this.container = container;
         this.random = container.getRandomSource();
         this.level = container.level();
-        this.scriptManager = new JSManager();
+        this.scriptManager = new LuaManager();
+        this.uuid = Mth.createInsecureUUID(this.random);
         this.initPosition(container.getPosition());
     }
 
@@ -114,10 +118,11 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         this.scriptManager.setScript(script);
     }
 
-    public void spawn() {
+    public <T extends  THObject> T spawn() {
         if (!this.container.getObjectManager().contains(this)) {
             this.container.getObjectManager().addTHObject(this);
         }
+        return (T) this;
     }
 
     public void setDead() {
@@ -145,8 +150,20 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         this.scale = scale;
     }
 
+    public void setScale(float x, float y, float z) {
+        this.scale = new Vector3f(x, y, z);
+    }
+
+    public void setScale(Vec3 scale) {
+        this.scale = scale.toVector3f();
+    }
+
     public void setSize(Vec3 size) {
         this.size = size;
+    }
+
+    public void setSize(float x, float y, float z) {
+        this.size = new Vec3(x, y, z);
     }
 
     public void setVelocity(Vec3 velocity, boolean setRotation) {
@@ -188,6 +205,10 @@ public class THObject implements IScript, IScriptTHObjectAPI {
 
     public void setRotation(Vector3f rotation) {
         this.setRotation(rotation.x, rotation.y, rotation.z);
+    }
+
+    public void setRotation(Vec3 vec3){
+        this.setRotation(vec3.toVector3f());
     }
 
     public void setRotation(Vec2 rotation) {
@@ -242,7 +263,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         return new Vec3(positionX, positionY, positionZ);
     }
 
-    public double[] getPosition2(){
+    public double[] getPositionArray(){
         return new double[]{positionX, positionY, positionZ};
     }
 
@@ -286,6 +307,18 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         return new Vector3f(this.xRot, this.yRot, this.zRot);
     }
 
+    public final float getXRot() {
+        return this.xRot;
+    }
+
+    public final float getYRot() {
+        return this.yRot;
+    }
+
+    public final float getZRot() {
+        return this.zRot;
+    }
+
     public Vec3 getAcceleration() {
         return this.acceleration;
     }
@@ -302,7 +335,9 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         return this.blend;
     }
 
-
+    public String getBlendName(){
+        return this.blend.name();
+    }
 
     public boolean getIsDead() {
         return this.isDead;
@@ -312,12 +347,36 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         return !this.isDead;
     }
 
+    public void setCollisionType(CollisionType type) {
+        this.collisionType = type;
+    }
+
+    public void setCollisionType(int type) {
+        this.collisionType = CollisionType.values()[type];
+    }
+
+    public void setCollisionType(String type) {
+        this.collisionType = CollisionType.valueOf(type);
+    }
+
     public CollisionType getCollisionType() {
         return this.collisionType;
     }
 
-    public void setCollisionType(CollisionType type) {
-        this.collisionType = type;
+    public void setUUID(UUID uuid) {
+        this.uuid = uuid;
+    }
+
+    public void setUUID(String uuid) {
+        this.uuid = UUID.fromString(uuid);
+    }
+
+    public UUID getUUID() {
+        return this.uuid;
+    }
+
+    public String getUUIDasString() {
+        return this.uuid.toString();
     }
 
     public final void setBoundingBox(AABB boundingBox) {
@@ -404,8 +463,9 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         }
 
         this.scriptManager.invokeScript("onTick", (exception) -> {
+            THDanmakuCraftCore.LOGGER.error("Failed invoke script!", exception);
             if (this.container != null) {
-                this.container.getHostEnitity().remove(Entity.RemovalReason.DISCARDED);
+                this.container.getHostEntity().remove(Entity.RemovalReason.DISCARDED);
             }
             this.remove();
         }, this);
@@ -452,7 +512,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
                         new Vec3(aabb.maxX, aabb.maxY, aabb.maxZ),
                         ClipContext.Block.COLLIDER,
                         ClipContext.Fluid.NONE,
-                        this.container.getHostEnitity()));
+                        this.container.getHostEntity()));
                 if (result.getType() != HitResult.Type.MISS) {
                     //this.onHitBlock(result);
                     this.onHit(result);
@@ -537,7 +597,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
     }
 
     public boolean hasContainer() {
-        return this.container != null && !this.container.getHostEnitity().isRemoved();
+        return this.container != null && !this.container.getHostEntity().isRemoved();
     }
 
     public THObjectType<? extends THObject> getType() {
@@ -545,6 +605,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
     }
 
     public void writeData(FriendlyByteBuf buffer) {
+        buffer.writeUUID(this.uuid);
         buffer.writeDouble(this.positionX);
         buffer.writeDouble(this.positionY);
         buffer.writeDouble(this.positionZ);
@@ -576,6 +637,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
     }
 
     public void readData(FriendlyByteBuf buffer) {
+        this.uuid = buffer.readUUID();
         this.positionX = buffer.readDouble();
         this.positionY = buffer.readDouble();
         this.positionZ = buffer.readDouble();
@@ -624,6 +686,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         tag.putBoolean("IsDead", this.isDead);
         tag.putBoolean("Collision", this.collision);
         tag.putInt("CollisionType", this.collisionType.ordinal());
+        tag.putUUID("UUID", this.uuid);
         this.scriptManager.save(tag);
         //this.blend.save(tag);
         return tag;
@@ -655,6 +718,7 @@ public class THObject implements IScript, IScriptTHObjectAPI {
         this.collision = tag.getBoolean("Collision");
         this.collisionType = THObject.CollisionType.class.getEnumConstants()[tag.getInt("CollisionType")];
         this.scriptManager.load(tag);
+        this.uuid = tag.getUUID("UUID");
         //this.blend.load(tag);
     }
 
@@ -741,6 +805,18 @@ public class THObject implements IScript, IScriptTHObjectAPI {
     @Override
     public ScriptManager getScriptManager() {
         return this.scriptManager;
+    }
+
+    public LuaValue ofLuaValue(){
+        LuaValue library = LuaValue.tableOf();
+        library.set( "setPosition", new OneArgFunction(){
+            @Override
+            public LuaValue call(LuaValue luaValue) {
+                THObject.this.setPosition(luaValue.get(1).checkdouble(),luaValue.get(2).checkdouble(),luaValue.get(3).checkdouble());
+                return LuaValue.NIL;
+            }
+        });
+        return library;
     }
 
     public enum CollisionType{

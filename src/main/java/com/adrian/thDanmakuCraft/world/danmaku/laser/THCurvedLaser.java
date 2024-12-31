@@ -1,7 +1,10 @@
-package com.adrian.thDanmakuCraft.world.danmaku;
+package com.adrian.thDanmakuCraft.world.danmaku.laser;
 
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.world.THObjectContainer;
+import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
+import com.adrian.thDanmakuCraft.world.danmaku.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.THObjectType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -12,6 +15,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.compress.utils.Lists;
+import org.w3c.dom.Node;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -83,6 +87,23 @@ public class THCurvedLaser extends THObject {
         if(this.shouldUpdateNodes) {
             this.nodeManager.updateNode(this.getPosition());
         }
+    }
+
+    public int getNodeMount(){
+        return this.nodeManager.nodeList.size();
+    }
+
+    public LaserNode getNode(int index){
+        return this.nodeManager.getNode(index);
+    }
+
+    public List<LaserNode> getAllNodes(){
+        return this.nodeManager.getNodes();
+    }
+
+    public void setNode(int index,Vec3 pos){
+        LaserNode node = this.nodeManager.getNode(index);
+        node.setPosition(pos);
     }
 
     @Override

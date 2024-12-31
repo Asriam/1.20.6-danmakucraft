@@ -4,7 +4,7 @@
 --- DateTime: 2024/12/5 上午 12:06
 ---
 
-local function copy(table)
+local function clone(table)
     local newTable = {}
     for key,value in ipairs(table) do
         newTable[key] = value
@@ -12,4 +12,4 @@ local function copy(table)
     return newTable
 end
 
-table.copy = copy
+table.clone = clone

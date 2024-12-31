@@ -4,13 +4,6 @@
 --- DateTime: 2024/12/7 上午 05:01
 ---
 
----@param x number
----@param y number
----@return Vec2
-function Vec2(x,y)
-    return luajava.new(minecraft.Vec2,x,y)
-end
-
 ---@class Vec2
 ---@field x number
 ---@field y number

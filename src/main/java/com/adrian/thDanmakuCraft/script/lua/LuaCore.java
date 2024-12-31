@@ -1,9 +1,9 @@
 package com.adrian.thDanmakuCraft.script.lua;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
-import com.adrian.thDanmakuCraft.world.danmaku.THBullet;
+import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;
-import com.adrian.thDanmakuCraft.world.danmaku.THCurvedLaser;
+import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -34,8 +34,7 @@ public class LuaCore {
         //core.doFile("main.lua");
         String path = "main.lua";
         String script = LuaLoader.getResourceAsString(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"data/lua/"+path));
-        LuaValue value = LuaCore.getInstance().GLOBALS.load(script,path);
-        value.call().checkfunction().invoke();
+        LuaCore.getInstance().GLOBALS.load(script,path).call();
     }
 
     public void putAPI(){

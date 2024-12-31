@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class THObjectManager {
+public class THObjectManager implements IDataStorage{
 
     private final MultiMap<THObject> storage;
     private final THObjectContainer container;
@@ -100,8 +100,8 @@ public class THObjectManager {
         }
     }
 
-    public CompoundTag save() {
-        return THObjectListToTag(this.getTHObjects());
+    public CompoundTag save(CompoundTag compoundTag) {
+        return THObjectListToTag(compoundTag, this.getTHObjects());
     }
 
     public void load(CompoundTag tag) {
@@ -125,15 +125,16 @@ public class THObjectManager {
         for (int i = 0; i < listSize; i++) {
             //THObject object = buffer.readRegistryIdSafe(THObjectType.class).create(this.container);
             THObject object = THObjectType.getValue(buffer.readResourceLocation()).create(this.container);
-            assert object != null;
-            object.readData(buffer);
-            objects.add(object);
+            if(object != null) {
+                object.readData(buffer);
+                objects.add(object);
+            }
         }
         this.recreate(objects);
     }
 
-    public static CompoundTag THObjectListToTag(List<THObject> objects) {
-        CompoundTag tag = new CompoundTag();
+    public static CompoundTag THObjectListToTag(CompoundTag tag, List<THObject> objects) {
+        //CompoundTag tag = new CompoundTag();
         int index = 0;
         for (THObject object : objects) {
             if (object.shouldSave) {

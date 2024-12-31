@@ -3,62 +3,12 @@
 --- Created by Administrator.
 --- DateTime: 2024/12/7 下午 10:29
 ---
+New = luajava.new
 
+core.doFile("lib.lua")
+--core.doFile("core/doc/vec3.lua")
+--core.doFile("core/doc/vec2.lua")
 --[[
-minecraft = {}
-
-minecraft.Mth             = luajava.bindClass('net.minecraft.util.Mth')
-minecraft.Vec2            = luajava.bindClass('net.minecraft.world.phys.Vec2')
-minecraft.Vec3            = luajava.bindClass('net.minecraft.world.phys.Vec3')
-minecraft.THObject        = luajava.bindClass('com.adrian.thDanmakuCraft.world.entity.danmaku.THObject')
-minecraft.THBullet        = luajava.bindClass('com.adrian.thDanmakuCraft.world.entity.danmaku.THBullet')
-minecraft.THCurvedLaser   = luajava.bindClass('com.adrian.thDanmakuCraft.world.entity.danmaku.THCurvedLaser')
-
-Mth = minecraft.Mth
+core.doFile("doc/vec3.lua")
+core.doFile("doc/vec2.lua")
 ]]
-
----@class Vec3
-vec3 = luajava.new(Vec3,1.0,2.0,1.0)
-
-local num = Mth:abs(-10.0)
-
-print(core)
-core.info("sadsadsadsadsadsadasasdasdadassadsadsadsadadasd")
-core.info("sadsadsadsadsadsadasasdasdadassadsadsadsadadasd")
-core.info("sadsadsadsadsadsadasasdasdadassadsadsadsadadasd")
-core.info("sadsadsadsadsadsadasasdasdadassadsadsadsadadasd")
-core.info("sadsadsadsadsadsadasasdasdadassadsadsadsadadasd")
-core.info("sadsadsadsadsadsadasasdasdadassadsadsadsadadasd")
-core.info("sadsadsadsadsadsadasasdasdadassadsadsadsadadasd")
-core.info("sadsadsadsadsadsadasasdasdadassadsadsadsadadasd")
-core.info("sadsadsadsadsadsadasasdasdadassadsadsadsadadasd")
---core:doFile("test.lua")
---core:doFile("test.lua")
-print(vec3:xRot(10.0).y .."aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaafffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
---core:info("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-
-local co1 = coroutine.create(function()
-    print("1aaaaaaaaa")
-    coroutine.yield()
-    print("2aaaaaaaaaaaaa")
-    coroutine.yield()
-    print("3aaaaaaaaaaaaaaaaaaaaaaa")
-    coroutine.yield()
-    print("4aaaaaaaaaaaaaaaaaaaaaaa")
-    coroutine.yield()
-    print("5aaaaaaaaaaaaaaaaaaaaaaa")
-end)
-
-coroutine.resume(co1)
-print("asffasdasd")
-coroutine.resume(co1)
-print("asffasdasd")
-coroutine.resume(co1)
-
-
-function ss()
-    coroutine.resume(co1)
-end
-
-return ss
-

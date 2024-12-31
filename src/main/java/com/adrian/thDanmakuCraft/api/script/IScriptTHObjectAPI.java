@@ -7,7 +7,7 @@ import org.joml.Vector3f;
 
 public interface IScriptTHObjectAPI {
 
-    void spawn();
+    <T extends THObject> T spawn();
     void setPosition(Vec3 vec3);
     void setPosition(double x, double y, double z);
     Vec3 getPosition();
