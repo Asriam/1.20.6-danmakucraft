@@ -5,6 +5,7 @@ import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.script.IScript;
 import com.adrian.thDanmakuCraft.script.ScriptManager;
 import com.adrian.thDanmakuCraft.script.lua.LuaManager;
+import com.adrian.thDanmakuCraft.world.AdditionalParameterManager;
 import com.adrian.thDanmakuCraft.world.THObjectContainer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -430,6 +431,11 @@ public class THObject implements IScript{
     }
 
     public void onTick() {
+        /*
+        if(!this.getContainer().getObjectFromUUID(this.getUUID()).equals(this)){
+            this.remove();
+        }*/
+
         this.lastPosition = new Vec3(this.positionX, this.positionY, this.positionZ);
 
         if (!this.shouldTick) {

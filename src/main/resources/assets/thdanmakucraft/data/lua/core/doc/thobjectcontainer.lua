@@ -42,3 +42,6 @@ container:createTHBullet()
 ---@param width number
 ---@return THCurvedLaser
 function container:createTHCurvedLaser(position,colorIndex,length,width) end
+
+---@return AdditionalParameterManager
+function container:getParameterManager() end

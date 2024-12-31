@@ -17,10 +17,12 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.checkerframework.checker.units.qual.C;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
 
@@ -30,6 +32,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
     protected final THObjectManager objectManager;
     protected final ScriptManager scriptManager;
     protected final THTasker.THTaskerManager taskerManager;
+    protected final AdditionalParameterManager parameterManager;
     protected final RandomSource random = RandomSource.create();
     private int timer = 0;
     public AABB aabb = new AABB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
@@ -44,6 +47,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
         this.targetUserManager = new TargetUserManager(this);
         this.objectManager     = new THObjectManager(this);
         this.taskerManager     = new THTasker.THTaskerManager(this);
+        this.parameterManager  = new AdditionalParameterManager(this);
         this.scriptManager     = new LuaManager();
         this.entitiesInBound   = new ArrayList<>();
         this.setMaxObjectAmount(2000);
@@ -228,6 +232,19 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
         return new THCurvedLaser(this,THBullet.BULLET_COLOR.getColorByIndex(color),length,width).spawn();
     }
 
+    public <T extends THObject> T getObjectFromUUID(UUID uuid) {
+        for(THObject object:this.getObjectManager().getTHObjects()){
+            if (object.getUUID().equals(uuid)){
+                return (T) object;
+            }
+        }
+        return null;
+    }
+
+    public <T extends THObject> T getObjectFromUUID(String uuid) {
+        return this.getObjectFromUUID(UUID.fromString(uuid));
+    }
+
     public void writeSpawnData(FriendlyByteBuf buffer) {
         buffer.writeInt(this.maxObjectAmount);
         buffer.writeInt(this.timer);
@@ -236,6 +253,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
         this.objectManager.writeData(buffer);
         this.scriptManager.writeData(buffer);
         //this.taskerManager.writeData(buffer);
+        this.parameterManager.writeData(buffer);
     }
 
     public void readSpawnData(FriendlyByteBuf additionalData) {
@@ -246,25 +264,33 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
         this.objectManager.readData(additionalData);
         this.scriptManager.readData(additionalData);
         //this.taskerManager.readData(additionalData);
+        this.parameterManager.readData(additionalData);
         this.setBound(this.position(),this.bound);
+
+        this.scriptManager.invokeScript("onInit", (exception) -> {
+            THDanmakuCraftCore.LOGGER.error("Failed invoke script!", exception);
+            this.getHostEntity().remove(Entity.RemovalReason.DISCARDED);
+        }, this);
     }
 
-    public void addAdditionalSaveData(CompoundTag compoundTag) {
-        compoundTag.putInt("Timer",this.timer);
-        compoundTag.putInt("MaxObjectAmount",this.maxObjectAmount);
+    public void addAdditionalSaveData(CompoundTag tag) {
+        tag.putInt("Timer",this.timer);
+        tag.putInt("MaxObjectAmount",this.maxObjectAmount);
         //compoundTag.putBoolean("PositionBinding",this.bindingToUserPosition);
-        compoundTag.put("object_storage", this.objectManager.save(new CompoundTag()));
-        compoundTag.put("script",this.scriptManager.save(new CompoundTag()));
-        compoundTag.put("user_target", this.targetUserManager.save(new CompoundTag()));
+        tag.put("object_storage", this.objectManager.save(new CompoundTag()));
+        tag.put("script",this.scriptManager.save(new CompoundTag()));
+        tag.put("user_target", this.targetUserManager.save(new CompoundTag()));
+        tag.put("parameter", this.parameterManager.save(new CompoundTag()));
     }
 
-    public void readAdditionalSaveData(CompoundTag compoundTag) {
-        this.timer = compoundTag.getInt("Timer");
-        this.maxObjectAmount = compoundTag.getInt("MaxObjectAmount");
+    public void readAdditionalSaveData(CompoundTag tag) {
+        this.timer = tag.getInt("Timer");
+        this.maxObjectAmount = tag.getInt("MaxObjectAmount");
         //this.bindingToUserPosition = compoundTag.getBoolean("PositionBinding");
-        this.objectManager.load(compoundTag.getCompound("object_storage"));
-        this.scriptManager.load(compoundTag.getCompound("script"));
-        this.targetUserManager.load(compoundTag.getCompound("user_target"));
+        this.objectManager.load(tag.getCompound("object_storage"));
+        this.scriptManager.load(tag.getCompound("script"));
+        this.targetUserManager.load(tag.getCompound("user_target"));
+        this.parameterManager.load(tag.getCompound("parameter"));
     }
 
     public void injectScript(String script) {
@@ -284,4 +310,19 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
         return this.position();
     }
 
+    public void registerParameter(AdditionalParameterManager.Type type, String key, Object value) {
+        this.parameterManager.register(type, key, value);
+    }
+
+    public void registerParameter(String type, String key, Object value) {
+        this.parameterManager.register(type, key, value);
+    }
+
+    public String getParameterString(String key) {
+        return this.parameterManager.getString(key);
+    }
+
+    public AdditionalParameterManager getParameterManager() {
+        return this.parameterManager;
+    }
 }
