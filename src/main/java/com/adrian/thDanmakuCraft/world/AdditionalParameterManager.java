@@ -1,118 +1,111 @@
 package com.adrian.thDanmakuCraft.world;
 
+import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
-import org.checkerframework.checker.units.qual.A;
 
-import java.util.EnumMap;
 import java.util.Map;
 import java.util.UUID;
 
 public class AdditionalParameterManager implements IDataStorage{
 
     private final THObjectContainer container;
-    private final Map<Type, Map<String, Object>> mapMap = Maps.newHashMap();
-    private final Map<String, Parameter<?>> parameterMap = Maps.newHashMap();
+    private final Map<String, Parameter<?>> parameterMap;
 
     public AdditionalParameterManager(THObjectContainer container) {
         this.container = container;
-        for(Type type : Type.values()){
-            mapMap.put(type, Maps.newHashMap());
-        }
+        this.parameterMap = Maps.newHashMap();
     }
 
     public void register(Type type, String key, Object value) {
-        if(type == Type.THObject && value instanceof THObject object){
-            mapMap.get(Type.THObject).put(key,object.getUUID());
+        if (type == Type.THObject && value instanceof THObject object) {
+            this.parameterMap.put(key, new Parameter<>(type, object.getUUID()));
+        }else {
+            this.parameterMap.put(key, new Parameter<>(type, value));
+            //THDanmakuCraftCore.LOGGER.info(this.parameterMap + "zzzzzzzzzzzzzzzzzzz");
         }
-
-        mapMap.get(type).put(key,value);
     }
 
     public void register(String type, String key, Object value) {
         this.register(Type.valueOf(type), key, value);
     }
 
-    public Object get(Type type, String key) {
-        return mapMap.get(type).get(key);
+    public Parameter<Object> getParam(String key) {
+        return (Parameter<Object>) this.parameterMap.get(key);
     }
 
-    public void set(Type type, String key, Object value) {
-        if(type == Type.THObject && value instanceof THObject object){
-            mapMap.get(Type.THObject).put(key,object.getUUID());
-        }
-        mapMap.get(type).put(key,value);
-    }
-
-    public void set(String type, String key, Object value) {
-        set(Type.valueOf(type), key, value);
+    public void setValue(String key, Object value) {
+        ((Parameter<Object>) this.parameterMap.get(key)).setValue(value);
     }
 
     public String getString(String key){
-        return (String) this.mapMap.get(Type.String).get(key);
+        return (String) this.parameterMap.get(key).getValue();
     }
 
     public int getInteger(String key){
-        return (int) this.mapMap.get(Type.Integer).get(key);
+        return (int) this.parameterMap.get(key).getValue();
     }
 
     public float getFloat(String key){
-        return (float) this.mapMap.get(Type.Float).get(key);
+        return (float) this.parameterMap.get(key).getValue();
     }
 
     public boolean getBoolean(String key){
-        return (boolean) this.mapMap.get(Type.Boolean).get(key);
+        return (boolean) this.parameterMap.get(key).getValue();
     }
 
     public THObject getTHObject(String key){
-        UUID uuid = (UUID) this.mapMap.get(Type.THObject).get(key);
+        UUID uuid = (UUID) this.parameterMap.get(key).getValue();
         return this.container.getObjectFromUUID(uuid);
     }
 
     @Override
     public void writeData(FriendlyByteBuf buffer) {
-        Map<String,Object> stringMap = mapMap.get(Type.String);
-        buffer.writeInt(stringMap.size());
-        stringMap.forEach((key, value) -> {
-            String string = (String) value;
+        //THDanmakuCraftCore.LOGGER.info(this.parameterMap+"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" + this.parameterMap.size());
+        buffer.writeInt(this.parameterMap.size());
+        this.parameterMap.forEach((key, parameter) -> {
             buffer.writeUtf(key);
-            buffer.writeUtf(string);
-        });
-
-        Map<String,Object> integerMap = mapMap.get(Type.Integer);
-        buffer.writeInt(stringMap.size());
-        stringMap.forEach((key, value) -> {
-            int integer = (int) value;
-            buffer.writeUtf(key);
-            buffer.writeInt(integer);
+            buffer.writeEnum(parameter.type);
+            switch (parameter.type) {
+                case String -> buffer.writeUtf((String) parameter.value);
+                case Integer -> buffer.writeInt((Integer) parameter.value);
+                case Float -> buffer.writeFloat((Float) parameter.value);
+                case Boolean -> buffer.writeBoolean((Boolean) parameter.value);
+                case THObject -> buffer.writeUUID((UUID) parameter.value);
+            }
         });
     }
 
     @Override
     public void readData(FriendlyByteBuf buffer) {
+        //THDanmakuCraftCore.LOGGER.info(this.parameterMap.toString()+"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" + this.parameterMap.size());
         int size = buffer.readInt();
-        for (int i=0;i<size;i++){
-            String key   = buffer.readUtf();
-            String value = buffer.readUtf();
-            this.mapMap.get(Type.String).put(key,value);
-        }
-
-        size = buffer.readInt();
-        for (int i=0;i<size;i++){
+        for (int i = 0; i < size; i++) {
             String key = buffer.readUtf();
-            int value  = buffer.readInt();
-            this.mapMap.get(Type.Integer).put(key,value);
+            Type type = buffer.readEnum(Type.class);
+            Parameter<?> parameter = this.readParam(buffer,type);
+            this.parameterMap.put(key, parameter);
         }
+    }
+
+
+    public Parameter<?> readParam(FriendlyByteBuf buffer,Type type) {
+        Object value = null;
+        switch (type) {
+            case String -> value = buffer.readUtf();
+            case Integer -> value = buffer.readInt();
+            case Float -> value = buffer.readFloat();
+            case Boolean -> value = buffer.readBoolean();
+            case THObject -> value = buffer.readUUID();
+        }
+        return new Parameter<>(type, value);
     }
 
     @Override
     public CompoundTag save(CompoundTag compoundTag) {
-        if(this.mapMap.isEmpty()){
-            return compoundTag;
-        }
-
         return this.toNBT(compoundTag);
     }
 
@@ -122,72 +115,37 @@ public class AdditionalParameterManager implements IDataStorage{
     }
 
     private CompoundTag toNBT(CompoundTag nbt){
-        mapMap.forEach((type, map)-> {
-            if (type == Type.String) {
-                CompoundTag tag = new CompoundTag();
-                map.forEach((key, value) -> {
-                    if (value instanceof String string)
-                        tag.putString(key, string);
-                });
-                nbt.put("String", tag);
-            } else if (type == Type.Integer) {
-                CompoundTag tag = new CompoundTag();
-                map.forEach((key, value) -> {
-                    if (value instanceof Integer integer)
-                        tag.putInt(key, integer);
-                });
-                nbt.put("Integer", tag);
-            } else if (type == Type.Float) {
-                CompoundTag tag = new CompoundTag();
-                map.forEach((key, value) -> {
-                    if (value instanceof Float floatValue)
-                        tag.putFloat(key, floatValue);
-                });
-                nbt.put("Float", tag);
-            } else if (type == Type.Boolean) {
-                CompoundTag tag = new CompoundTag();
-                map.forEach((key, value) -> {
-                    if (value instanceof Boolean booleanValue)
-                        tag.putBoolean(key, booleanValue);
-                });
-                nbt.put("Boolean", tag);
-            } else if (type == Type.THObject) {
-                CompoundTag tag = new CompoundTag();
-                map.forEach((key, value) -> {
-                    if (value instanceof THObject thObject)
-                        tag.putUUID(key, thObject.getUUID());
-                });
-                nbt.put("THObject", tag);
+        this.parameterMap.forEach((key, parameter) -> {
+            CompoundTag tag = new CompoundTag();
+            tag.putString("type", parameter.type.name());
+            switch (parameter.type) {
+                case String  -> tag.putString("value", (String) parameter.getValue());
+                case Integer -> tag.putInt("value", (Integer) parameter.getValue());
+                case Float -> tag.putFloat("value", (Float) parameter.getValue());
+                case Boolean -> tag.putBoolean("value", (Boolean) parameter.getValue());
+                case THObject -> tag.putUUID("value", (UUID) parameter.getValue());
             }
+            nbt.put(key, tag);
         });
         return nbt;
     }
 
     public void readFromNBT(CompoundTag nbt) {
-        CompoundTag StringTag   = nbt.getCompound("String");
-        CompoundTag IntegerTag  = nbt.getCompound("Integer");
-        CompoundTag FloatTag    = nbt.getCompound("Float");
-        CompoundTag BooleanTag  = nbt.getCompound("Boolean");
-        CompoundTag THObjectTag = nbt.getCompound("THObject");
+        for(String key:nbt.getAllKeys()){
+            CompoundTag tag = nbt.getCompound(key);
+            Type type = Type.valueOf(tag.getString("type"));
+            Object value = null;
+            switch (type) {
+                case String -> value=tag.getString("value");
+                case Integer -> value=tag.getInt("value");
+                case Float -> value=tag.getFloat("value");
+                case Boolean -> value=tag.getBoolean("value");
+                case THObject -> value=tag.getUUID("value");
+            }
 
-        for(String key:StringTag.getAllKeys()){
-            mapMap.get(Type.String).put(key,StringTag.getString(key));
-        }
-
-        for(String key:IntegerTag.getAllKeys()){
-            mapMap.get(Type.Integer).put(key,IntegerTag.getInt(key));
-        }
-
-        for(String key:FloatTag.getAllKeys()){
-            mapMap.get(Type.Float).put(key,FloatTag.getFloat(key));
-        }
-
-        for(String key:BooleanTag.getAllKeys()){
-            mapMap.get(Type.Boolean).put(key,BooleanTag.getBoolean(key));
-        }
-
-        for(String key:THObjectTag.getAllKeys()){
-            mapMap.get(Type.THObject).put(key,this.container.getObjectFromUUID(THObjectTag.getUUID(key)));
+            if (value != null){
+                this.parameterMap.put(key, new Parameter<>(type, value));
+            }
         }
     }
 
@@ -205,10 +163,12 @@ public class AdditionalParameterManager implements IDataStorage{
     }
 
     public static class Parameter<T>{
+        private final Type type;
         private T value;
 
-        public Parameter(T value){
+        public Parameter(Type type, T value){
             this.value = value;
+            this.type = type;
         }
 
         public T getValue() {
@@ -217,6 +177,10 @@ public class AdditionalParameterManager implements IDataStorage{
 
         public void setValue(T value) {
             this.value = value;
+        }
+
+        public Type getType() {
+            return type;
         }
     }
 }

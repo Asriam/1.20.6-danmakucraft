@@ -33,6 +33,12 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     }
 
     @Override
+    public void onAddedToWorld() {
+        super.onAddedToWorld();
+        this.container.onAddToWorld();
+    }
+
+    @Override
     public void tick(){
         this.container.tick();
     }

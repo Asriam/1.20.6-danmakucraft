@@ -7,8 +7,27 @@
 ---@class AdditionalParameterManager
 local M = {}
 
+---@class Parameter
+local P = {}
+
+---@return any
+function P:getValue() end
+
+---@param value any
+function P:setValue(value) end
+
 ---@param type string "String","Integer","Float","Boolean","THObject"
+---@param key string
+---@param value any
 function M:register(type, key, value) end
+
+---@param key:string
+---@param value any
+function M:setValue(key, value) end
+
+---@param key string
+---@return Parameter
+function M:getParam(key) end
 
 ---@param key string
 ---@return string

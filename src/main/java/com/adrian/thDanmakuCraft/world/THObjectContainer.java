@@ -44,13 +44,29 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
 
     public THObjectContainer(Entity hostEntity) {
         this.hostEntity = hostEntity;
+        this.parameterManager  = new AdditionalParameterManager(this);
         this.targetUserManager = new TargetUserManager(this);
         this.objectManager     = new THObjectManager(this);
         this.taskerManager     = new THTasker.THTaskerManager(this);
-        this.parameterManager  = new AdditionalParameterManager(this);
         this.scriptManager     = new LuaManager();
         this.entitiesInBound   = new ArrayList<>();
         this.setMaxObjectAmount(2000);
+    }
+
+    public THObjectContainer(Entity hostEntity, String script){
+        this(hostEntity);
+        this.injectScript(script);
+    }
+
+    public void onAddToWorld(){
+        this.scriptInit();
+    }
+
+    public void scriptInit(){
+        this.scriptManager.invokeScript("onInit", (exception) -> {
+            THDanmakuCraftCore.LOGGER.error("Failed invoke script!", exception);
+            this.getHostEntity().remove(Entity.RemovalReason.DISCARDED);
+        }, this);
     }
 
     public int getMaxObjectAmount() {
@@ -134,6 +150,9 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
     }
 
     public void tick() {
+        if (timer == 0){
+            this.scriptInit();
+        }
         /*
         if(this.bindingToUserPosition && this.getUser() != null){
             this.getHostEntity().setPos(this.getUser().position());
@@ -142,17 +161,18 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
         //this.task();
         this.entitiesInBound = this.level().getEntities(this.hostEntity,this.getAabb()).stream().filter((entity -> !(entity.equals(this.hostEntity)))).toList();
         this.objectManager.THObjectsTick();
-        this.timer++;
 
         if(this.autoRemove) {
             if (this.objectManager.isEmpty() && --this.autoRemoveLife < 0) {
                 this.getHostEntity().remove(Entity.RemovalReason.DISCARDED);
             }
         }
+
         this.scriptManager.invokeScript("onTick", (exception) -> {
             THDanmakuCraftCore.LOGGER.error("Failed invoke script!", exception);
             this.getHostEntity().remove(Entity.RemovalReason.DISCARDED);
-        }, this);
+            }, this);
+        this.timer++;
     }
 
     public void clearObjects(){
@@ -252,8 +272,8 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
         this.targetUserManager.writeData(buffer);
         this.objectManager.writeData(buffer);
         this.scriptManager.writeData(buffer);
-        //this.taskerManager.writeData(buffer);
         this.parameterManager.writeData(buffer);
+        //this.taskerManager.writeData(buffer);
     }
 
     public void readSpawnData(FriendlyByteBuf additionalData) {
@@ -263,14 +283,9 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
         this.targetUserManager.readData(additionalData);
         this.objectManager.readData(additionalData);
         this.scriptManager.readData(additionalData);
-        //this.taskerManager.readData(additionalData);
         this.parameterManager.readData(additionalData);
+        //this.taskerManager.readData(additionalData);
         this.setBound(this.position(),this.bound);
-
-        this.scriptManager.invokeScript("onInit", (exception) -> {
-            THDanmakuCraftCore.LOGGER.error("Failed invoke script!", exception);
-            this.getHostEntity().remove(Entity.RemovalReason.DISCARDED);
-        }, this);
     }
 
     public void addAdditionalSaveData(CompoundTag tag) {
@@ -280,7 +295,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
         tag.put("object_storage", this.objectManager.save(new CompoundTag()));
         tag.put("script",this.scriptManager.save(new CompoundTag()));
         tag.put("user_target", this.targetUserManager.save(new CompoundTag()));
-        tag.put("parameter", this.parameterManager.save(new CompoundTag()));
+        tag.put("parameters", this.parameterManager.save(new CompoundTag()));
     }
 
     public void readAdditionalSaveData(CompoundTag tag) {

@@ -2,11 +2,13 @@
 local container = {}
 
 function container:onInit()
-    local parameterManager = self:getParameterManager()
-    parameterManager:register("String","aaa","sad11111111")
+    self:getParameterManager():register("String","aaa","sad11111111")
+    print(self:getParameterManager():getString("aaa"))
 end
 
 function container:onTick()
+    --self:getParameterManager():register("String","aaa","sad11111111")
+    self:getParameterManager():setValue("aaa",""..self:getTimer())
     print(self:getParameterManager():getString("aaa"))
     local laser = self:createTHCurvedLaser(self:getPosition(),1,10,0.5)
 
