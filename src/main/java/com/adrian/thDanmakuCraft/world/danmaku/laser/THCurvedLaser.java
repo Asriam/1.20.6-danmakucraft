@@ -15,7 +15,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.compress.utils.Lists;
-import org.w3c.dom.Node;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -39,9 +39,10 @@ public class THCurvedLaser extends THObject {
         this(THObjectInit.TH_CURVED_LASER.get(),container);
         this.laserColor = laserColor;
         this.nodeMount = nodeMount;
-        this.nodeManager.initNodeList(nodeMount);
         this.width = width;
-        this.setSize(new Vec3(width,width,width));
+        float width2 = width * 0.5f;
+        this.setSize(new Vec3(width2,width2,width2));
+        this.nodeManager.initNodeList(nodeMount);
     }
 
     @Override
@@ -174,27 +175,28 @@ public class THCurvedLaser extends THObject {
                 laser.onHit(new EntityHitResult(entity, laser.getPosition()));
             }));*/
 
-            int index = 0;
+            //int index = 0;
             for(var node:nodeList){
-                index++;
-                //if(!node.isValid()) return;
-                entitiesInBound.forEach((entity -> {
-                    if(entity.getBoundingBox().intersects(node.getBoundingBox())) {
-                        laser.onHitEntity(new EntityHitResult(entity, node.getPosition()));
-                        if(laser.breakable) node.isValid = false;
-                    }
-                }));
+                //index++;
+                if(node.isValid()) {
+                    entitiesInBound.forEach((entity -> {
+                        if (!entity.equals(laser.getContainer().getUser()) && entity.getBoundingBox().intersects(node.getBoundingBox())) {
+                            laser.onHitEntity(new EntityHitResult(entity, node.getPosition()));
+                            if (laser.breakable) node.isValid = false;
+                        }
+                    }));
+                }
             };
         }
 
-        public void writeData(FriendlyByteBuf buffer){
+        public void writeData(@NotNull FriendlyByteBuf buffer){
             buffer.writeInt(this.nodeList.size());
             for(LaserNode node:this.nodeList){
                 node.writeData(buffer);
             }
         }
 
-        public void readData(FriendlyByteBuf buffer){
+        public void readData(@NotNull FriendlyByteBuf buffer){
             int size = buffer.readInt();
             List<LaserNode> nodes = Lists.newArrayList();
             for(short i=0;i<size;i++){
@@ -216,7 +218,7 @@ public class THCurvedLaser extends THObject {
             tag.put("nodes",list);
         }
 
-        public void load(CompoundTag tag){
+        public void load(@NotNull CompoundTag tag){
             CompoundTag listTag = tag.getCompound("nodes");
             int list_size = listTag.getAllKeys().size();
             List<LaserNode> nodes = Lists.newArrayList();

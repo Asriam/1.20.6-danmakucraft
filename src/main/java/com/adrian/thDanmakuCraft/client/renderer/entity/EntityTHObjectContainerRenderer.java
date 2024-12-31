@@ -217,6 +217,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
             //THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THObjectRenderHelper.parseBlend(THObject.Blend.normal),true));
             //bufferSource.getBuffer(RenderType.lines());
         }
+
         RenderSystem.blendEquation(32774);
         RenderSystem.disableBlend();
         RenderSystem.defaultBlendFunc();

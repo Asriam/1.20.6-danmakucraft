@@ -48,3 +48,15 @@ function M:getBoolean(key) end
 ---@param key string
 ---@return THObject
 function M:getTHObject(key) end
+
+---@param key string
+---@return THBullet
+function M:getTHBullet(key) end
+
+---@param key string
+---@return THLaser
+function M:getTHLaser(key) end
+
+---@param key string
+---@return THCurvedLaser
+function M:getTHCurvedLaser(key) end

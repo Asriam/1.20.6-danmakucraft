@@ -27,7 +27,11 @@ public class LuaManager extends ScriptManager {
 
         List<LuaValue> values = new ArrayList<>();
         for(Object arg:args){
-            values.add(CoerceJavaToLua.coerce(arg));
+            if(arg instanceof LuaValue luaValue){
+                values.add(luaValue);
+            }else {
+                values.add(CoerceJavaToLua.coerce(arg));
+            }
         }
         LuaFunction function = GLOBALS.load(this.script).call().get(functionName).checkfunction();
         return function.invoke(values.toArray(new LuaValue[0]));

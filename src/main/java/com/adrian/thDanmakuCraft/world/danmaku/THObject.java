@@ -21,6 +21,7 @@ import net.minecraft.world.phys.*;
 import org.joml.*;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.OneArgFunction;
+import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 
 import java.lang.Math;
 import java.util.List;
@@ -432,7 +433,19 @@ public class THObject implements IScript{
         this.move(pos.x, pos.y, pos.z);
     }
 
+    public void scriptInit(){
+        this.scriptManager.invokeScript("onInit", (exception) -> {
+            THDanmakuCraftCore.LOGGER.error("Failed invoke script!", exception);
+            if (this.container != null) {
+                this.container.getHostEntity().remove(Entity.RemovalReason.DISCARDED);
+            }
+        }, this);
+    }
+
     public void onTick() {
+        if (timer == 0){
+            this.scriptInit();
+        }
         /*
         if(!this.getContainer().getObjectFromUUID(this.getUUID()).equals(this)){
             this.remove();

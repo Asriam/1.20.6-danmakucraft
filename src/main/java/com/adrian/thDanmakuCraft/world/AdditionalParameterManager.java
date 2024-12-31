@@ -2,6 +2,9 @@ package com.adrian.thDanmakuCraft.world;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
+import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
+import com.adrian.thDanmakuCraft.world.danmaku.laser.THLaser;
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -26,11 +29,11 @@ public class AdditionalParameterManager implements IDataStorage{
         if (type == Type.THObject && value instanceof THObject object) {
             this.parameterMap.put(key, new Parameter<>(type, object.getUUID()));
         }else if (type == Type.Integer){
-            this.parameterMap.put(key, new Parameter<>(type, value));
+            this.parameterMap.put(key, new Parameter<>(type, (int) value));
         }else if (type == Type.Float){
-            this.parameterMap.put(key, new Parameter<>(type, value));
+            this.parameterMap.put(key, new Parameter<>(type, (float) value));
         }else if (type == Type.Double){
-            this.parameterMap.put(key, new Parameter<>(type, value));
+            this.parameterMap.put(key, new Parameter<>(type, (double) value));
         }else {
             this.parameterMap.put(key, new Parameter<>(type, value));
             //THDanmakuCraftCore.LOGGER.info(this.parameterMap + "zzzzzzzzzzzzzzzzzzz");
@@ -72,6 +75,18 @@ public class AdditionalParameterManager implements IDataStorage{
     public THObject getTHObject(String key){
         UUID uuid = (UUID) this.parameterMap.get(key).getValue();
         return this.container.getObjectFromUUID(uuid);
+    }
+
+    public THBullet getTHBullet(String key){
+        return (THBullet) this.getTHObject(key);
+    }
+
+    public THLaser getTHLaser(String key){
+        return (THLaser) this.getTHObject(key);
+    }
+
+    public THCurvedLaser getTHCurvedLaser(String key){
+        return (THCurvedLaser) this.getTHObject(key);
     }
 
     @Override

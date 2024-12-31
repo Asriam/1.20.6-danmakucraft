@@ -11,37 +11,37 @@ local container = {
 }
 
 ---@return number
-function container:getMaxObjectAmount() end
+function container.getMaxObjectAmount() end
 
 ---@return Vec3
-function container:getPosition() end
+function container.getPosition() end
 
 ---@param time number
-function container:setTimer(time) end
+function container.setTimer(time) end
 
 ---@return number
-function container:getTimer() end
+function container.getTimer() end
 
-function container:clearObjects() end
+function container.clearObjects() end
 
 ---@param position Vec3
 ---@return THObject
-function container:createTHObject(position) end
+function container.createTHObject(position) end
 
 ---@param position Vec3
 ---@param style string
 ---@param colorIndex number
 ---@return THBullet
-function container:createTHBullet(position,style,colorIndex) end
+function container.createTHBullet(position,style,colorIndex) end
 
-container:createTHBullet()
+---function container:createTHLaser() end
 
 ---@param position Vec3
 ---@param colorIndex number
 ---@param length number
 ---@param width number
 ---@return THCurvedLaser
-function container:createTHCurvedLaser(position,colorIndex,length,width) end
+function container.createTHCurvedLaser(position,colorIndex,length,width) end
 
 ---@return AdditionalParameterManager
-function container:getParameterManager() end
+function container.getParameterManager() end
