@@ -29,6 +29,7 @@ import java.util.UUID;
 public class THObject implements IScript{
     private final THObjectType<? extends THObject> type;
     private final ScriptManager scriptManager;
+    private final AdditionalParameterManager parameterManager;
     private final Level level;
     protected final RandomSource random;
     protected THObjectContainer container;
@@ -82,6 +83,7 @@ public class THObject implements IScript{
         this.random = container.getRandomSource();
         this.level = container.level();
         this.scriptManager = new LuaManager();
+        this.parameterManager = new AdditionalParameterManager(this.container);
         this.uuid = Mth.createInsecureUUID(this.random);
         this.initPosition(container.getPosition());
     }
@@ -640,6 +642,7 @@ public class THObject implements IScript{
         buffer.writeBoolean(this.shouldSave);
         //this.blend.writeData(buffer);
         this.scriptManager.writeData(buffer);
+        this.parameterManager.writeData(buffer);
     }
 
     public void readData(FriendlyByteBuf buffer) {
@@ -673,6 +676,7 @@ public class THObject implements IScript{
         this.shouldSave = buffer.readBoolean();
         //this.blend.readData(buffer);
         this.scriptManager.readData(buffer);
+        this.parameterManager.readData(buffer);
         this.setBoundingBox(this.getPosition(), this.size);
     }
 
@@ -694,6 +698,7 @@ public class THObject implements IScript{
         tag.putInt("CollisionType", this.collisionType.ordinal());
         tag.putUUID("UUID", this.uuid);
         this.scriptManager.save(tag);
+        tag.put("parameters", this.parameterManager.save(new CompoundTag()));
         //this.blend.save(tag);
         return tag;
     }
@@ -724,8 +729,13 @@ public class THObject implements IScript{
         this.collision = tag.getBoolean("Collision");
         this.collisionType = THObject.CollisionType.class.getEnumConstants()[tag.getInt("CollisionType")];
         this.scriptManager.load(tag);
+        this.parameterManager.load(tag.getCompound("parameters"));
         this.uuid = tag.getUUID("UUID");
         //this.blend.load(tag);
+    }
+
+    public AdditionalParameterManager getParameterManager() {
+        return this.parameterManager;
     }
 
     public boolean shouldRender(double camX, double camY, double camZ) {

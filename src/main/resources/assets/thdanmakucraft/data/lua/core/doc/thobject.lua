@@ -18,6 +18,9 @@ local object = {
 ---@overload fun(vec3:Vec3)
 function object:setPosition(x,y,z) end
 
+---@param life number
+function object:setLifetime(life) end
+
 ---@param x number
 ---@param y number
 ---@param z number
@@ -133,6 +136,9 @@ function object:getSize() end
 
 ---@return string
 function object:getBlendName() end
+
+---@return AdditionalParameterManager
+function object:getParameterManager() end
 
 ---@param x number
 ---@param y number

@@ -305,7 +305,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
         this.objectManager.load(tag.getCompound("object_storage"));
         this.scriptManager.load(tag.getCompound("script"));
         this.targetUserManager.load(tag.getCompound("user_target"));
-        this.parameterManager.load(tag.getCompound("parameter"));
+        this.parameterManager.load(tag.getCompound("parameters"));
     }
 
     public void injectScript(String script) {
@@ -331,10 +331,6 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
 
     public void registerParameter(String type, String key, Object value) {
         this.parameterManager.register(type, key, value);
-    }
-
-    public String getParameterString(String key) {
-        return this.parameterManager.getString(key);
     }
 
     public AdditionalParameterManager getParameterManager() {

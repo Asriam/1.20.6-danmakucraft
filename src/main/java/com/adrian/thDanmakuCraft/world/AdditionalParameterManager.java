@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
+import org.luaj.vm2.LuaValue;
 
 import java.util.Map;
 import java.util.UUID;
@@ -21,8 +22,15 @@ public class AdditionalParameterManager implements IDataStorage{
     }
 
     public void register(Type type, String key, Object value) {
+
         if (type == Type.THObject && value instanceof THObject object) {
             this.parameterMap.put(key, new Parameter<>(type, object.getUUID()));
+        }else if (type == Type.Integer){
+            this.parameterMap.put(key, new Parameter<>(type, value));
+        }else if (type == Type.Float){
+            this.parameterMap.put(key, new Parameter<>(type, value));
+        }else if (type == Type.Double){
+            this.parameterMap.put(key, new Parameter<>(type, value));
         }else {
             this.parameterMap.put(key, new Parameter<>(type, value));
             //THDanmakuCraftCore.LOGGER.info(this.parameterMap + "zzzzzzzzzzzzzzzzzzz");
@@ -53,6 +61,10 @@ public class AdditionalParameterManager implements IDataStorage{
         return (float) this.parameterMap.get(key).getValue();
     }
 
+    public double getDouble(String key){
+        return (double) this.parameterMap.get(key).getValue();
+    }
+
     public boolean getBoolean(String key){
         return (boolean) this.parameterMap.get(key).getValue();
     }
@@ -71,9 +83,10 @@ public class AdditionalParameterManager implements IDataStorage{
             buffer.writeEnum(parameter.type);
             switch (parameter.type) {
                 case String -> buffer.writeUtf((String) parameter.value);
-                case Integer -> buffer.writeInt((Integer) parameter.value);
-                case Float -> buffer.writeFloat((Float) parameter.value);
-                case Boolean -> buffer.writeBoolean((Boolean) parameter.value);
+                case Integer -> buffer.writeInt((int) parameter.value);
+                case Float -> buffer.writeFloat((float) parameter.value);
+                case Double -> buffer.writeDouble((double) parameter.value);
+                case Boolean -> buffer.writeBoolean((boolean) parameter.value);
                 case THObject -> buffer.writeUUID((UUID) parameter.value);
             }
         });
@@ -98,6 +111,7 @@ public class AdditionalParameterManager implements IDataStorage{
             case String -> value = buffer.readUtf();
             case Integer -> value = buffer.readInt();
             case Float -> value = buffer.readFloat();
+            case Double -> value = buffer.readDouble();
             case Boolean -> value = buffer.readBoolean();
             case THObject -> value = buffer.readUUID();
         }
@@ -120,9 +134,10 @@ public class AdditionalParameterManager implements IDataStorage{
             tag.putString("type", parameter.type.name());
             switch (parameter.type) {
                 case String  -> tag.putString("value", (String) parameter.getValue());
-                case Integer -> tag.putInt("value", (Integer) parameter.getValue());
-                case Float -> tag.putFloat("value", (Float) parameter.getValue());
-                case Boolean -> tag.putBoolean("value", (Boolean) parameter.getValue());
+                case Integer -> tag.putInt("value", (int) parameter.getValue());
+                case Float -> tag.putFloat("value", (float) parameter.getValue());
+                case Double -> tag.putDouble("value", (double) parameter.getValue());
+                case Boolean -> tag.putBoolean("value", (boolean) parameter.getValue());
                 case THObject -> tag.putUUID("value", (UUID) parameter.getValue());
             }
             nbt.put(key, tag);
@@ -139,6 +154,7 @@ public class AdditionalParameterManager implements IDataStorage{
                 case String -> value=tag.getString("value");
                 case Integer -> value=tag.getInt("value");
                 case Float -> value=tag.getFloat("value");
+                case Double -> value=tag.getDouble("value");
                 case Boolean -> value=tag.getBoolean("value");
                 case THObject -> value=tag.getUUID("value");
             }
@@ -149,15 +165,11 @@ public class AdditionalParameterManager implements IDataStorage{
         }
     }
 
-    private THObjectContainer getContainer() {
-        return container;
-    }
-
     public enum Type{
         String(),
         Integer(),
         Float(),
-        //Double(),
+        Double(),
         Boolean(),
         THObject();
     }
