@@ -8,6 +8,7 @@ import com.adrian.thDanmakuCraft.script.lua.LuaManager;
 import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
+import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.Mth;
@@ -17,19 +18,18 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import org.checkerframework.checker.units.qual.C;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.*;
 import org.luaj.vm2.lib.jse.CoerceJavaToLua;
-import org.luaj.vm2.lib.jse.CoerceLuaToJava;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
+public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, ILuaValue {
+    public static final List<THObjectContainer> allContainers = new ArrayList<>();
 
     private final Entity hostEntity;
     private int maxObjectAmount = 2000;
@@ -46,8 +46,10 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
     public boolean autoRemove = true;
     public int autoRemoveLife = 60;
     private List<Entity> entitiesInBound;
+    private final LuaValue luaValueForm;
 
     public THObjectContainer(Entity hostEntity) {
+        allContainers.add(this);
         this.hostEntity = hostEntity;
         this.parameterManager  = new AdditionalParameterManager(this);
         this.targetUserManager = new TargetUserManager(this);
@@ -56,6 +58,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
         this.scriptManager     = new LuaManager();
         this.entitiesInBound   = new ArrayList<>();
         this.setMaxObjectAmount(2000);
+        this.luaValueForm = this.ofLuaValue();
     }
 
     public THObjectContainer(Entity hostEntity, String script){
@@ -71,7 +74,14 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
         this.scriptManager.invokeScript("onInit", (exception) -> {
             THDanmakuCraftCore.LOGGER.error("Failed invoke script!", exception);
             this.getHostEntity().remove(Entity.RemovalReason.DISCARDED);
-        }, this.ofLuaValue());
+        }, this.getLuaValue());
+    }
+
+    public void scriptTick(){
+        this.scriptManager.invokeScript("onTick", (exception) -> {
+            THDanmakuCraftCore.LOGGER.error("Failed invoke script!", exception);
+            this.getHostEntity().remove(Entity.RemovalReason.DISCARDED);
+        }, this.getLuaValue());
     }
 
     public int getMaxObjectAmount() {
@@ -156,15 +166,11 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
 
     public void tick() {
         if (timer == 0){
-            this.scriptInit();
+            //this.scriptInit();
         }
-        /*
-        if(this.bindingToUserPosition && this.getUser() != null){
-            this.getHostEntity().setPos(this.getUser().position());
-        }*/
         this.setBound(this.position(),this.bound);
         //this.task();
-        this.entitiesInBound = this.level().getEntities(this.hostEntity,this.getAabb()).stream().filter((entity -> !(entity.equals(this.hostEntity)))).toList();
+        this.entitiesInBound = this.level().getEntities(this.hostEntity,this.getAabb()).stream().filter((entity -> !(entity.equals(this.hostEntity)) && !(entity instanceof EntityTHObjectContainer))).toList();
         this.objectManager.THObjectsTick();
 
         if(this.autoRemove) {
@@ -173,10 +179,8 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
             }
         }
 
-        this.scriptManager.invokeScript("onTick", (exception) -> {
-            THDanmakuCraftCore.LOGGER.error("Failed invoke script!", exception);
-            this.getHostEntity().remove(Entity.RemovalReason.DISCARDED);
-            }, this.ofLuaValue());
+        //this.scriptTick();
+
         this.timer++;
     }
 
@@ -253,6 +257,10 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
         return new THBullet(this, THBullet.DefaultBulletStyle.valueOf(style),THBullet.BULLET_COLOR.getColorByIndex(color)).spawn();
     }
 
+    public void discard(){
+        this.hostEntity.remove(Entity.RemovalReason.DISCARDED);
+    }
+
     public THCurvedLaser createTHCurvedLaser(Vec3 pos, int color, int length, float width) {
         return new THCurvedLaser(this,THBullet.BULLET_COLOR.getColorByIndex(color),length,width).spawn();
     }
@@ -269,6 +277,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
     public <T extends THObject> T getObjectFromUUID(String uuid) {
         return this.getObjectFromUUID(UUID.fromString(uuid));
     }
+
 
     public void writeSpawnData(FriendlyByteBuf buffer) {
         buffer.writeInt(this.maxObjectAmount);
@@ -341,13 +350,6 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
         }
     };
 
-    private final LibFunction getTimer = new ZeroArgFunction(){
-        @Override
-        public LuaValue call() {
-            return LuaValue.valueOf(THObjectContainer.this.getTimer());
-        }
-    };
-
     private final LibFunction getPosition = new ZeroArgFunction(){
         @Override
         public LuaValue call() {
@@ -355,65 +357,89 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI {
         }
     };
 
+    private final LibFunction getTimer = new ZeroArgFunction(){
+        @Override
+        public LuaValue call() {
+            return LuaValue.valueOf(THObjectContainer.this.getTimer());
+        }
+    };
+
+    private final LibFunction setTimer = new OneArgFunction(){
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            THObjectContainer.this.setTimer(luaValue.checkint());
+            return LuaValue.NIL;
+        }
+    };
+
+    private final LibFunction clearObjects = new ZeroArgFunction(){
+        @Override
+        public LuaValue call() {
+            THObjectContainer.this.clearObjects();
+            return LuaValue.NIL;
+        }
+    };
+
+    private final LibFunction createTHObject = new OneArgFunction(){
+        @Override
+        public LuaValue call(LuaValue pos) {
+            THObject object = THObjectContainer.this.createTHObject((Vec3) pos.checkuserdata());
+            return object.getLuaValue();
+        }
+    };
+
+    private final LibFunction createTHBullet = new ThreeArgFunction(){
+        @Override
+        public LuaValue call(LuaValue pos, LuaValue style, LuaValue colorIndex) {
+            THBullet bullet = THObjectContainer.this.createTHBullet((Vec3) pos.checkuserdata(), style.checkjstring(), colorIndex.checkint());
+            return bullet.getLuaValue();
+        }
+    };
+
+    private final LibFunction createTHCurvedLaser = new VarArgFunction(){
+        @Override
+        public Varargs invoke(Varargs varargs) {
+            Vec3 pos = (Vec3) varargs.arg(1).checkuserdata();
+            int colorIndex = varargs.arg(2).checkint();
+            int length = varargs.arg(3).checkint();
+            float width = varargs.arg(4).tofloat();
+            THCurvedLaser laser = THObjectContainer.this.createTHCurvedLaser(pos,colorIndex,length,width);
+            return laser.getLuaValue();
+        }
+    };
+
+    private final LibFunction getParameterManager = new ZeroArgFunction(){
+        @Override
+        public LuaValue call() {
+            return THObjectContainer.this.getParameterManager().getLuaValue();
+        }
+    };
+
+    private final LibFunction discard = new ZeroArgFunction(){
+        @Override
+        public LuaValue call() {
+            THObjectContainer.this.discard();
+            return LuaValue.NIL;
+        }
+    };
+
     public LuaValue ofLuaValue(){
         LuaValue library = LuaValue.tableOf();
         library.set( "getMaxObjectAmount", getMaxObjectAmount);
-
         library.set( "getPosition", getPosition);
-
         library.set( "getTimer", getTimer);
-
-        library.set( "setTimer", new OneArgFunction(){
-            @Override
-            public LuaValue call(LuaValue luaValue) {
-                THObjectContainer.this.setTimer(luaValue.checkint());
-                return null;
-            }
-        });
-
-        library.set( "clearObjects", new ZeroArgFunction(){
-            @Override
-            public LuaValue call() {
-                THObjectContainer.this.clearObjects();
-                return null;
-            }
-        });
-
-        library.set( "createTHObject", new OneArgFunction(){
-            @Override
-            public LuaValue call(LuaValue pos) {
-                THObject object = THObjectContainer.this.createTHObject((Vec3) pos.checkuserdata());
-                return CoerceJavaToLua.coerce(object);
-            }
-        });
-
-        library.set( "createTHBullet", new ThreeArgFunction(){
-            @Override
-            public LuaValue call(LuaValue pos, LuaValue style, LuaValue colorIndex) {
-                THBullet bullet = THObjectContainer.this.createTHBullet((Vec3) pos.checkuserdata(), style.checkjstring(), colorIndex.checkint());
-                return CoerceJavaToLua.coerce(bullet);
-            }
-        });
-
-        library.set( "createTHCurvedLaser", new VarArgFunction(){
-            @Override
-            public Varargs invoke(Varargs varargs) {
-                Vec3 pos = (Vec3) varargs.arg(1).checkuserdata();
-                int colorIndex = varargs.arg(2).checkint();
-                int length = varargs.arg(3).checkint();
-                float width = varargs.arg(4).tofloat();
-                THCurvedLaser laser = THObjectContainer.this.createTHCurvedLaser(pos,colorIndex,length,width);
-                return CoerceJavaToLua.coerce(laser);
-            }
-        });
-
-        library.set( "getParameterManager", new ZeroArgFunction(){
-            @Override
-            public LuaValue call() {
-                return CoerceJavaToLua.coerce(THObjectContainer.this.getParameterManager());
-            }
-        });
-
+        library.set( "setTimer", setTimer);
+        library.set( "clearObjects", clearObjects);
+        library.set( "createTHObject", createTHObject);
+        library.set( "createTHBullet", createTHBullet);
+        library.set( "createTHCurvedLaser", createTHCurvedLaser);
+        library.set( "getParameterManager", getParameterManager);
+        library.set( "discard", discard);
         return library;
+    }
+
+    @Override
+    public LuaValue getLuaValue() {
+        return this.luaValueForm;
     }
 }

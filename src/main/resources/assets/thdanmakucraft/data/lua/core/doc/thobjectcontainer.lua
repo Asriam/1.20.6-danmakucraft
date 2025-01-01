@@ -45,3 +45,5 @@ function container.createTHCurvedLaser(position,colorIndex,length,width) end
 
 ---@return AdditionalParameterManager
 function container.getParameterManager() end
+
+function container.discard() end

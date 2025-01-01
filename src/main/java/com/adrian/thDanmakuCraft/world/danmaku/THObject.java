@@ -6,6 +6,7 @@ import com.adrian.thDanmakuCraft.script.IScript;
 import com.adrian.thDanmakuCraft.script.ScriptManager;
 import com.adrian.thDanmakuCraft.script.lua.LuaManager;
 import com.adrian.thDanmakuCraft.world.AdditionalParameterManager;
+import com.adrian.thDanmakuCraft.world.ILuaValue;
 import com.adrian.thDanmakuCraft.world.THObjectContainer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -19,20 +20,25 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
 import org.joml.*;
+import org.luaj.vm2.Lua;
 import org.luaj.vm2.LuaValue;
+import org.luaj.vm2.Varargs;
+import org.luaj.vm2.lib.LibFunction;
 import org.luaj.vm2.lib.OneArgFunction;
+import org.luaj.vm2.lib.VarArgFunction;
+import org.luaj.vm2.lib.ZeroArgFunction;
 import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 
 import java.lang.Math;
 import java.util.List;
 import java.util.UUID;
 
-public class THObject implements IScript{
+public class THObject implements IScript, ILuaValue {
     private final THObjectType<? extends THObject> type;
     private final ScriptManager scriptManager;
     private final AdditionalParameterManager parameterManager;
     private final Level level;
-    protected final RandomSource random;
+    protected final RandomSource random = RandomSource.create();
     protected THObjectContainer container;
     protected static final ResourceLocation TEXTURE_WHITE = new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/white.png");
     protected THImage image = new THImage(TEXTURE_WHITE,0.0f,0.0f,1.0f,1.0f);
@@ -77,16 +83,17 @@ public class THObject implements IScript{
     //public THRenderType.BLEND blend = THRenderType.BLEND.LIGHTEN;
     protected Blend blend = Blend.add;
     protected CollisionType collisionType = CollisionType.AABB;
+    private final LuaValue luaValueForm;
 
     public THObject(THObjectType<? extends THObject> type, THObjectContainer container) {
         this.type = type;
         this.container = container;
-        this.random = container.getRandomSource();
         this.level = container.level();
         this.scriptManager = new LuaManager();
         this.parameterManager = new AdditionalParameterManager(this.container);
         this.uuid = Mth.createInsecureUUID(this.random);
         this.initPosition(container.getPosition());
+        this.luaValueForm = this.ofLuaValue();
     }
 
     public THObject(THObjectContainer container, Vec3 position) {
@@ -166,7 +173,7 @@ public class THObject implements IScript{
         this.size = size;
     }
 
-    public void setSize(float x, float y, float z) {
+    public void setSize(double x, double y, double z) {
         this.size = new Vec3(x, y, z);
     }
 
@@ -177,11 +184,11 @@ public class THObject implements IScript{
         }
     }
 
-    public void setVelocityFromDirection(float speed, Vec3 direction, boolean setRotation) {
+    public void setVelocityFromDirection(double speed, Vec3 direction, boolean setRotation) {
         this.setVelocity(direction.normalize().multiply(speed, speed, speed), setRotation);
     }
 
-    public void setVelocityFromRotation(float speed, Vec2 rotation, boolean isDeg, boolean setRotation) {
+    public void setVelocityFromRotation(double speed, Vec2 rotation, boolean isDeg, boolean setRotation) {
         this.setVelocityFromDirection(speed, Vec3.directionFromRotation(isDeg ? rotation : rotation.scale(Mth.RAD_TO_DEG)), false);
 
         if (setRotation) {
@@ -193,11 +200,11 @@ public class THObject implements IScript{
         this.acceleration = acceleration;
     }
 
-    public void setAccelerationFromDirection(float acceleration, Vec3 direction) {
+    public void setAccelerationFromDirection(double acceleration, Vec3 direction) {
         this.setAcceleration(direction.normalize().multiply(acceleration, acceleration, acceleration));
     }
 
-    public void setAccelerationFromRotation(float acceleration, Vec2 rotation, boolean isDeg) {
+    public void setAccelerationFromRotation(double acceleration, Vec2 rotation, boolean isDeg) {
         this.setAccelerationFromDirection(acceleration, Vec3.directionFromRotation(isDeg ? rotation : rotation.scale(Mth.RAD_TO_DEG)));
     }
 
@@ -836,18 +843,6 @@ public class THObject implements IScript{
         return this.scriptManager;
     }
 
-    public LuaValue ofLuaValue(){
-        LuaValue library = LuaValue.tableOf();
-        library.set( "setPosition", new OneArgFunction(){
-            @Override
-            public LuaValue call(LuaValue luaValue) {
-                THObject.this.setPosition(luaValue.get(1).checkdouble(),luaValue.get(2).checkdouble(),luaValue.get(3).checkdouble());
-                return LuaValue.NIL;
-            }
-        });
-        return library;
-    }
-
     public enum CollisionType{
         AABB(CollisionType::AABB),
         SPHERE(CollisionType::SPHERE),
@@ -1073,5 +1068,310 @@ public class THObject implements IScript{
                     dstAlphaFactor
             };
         }
+    }
+
+    private final LibFunction setPosition = new VarArgFunction() {
+        @Override
+        public Varargs invoke(Varargs varargs) {
+            LuaValue arg1 = varargs.arg1();
+            if(arg1.isuserdata() && arg1.checkuserdata() instanceof Vec3 vec3){
+                THObject.this.setPosition(vec3);
+            }else{
+                THObject.this.setPosition(
+                        varargs.arg(1).checkdouble(),
+                        varargs.arg(2).checkdouble(),
+                        varargs.arg(3).checkdouble()
+                );
+            }
+            return null;
+        }
+    };
+
+    private final LibFunction setLifetime = new OneArgFunction() {
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            THObject.this.setLifetime(luaValue.checkint());
+            return LuaValue.NIL;
+        }
+    };
+
+    private final LibFunction setScale = new VarArgFunction() {
+        @Override
+        public Varargs invoke(Varargs varargs) {
+            LuaValue arg1 = varargs.arg1();
+            if(arg1.isuserdata() && arg1.checkuserdata() instanceof Vec3 vec3){
+                THObject.this.setScale(vec3);
+            }else{
+                THObject.this.setScale(
+                        varargs.arg(1).tofloat(),
+                        varargs.arg(2).tofloat(),
+                        varargs.arg(3).tofloat()
+                );
+            }
+            return LuaValue.NIL;
+        }
+    };
+
+    private final LibFunction setSize = new VarArgFunction() {
+        @Override
+        public Varargs invoke(Varargs varargs) {
+            LuaValue arg1 = varargs.arg1();
+            if(arg1.isuserdata() && arg1.checkuserdata() instanceof Vec3 vec3){
+                THObject.this.setSize(vec3);
+            }else{
+                THObject.this.setSize(
+                        varargs.arg(1).checkdouble(),
+                        varargs.arg(2).checkdouble(),
+                        varargs.arg(3).checkdouble()
+                );
+            }
+            return LuaValue.NIL;
+        }
+    };
+
+    private final LibFunction setVelocity = new VarArgFunction() {
+        @Override
+        public Varargs invoke(Varargs varargs) {
+            LuaValue velocity = varargs.arg(1);
+            boolean shouldSetRotation = varargs.arg(2).checkboolean();
+            if (velocity.isuserdata() && velocity.checkuserdata() instanceof Vec3 vec3){
+                THObject.this.setVelocity(vec3, shouldSetRotation);
+            }else {
+                LuaValue table = velocity.checktable();
+                THObject.this.setVelocity(new Vec3(
+                        table.get(1).checkdouble(),
+                        table.get(2).checkdouble(),
+                        table.get(3).checkdouble()
+                ), shouldSetRotation);
+            }
+            return LuaValue.NIL;
+        }
+    };
+
+    private final LibFunction setVelocityFromDirection = new VarArgFunction() {
+        @Override
+        public Varargs invoke(Varargs varargs) {
+            double speed = varargs.arg(1).checkdouble();
+            LuaValue direction = varargs.arg(2);
+            boolean shouldSetRotation = varargs.arg(3).checkboolean();
+            if (direction.isuserdata() && direction.checkuserdata() instanceof Vec3 vec3){
+                THObject.this.setVelocityFromDirection(speed, vec3, shouldSetRotation);
+            }else {
+                LuaValue table = direction.checktable();
+                THObject.this.setVelocityFromDirection(speed, new Vec3(
+                        table.get(1).checkdouble(),
+                        table.get(2).checkdouble(),
+                        table.get(3).checkdouble()
+                ), shouldSetRotation);
+            }
+            return LuaValue.NIL;
+        }
+    };
+
+    private final LibFunction setVelocityFromRotation = new VarArgFunction() {
+        @Override
+        public Varargs invoke(Varargs varargs) {
+            double speed = varargs.arg(1).checkdouble();
+            LuaValue rotation = varargs.arg(2);
+            boolean isDeg = varargs.arg(3).checkboolean();
+            boolean shouldSetRotation = varargs.arg(4).checkboolean();
+            if(rotation.isuserdata() && rotation.checkuserdata() instanceof Vec2 vec2){
+                THObject.this.setVelocityFromRotation(speed,vec2,isDeg,shouldSetRotation);
+            }else if(rotation.istable()){
+                LuaValue table = rotation.checktable();
+                THObject.this.setVelocityFromRotation(speed,new Vec2(
+                        table.get(1).tofloat(),
+                        table.get(2).tofloat()
+                ),isDeg,shouldSetRotation);
+            }
+            return LuaValue.NIL;
+        }
+    };
+
+    private final LibFunction getParameterManager = new ZeroArgFunction(){
+        @Override
+        public LuaValue call() {
+            return THObject.this.getParameterManager().getLuaValue();
+        }
+    };
+
+    private final LibFunction setAcceleration = new VarArgFunction() {
+        @Override
+        public Varargs invoke(Varargs varargs) {
+            LuaValue acc = varargs.arg(1);
+            if (acc.isuserdata() && acc.checkuserdata() instanceof Vec3 vec3){
+                THObject.this.setAcceleration(vec3);
+            }else if(acc.istable()){
+                THObject.this.setAcceleration(new Vec3(
+                        acc.get(1).checkdouble(),
+                        acc.get(2).checkdouble(),
+                        acc.get(3).checkdouble()
+                ));
+            }
+            return LuaValue.NIL;
+        }
+    };
+    private final LibFunction setAccelerationFromDirection = new VarArgFunction() {
+        @Override
+        public Varargs invoke(Varargs varargs) {
+            double acc = varargs.arg(1).checkdouble();
+            LuaValue direction = varargs.arg(2);
+            if (direction.isuserdata() && direction.checkuserdata() instanceof Vec3 vec3){
+                THObject.this.setAccelerationFromDirection(acc, vec3);
+            }else {
+                LuaValue table = direction.checktable();
+                THObject.this.setAccelerationFromDirection(acc, new Vec3(
+                        table.get(1).checkdouble(),
+                        table.get(2).checkdouble(),
+                        table.get(3).checkdouble()
+                ));
+            }
+            return LuaValue.NIL;
+        }
+    };
+
+    private final LibFunction setAccelerationFromRotation = new VarArgFunction() {
+        @Override
+        public Varargs invoke(Varargs varargs) {
+            double acc = varargs.arg(1).checkdouble();
+            LuaValue rotation = varargs.arg(2);
+            boolean isDeg = varargs.arg(3).checkboolean();
+            if(rotation.isuserdata() && rotation.checkuserdata() instanceof Vec2 vec2){
+                THObject.this.setAccelerationFromRotation(acc,vec2,isDeg);
+            }else if(rotation.istable()){
+                LuaValue table = rotation.checktable();
+                THObject.this.setAccelerationFromRotation(acc,new Vec2(
+                        table.get(1).tofloat(),
+                        table.get(2).tofloat()
+                ),isDeg);
+            }
+            return LuaValue.NIL;
+        }
+    };
+
+    private final LibFunction setRotation = new VarArgFunction() {
+        @Override
+        public Varargs invoke(Varargs varargs) {
+            THObject.this.setRotation(
+                    varargs.arg(1).tofloat(),
+                    varargs.arg(2).tofloat(),
+                    varargs.arg(3).tofloat()
+            );
+            return LuaValue.NIL;
+        }
+    };
+
+    private final LibFunction setRotationByDirectionalVector = new OneArgFunction() {
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            if (luaValue.isuserdata() && luaValue.checkuserdata() instanceof Vec3 vec3){
+                THObject.this.setRotationByDirectionalVector(vec3);
+            }else if(luaValue.istable()){
+                THObject.this.setRotationByDirectionalVector(new Vec3(
+                        luaValue.get(1).checkdouble(),
+                        luaValue.get(2).checkdouble(),
+                        luaValue.get(3).checkdouble()
+                ));
+            }
+            return LuaValue.NIL;
+        }
+    };
+
+    /*
+    private final LibFunction setColor;
+    private final LibFunction setBlend;
+    private final LibFunction setCollisionType;
+    private final LibFunction getTimer;
+    private final LibFunction getContainer;
+    private final LibFunction getPosition;
+    private final LibFunction getPrePosition;
+    private final LibFunction getSpeed;
+    private final LibFunction getVelocity;
+    private final LibFunction getMotionDirection;
+    private final LibFunction getRotation;
+    private final LibFunction getXRot;
+    private final LibFunction getYRot;
+    private final LibFunction getZRot;
+    private final LibFunction getAcceleration;
+    private final LibFunction getScale;
+    private final LibFunction getSize;
+    private final LibFunction move;
+     */
+    private final LibFunction setDead = new ZeroArgFunction() {
+        @Override
+        public LuaValue call() {
+            THObject.this.setDead();
+            return null;
+        }
+    };
+    private final LibFunction remove = new ZeroArgFunction() {
+        @Override
+        public LuaValue call() {
+            THObject.this.remove();
+            return null;
+        }
+    };
+
+    @Override
+    public LuaValue ofLuaValue(){
+        LuaValue library = LuaValue.tableOf();
+        //functions
+
+        library.set( "setPosition", this.setPosition);
+        library.set( "setLifetime", this.setLifetime);
+        library.set( "setScale", this.setScale);
+        library.set( "setSize", this.setSize);
+        library.set( "setVelocity", this.setVelocity);
+        library.set( "setVelocityFromDirection", this.setVelocityFromDirection);
+        library.set( "setVelocityFromRotation", this.setVelocityFromRotation);
+        library.set( "getParameterManager", this.getParameterManager);
+        library.set( "setAcceleration", this.setAcceleration);
+        library.set( "setAccelerationFromDirection", this.setAccelerationFromDirection);
+        library.set( "setAccelerationFromRotation", this.setAccelerationFromRotation);
+        library.set( "setRotation", this.setRotation);
+        library.set( "setRotationByDirectionalVector", this.setRotationByDirectionalVector);
+        /*
+        library.set( "setColor", this.setColor);
+        library.set( "setBlend", this.setBlend);
+        library.set( "setCollisionType", this.setCollisionType);
+        library.set( "getTimer", this.getTimer);
+        library.set( "getContainer", this.getContainer);
+        library.set( "getPosition", this.getPosition);
+        library.set( "getPrePosition", this.getPrePosition);
+        library.set( "getSpeed", this.getSpeed);
+        library.set( "getVelocity", this.getVelocity);
+        library.set( "getMotionDirection", this.getMotionDirection);
+        library.set( "getRotation", this.getRotation);
+        library.set( "getXRot", this.getXRot);
+        library.set( "getYRot", this.getYRot);
+        library.set( "getZRot", this.getZRot);
+        library.set( "getAcceleration", this.getAcceleration);
+        library.set( "getScale", this.getScale);
+        library.set( "getSize", this.getSize);
+        library.set( "move", this.move);
+        */
+        library.set( "setDead", this.setDead);
+        library.set( "remove", this.remove);
+        /*
+        library.set( "setVelocityFromRotation", this.setVelocityFromRotation);
+        library.set( "getParameterManager", this.getParameterManager);
+
+         */
+        //library.set( "getTimer", this.getTimer);
+        //params
+        library.set( "type", this.getType().toString());
+        library.set( "uuid", this.getUUIDasString());
+        /*
+        library.set( "x", this.getX());
+        library.set( "y", this.getY());
+        library.set( "z", this.getZ());
+
+         */
+        return library;
+    }
+
+    @Override
+    public LuaValue getLuaValue() {
+        return this.luaValueForm;
     }
 }

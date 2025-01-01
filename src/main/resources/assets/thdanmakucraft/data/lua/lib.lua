@@ -4,17 +4,15 @@
 --- DateTime: 2024/1/17 下午 04:58
 ---
 
+--[[
 ---@param x number
 ---@param y number
 ---@return Vec2
-function newVec2(x,y)
-    return luajava.new(Vec2,x,y)
-end
+function newVec2(x,y) end
 
 ---@param x number
 ---@param y number
 ---@param z number
 ---@return Vec3
-function newVec3(x,y,z)
-    return luajava.new(Vec3,x,y,z)
-end
+function newVec3(x,y,z) end
+]]

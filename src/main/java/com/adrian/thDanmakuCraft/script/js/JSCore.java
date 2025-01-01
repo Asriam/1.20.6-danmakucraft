@@ -14,6 +14,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+@Deprecated
 public class JSCore {
     private static JSCore JAVASCRIPT;
 

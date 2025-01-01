@@ -1,8 +1,8 @@
 package com.adrian.thDanmakuCraft.script.lua;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
-import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
@@ -11,12 +11,14 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaValue;
+import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.OneArgFunction;
+import org.luaj.vm2.lib.VarArgFunction;
 import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 import org.luaj.vm2.lib.jse.JsePlatform;
 import org.slf4j.Logger;
 
-import static org.luaj.vm2.LuaValue.tableOf;
+import static org.luaj.vm2.LuaValue.NIL;
 
 public class LuaCore {
 
@@ -47,6 +49,7 @@ public class LuaCore {
             this.bindClass("THObject" ,         THObject.class);
             this.bindClass("THBullet" ,         THBullet.class);
             this.bindClass("THCurvedLaser" ,    THCurvedLaser.class);
+            GLOBALS.set("luajava", NIL);
         } catch (Exception e) {
             LOGGER.warn("Failed put api!", e);
         }
@@ -86,7 +89,7 @@ public class LuaCore {
         library.set( "isValid", new OneArgFunction(){
             @Override
             public LuaValue call(LuaValue luaValue) {
-                return LuaValue.valueOf(!luaValue.isnil() && core.isValid(luaValue.checkuserdata()));
+                return LuaValue.valueOf(!luaValue.isnil() || (luaValue.isuserdata() && core.isValid(luaValue.checkuserdata())));
             }
         });
         library.set( "info", new OneArgFunction(){
@@ -101,6 +104,25 @@ public class LuaCore {
             public LuaValue call(LuaValue luaValue) {
                 core.warn(luaValue.checkjstring());
                 return LuaValue.NIL;
+            }
+        });
+
+        library.set("newVec3", new VarArgFunction() {
+            @Override
+            public LuaValue invoke(Varargs varargs) {
+                return CoerceJavaToLua.coerce(new Vec3(
+                        varargs.arg(1).checkdouble(),
+                        varargs.arg(2).checkdouble(),
+                        varargs.arg(3).checkdouble()));
+            }
+        });
+
+        library.set("newVec2", new VarArgFunction() {
+            @Override
+            public LuaValue invoke(Varargs varargs) {
+                return CoerceJavaToLua.coerce(new Vec2(
+                        varargs.arg(1).tofloat(),
+                        varargs.arg(2).tofloat()));
             }
         });
 

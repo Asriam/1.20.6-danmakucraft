@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku;
 
+import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.client.renderer.THObjectRenderHelper;
 import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;
@@ -31,7 +32,7 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
         }
 
         poseStack.pushPose();
-        int edge = 6;
+        int edge = 4;
         THObject.Color indexColor = laser.laserColor.getColor();
         THObject.Color laserColor = THObject.Color(
                 laser.color.r * indexColor.r / 255,
@@ -52,7 +53,7 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
             THObjectRenderHelper.renderSphere(vertexConsumer, poseStack.last(), combinedOverlay, 1,
                     Vec3.ZERO,
                     new Vec3(width2, width2, width2),
-                    12, 12, false,
+                    10, 10, false,
                     new Vec2(0.5f, -0.3f),
                     Vec2.ONE,
                     laserColor, laserColor, coreColor);
@@ -85,6 +86,8 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
         if (nodeList.isEmpty() || nodeList.size() < 3) {
             return;
         }
+        //THDanmakuCraftCore.LOGGER.info("sadasxxxxxxxxxxx");
+
         PoseStack.Pose pose = poseStack.last();
 
         final float perAngle = Mth.DEG_TO_RAD * 360.0f / edge;

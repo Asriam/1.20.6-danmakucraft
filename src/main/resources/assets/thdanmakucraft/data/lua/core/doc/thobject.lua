@@ -9,6 +9,10 @@
 ---@field onHit    fun(self)
 ---@field onDead   fun(self)
 ---@field onRemove fun(self)
+---@field uuid string
+---@field x number
+---@field y number
+---@field z number
 local object = {
 }
 
@@ -16,58 +20,62 @@ local object = {
 ---@param y number
 ---@param z number
 ---@overload fun(vec3:Vec3)
-function object:setPosition(x,y,z) end
+function object.setPosition(x,y,z) end
 
 ---@param life number
-function object:setLifetime(life) end
+function object.setLifetime(life) end
 
 ---@param x number
 ---@param y number
 ---@param z number
 ---@overload fun(vec3:Vec3)
-function object:setScale(x,y,z) end
+function object.setScale(x,y,z) end
 
 ---@param x number
 ---@param y number
 ---@param z number
 ---@overload fun(vec3:Vec3)
-function object:setSize(x,y,z) end
+function object.setSize(x,y,z) end
 
 ---@param velocity Vec3
 ---@param shouldSetRotation boolean
-function object:setVelocity(velocity, shouldSetRotation) end
+---@overload fun(velocity:table|{x,y,z}, setRotation:boolean)
+function object.setVelocity(velocity, setRotation) end
 
 ---@param speed number
 ---@param direction Vec3
 ---@param setRotation boolean
-function object:setVelocityFromDirection(speed, direction, setRotation) end
+---@overload fun(speed:number, direction:table|{x,y,z}, setRotation:boolean)
+function object.setVelocityFromDirection(speed, direction, setRotation) end
 
 ---@param speed number
 ---@param rotation Vec2
 ---@param isDeg boolean
 ---@param setRotation boolean
-function object:setVelocityFromRotation(speed, rotation, isDeg, setRotation) end
+---@overload fun(speed:number, rotation:table|{x,y}, isDeg:boolean, setRotation:boolean)
+function object.setVelocityFromRotation(speed, rotation, isDeg, setRotation) end
 
 ---@param acceleration Vec3
 function object:setAcceleration(acceleration) end
 
 ---@param acceleration number
 ---@param direction Vec3
+---@overload fun(acceleration:number, direction:table|{x,y,z})
 function object:setAccelerationFromDirection(acceleration, direction) end
 
 ---@param acceleration number
 ---@param rotation Vec3
 ---@param isDeg boolean
+------@overload fun(acceleration:number, direction:table|{x,y}, isDeg:boolean)
 function object:setAccelerationFromRotation(acceleration, rotation, isDeg) end
 
 ---@param x number
 ---@param y number
 ---@param z number
----@overload fun(rotation:Vec3)
----@overload fun(rotation:Vec2)
 function object:setRotation(x,y,z) end
 
 ---@param vec3 Vec3
+---@overload fun(vec3:table|{x,y,z})
 function object:setRotationByDirectionalVector(vec3)  end
 
 ---@param r number
@@ -92,15 +100,6 @@ function object:getContainer() end
 ---@return Vec3
 function object:getPosition()  end
 
----@return number
-function object:getX()  end
-
----@return number
-function object:getY()  end
-
----@return number
-function object:getZ()  end
-
 ---@return Vec3
 function object:getPrePosition()  end
 
@@ -116,12 +115,15 @@ function object:getMotionDirection()  end
 ---@return Vector3f
 function object:getRotation()  end
 
+---@deprecated
 ---@return number
 function object:getXRot()   end
 
+---@deprecated
 ---@return number
 function object:getYRot()   end
 
+---@deprecated
 ---@return number
 function object:getZRot()   end
 
@@ -138,7 +140,7 @@ function object:getSize() end
 function object:getBlendName() end
 
 ---@return AdditionalParameterManager
-function object:getParameterManager() end
+function object.getParameterManager() end
 
 ---@param x number
 ---@param y number
@@ -149,5 +151,18 @@ function object:move(x,y,z) end
 function object:setDead()  end
 
 function object:remove()  end
+
+
+---@deprecated
+---@return number
+function object:getX()  end
+
+---@deprecated
+---@return number
+function object:getY()  end
+
+---@deprecated
+---@return number
+function object:getZ()  end
 
 THObjectClass = object

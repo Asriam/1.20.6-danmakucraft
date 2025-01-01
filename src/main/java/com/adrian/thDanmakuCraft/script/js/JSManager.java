@@ -7,6 +7,7 @@ import com.adrian.thDanmakuCraft.util.ResourceLoader;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 
+@Deprecated
 public class JSManager extends ScriptManager {
 
     private final ScriptEngine engine = JSCore.getEngine();

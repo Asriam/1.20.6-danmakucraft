@@ -1,8 +1,8 @@
 package com.adrian.thDanmakuCraft.script.lua;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
-import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -14,6 +14,7 @@ import org.luaj.vm2.script.LuaScriptEngine;
 
 import javax.script.ScriptException;
 
+@Deprecated
 public class LuaCore2 {
 
     private static LuaCore2 LUA = new LuaCore2();

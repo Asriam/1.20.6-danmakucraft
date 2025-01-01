@@ -19,3 +19,14 @@ function core.info(msg) end
 
 ---@param msg string
 function core.warn(msg) end
+
+---@param x number
+---@param y number
+---@return Vec2
+function core.newVec2(x,y) end
+
+---@param x number
+---@param y number
+---@param z number
+---@return Vec3
+function core.newVec3(x,y,z) end

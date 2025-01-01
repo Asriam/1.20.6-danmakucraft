@@ -1,27 +1,30 @@
 package com.adrian.thDanmakuCraft.world;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
 import com.adrian.thDanmakuCraft.world.danmaku.laser.THLaser;
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
+import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
+import org.luaj.vm2.Varargs;
+import org.luaj.vm2.lib.*;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.UUID;
 
-public class AdditionalParameterManager implements IDataStorage{
+public class AdditionalParameterManager implements IDataStorage, ILuaValue{
 
     private final THObjectContainer container;
     private final Map<String, Parameter<?>> parameterMap;
-
+    private final LuaValue luaValueForm;
     public AdditionalParameterManager(THObjectContainer container) {
         this.container = container;
         this.parameterMap = Maps.newHashMap();
+        this.luaValueForm = this.ofLuaValue();
     }
 
     public void register(Type type, String key, Object value) {
@@ -77,6 +80,12 @@ public class AdditionalParameterManager implements IDataStorage{
         return this.container.getObjectFromUUID(uuid);
     }
 
+    /*
+    public LuaValue getTHObject(String key){
+        UUID uuid = (UUID) this.parameterMap.get(key).getValue();
+        return this.container.getObjectFromUUID(uuid).ofLuaValue();
+    }*/
+
     public THBullet getTHBullet(String key){
         return (THBullet) this.getTHObject(key);
     }
@@ -96,14 +105,7 @@ public class AdditionalParameterManager implements IDataStorage{
         this.parameterMap.forEach((key, parameter) -> {
             buffer.writeUtf(key);
             buffer.writeEnum(parameter.type);
-            switch (parameter.type) {
-                case String -> buffer.writeUtf((String) parameter.value);
-                case Integer -> buffer.writeInt((int) parameter.value);
-                case Float -> buffer.writeFloat((float) parameter.value);
-                case Double -> buffer.writeDouble((double) parameter.value);
-                case Boolean -> buffer.writeBoolean((boolean) parameter.value);
-                case THObject -> buffer.writeUUID((UUID) parameter.value);
-            }
+            ((Type.Factory<Object>) parameter.type.factory).writeData(buffer,(Parameter<Object>) parameter);
         });
     }
 
@@ -114,24 +116,11 @@ public class AdditionalParameterManager implements IDataStorage{
         for (int i = 0; i < size; i++) {
             String key = buffer.readUtf();
             Type type = buffer.readEnum(Type.class);
-            Parameter<?> parameter = this.readParam(buffer,type);
+            Parameter<Object> parameter = new Parameter<>(type, type.factory.readData(buffer));
             this.parameterMap.put(key, parameter);
         }
     }
 
-
-    public Parameter<?> readParam(FriendlyByteBuf buffer,Type type) {
-        Object value = null;
-        switch (type) {
-            case String -> value = buffer.readUtf();
-            case Integer -> value = buffer.readInt();
-            case Float -> value = buffer.readFloat();
-            case Double -> value = buffer.readDouble();
-            case Boolean -> value = buffer.readBoolean();
-            case THObject -> value = buffer.readUUID();
-        }
-        return new Parameter<>(type, value);
-    }
 
     @Override
     public CompoundTag save(CompoundTag compoundTag) {
@@ -146,15 +135,8 @@ public class AdditionalParameterManager implements IDataStorage{
     private CompoundTag toNBT(CompoundTag nbt){
         this.parameterMap.forEach((key, parameter) -> {
             CompoundTag tag = new CompoundTag();
-            tag.putString("type", parameter.type.name());
-            switch (parameter.type) {
-                case String  -> tag.putString("value", (String) parameter.getValue());
-                case Integer -> tag.putInt("value", (int) parameter.getValue());
-                case Float -> tag.putFloat("value", (float) parameter.getValue());
-                case Double -> tag.putDouble("value", (double) parameter.getValue());
-                case Boolean -> tag.putBoolean("value", (boolean) parameter.getValue());
-                case THObject -> tag.putUUID("value", (UUID) parameter.getValue());
-            }
+            tag.putInt("type", parameter.type.ordinal());
+            ((Type.Factory<Object>) parameter.type.factory).writeNBT(tag,(Parameter<Object>) parameter);
             nbt.put(key, tag);
         });
         return nbt;
@@ -163,30 +145,163 @@ public class AdditionalParameterManager implements IDataStorage{
     public void readFromNBT(CompoundTag nbt) {
         for(String key:nbt.getAllKeys()){
             CompoundTag tag = nbt.getCompound(key);
-            Type type = Type.valueOf(tag.getString("type"));
-            Object value = null;
-            switch (type) {
-                case String -> value=tag.getString("value");
-                case Integer -> value=tag.getInt("value");
-                case Float -> value=tag.getFloat("value");
-                case Double -> value=tag.getDouble("value");
-                case Boolean -> value=tag.getBoolean("value");
-                case THObject -> value=tag.getUUID("value");
-            }
-
-            if (value != null){
-                this.parameterMap.put(key, new Parameter<>(type, value));
+            Type type = Type.values()[tag.getInt("type")];
+            Parameter<Object> parameter = new Parameter<>(type, type.factory.readNBT(tag));
+            if (parameter.value != null){
+                this.parameterMap.put(key, parameter);
             }
         }
     }
 
     public enum Type{
-        String(),
-        Integer(),
-        Float(),
-        Double(),
-        Boolean(),
-        THObject();
+        String(new Factory<String>() {
+            @Override
+            public void writeData(FriendlyByteBuf buffer, Parameter<String> parameter) {
+                buffer.writeUtf(parameter.value);
+            }
+
+            @Override
+            public String readData(FriendlyByteBuf buffer) {
+                return buffer.readUtf();
+            }
+
+            @Override
+            public CompoundTag writeNBT(CompoundTag tag, Parameter<String> parameter) {
+                tag.putString("value", parameter.value);
+                return tag;
+            }
+
+            @Override
+            public String readNBT(CompoundTag tag) {
+                return tag.getString("value");
+            }
+        }),
+        Integer(new Factory<Integer>() {
+            @Override
+            public void writeData(FriendlyByteBuf buffer, Parameter<Integer> parameter) {
+                buffer.writeInt(parameter.value);
+            }
+
+            @Override
+            public Integer readData(FriendlyByteBuf buffer) {
+                return buffer.readInt();
+            }
+
+            @Override
+            public CompoundTag writeNBT(CompoundTag tag, Parameter<Integer> parameter) {
+                tag.putInt("value", parameter.value);
+                return tag;
+            }
+
+            @Override
+            public Integer readNBT(CompoundTag tag) {
+                return tag.getInt("value");
+            }
+        }),
+        Float(new Factory<Float>() {
+            @Override
+            public void writeData(FriendlyByteBuf buffer, Parameter<java.lang.Float> parameter) {
+                buffer.writeFloat(parameter.value);
+            }
+
+            @Override
+            public java.lang.Float readData(FriendlyByteBuf buffer) {
+                return buffer.readFloat();
+            }
+
+            @Override
+            public CompoundTag writeNBT(CompoundTag tag, Parameter<java.lang.Float> parameter) {
+                tag.putFloat("value", parameter.value);
+                return tag;
+            }
+
+            @Override
+            public java.lang.Float readNBT(CompoundTag tag) {
+                return tag.getFloat("value");
+            }
+        }),
+        Double(new Factory<Double>() {
+            @Override
+            public void writeData(FriendlyByteBuf buffer, Parameter<java.lang.Double> parameter) {
+                buffer.writeDouble(parameter.value);
+            }
+
+            @Override
+            public java.lang.Double readData(FriendlyByteBuf buffer) {
+                return buffer.readDouble();
+            }
+
+            @Override
+            public CompoundTag writeNBT(CompoundTag tag, Parameter<java.lang.Double> parameter) {
+                tag.putDouble("value", parameter.value);
+                return tag;
+            }
+
+            @Override
+            public java.lang.Double readNBT(CompoundTag tag) {
+                return tag.getDouble("value");
+            }
+        }),
+        Boolean(new Factory<Boolean>() {
+            @Override
+            public void writeData(FriendlyByteBuf buffer, Parameter<java.lang.Boolean> parameter) {
+                buffer.writeBoolean(parameter.value);
+            }
+
+            @Override
+            public java.lang.Boolean readData(FriendlyByteBuf buffer) {
+                return buffer.readBoolean();
+            }
+
+            @Override
+            public CompoundTag writeNBT(CompoundTag tag, Parameter<java.lang.Boolean> parameter) {
+                tag.putBoolean("value", parameter.value);
+                return tag;
+            }
+
+            @Override
+            public java.lang.Boolean readNBT(CompoundTag tag) {
+                return tag.getBoolean("value");
+            }
+        }),
+        THObject(new Factory<UUID>() {
+            @Override
+            public void writeData(FriendlyByteBuf buffer, Parameter<UUID> parameter) {
+                buffer.writeUUID(parameter.value);
+            }
+
+            @Override
+            public UUID readData(FriendlyByteBuf buffer) {
+                return buffer.readUUID();
+            }
+
+            @Override
+            public CompoundTag writeNBT(CompoundTag tag, Parameter<UUID> parameter) {
+                tag.putUUID("value", parameter.value);
+                return tag;
+            }
+
+            @Override
+            public UUID readNBT(CompoundTag tag) {
+                return tag.getUUID("value");
+            }
+        });
+
+        final Factory<?> factory;
+
+        Type(Factory factory){
+            this.factory = factory;
+        }
+
+        public static interface Factory<T>{
+            void writeData(FriendlyByteBuf buffer, Parameter<T> parameter);
+
+            T readData(FriendlyByteBuf buffer);
+
+            CompoundTag writeNBT(CompoundTag tag, Parameter<T> parameter);
+
+            T readNBT(CompoundTag tag);
+        }
     }
 
     public static class Parameter<T>{
@@ -209,5 +324,178 @@ public class AdditionalParameterManager implements IDataStorage{
         public Type getType() {
             return type;
         }
+    }
+
+    private final LibFunction register = new VarArgFunction() {
+        @Override
+        public LuaValue invoke(Varargs varargs) {
+            Type type = Type.valueOf(varargs.arg(1).checkjstring());
+            String key = varargs.arg(2).checkjstring();
+            LuaValue value = varargs.arg(3);
+            Object outValue = null;
+            switch (type){
+                case THObject -> {
+                    outValue = UUID.fromString(value.checktable().get("uuid").checkjstring());
+                }
+                case String -> {
+                    outValue = value.checkjstring();
+                }
+                case Integer -> {
+                    outValue = value.checkint();
+                }
+                case Float -> {
+                    outValue = value.tofloat();
+                }
+                case Double -> {
+                    outValue = value.checkdouble();
+                }
+                case Boolean -> {
+                    outValue = value.checkboolean();
+                }
+            }
+            AdditionalParameterManager.this.parameterMap.put(key,new Parameter<>(type, outValue));
+            return LuaValue.NIL;
+        }
+    };
+
+    private final LibFunction setValue = new VarArgFunction() {
+        @Override
+        public LuaValue invoke(Varargs varargs) {
+            String key = varargs.arg(1).checkjstring();
+            LuaValue value = varargs.arg(2);
+            Type type = AdditionalParameterManager.this.parameterMap.get(key).type;
+
+            Object outValue = null;
+            switch (type){
+                case THObject -> {
+                    outValue = UUID.fromString(value.checktable().get("uuid").checkjstring());
+                }
+                case String -> {
+                    outValue = value.checkjstring();
+                }
+                case Integer -> {
+                    outValue = value.checkint();
+                }
+                case Float -> {
+                    outValue = value.tofloat();
+                }
+                case Double -> {
+                    outValue = value.checkdouble();
+                }
+                case Boolean -> {
+                    outValue = value.checkboolean();
+                }
+            }
+            AdditionalParameterManager.this.parameterMap.put(key,new Parameter<>(type, outValue));
+            return LuaValue.NIL;
+        }
+    };
+
+    private final LibFunction getValue = new OneArgFunction() {
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            String key = luaValue.checkjstring();
+            LuaValue outValue = LuaValue.NIL;
+            Parameter parameter = AdditionalParameterManager.this.parameterMap.get(key);
+            Type type = parameter.type;
+            switch (type){
+                case THObject -> outValue = AdditionalParameterManager.this.container.getObjectFromUUID((UUID)parameter.value).getLuaValue();
+                case String -> outValue = LuaValue.valueOf((String) parameter.value);
+                case Integer -> outValue = LuaValue.valueOf((int) parameter.value);
+                case Float -> outValue = LuaValue.valueOf((float) parameter.value);
+                case Double -> outValue = LuaValue.valueOf((double) parameter.value);
+                case Boolean -> outValue = LuaValue.valueOf((boolean) parameter.value);
+            }
+            return outValue;
+        }
+    };
+
+    private final LibFunction getString = new OneArgFunction() {
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            String key = luaValue.checkjstring();
+            return LuaValue.valueOf((String) AdditionalParameterManager.this.parameterMap.get(key).value);
+        }
+    };
+
+    private final LibFunction getInteger = new OneArgFunction() {
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            String key = luaValue.checkjstring();
+            return LuaValue.valueOf((int) AdditionalParameterManager.this.parameterMap.get(key).value);
+        }
+    };
+
+    private final LibFunction getFloat = new OneArgFunction() {
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            String key = luaValue.checkjstring();
+            return LuaValue.valueOf((float) AdditionalParameterManager.this.parameterMap.get(key).value);
+        }
+    };
+
+    private final LibFunction getDouble = new OneArgFunction() {
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            String key = luaValue.checkjstring();
+            return LuaValue.valueOf((double) AdditionalParameterManager.this.parameterMap.get(key).value);
+        }
+    };
+
+    private final LibFunction getBoolean = new OneArgFunction() {
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            String key = luaValue.checkjstring();
+            return LuaValue.valueOf((boolean) AdditionalParameterManager.this.parameterMap.get(key).value);
+        }
+    };
+
+    private final LibFunction getTHObject = new OneArgFunction() {
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            String key = luaValue.checkjstring();
+            THObject object = AdditionalParameterManager.this.getTHObject(key);
+            return object != null ? object.getLuaValue() : LuaValue.NIL;
+        }
+    };
+
+    private final LibFunction getTHBullet = new OneArgFunction() {
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            String key = luaValue.checkjstring();
+            THObject object = AdditionalParameterManager.this.getTHBullet(key);
+            return object != null ? object.getLuaValue() : LuaValue.NIL;
+        }
+    };
+
+    private final LibFunction getTHCurvedLaser = new OneArgFunction() {
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            String key = luaValue.checkjstring();
+            THObject object = AdditionalParameterManager.this.getTHCurvedLaser(key);
+            return object != null ? object.getLuaValue() : LuaValue.NIL;
+        }
+    };
+
+    @Override
+    public LuaValue ofLuaValue() {
+        LuaValue library = LuaValue.tableOf();
+        library.set("register",this.register);
+        library.set("setValue",this.setValue);
+        library.set("getValue",this.getValue);
+        library.set("getString",this.getString);
+        library.set("getInteger",this.getInteger);
+        library.set("getFloat",this.getFloat);
+        library.set("getDouble",this.getDouble);
+        library.set("getBoolean",this.getBoolean);
+        library.set("getTHObject",this.getTHObject);
+        library.set("getTHBullet",this.getTHBullet);
+        library.set("getTHCurvedLaser",this.getTHCurvedLaser);
+        return library;
+    }
+
+    @Override
+    public LuaValue getLuaValue() {
+        return this.luaValueForm;
     }
 }

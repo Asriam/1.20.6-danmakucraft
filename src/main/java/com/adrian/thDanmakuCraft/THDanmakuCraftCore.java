@@ -1,18 +1,11 @@
 package com.adrian.thDanmakuCraft;
 
 import com.adrian.thDanmakuCraft.init.*;
-import com.adrian.thDanmakuCraft.script.js.JSCore;
-import com.adrian.thDanmakuCraft.script.js.JSLoader;
 import com.adrian.thDanmakuCraft.script.lua.LuaCore;
 import com.adrian.thDanmakuCraft.script.lua.LuaLoader;
 import com.mojang.logging.LogUtils;
-import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.packs.PackResources;
-import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -26,8 +19,6 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(THDanmakuCraftCore.MOD_ID)
@@ -52,9 +43,9 @@ public class THDanmakuCraftCore
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
-        JSLoader.init();
+        //JSLoader.init();
+        //JSCore.init();
         LuaLoader.init();
-        JSCore.init();
         LuaCore.init();
     }
 
@@ -63,9 +54,9 @@ public class THDanmakuCraftCore
     @SubscribeEvent
     public void onServerStarting(final @NotNull ServerStartingEvent event) {
         THDanmakuCraftCore.LOGGER.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
-        JSLoader.init();
+        //JSLoader.init();
+        //JSCore.init();
         LuaLoader.init();
-        JSCore.init();
         LuaCore.init();
 
         for(Runnable task:onServerStartingTask.values()){
