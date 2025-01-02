@@ -1,6 +1,5 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.client.renderer.THObjectRenderHelper;
 import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;
@@ -44,8 +43,8 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
 
         //VertexConsumer vertexConsumer = bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE);
 
-        var nodes0 = laser.nodeManager.getNodes();
-        float width2 = laser.width * 3.0f * (nodes0.size() - laser.getTimer()) / nodes0.size();
+        var nodes0 = laser.nodeManager.getAllNodes();
+        float width2 = laser.width * 3.0f * (float) Math.pow((double) (nodes0.size() - laser.getTimer()) / nodes0.size(),0.4f);
         if (width2 > 0) {
             poseStack.pushPose();
             Vec3 prePos = laserPos.vectorTo(nodes0.getLast().getOffsetPosition(partialTicks));

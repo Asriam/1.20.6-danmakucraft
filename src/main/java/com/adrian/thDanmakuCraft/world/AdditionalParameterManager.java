@@ -335,7 +335,8 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue{
             Object outValue = null;
             switch (type){
                 case THObject -> {
-                    outValue = UUID.fromString(value.checktable().get("uuid").checkjstring());
+                    LuaValue luaFormTHObject = value.checktable();
+                    outValue = UUID.fromString(luaFormTHObject.get("uuid").checkjstring());
                 }
                 case String -> {
                     outValue = value.checkjstring();
@@ -368,7 +369,9 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue{
             Object outValue = null;
             switch (type){
                 case THObject -> {
-                    outValue = UUID.fromString(value.checktable().get("uuid").checkjstring());
+                    LuaValue luaFormTHObject = value.checktable();
+                    luaFormTHObject.get("onTick");
+                    outValue = UUID.fromString(luaFormTHObject.get("uuid").checkjstring());
                 }
                 case String -> {
                     outValue = value.checkjstring();

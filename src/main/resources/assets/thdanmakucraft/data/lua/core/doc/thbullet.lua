@@ -14,9 +14,9 @@ function bullet:setStyle(style) end
 function bullet:setBulletColor(colorIndex) end
 
 ---@return string
-function bullet:getStyleName() end
+function bullet:getStyle() end
 
 ---@return number
-function bullet:getBulletColorIndex() end
+function bullet:getBulletColor() end
 
 THBulletClass = bullet

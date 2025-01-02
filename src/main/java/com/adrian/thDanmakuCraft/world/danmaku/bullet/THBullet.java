@@ -11,6 +11,10 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
+import org.luaj.vm2.LuaValue;
+import org.luaj.vm2.lib.LibFunction;
+import org.luaj.vm2.lib.OneArgFunction;
+import org.luaj.vm2.lib.ZeroArgFunction;
 
 public class THBullet extends THObject {
     protected DefaultBulletStyle style;
@@ -224,4 +228,43 @@ public class THBullet extends THObject {
         }
     }
 
+    private final LibFunction setStyle = new OneArgFunction() {
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            THBullet.this.setStyle(luaValue.checkjstring());
+            return LuaValue.NIL;
+        }
+    };
+
+    private final LibFunction setBulletColor = new OneArgFunction() {
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            THBullet.this.setBulletColor(luaValue.checkint());
+            return LuaValue.NIL;
+        }
+    };
+
+    private final LibFunction getStyle = new ZeroArgFunction() {
+        @Override
+        public LuaValue call() {
+            return LuaValue.valueOf(THBullet.this.getStyle().toString());
+        }
+    };
+
+    private final LibFunction getBulletColor = new ZeroArgFunction() {
+        @Override
+        public LuaValue call() {
+            return LuaValue.valueOf(THBullet.this.getBulletColor().getIndex());
+        }
+    };
+
+    @Override
+    public LuaValue ofLuaValue(){
+        LuaValue library = super.ofLuaValue();
+        library.set("setStyle",this.setStyle);
+        library.set("setBulletColor",this.setBulletColor);
+        library.set("getStyle",this.getStyle);
+        library.set("getBulletColor",this.getBulletColor);
+        return library;
+    }
 }

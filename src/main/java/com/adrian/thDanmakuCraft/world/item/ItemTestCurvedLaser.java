@@ -42,7 +42,7 @@ public class ItemTestCurvedLaser extends Item {
             laser.injectScript(script);
         }*/
         level.addFreshEntity(entityTHObjectContainer);
-        player.getCooldowns().addCooldown(this, 20);
+        //player.getCooldowns().addCooldown(this, 20);
         return InteractionResultHolder.sidedSuccess(itemstack, level.isClientSide());
     }
 }

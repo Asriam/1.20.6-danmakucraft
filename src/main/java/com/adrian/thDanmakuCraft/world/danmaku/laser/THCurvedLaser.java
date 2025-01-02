@@ -16,6 +16,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.NotNull;
+import org.luaj.vm2.LuaValue;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -33,6 +34,7 @@ public class THCurvedLaser extends THObject {
     public THCurvedLaser(THObjectType<THCurvedLaser> type, THObjectContainer container) {
         super(type, container);
         this.nodeManager = new NodeManager(this);
+        this.shouldSetDeadWhenCollision = false;
     }
 
     public THCurvedLaser(THObjectContainer container, THBullet.BULLET_COLOR laserColor, int nodeMount, float width){
@@ -83,7 +85,6 @@ public class THCurvedLaser extends THObject {
         if(this.nodeManager.isEmpty()){
             this.remove();
         }
-
         super.onTick();
         if(this.shouldUpdateNodes) {
             this.nodeManager.updateNode(this.getPosition());
@@ -99,12 +100,20 @@ public class THCurvedLaser extends THObject {
     }
 
     public List<LaserNode> getAllNodes(){
-        return this.nodeManager.getNodes();
+        return this.nodeManager.getAllNodes();
     }
 
     public void setNode(int index,Vec3 pos){
         LaserNode node = this.nodeManager.getNode(index);
         node.setPosition(pos);
+    }
+
+    public void setAllNodes(List<Vec3> posList){
+        int index = 0;
+        for(Vec3 pos : posList){
+            this.setNode(index,pos);
+            index++;
+        }
     }
 
     @Override
@@ -181,7 +190,7 @@ public class THCurvedLaser extends THObject {
                 if(node.isValid()) {
                     entitiesInBound.forEach((entity -> {
                         if (!entity.equals(laser.getContainer().getUser()) && entity.getBoundingBox().intersects(node.getBoundingBox())) {
-                            laser.onHitEntity(new EntityHitResult(entity, node.getPosition()));
+                            laser.onHit(new EntityHitResult(entity, node.getPosition()));
                             if (laser.breakable) node.isValid = false;
                         }
                     }));
@@ -250,7 +259,7 @@ public class THCurvedLaser extends THObject {
             this.nodeList.removeIf(filter);
         }
 
-        public List<LaserNode> getNodes(){
+        public List<LaserNode> getAllNodes(){
             return this.nodeList;
         }
 
@@ -359,4 +368,17 @@ public class THCurvedLaser extends THObject {
             this.setBoundingBox(this.position,this.size);
         }
     }
+
+    @Override
+    public LuaValue ofLuaValue(){
+        LuaValue library = super.ofLuaValue();
+        return library;
+    }
+
+    @Override
+    public LuaValue getLuaValue(){
+        LuaValue library = super.getLuaValue();
+        return library;
+    }
+
 }

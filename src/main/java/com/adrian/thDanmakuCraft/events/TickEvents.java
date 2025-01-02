@@ -32,8 +32,9 @@ public class TickEvents {
 
     @SubscribeEvent
     public static void levelTick(TickEvent.LevelTickEvent event){
+        /*
         for(THObjectContainer container:THObjectContainer.allContainers){
-        }
+        }*/
     }
 
     @SubscribeEvent
@@ -46,10 +47,10 @@ public class TickEvents {
         }else {
             // TODO
         }
-    }
+    } 
 
     public static void clearTask(String name){
-        tasks.remove(name);
+        tasks.remove(name); 
     }
 
     public static void clearAllTasks(){

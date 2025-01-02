@@ -61,83 +61,83 @@ function object:setAcceleration(acceleration) end
 ---@param acceleration number
 ---@param direction Vec3
 ---@overload fun(acceleration:number, direction:table|{x,y,z})
-function object:setAccelerationFromDirection(acceleration, direction) end
+function object.setAccelerationFromDirection(acceleration, direction) end
 
 ---@param acceleration number
 ---@param rotation Vec3
 ---@param isDeg boolean
 ------@overload fun(acceleration:number, direction:table|{x,y}, isDeg:boolean)
-function object:setAccelerationFromRotation(acceleration, rotation, isDeg) end
+function object.setAccelerationFromRotation(acceleration, rotation, isDeg) end
 
 ---@param x number
 ---@param y number
 ---@param z number
-function object:setRotation(x,y,z) end
+function object.setRotation(x,y,z) end
 
 ---@param vec3 Vec3
 ---@overload fun(vec3:table|{x,y,z})
-function object:setRotationByDirectionalVector(vec3)  end
+function object.setRotationByDirectionalVector(vec3)  end
 
 ---@param r number
 ---@param g number
 ---@param b number
 ---@param a number
-function object:setColor(r,g,b,a)  end
+function object.setColor(r,g,b,a)  end
 
 ---@param blend string enum values:"normal","add","mul_rev","mul+add","max","min"
-function object:setBlend(blend) end
+function object.setBlend(blend) end
 
 ---@param type number
 ---@overload fun(type:string)
-function object:setCollisionType(type) end
+function object.setCollisionType(type) end
 
 ---@return number
-function object:getTimer()  end
+function object.getTimer()  end
 
 ---@return THObjectContainer
-function object:getContainer() end
+function object.getContainer() end
 
 ---@return Vec3
-function object:getPosition()  end
+function object.getPosition()  end
 
 ---@return Vec3
-function object:getPrePosition()  end
+function object.getPrePosition()  end
 
 ---@return number
-function object:getSpeed()  end
+function object.getSpeed()  end
 
 ---@return Vec3
-function object:getVelocity()  end
+function object.getVelocity()  end
 
 ---@return Vec3
-function object:getMotionDirection()  end
+function object.getMotionDirection()  end
 
 ---@return Vector3f
-function object:getRotation()  end
+function object.getRotation()  end
 
 ---@deprecated
 ---@return number
-function object:getXRot()   end
+function object.getXRot()   end
 
 ---@deprecated
 ---@return number
-function object:getYRot()   end
+function object.getYRot()   end
 
 ---@deprecated
 ---@return number
-function object:getZRot()   end
+function object.getZRot()   end
 
 ---@return Vec3
-function object:getAcceleration()  end
+function object.getAcceleration()  end
 
 ---@return Vector3f
-function object:getScale() end
+function object.getScale() end
 
 ---@return Vec3
-function object:getSize() end
+function object.getSize() end
 
 ---@return string
-function object:getBlendName() end
+function object.getBlendName() end
 
 ---@return AdditionalParameterManager
 function object.getParameterManager() end
@@ -146,23 +146,23 @@ function object.getParameterManager() end
 ---@param y number
 ---@param z number
 ---@overload fun(vec3:Vec3)
-function object:move(x,y,z) end
+function object.move(x,y,z) end
 
-function object:setDead()  end
+function object.setDead()  end
 
-function object:remove()  end
+function object.remove()  end
 
-
----@deprecated
----@return number
-function object:getX()  end
 
 ---@deprecated
 ---@return number
-function object:getY()  end
+function object.getX()  end
 
 ---@deprecated
 ---@return number
-function object:getZ()  end
+function object.getY()  end
+
+---@deprecated
+---@return number
+function object.getZ()  end
 
 THObjectClass = object

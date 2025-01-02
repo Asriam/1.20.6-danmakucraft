@@ -22,6 +22,12 @@ function container.setTimer(time) end
 ---@return number
 function container.getTimer() end
 
+---@return Entity
+function container.getUser() end
+
+---@return Entity
+function container.getTarget() end
+
 function container.clearObjects() end
 
 ---@param position Vec3

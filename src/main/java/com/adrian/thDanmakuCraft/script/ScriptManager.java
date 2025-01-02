@@ -20,6 +20,10 @@ public abstract class ScriptManager {
         return this.script != null && !this.script.equals("");
     }
 
+    public String getScript(){
+        return this.script;
+    }
+
     public void setScript(String script){
         this.script = script;
     }
@@ -30,6 +34,10 @@ public abstract class ScriptManager {
 
     public void disableScript(){
         this.shouldExecuteScript = false;
+    }
+
+    public boolean shouldExecute(){
+        return this.hasScript() && this.shouldExecuteScript;
     }
 
     public void writeData(FriendlyByteBuf buffer){
