@@ -203,6 +203,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
                         poseStack.popPose();
                     }
                 }
+
                 renderType.setupRenderState();
                 if(shouldApplyEffect) {
                     TEST_RENDER_TARGET.bindWrite(true);

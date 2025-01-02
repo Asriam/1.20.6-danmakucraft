@@ -12,10 +12,12 @@ import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaValue;
@@ -103,7 +105,6 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         this.timer = timer;
     }
 
-    /*
     public void task(){
         boolean flag = true;
 
@@ -167,7 +168,6 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
             danmaku3.setLifetime(120);
         }
     }
-    */
 
     public void tick() {
         if(chunk == null) {

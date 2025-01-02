@@ -29,8 +29,8 @@ function container:onTick()
             local angle = laser.getParameterManager().getDouble("angle")
             laser.setVelocityFromRotation(0.2,
                     {
-                        x = 0.0,
-                        y = angle + 60 * Mth:sin(self.getTimer() * 0.1) + userRot
+                        0.0,
+                        angle + 60 * Mth:sin(self.getTimer() * 0.1) + userRot
                     },
                     true,
                     true);

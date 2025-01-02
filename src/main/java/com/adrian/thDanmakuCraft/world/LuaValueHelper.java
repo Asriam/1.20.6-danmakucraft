@@ -4,6 +4,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
+import org.luaj.vm2.Lua;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.ZeroArgFunction;
 import org.luaj.vm2.lib.jse.CoerceJavaToLua;
@@ -57,11 +58,20 @@ public class LuaValueHelper {
         if (luaValue.isuserdata() && luaValue.checkuserdata() instanceof Vec3 vec3){
             return vec3;
         }else if (luaValue.istable()){
-            return new Vec3(
-                    luaValue.get("x").checkdouble(),
-                    luaValue.get("y").checkdouble(),
-                    luaValue.get("z").checkdouble()
-            );
+            LuaValue x = luaValue.get("x");
+            if(!x.isnil()) {
+                return new Vec3(
+                        x.checkdouble(),
+                        luaValue.get("y").checkdouble(),
+                        luaValue.get("z").checkdouble()
+                );
+            }else {
+                return new Vec3(
+                        luaValue.get(1).checkdouble(),
+                        luaValue.get(2).checkdouble(),
+                        luaValue.get(3).checkdouble()
+                );
+            }
         }
 
         return null;
@@ -73,10 +83,18 @@ public class LuaValueHelper {
         }
 
         if (luaValue.istable()){
-            return new Vec2(
-                    luaValue.get("x").tofloat(),
-                    luaValue.get("y").tofloat()
-            );
+            LuaValue x = luaValue.get("x");
+            if(!x.isnil()) {
+                return new Vec2(
+                        x.tofloat(),
+                        luaValue.get("y").tofloat()
+                );
+            }else {
+                return new Vec2(
+                        luaValue.get(1).tofloat(),
+                        luaValue.get(2).tofloat()
+                );
+            }
         }
 
         return null;
@@ -86,11 +104,20 @@ public class LuaValueHelper {
         if (luaValue.isuserdata() && luaValue.checkuserdata() instanceof Vector3f vector3f){
             return vector3f;
         }else if (luaValue.istable()){
-            return new Vector3f(
-                    luaValue.get("x").tofloat(),
-                    luaValue.get("y").tofloat(),
-                    luaValue.get("z").tofloat()
-            );
+            LuaValue x = luaValue.get("x");
+            if(!x.isnil()) {
+                return new Vector3f(
+                        x.tofloat(),
+                        luaValue.get("y").tofloat(),
+                        luaValue.get("z").tofloat()
+                );
+            }else {
+                return new Vector3f(
+                        luaValue.get(1).tofloat(),
+                        luaValue.get(2).tofloat(),
+                        luaValue.get(3).tofloat()
+                );
+            }
         }
 
         return null;
