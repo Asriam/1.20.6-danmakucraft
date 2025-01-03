@@ -75,14 +75,14 @@ public class THObject implements IScript, ILuaValue {
     protected boolean canHitUser = false;
     protected boolean shouldSetDeadWhenCollision = true;
     private UUID uuid;
-    private boolean isSpawned = false;
-    public int layer = 0;
+    public boolean isSpawned = false;
+    //public int layer = 0;
 
     public Color color = Color(255, 255, 255, 255);
     //public THRenderType.BLEND blend = THRenderType.BLEND.LIGHTEN;
     protected Blend blend = Blend.add;
     protected CollisionType collisionType = CollisionType.AABB;
-    private LuaValue luaValueForm;
+    protected LuaValue luaValueForm;
 
     public THObject(THObjectType<? extends THObject> type, THObjectContainer container) {
         this.type = type;
@@ -92,7 +92,7 @@ public class THObject implements IScript, ILuaValue {
         this.parameterManager = new AdditionalParameterManager(this.container);
         this.uuid = Mth.createInsecureUUID(this.random);
         this.initPosition(container.getPosition());
-        this.luaValueForm = this.ofLuaValue();
+        //this.luaValueForm = this.ofLuaValue();
     }
 
     public THObject(THObjectContainer container, Vec3 position) {
@@ -126,6 +126,10 @@ public class THObject implements IScript, ILuaValue {
 
     public void injectScript(String script) {
         this.scriptManager.setScript(script);
+    }
+
+    public void initLuaValue(){
+        this.luaValueForm = this.ofLuaValue();
     }
 
     public void spawn() {
@@ -456,11 +460,15 @@ public class THObject implements IScript, ILuaValue {
         this.shouldSetDeadWhenCollision = shouldSetDeadWhenCollision;
     }
 
-    public void scriptEvent(String eventName){
-        LuaValue onInit = this.luaValueForm.get(eventName);
-        if(!onInit.isnil() && onInit.isfunction()){
+    public void scriptEvent(String eventName,LuaValue... args){
+        if(this.luaValueForm == null){
+            this.initLuaValue();
+        }
+
+        LuaValue event = this.luaValueForm.get(eventName);
+        if(!event.isnil() && event.isfunction()){
             try {
-                onInit.checkfunction().invoke(this.luaValueForm);
+                event.checkfunction().invoke(args);
             }catch (Exception e){
                 THDanmakuCraftCore.LOGGER.error("Failed invoke script!", e);
                 this.remove();
@@ -469,8 +477,13 @@ public class THObject implements IScript, ILuaValue {
     }
 
     public void onTick() {
+        /*
+        if(this.luaValueForm == null){
+            this.initLuaValue();
+        }*/
+
         if (timer == 0){
-            this.scriptEvent("onInit");;
+            this.scriptEvent("onInit",this.luaValueForm);
         }
 
         this.lastPosition = new Vec3(this.positionX, this.positionY, this.positionZ);
@@ -505,7 +518,7 @@ public class THObject implements IScript, ILuaValue {
             this.onDead();
         }
 
-        this.scriptEvent("onTick");
+        this.scriptEvent("onTick",this.luaValueForm);
 
         this.timer++;
     }
@@ -515,13 +528,6 @@ public class THObject implements IScript, ILuaValue {
         if (entitiesInBound.isEmpty()) {
             return;
         }
-
-        /*
-        this.collisionType = CollisionType.ELLIPSOID;
-        this.setSize(new Vec3(0.5f,0.5f,2.0f));
-        this.setRotation(this.timer/40.0f,this.timer/10.0f,0.0f);
-
-         */
 
         entitiesInBound.forEach(entity -> {
             if(!this.canHitUser && entity.equals(this.getContainer().getUser())){
@@ -1365,13 +1371,14 @@ public class THObject implements IScript, ILuaValue {
             return LuaValue.valueOf(THObject.this.isSpawned());
         }
     };
+    /*
     private final LibFunction override = new OneArgFunction() {
         @Override
         public LuaValue call(LuaValue luaValue) {
             THObject.this.luaValueForm = luaValue.checktable();
             return LuaValue.NIL;
         }
-    };
+    };*/
 
     @Override
     public LuaValue ofLuaValue(){
@@ -1413,15 +1420,18 @@ public class THObject implements IScript, ILuaValue {
         library.set( "remove", this.remove);
         library.set( "spawn", this.spawn);
         library.set( "isSpawned", this.getIsSpawned);
-        library.set( "override", this.override);
+        //library.set( "override", this.override);
         //params
-        library.set( "type", this.getType().toString());
+        library.set( "type", this.getType().getKey().toString());
         library.set( "uuid", this.getUUIDasString());
         return library;
     }
 
     @Override
     public LuaValue getLuaValue() {
+        if(this.luaValueForm == null){
+            this.initLuaValue();
+        }
         luaValueForm.set("x",THObject.this.positionX);
         luaValueForm.set("y",THObject.this.positionY);
         luaValueForm.set("z",THObject.this.positionZ);

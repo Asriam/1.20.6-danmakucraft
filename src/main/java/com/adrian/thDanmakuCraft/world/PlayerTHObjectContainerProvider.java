@@ -31,6 +31,7 @@ public class PlayerTHObjectContainerProvider implements ICapabilityProvider, INB
 
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
+
         return tag;
     }
 

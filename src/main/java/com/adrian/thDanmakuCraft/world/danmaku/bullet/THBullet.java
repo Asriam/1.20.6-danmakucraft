@@ -22,6 +22,7 @@ public class THBullet extends THObject {
 
     public THBullet(THObjectType<THBullet> type, THObjectContainer container) {
         super(type, container);
+        this.luaValueForm = this.ofLuaValue();
     }
 
     public THBullet(THObjectContainer container, DefaultBulletStyle style, BULLET_COLOR bulletColor) {

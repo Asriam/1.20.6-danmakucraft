@@ -12,7 +12,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 
 public class EntityTHObjectContainer extends Entity implements IEntityAdditionalSpawnData {
-    private THObjectContainer container;
+    private final THObjectContainer container;
     public EntityTHObjectContainer(EntityType<?> type, Level level) {
         super(type, level);
         this.container = new THObjectContainer(this);

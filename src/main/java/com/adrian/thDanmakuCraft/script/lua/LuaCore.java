@@ -1,9 +1,6 @@
 package com.adrian.thDanmakuCraft.script.lua;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
-import com.adrian.thDanmakuCraft.world.danmaku.THObject;
-import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
-import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -33,7 +30,6 @@ public class LuaCore {
 
     public static void init(){
         LUA = new LuaCore();
-        //core.doFile("main.lua");
         String path = "main.lua";
         String script = LuaLoader.getResourceAsString(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"data/lua/"+path));
         LuaCore.getInstance().GLOBALS.load(script,path).call();
@@ -68,13 +64,14 @@ public class LuaCore {
         return LUA;
     }
 
-    public void loadScript(String path){
+    public LuaValue doScript(String path){
         try {
             String script = LuaLoader.getResourceAsString(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"data/lua/"+path));
-            this.GLOBALS.load(script,path).call();
+            return this.GLOBALS.load(script,path).call();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return NIL;
     }
 
     public LuaValue coreAPI(){
@@ -82,8 +79,7 @@ public class LuaCore {
         library.set( "doFile", new OneArgFunction(){
             @Override
             public LuaValue call(LuaValue luaValue) {
-                core.doFile(luaValue.checkjstring());
-                return LuaValue.NIL;
+                return core.doFile(luaValue.checkjstring());
             }
         });
         library.set( "isValid", new OneArgFunction(){
@@ -130,8 +126,8 @@ public class LuaCore {
     }
 
     public static class core {
-        public static void doFile(String path) {
-            LuaCore.getInstance().loadScript(path);
+        public static LuaValue doFile(String path) {
+            return LuaCore.getInstance().doScript(path);
         }
 
         public static boolean isValid(Object object) {

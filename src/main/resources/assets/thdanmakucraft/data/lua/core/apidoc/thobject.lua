@@ -9,11 +9,11 @@
 ---@field onHit    fun(self)
 ---@field onDead   fun(self)
 ---@field onRemove fun(self)
-
----@field uuid string
 ---@field x number
 ---@field y number
 ---@field z number
+---@field type string
+---@field uuid string
 local object = {
 }
 

@@ -1,22 +1,15 @@
 package com.adrian.thDanmakuCraft.world.entity;
 
 import com.adrian.thDanmakuCraft.init.EntityInit;
-import com.adrian.thDanmakuCraft.world.ITHObjectContainer;
-import com.adrian.thDanmakuCraft.world.THObjectManager;
 import com.adrian.thDanmakuCraft.world.TargetUserManager;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
-
-import java.util.List;
 
 public class EntitySingleTHObject extends Entity implements IEntityAdditionalSpawnData {
 

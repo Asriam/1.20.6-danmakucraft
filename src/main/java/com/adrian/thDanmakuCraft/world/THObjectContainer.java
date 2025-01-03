@@ -38,7 +38,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
     private int maxObjectAmount = 2000;
     protected final TargetUserManager targetUserManager;
     protected final THObjectManager objectManager;
-    protected final ScriptManager scriptManager;
+    protected final LuaManager scriptManager;
     protected final THTasker.THTaskerManager taskerManager;
     protected final AdditionalParameterManager parameterManager;
     protected final RandomSource random = RandomSource.create();
@@ -52,6 +52,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
     private final LuaValue luaValueForm;
     private final static Globals globals = LuaCore.getGlobals();
     private LuaValue chunk;
+    private String luaClassKey;
 
     public THObjectContainer(Entity hostEntity) {
         allContainers.add(this);
@@ -169,11 +170,24 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         }
     }
 
+    public void scriptEvent(String eventName){
+        LuaValue onInit = this.luaValueForm.get(eventName);
+        if(!onInit.isnil() && onInit.isfunction()){
+            try {
+                onInit.checkfunction().invoke(this.luaValueForm);
+            }catch (Exception e){
+                THDanmakuCraftCore.LOGGER.error("Failed invoke script!", e);
+                this.discard();
+            }
+        }
+    }
+
     public void tick() {
         if(chunk == null) {
-            this.chunk = globals.load(this.scriptManager.getScript()).call();
+            //this.chunk = globals.load(this.scriptManager.getScript()).call();
+            this.chunk = globals.get(this.getLuaClassKey());
         }
-        boolean flag = this.scriptManager.shouldExecute();
+        boolean flag = this.chunk != null;
         if (timer == 0){
             //this.scriptInit();
             if(flag) {
@@ -285,6 +299,14 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         return new THCurvedLaser(this,THBullet.BULLET_COLOR.getColorByIndex(color),length,width);
     }
 
+    public void spawnTHObject(THObject object){
+        object.isSpawned = true;
+        if (!this.getObjectManager().contains(object)) {
+            object.setContainer(this);
+            this.getObjectManager().addTHObject(object);
+        }
+    }
+
     public void discard(){
         this.hostEntity.remove(Entity.RemovalReason.DISCARDED);
     }
@@ -302,11 +324,19 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         return this.getObjectFromUUID(UUID.fromString(uuid));
     }
 
+    public void setLuaClassKey(String className) {
+        this.luaClassKey = className;
+    }
+
+    public String getLuaClassKey() {
+        return this.luaClassKey;
+    }
 
     public void writeSpawnData(FriendlyByteBuf buffer) {
         buffer.writeInt(this.maxObjectAmount);
         buffer.writeInt(this.timer);
         //buffer.writeBoolean(this.bindingToUserPosition);
+        buffer.writeUtf(this.luaClassKey);
         this.targetUserManager.writeData(buffer);
         this.objectManager.writeData(buffer);
         this.scriptManager.writeData(buffer);
@@ -318,6 +348,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         this.maxObjectAmount = additionalData.readInt();
         this.timer = additionalData.readInt();
         //this.bindingToUserPosition = additionalData.readBoolean();
+        this.luaClassKey = additionalData.readUtf();
         this.targetUserManager.readData(additionalData);
         this.objectManager.readData(additionalData);
         this.scriptManager.readData(additionalData);
@@ -330,6 +361,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         tag.putInt("Timer",this.timer);
         tag.putInt("MaxObjectAmount",this.maxObjectAmount);
         //compoundTag.putBoolean("PositionBinding",this.bindingToUserPosition);
+        tag.putString("LuaClassKey", luaClassKey);
         tag.put("object_storage", this.objectManager.save(new CompoundTag()));
         tag.put("script",this.scriptManager.save(new CompoundTag()));
         tag.put("user_target", this.targetUserManager.save(new CompoundTag()));
@@ -340,6 +372,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         this.timer = tag.getInt("Timer");
         this.maxObjectAmount = tag.getInt("MaxObjectAmount");
         //this.bindingToUserPosition = compoundTag.getBoolean("PositionBinding");
+        this.luaClassKey = tag.getString("LuaClassKey");
         this.objectManager.load(tag.getCompound("object_storage"));
         this.scriptManager.load(tag.getCompound("script"));
         this.targetUserManager.load(tag.getCompound("user_target"));
@@ -408,6 +441,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         @Override
         public LuaValue call(LuaValue pos) {
             THObject object = THObjectContainer.this.createTHObject(LuaValueToVec3(pos));
+            object.initLuaValue();
             return object.getLuaValue();
         }
     };
@@ -419,6 +453,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
                     LuaValueToVec3(pos),
                     style.checkjstring(),
                     colorIndex.checkint());
+            bullet.initLuaValue();
             return bullet.getLuaValue();
         }
     };
@@ -431,6 +466,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
             int length = varargs.arg(3).checkint();
             float width = varargs.arg(4).tofloat();
             THCurvedLaser laser = THObjectContainer.this.createTHCurvedLaser(pos,colorIndex,length,width);
+            laser.initLuaValue();
             return laser.getLuaValue();
         }
     };
@@ -464,6 +500,15 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         }
     };
 
+    /*
+    private final LibFunction spawnTHObject = new OneArgFunction(){
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            THObjectContainer.this.spawnTHObject();
+            return LuaValue.NIL;
+        }
+    };*/
+
     public LuaValue ofLuaValue(){
         LuaValue library = LuaValue.tableOf();
         library.set( "getMaxObjectAmount", getMaxObjectAmount);
@@ -483,6 +528,6 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
 
     @Override
     public LuaValue getLuaValue() {
-        return this.luaValueForm;
+        return this.luaValueForm == null ? LuaValue.NIL : this.luaValueForm;
     }
 }
