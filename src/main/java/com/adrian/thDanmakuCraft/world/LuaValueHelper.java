@@ -3,6 +3,7 @@ package com.adrian.thDanmakuCraft.world;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
 import org.luaj.vm2.Lua;
 import org.luaj.vm2.LuaValue;

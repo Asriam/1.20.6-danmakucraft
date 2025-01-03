@@ -30,6 +30,7 @@ public class THCurvedLaser extends THObject {
     public boolean shouldUpdateNodes = true;
     public boolean noNodeCulling = false;
     public boolean breakable = true;
+    public int renderCull = 2;
 
     public THCurvedLaser(THObjectType<THCurvedLaser> type, THObjectContainer container) {
         super(type, container);
@@ -52,6 +53,7 @@ public class THCurvedLaser extends THObject {
         super.writeData(buffer);
         buffer.writeFloat(this.width);
         buffer.writeEnum(this.laserColor);
+        buffer.writeInt(this.renderCull);
         this.nodeManager.writeData(buffer);
     }
 
@@ -60,6 +62,7 @@ public class THCurvedLaser extends THObject {
         super.readData(buffer);
         this.width = buffer.readFloat();
         this.laserColor = buffer.readEnum(THBullet.BULLET_COLOR.class);
+        this.renderCull = buffer.readInt();
         this.nodeManager.readData(buffer);
     }
 
@@ -68,6 +71,7 @@ public class THCurvedLaser extends THObject {
         CompoundTag nbt = super.save(tag);
         tag.putFloat("Width",this.width);
         tag.putInt("LaserColor",this.laserColor.ordinal());
+        tag.putInt("RenderCull",this.renderCull);
         this.nodeManager.save(tag);
         return nbt;
     }
@@ -77,6 +81,7 @@ public class THCurvedLaser extends THObject {
         super.load(tag);
         this.width = tag.getFloat("Width");
         this.laserColor = THBullet.BULLET_COLOR.class.getEnumConstants()[tag.getInt("LaserColor")];
+        this.renderCull = tag.getInt("RenderCull");
         this.nodeManager.load(tag);
     }
 
@@ -89,6 +94,14 @@ public class THCurvedLaser extends THObject {
         if(this.shouldUpdateNodes) {
             this.nodeManager.updateNode(this.getPosition());
         }
+    }
+
+    public void setRenderCull(int renderCull){
+        this.renderCull = renderCull;
+    }
+
+    public int getRenderCull(){
+        return this.renderCull;
     }
 
     public int getNodeMount(){

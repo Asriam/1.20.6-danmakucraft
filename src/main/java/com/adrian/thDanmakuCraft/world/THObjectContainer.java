@@ -187,15 +187,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         this.setBound(this.position(),this.bound);
         //this.task();
         this.entitiesInBound = this.level().getEntities(this.hostEntity,this.getAabb()).stream().filter((entity -> !(entity.equals(this.hostEntity)) && !(entity instanceof EntityTHObjectContainer))).toList();
-        this.objectManager.THObjectsTick();
 
-        if(this.autoRemove) {
-            if (this.objectManager.isEmpty() && --this.autoRemoveLife < 0) {
-                this.getHostEntity().remove(Entity.RemovalReason.DISCARDED);
-            }
-        }
-
-        //this.scriptTick();
         if(flag) {
             try {
                 chunk.get("onTick").checkfunction().invoke(this.getLuaValue());
@@ -203,6 +195,15 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
                 THDanmakuCraftCore.LOGGER.error("Failed invoke script!", e);
             }
         }
+
+        this.objectManager.THObjectsTick();
+        if(this.autoRemove) {
+            if (this.objectManager.isEmpty() && --this.autoRemoveLife < 0) {
+                this.getHostEntity().remove(Entity.RemovalReason.DISCARDED);
+            }
+        }
+
+        //this.scriptTick();
 
         this.timer++;
     }
@@ -273,19 +274,19 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
     }
 
     public THObject createTHObject(Vec3 pos) {
-        return new THObject(this,pos).spawn();
+        return new THObject(this,pos);
     }
 
     public THBullet createTHBullet(Vec3 pos, String style, int color) {
-        return new THBullet(this, THBullet.DefaultBulletStyle.valueOf(style),THBullet.BULLET_COLOR.getColorByIndex(color)).spawn();
+        return new THBullet(this, THBullet.DefaultBulletStyle.valueOf(style),THBullet.BULLET_COLOR.getColorByIndex(color));
+    }
+
+    public THCurvedLaser createTHCurvedLaser(Vec3 pos, int color, int length, float width) {
+        return new THCurvedLaser(this,THBullet.BULLET_COLOR.getColorByIndex(color),length,width);
     }
 
     public void discard(){
         this.hostEntity.remove(Entity.RemovalReason.DISCARDED);
-    }
-
-    public THCurvedLaser createTHCurvedLaser(Vec3 pos, int color, int length, float width) {
-        return new THCurvedLaser(this,THBullet.BULLET_COLOR.getColorByIndex(color),length,width).spawn();
     }
 
     public <T extends THObject> T getObjectFromUUID(UUID uuid) {

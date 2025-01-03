@@ -9,6 +9,7 @@
 ---@field onHit    fun(self)
 ---@field onDead   fun(self)
 ---@field onRemove fun(self)
+
 ---@field uuid string
 ---@field x number
 ---@field y number
@@ -150,8 +151,18 @@ function object.move(x,y,z) end
 
 function object.setDead()  end
 
+---@param flag boolean
+function object.setShouldSetDeadWhenCollision(flag) end
+
 function object.remove()  end
 
+function object.spawn() end
+
+---@return boolean
+function object.isSpawned() end
+
+---@deprecated
+function object:override() end
 
 ---@deprecated
 ---@return number

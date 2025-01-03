@@ -19,7 +19,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
-import org.joml.*;
+import org.joml.Vector3f;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.LibFunction;
@@ -27,7 +27,6 @@ import org.luaj.vm2.lib.OneArgFunction;
 import org.luaj.vm2.lib.VarArgFunction;
 import org.luaj.vm2.lib.ZeroArgFunction;
 
-import java.lang.Math;
 import java.util.List;
 import java.util.UUID;
 
@@ -75,15 +74,15 @@ public class THObject implements IScript, ILuaValue {
     protected boolean faceCamera = true;
     protected boolean canHitUser = false;
     protected boolean shouldSetDeadWhenCollision = true;
-    public UUID uuid;
-
+    private UUID uuid;
+    private boolean isSpawned = false;
     public int layer = 0;
 
     public Color color = Color(255, 255, 255, 255);
     //public THRenderType.BLEND blend = THRenderType.BLEND.LIGHTEN;
     protected Blend blend = Blend.add;
     protected CollisionType collisionType = CollisionType.AABB;
-    private final LuaValue luaValueForm;
+    private LuaValue luaValueForm;
 
     public THObject(THObjectType<? extends THObject> type, THObjectContainer container) {
         this.type = type;
@@ -129,11 +128,16 @@ public class THObject implements IScript, ILuaValue {
         this.scriptManager.setScript(script);
     }
 
-    public <T extends  THObject> T spawn() {
+    public void spawn() {
         if (!this.container.getObjectManager().contains(this)) {
             this.container.getObjectManager().addTHObject(this);
+            this.isSpawned = true;
         }
-        return (T) this;
+    }
+
+    public boolean isSpawned() {
+        this.isSpawned = !this.removeFlag && (this.isSpawned || this.container.getObjectManager().contains(this));
+        return this.isSpawned;
     }
 
     public void setDead() {
@@ -448,23 +452,26 @@ public class THObject implements IScript, ILuaValue {
         this.move(pos.x, pos.y, pos.z);
     }
 
-    public void scriptInit(){
-        this.scriptManager.invokeScript("onInit", (exception) -> {
-            THDanmakuCraftCore.LOGGER.error("Failed invoke script!", exception);
-            if (this.container != null) {
-                this.container.getHostEntity().remove(Entity.RemovalReason.DISCARDED);
+    public void setShouldSetDeadWhenCollision(boolean shouldSetDeadWhenCollision) {
+        this.shouldSetDeadWhenCollision = shouldSetDeadWhenCollision;
+    }
+
+    public void scriptEvent(String eventName){
+        LuaValue onInit = this.luaValueForm.get(eventName);
+        if(!onInit.isnil() && onInit.isfunction()){
+            try {
+                onInit.checkfunction().invoke(this.luaValueForm);
+            }catch (Exception e){
+                THDanmakuCraftCore.LOGGER.error("Failed invoke script!", e);
+                this.remove();
             }
-        }, this);
+        }
     }
 
     public void onTick() {
         if (timer == 0){
-            this.scriptInit();
+            this.scriptEvent("onInit");;
         }
-        /*
-        if(!this.getContainer().getObjectFromUUID(this.getUUID()).equals(this)){
-            this.remove();
-        }*/
 
         this.lastPosition = new Vec3(this.positionX, this.positionY, this.positionZ);
 
@@ -498,13 +505,7 @@ public class THObject implements IScript, ILuaValue {
             this.onDead();
         }
 
-        this.scriptManager.invokeScript("onTick", (exception) -> {
-            THDanmakuCraftCore.LOGGER.error("Failed invoke script!", exception);
-            if (this.container != null) {
-                this.container.getHostEntity().remove(Entity.RemovalReason.DISCARDED);
-            }
-            this.remove();
-        }, this);
+        this.scriptEvent("onTick");
 
         this.timer++;
     }
@@ -581,6 +582,7 @@ public class THObject implements IScript, ILuaValue {
     }
 
     public void onHit(HitResult result) {
+        this.scriptEvent("onHit");
         if(this.shouldSetDeadWhenCollision) {
             this.setDead();
         }
@@ -618,10 +620,12 @@ public class THObject implements IScript, ILuaValue {
         } else {
             this.remove();
         }
+
+        this.scriptEvent("onDead");
     }
 
     public void onRemove() {
-
+        this.scriptEvent("onRemove");
     }
 
     public void setBlend(Blend blend) {
@@ -787,7 +791,7 @@ public class THObject implements IScript, ILuaValue {
     public void setImage(THImage image) {
         this.image = image;
     }
-    
+
     public THImage getImage() {
         return this.image;
     }
@@ -1083,16 +1087,6 @@ public class THObject implements IScript, ILuaValue {
         public Varargs invoke(Varargs varargs) {
             LuaValue arg1 = varargs.arg1();
             THObject.this.setPosition(LuaValueToVec3(arg1));
-            /*
-            if(arg1.isuserdata() && arg1.checkuserdata() instanceof Vec3 vec3){
-                THObject.this.setPosition(vec3);
-            }else{
-                THObject.this.setPosition(
-                        varargs.arg(1).checkdouble(),
-                        varargs.arg(2).checkdouble(),
-                        varargs.arg(3).checkdouble()
-                );
-            }*/
             return null;
         }
     };
@@ -1110,16 +1104,6 @@ public class THObject implements IScript, ILuaValue {
         public Varargs invoke(Varargs varargs) {
             LuaValue arg1 = varargs.arg1();
             THObject.this.setScale(LuaValueToVec3(arg1));
-            /*
-            if(arg1.isuserdata() && arg1.checkuserdata() instanceof Vec3 vec3){
-                THObject.this.setScale(vec3);
-            }else{
-                THObject.this.setScale(
-                        varargs.arg(1).tofloat(),
-                        varargs.arg(2).tofloat(),
-                        varargs.arg(3).tofloat()
-                );
-            }*/
             return LuaValue.NIL;
         }
     };
@@ -1129,16 +1113,6 @@ public class THObject implements IScript, ILuaValue {
         public Varargs invoke(Varargs varargs) {
             LuaValue arg1 = varargs.arg1();
             THObject.this.setSize(LuaValueToVec3(arg1));
-            /*
-            if(arg1.isuserdata() && arg1.checkuserdata() instanceof Vec3 vec3){
-                THObject.this.setSize(vec3);
-            }else{
-                THObject.this.setSize(
-                        varargs.arg(1).checkdouble(),
-                        varargs.arg(2).checkdouble(),
-                        varargs.arg(3).checkdouble()
-                );
-            }*/
             return LuaValue.NIL;
         }
     };
@@ -1149,17 +1123,6 @@ public class THObject implements IScript, ILuaValue {
             LuaValue velocity = varargs.arg(1);
             boolean shouldSetRotation = varargs.arg(2).checkboolean();
             THObject.this.setVelocity(LuaValueToVec3(velocity), shouldSetRotation);
-            /*
-            if (velocity.isuserdata() && velocity.checkuserdata() instanceof Vec3 vec3){
-                THObject.this.setVelocity(vec3, shouldSetRotation);
-            }else {
-                LuaValue table = velocity.checktable();
-                THObject.this.setVelocity(new Vec3(
-                        table.get(1).checkdouble(),
-                        table.get(2).checkdouble(),
-                        table.get(3).checkdouble()
-                ), shouldSetRotation);
-            }*/
             return LuaValue.NIL;
         }
     };
@@ -1171,17 +1134,6 @@ public class THObject implements IScript, ILuaValue {
             LuaValue direction = varargs.arg(2);
             boolean shouldSetRotation = varargs.arg(3).checkboolean();
             THObject.this.setVelocityFromDirection(speed, LuaValueToVec3(direction), shouldSetRotation);
-            /*
-            if (direction.isuserdata() && direction.checkuserdata() instanceof Vec3 vec3){
-                THObject.this.setVelocityFromDirection(speed, vec3, shouldSetRotation);
-            }else {
-                LuaValue table = direction.checktable();
-                THObject.this.setVelocityFromDirection(speed, new Vec3(
-                        table.get(1).checkdouble(),
-                        table.get(2).checkdouble(),
-                        table.get(3).checkdouble()
-                ), shouldSetRotation);
-            }*/
             return LuaValue.NIL;
         }
     };
@@ -1194,16 +1146,6 @@ public class THObject implements IScript, ILuaValue {
             boolean isDeg = varargs.arg(3).checkboolean();
             boolean shouldSetRotation = varargs.arg(4).checkboolean();
             THObject.this.setVelocityFromRotation(speed,LuaValueToVec2(rotation),isDeg,shouldSetRotation);
-            /*
-            if(rotation.isuserdata() && rotation.checkuserdata() instanceof Vec2 vec2){
-                THObject.this.setVelocityFromRotation(speed,vec2,isDeg,shouldSetRotation);
-            }else if(rotation.istable()){
-                LuaValue table = rotation.checktable();
-                THObject.this.setVelocityFromRotation(speed,new Vec2(
-                        table.get(1).tofloat(),
-                        table.get(2).tofloat()
-                ),isDeg,shouldSetRotation);
-            }*/
             return LuaValue.NIL;
         }
     };
@@ -1220,16 +1162,6 @@ public class THObject implements IScript, ILuaValue {
         public Varargs invoke(Varargs varargs) {
             LuaValue acc = varargs.arg(1);
             THObject.this.setAcceleration(LuaValueToVec3(acc));
-            /*
-            if (acc.isuserdata() && acc.checkuserdata() instanceof Vec3 vec3){
-                THObject.this.setAcceleration(vec3);
-            }else if(acc.istable()){
-                THObject.this.setAcceleration(new Vec3(
-                        acc.get(1).checkdouble(),
-                        acc.get(2).checkdouble(),
-                        acc.get(3).checkdouble()
-                ));
-            }*/
             return LuaValue.NIL;
         }
     };
@@ -1239,17 +1171,6 @@ public class THObject implements IScript, ILuaValue {
             double acc = varargs.arg(1).checkdouble();
             LuaValue direction = varargs.arg(2);
             THObject.this.setAccelerationFromDirection(acc, LuaValueToVec3(direction));
-            /*
-            if (direction.isuserdata() && direction.checkuserdata() instanceof Vec3 vec3){
-                THObject.this.setAccelerationFromDirection(acc, vec3);
-            }else {
-                LuaValue table = direction.checktable();
-                THObject.this.setAccelerationFromDirection(acc, new Vec3(
-                        table.get(1).checkdouble(),
-                        table.get(2).checkdouble(),
-                        table.get(3).checkdouble()
-                ));
-            }*/
             return LuaValue.NIL;
         }
     };
@@ -1261,16 +1182,6 @@ public class THObject implements IScript, ILuaValue {
             LuaValue rotation = varargs.arg(2);
             boolean isDeg = varargs.arg(3).checkboolean();
             THObject.this.setAccelerationFromRotation(acc,LuaValueToVec2(rotation),isDeg);
-            /*
-            if(rotation.isuserdata() && rotation.checkuserdata() instanceof Vec2 vec2){
-                THObject.this.setAccelerationFromRotation(acc,vec2,isDeg);
-            }else if(rotation.istable()){
-                LuaValue table = rotation.checktable();
-                THObject.this.setAccelerationFromRotation(acc,new Vec2(
-                        table.get(1).tofloat(),
-                        table.get(2).tofloat()
-                ),isDeg);
-            }*/
             return LuaValue.NIL;
         }
     };
@@ -1291,16 +1202,6 @@ public class THObject implements IScript, ILuaValue {
         @Override
         public LuaValue call(LuaValue luaValue) {
             THObject.this.setRotationByDirectionalVector(LuaValueToVec3(luaValue));
-            /*
-            if (luaValue.isuserdata() && luaValue.checkuserdata() instanceof Vec3 vec3){
-                THObject.this.setRotationByDirectionalVector(vec3);
-            }else if(luaValue.istable()){
-                THObject.this.setRotationByDirectionalVector(new Vec3(
-                        luaValue.get(1).checkdouble(),
-                        luaValue.get(2).checkdouble(),
-                        luaValue.get(3).checkdouble()
-                ));
-            }*/
             return LuaValue.NIL;
         }
     };
@@ -1430,19 +1331,45 @@ public class THObject implements IScript, ILuaValue {
             return LuaValue.NIL;
         }
     };
-
     private final LibFunction setDead = new ZeroArgFunction() {
         @Override
         public LuaValue call() {
             THObject.this.setDead();
-            return null;
+            return LuaValue.NIL;
+        }
+    };
+    private final LibFunction setShouldSetDeadWhenCollision = new OneArgFunction() {
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            THObject.this.setShouldSetDeadWhenCollision(luaValue.checkboolean());
+            return LuaValue.NIL;
         }
     };
     private final LibFunction remove = new ZeroArgFunction() {
         @Override
         public LuaValue call() {
             THObject.this.remove();
-            return null;
+            return LuaValue.NIL;
+        }
+    };
+    private final LibFunction spawn = new ZeroArgFunction() {
+        @Override
+        public LuaValue call() {
+            THObject.this.spawn();
+            return LuaValue.NIL;
+        }
+    };
+    private final LibFunction getIsSpawned = new ZeroArgFunction() {
+        @Override
+        public LuaValue call() {
+            return LuaValue.valueOf(THObject.this.isSpawned());
+        }
+    };
+    private final LibFunction override = new OneArgFunction() {
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            THObject.this.luaValueForm = luaValue.checktable();
+            return LuaValue.NIL;
         }
     };
 
@@ -1482,16 +1409,14 @@ public class THObject implements IScript, ILuaValue {
         library.set( "getSize", this.getSize);
         library.set( "move", this.move);
         library.set( "setDead", this.setDead);
+        library.set( "setShouldSetDeadWhenCollision", this.setShouldSetDeadWhenCollision);
         library.set( "remove", this.remove);
+        library.set( "spawn", this.spawn);
+        library.set( "isSpawned", this.getIsSpawned);
+        library.set( "override", this.override);
         //params
         library.set( "type", this.getType().toString());
         library.set( "uuid", this.getUUIDasString());
-        /*
-        library.set( "x", this.getX());
-        library.set( "y", this.getY());
-        library.set( "z", this.getZ());
-
-         */
         return library;
     }
 

@@ -44,11 +44,11 @@ public class LuaCore {
             GLOBALS.set("core",coreAPI());
             //this.bindClass("core",              LuaCore.core.class);
             this.bindClass("Mth" ,              Mth.class);
-            this.bindClass("Vec2" ,             Vec2.class);
-            this.bindClass("Vec3" ,             Vec3.class);
-            this.bindClass("THObject" ,         THObject.class);
-            this.bindClass("THBullet" ,         THBullet.class);
-            this.bindClass("THCurvedLaser" ,    THCurvedLaser.class);
+            //this.bindClass("Vec2" ,             Vec2.class);
+            //this.bindClass("Vec3" ,             Vec3.class);
+            //this.bindClass("THObject" ,         THObject.class);
+            //this.bindClass("THBullet" ,         THBullet.class);
+            //this.bindClass("THCurvedLaser" ,    THCurvedLaser.class);
             GLOBALS.set("luajava", NIL);
         } catch (Exception e) {
             LOGGER.warn("Failed put api!", e);

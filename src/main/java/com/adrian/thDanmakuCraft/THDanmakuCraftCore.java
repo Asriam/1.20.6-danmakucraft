@@ -53,7 +53,7 @@ public class THDanmakuCraftCore
 
     @SubscribeEvent
     public void onServerStarting(final @NotNull ServerStartingEvent event) {
-        THDanmakuCraftCore.LOGGER.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+        //THDanmakuCraftCore.LOGGER.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
         //JSLoader.init();
         //JSCore.init();
         LuaLoader.init();
@@ -65,6 +65,7 @@ public class THDanmakuCraftCore
     }
 
     @Nullable
+    @Deprecated
     public static ResourceManager getServerResourceManager() {
         // Get the Minecraft server instance
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
