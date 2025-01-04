@@ -3,7 +3,7 @@
 --- Created by Administrator.
 --- DateTime: 2024/12/31 00:36
 ---
----@class THObject
+---@class THObject:table
 ---@field onInit   fun(self)
 ---@field onTick   fun(self)
 ---@field onHit    fun(self)

@@ -7,12 +7,10 @@ import com.adrian.thDanmakuCraft.world.danmaku.laser.THLaser;
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
-import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.*;
 
-import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.UUID;
 
@@ -166,14 +164,23 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue{
             }
 
             @Override
-            public CompoundTag writeNBT(CompoundTag tag, Parameter<String> parameter) {
+            public void writeNBT(CompoundTag tag, Parameter<String> parameter) {
                 tag.putString("value", parameter.value);
-                return tag;
             }
 
             @Override
             public String readNBT(CompoundTag tag) {
                 return tag.getString("value");
+            }
+
+            @Override
+            public LuaValue toLuaValue(Parameter<String> parameter){
+                return LuaValue.valueOf(parameter.value);
+            }
+
+            @Override
+            public java.lang.String fromLuaValue(LuaValue value) {
+                return value.checkjstring();
             }
         }),
         Integer(new Factory<Integer>() {
@@ -188,14 +195,23 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue{
             }
 
             @Override
-            public CompoundTag writeNBT(CompoundTag tag, Parameter<Integer> parameter) {
+            public void writeNBT(CompoundTag tag, Parameter<Integer> parameter) {
                 tag.putInt("value", parameter.value);
-                return tag;
             }
 
             @Override
             public Integer readNBT(CompoundTag tag) {
                 return tag.getInt("value");
+            }
+
+            @Override
+            public LuaValue toLuaValue(Parameter<Integer> parameter) {
+                return LuaValue.valueOf(parameter.value);
+            }
+
+            @Override
+            public Integer fromLuaValue(LuaValue value) {
+                return value.checkint();
             }
         }),
         Float(new Factory<Float>() {
@@ -210,14 +226,23 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue{
             }
 
             @Override
-            public CompoundTag writeNBT(CompoundTag tag, Parameter<java.lang.Float> parameter) {
+            public void writeNBT(CompoundTag tag, Parameter<java.lang.Float> parameter) {
                 tag.putFloat("value", parameter.value);
-                return tag;
             }
 
             @Override
             public java.lang.Float readNBT(CompoundTag tag) {
                 return tag.getFloat("value");
+            }
+
+            @Override
+            public LuaValue toLuaValue(Parameter<java.lang.Float> parameter) {
+                return LuaValue.valueOf(parameter.value);
+            }
+
+            @Override
+            public java.lang.Float fromLuaValue(LuaValue value) {
+                return value.tofloat();
             }
         }),
         Double(new Factory<Double>() {
@@ -232,14 +257,23 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue{
             }
 
             @Override
-            public CompoundTag writeNBT(CompoundTag tag, Parameter<java.lang.Double> parameter) {
+            public void writeNBT(CompoundTag tag, Parameter<java.lang.Double> parameter) {
                 tag.putDouble("value", parameter.value);
-                return tag;
             }
 
             @Override
             public java.lang.Double readNBT(CompoundTag tag) {
                 return tag.getDouble("value");
+            }
+
+            @Override
+            public LuaValue toLuaValue(Parameter<java.lang.Double> parameter) {
+                return LuaValue.valueOf(parameter.value);
+            }
+
+            @Override
+            public java.lang.Double fromLuaValue(LuaValue value) {
+                return value.checkdouble();
             }
         }),
         Boolean(new Factory<Boolean>() {
@@ -254,14 +288,23 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue{
             }
 
             @Override
-            public CompoundTag writeNBT(CompoundTag tag, Parameter<java.lang.Boolean> parameter) {
+            public void writeNBT(CompoundTag tag, Parameter<java.lang.Boolean> parameter) {
                 tag.putBoolean("value", parameter.value);
-                return tag;
             }
 
             @Override
             public java.lang.Boolean readNBT(CompoundTag tag) {
                 return tag.getBoolean("value");
+            }
+
+            @Override
+            public LuaValue toLuaValue(Parameter<java.lang.Boolean> parameter) {
+                return LuaValue.valueOf(parameter.value);
+            }
+
+            @Override
+            public java.lang.Boolean fromLuaValue(LuaValue value) {
+                return value.checkboolean();
             }
         }),
         THObject(new Factory<UUID>() {
@@ -276,20 +319,29 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue{
             }
 
             @Override
-            public CompoundTag writeNBT(CompoundTag tag, Parameter<UUID> parameter) {
+            public void writeNBT(CompoundTag tag, Parameter<UUID> parameter) {
                 tag.putUUID("value", parameter.value);
-                return tag;
             }
 
             @Override
             public UUID readNBT(CompoundTag tag) {
                 return tag.getUUID("value");
             }
+
+            @Override
+            public LuaValue toLuaValue(Parameter<UUID> parameter) {
+                return LuaValue.valueOf(parameter.value.toString());
+            }
+
+            @Override
+            public UUID fromLuaValue(LuaValue value) {
+                return UUID.fromString(value.checkjstring());
+            }
         });
 
         final Factory<?> factory;
 
-        Type(Factory factory){
+        Type(Factory<?> factory){
             this.factory = factory;
         }
 
@@ -298,9 +350,13 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue{
 
             T readData(FriendlyByteBuf buffer);
 
-            CompoundTag writeNBT(CompoundTag tag, Parameter<T> parameter);
+            void writeNBT(CompoundTag tag, Parameter<T> parameter);
 
             T readNBT(CompoundTag tag);
+
+            LuaValue toLuaValue(Parameter<T> parameter);
+
+            T fromLuaValue(LuaValue value);
         }
     }
 
@@ -370,24 +426,14 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue{
             switch (type){
                 case THObject -> {
                     LuaValue luaFormTHObject = value.checktable();
-                    luaFormTHObject.get("onTick");
+                    //luaFormTHObject.get("onTick");
                     outValue = UUID.fromString(luaFormTHObject.get("uuid").checkjstring());
                 }
-                case String -> {
-                    outValue = value.checkjstring();
-                }
-                case Integer -> {
-                    outValue = value.checkint();
-                }
-                case Float -> {
-                    outValue = value.tofloat();
-                }
-                case Double -> {
-                    outValue = value.checkdouble();
-                }
-                case Boolean -> {
-                    outValue = value.checkboolean();
-                }
+                case String -> outValue = value.checkjstring();
+                case Integer -> outValue = value.checkint();
+                case Float -> outValue = value.tofloat();
+                case Double -> outValue = value.checkdouble();
+                case Boolean -> outValue = value.checkboolean();
             }
             AdditionalParameterManager.this.parameterMap.put(key,new Parameter<>(type, outValue));
             return LuaValue.NIL;
@@ -399,7 +445,7 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue{
         public LuaValue call(LuaValue luaValue) {
             String key = luaValue.checkjstring();
             LuaValue outValue = LuaValue.NIL;
-            Parameter parameter = AdditionalParameterManager.this.parameterMap.get(key);
+            Parameter<?> parameter = AdditionalParameterManager.this.parameterMap.get(key);
             Type type = parameter.type;
             switch (type){
                 case THObject -> outValue = AdditionalParameterManager.this.container.getObjectFromUUID((UUID)parameter.value).getLuaValue();

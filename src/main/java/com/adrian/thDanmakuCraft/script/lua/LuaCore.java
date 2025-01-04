@@ -1,6 +1,7 @@
 package com.adrian.thDanmakuCraft.script.lua;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -15,6 +16,9 @@ import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 import org.luaj.vm2.lib.jse.JsePlatform;
 import org.slf4j.Logger;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import static org.luaj.vm2.LuaValue.NIL;
 
 public class LuaCore {
@@ -22,6 +26,7 @@ public class LuaCore {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static LuaCore LUA = new LuaCore();
     private final Globals GLOBALS;
+    private final Map<String,LuaValue> luaClassMap = Maps.newHashMap();
 
     public LuaCore() {
         GLOBALS = JsePlatform.standardGlobals();
@@ -38,7 +43,6 @@ public class LuaCore {
     public void putAPI(){
         try {
             GLOBALS.set("core",coreAPI());
-            //this.bindClass("core",              LuaCore.core.class);
             this.bindClass("Mth" ,              Mth.class);
             //this.bindClass("Vec2" ,             Vec2.class);
             //this.bindClass("Vec3" ,             Vec3.class);
@@ -122,7 +126,47 @@ public class LuaCore {
             }
         });
 
+        library.set("registerClass", new VarArgFunction() {
+            @Override
+            public LuaValue invoke(Varargs varargs) {
+                LuaValue clazz = LuaValue.tableOf();
+                String className = varargs.arg(1).checkjstring();
+                clazz.set("className", className);
+
+                LuaValue parentClass = varargs.arg(2);
+                if(isLuaClass(parentClass)){
+                    clazz.set("super", parentClass);
+                }else if(parentClass.isstring()){
+                    clazz.set("super", LuaCore.this.getLuaClass(parentClass.checkjstring()));
+                }
+                LUA.luaClassMap.put(className, clazz);
+                return clazz;
+            }
+        });
+
         return library;
+    }
+
+    public static boolean isLuaClass(LuaValue luaClass){
+        if (luaClass.isnil()) {
+            return false;
+        }
+        if (luaClass.istable()) {
+            LuaValue className = luaClass.get("className");
+            if (className.isnil()){
+                return false;
+            }else return className.isstring();
+        }
+        return false;
+    }
+
+    public LuaValue getLuaClass(String className){
+        return this.luaClassMap.get(className);
+    }
+
+    public LuaValue getLuaClass(LuaValue luaClass){
+        String className = luaClass.get("className").checkjstring();
+        return this.luaClassMap.get(className);
     }
 
     public static class core {

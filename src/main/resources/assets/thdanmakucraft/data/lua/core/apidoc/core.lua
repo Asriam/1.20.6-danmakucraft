@@ -5,6 +5,7 @@
 ---
 
 ---@class core
+---@field super Class
 local core = {}
 
 ---@param path string
@@ -30,3 +31,10 @@ function core.newVec2(x,y) end
 ---@param z number
 ---@return Vec3
 function core.newVec3(x,y,z) end
+
+---@param className string
+---@param parentClass Class
+---@return Class
+---@overload fun(className:string, parentClass:Class)
+---@overload fun(className:string, parentClassName:string)
+function core.registerClass(className, parentClass) end

@@ -86,12 +86,15 @@ public class THObjectManager implements IDataStorage{
         }
 
         List<THObject> removeList = Lists.newArrayList();
+        int index = 0;
         for (THObject object: this.getTHObjects()){
             if (object != null && !object.removeFlag){
+                object.index = index;
                 object.onTick();
             }else {
                 removeList.add(object);
             }
+            index++;
         }
 
         for(THObject object:removeList){

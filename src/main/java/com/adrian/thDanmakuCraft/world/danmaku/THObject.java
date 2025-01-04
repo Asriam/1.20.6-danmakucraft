@@ -4,6 +4,7 @@ import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.script.IScript;
 import com.adrian.thDanmakuCraft.script.ScriptManager;
+import com.adrian.thDanmakuCraft.script.lua.LuaCore;
 import com.adrian.thDanmakuCraft.script.lua.LuaManager;
 import com.adrian.thDanmakuCraft.world.AdditionalParameterManager;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
@@ -76,6 +77,10 @@ public class THObject implements IScript, ILuaValue {
     protected boolean shouldSetDeadWhenCollision = true;
     private UUID uuid;
     public boolean isSpawned = false;
+    private LuaValue luaClass;
+    private String luaClassKey = "";
+    public int index = 0;
+    //private final static Globals globals = LuaCore.getGlobals();
     //public int layer = 0;
 
     public Color color = Color(255, 255, 255, 255);
@@ -461,11 +466,15 @@ public class THObject implements IScript, ILuaValue {
     }
 
     public void scriptEvent(String eventName,LuaValue... args){
-        if(this.luaValueForm == null){
-            this.initLuaValue();
+        if(this.luaClass == null || this.luaClass.isnil()){
+            LuaValue luaClass1 = LuaCore.getInstance().getLuaClass(this.getLuaClassKey());
+            if (luaClass1 == null || luaClass1.isnil()) {
+                return;
+            }
+            this.luaClass = luaClass1;
         }
 
-        LuaValue event = this.luaValueForm.get(eventName);
+        LuaValue event = this.luaClass.get(eventName);
         if(!event.isnil() && event.isfunction()){
             try {
                 event.checkfunction().invoke(args);
@@ -476,14 +485,17 @@ public class THObject implements IScript, ILuaValue {
         }
     }
 
+    public int getIndex(){
+        return this.index;
+    }
+
     public void onTick() {
-        /*
         if(this.luaValueForm == null){
             this.initLuaValue();
-        }*/
+        }
 
         if (timer == 0){
-            this.scriptEvent("onInit",this.luaValueForm);
+            this.scriptEvent("onInit",this.getLuaValue());
         }
 
         this.lastPosition = new Vec3(this.positionX, this.positionY, this.positionZ);
@@ -518,7 +530,7 @@ public class THObject implements IScript, ILuaValue {
             this.onDead();
         }
 
-        this.scriptEvent("onTick",this.luaValueForm);
+        this.scriptEvent("onTick",this.getLuaValue());
 
         this.timer++;
     }
@@ -650,6 +662,14 @@ public class THObject implements IScript, ILuaValue {
         return this.type;
     }
 
+    public void setLuaClassKey(String className) {
+        this.luaClassKey = className;
+    }
+
+    public String getLuaClassKey() {
+        return this.luaClassKey;
+    }
+
     public void writeData(FriendlyByteBuf buffer) {
         buffer.writeUUID(this.uuid);
         buffer.writeDouble(this.positionX);
@@ -678,6 +698,7 @@ public class THObject implements IScript, ILuaValue {
         buffer.writeEnum(this.collisionType);
         //buffer.writeBoolean(this.bound);
         buffer.writeBoolean(this.shouldSave);
+        buffer.writeUtf(this.luaClassKey);
         //this.blend.writeData(buffer);
         this.scriptManager.writeData(buffer);
         this.parameterManager.writeData(buffer);
@@ -712,6 +733,7 @@ public class THObject implements IScript, ILuaValue {
         this.collisionType = buffer.readEnum(THObject.CollisionType.class);
         //this.bound = buffer.readBoolean();
         this.shouldSave = buffer.readBoolean();
+        this.luaClassKey = buffer.readUtf();
         //this.blend.readData(buffer);
         this.scriptManager.readData(buffer);
         this.parameterManager.readData(buffer);
@@ -735,6 +757,7 @@ public class THObject implements IScript, ILuaValue {
         tag.putBoolean("Collision", this.collision);
         tag.putInt("CollisionType", this.collisionType.ordinal());
         tag.putUUID("UUID", this.uuid);
+        tag.putString("LuaClassKey", luaClassKey);
         this.scriptManager.save(tag);
         tag.put("parameters", this.parameterManager.save(new CompoundTag()));
         //this.blend.save(tag);
@@ -766,6 +789,7 @@ public class THObject implements IScript, ILuaValue {
         this.isDead = tag.getBoolean("IsDead");
         this.collision = tag.getBoolean("Collision");
         this.collisionType = THObject.CollisionType.class.getEnumConstants()[tag.getInt("CollisionType")];
+        this.luaClassKey = tag.getString("LuaClassKey");
         this.scriptManager.load(tag);
         this.parameterManager.load(tag.getCompound("parameters"));
         this.uuid = tag.getUUID("UUID");
@@ -1325,11 +1349,11 @@ public class THObject implements IScript, ILuaValue {
         @Override
         public Varargs invoke (Varargs varargs){
             LuaValue arg1 = varargs.arg(1);
-            if (arg1.isuserdata() && arg1.checkuserdata() instanceof Vec3 vec3){
-                THObject.this.move(vec3);
+            if (arg1.isuserdata() || arg1.istable()){
+                THObject.this.move(LuaValueToVec3(arg1));
             }else {
                 THObject.this.move(new Vec3(
-                        varargs.arg(1).checkdouble(),
+                        arg1.checkdouble(),
                         varargs.arg(2).checkdouble(),
                         varargs.arg(3).checkdouble()
                 ));
@@ -1382,7 +1406,13 @@ public class THObject implements IScript, ILuaValue {
 
     @Override
     public LuaValue ofLuaValue(){
+        /*
+        LuaValue library = LuaCore.getInstance().getLuaClass(this.getLuaClassKey());
+        if (library == null || library.isnil() || !library.istable()){
+            library = LuaValue.tableOf();
+        }*/
         LuaValue library = LuaValue.tableOf();
+        //LuaValue
         //functions
         library.set( "setPosition", this.setPosition);
         library.set( "setLifetime", this.setLifetime);

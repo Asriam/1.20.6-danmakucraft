@@ -10,3 +10,5 @@ core.doFile("doc/vec2.lua")
 
 
 core.doFile("testcontainer.lua")
+
+print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")

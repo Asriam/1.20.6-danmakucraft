@@ -33,7 +33,7 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
         }
 
         poseStack.pushPose();
-        int edge = 6;
+        int edge = 4;
         THObject.Color indexColor = laser.laserColor.getColor();
         THObject.Color laserColor = THObject.Color(
                 laser.color.r * indexColor.r / 255,

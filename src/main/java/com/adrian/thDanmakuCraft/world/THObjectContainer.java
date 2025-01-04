@@ -19,7 +19,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.*;
@@ -50,9 +49,9 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
     public int autoRemoveLife = 60;
     private List<Entity> entitiesInBound;
     private final LuaValue luaValueForm;
-    private final static Globals globals = LuaCore.getGlobals();
-    private LuaValue chunk;
-    private String luaClassKey;
+    //private final static Globals globals = LuaCore.getGlobals();
+    private LuaValue luaClass;
+    private String luaClassKey = "";
 
     public THObjectContainer(Entity hostEntity) {
         allContainers.add(this);
@@ -74,20 +73,6 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
 
     public void onAddToWorld(){
         //this.scriptInit();
-    }
-
-    public void scriptInit(){
-        this.scriptManager.invokeScript("onInit", (exception) -> {
-            THDanmakuCraftCore.LOGGER.error("Failed invoke script!", exception);
-            this.getHostEntity().remove(Entity.RemovalReason.DISCARDED);
-        }, this.getLuaValue());
-    }
-
-    public void scriptTick(){
-        this.scriptManager.invokeScript("onTick", (exception) -> {
-            THDanmakuCraftCore.LOGGER.error("Failed invoke script!", exception);
-            this.getHostEntity().remove(Entity.RemovalReason.DISCARDED);
-        }, this.getLuaValue());
     }
 
     public int getMaxObjectAmount() {
@@ -170,11 +155,14 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         }
     }
 
-    public void scriptEvent(String eventName){
-        LuaValue onInit = this.luaValueForm.get(eventName);
-        if(!onInit.isnil() && onInit.isfunction()){
+    public void scriptEvent(String eventName,LuaValue... args){
+        if(this.luaClass == null || this.luaClass.isnil()){
+            return;
+        }
+        LuaValue event = this.luaClass.get(eventName);
+        if(!event.isnil() && event.isfunction()){
             try {
-                onInit.checkfunction().invoke(this.luaValueForm);
+                event.checkfunction().invoke(args);
             }catch (Exception e){
                 THDanmakuCraftCore.LOGGER.error("Failed invoke script!", e);
                 this.discard();
@@ -183,31 +171,35 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
     }
 
     public void tick() {
-        if(chunk == null) {
-            //this.chunk = globals.load(this.scriptManager.getScript()).call();
-            this.chunk = globals.get(this.getLuaClassKey());
+        if(luaClass == null || luaClass.isnil()) {
+            this.luaClass = LuaCore.getInstance().getLuaClass(this.getLuaClassKey());
         }
-        boolean flag = this.chunk != null;
+
+        boolean flag = this.luaClass != null;
         if (timer == 0){
             //this.scriptInit();
+            /*
             if(flag) {
                 try {
-                    chunk.get("onInit").checkfunction().invoke(this.getLuaValue());
+                    luaClass.get("onInit").checkfunction().invoke(this.getLuaValue());
                 }catch (Exception e) {
                     THDanmakuCraftCore.LOGGER.error("Failed invoke script!", e);
                 }
-            }
+            }*/
+            this.scriptEvent("onInit",this.getLuaValue());
         }
         this.setBound(this.position(),this.bound);
         //this.task();
         this.entitiesInBound = this.level().getEntities(this.hostEntity,this.getAabb()).stream().filter((entity -> !(entity.equals(this.hostEntity)) && !(entity instanceof EntityTHObjectContainer))).toList();
 
         if(flag) {
+            /*
             try {
-                chunk.get("onTick").checkfunction().invoke(this.getLuaValue());
+                luaClass.get("onTick").checkfunction().invoke(this.getLuaValue());
             }catch (Exception e) {
                 THDanmakuCraftCore.LOGGER.error("Failed invoke script!", e);
-            }
+            }*/
+            this.scriptEvent("onTick",this.getLuaValue());
         }
 
         this.objectManager.THObjectsTick();
@@ -437,22 +429,35 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         }
     };
 
-    private final LibFunction createTHObject = new OneArgFunction(){
+    private static String getLuaClassName(LuaValue luaValue){
+        if(luaValue.isstring()){
+            return luaValue.checkjstring();
+        }else if(luaValue.istable()){
+            return luaValue.get("className").checkjstring();
+        }
+        return "";
+    }
+
+    private final LibFunction createTHObject = new VarArgFunction(){
         @Override
-        public LuaValue call(LuaValue pos) {
-            THObject object = THObjectContainer.this.createTHObject(LuaValueToVec3(pos));
+        public Varargs invoke(Varargs varargs) {
+            String luaClassKey = getLuaClassName(varargs.arg(1));
+            THObject object = THObjectContainer.this.createTHObject(LuaValueToVec3(varargs.arg(2)));
             object.initLuaValue();
+            object.setLuaClassKey(luaClassKey);
             return object.getLuaValue();
         }
     };
 
-    private final LibFunction createTHBullet = new ThreeArgFunction(){
+    private final LibFunction createTHBullet = new VarArgFunction(){
         @Override
-        public LuaValue call(LuaValue pos, LuaValue style, LuaValue colorIndex) {
+        public Varargs invoke(Varargs varargs) {
+            String luaClassKey = getLuaClassName(varargs.arg(1));
             THBullet bullet = THObjectContainer.this.createTHBullet(
-                    LuaValueToVec3(pos),
-                    style.checkjstring(),
-                    colorIndex.checkint());
+                    LuaValueToVec3(varargs.arg(2)),
+                    varargs.arg(3).checkjstring(),
+                    varargs.arg(4).checkint());
+            bullet.setLuaClassKey(luaClassKey);
             bullet.initLuaValue();
             return bullet.getLuaValue();
         }
@@ -461,11 +466,13 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
     private final LibFunction createTHCurvedLaser = new VarArgFunction(){
         @Override
         public Varargs invoke(Varargs varargs) {
-            Vec3 pos = LuaValueToVec3(varargs.arg(1));
-            int colorIndex = varargs.arg(2).checkint();
-            int length = varargs.arg(3).checkint();
-            float width = varargs.arg(4).tofloat();
+            String luaClassKey = getLuaClassName(varargs.arg(1));
+            Vec3 pos = LuaValueToVec3(varargs.arg(2));
+            int colorIndex = varargs.arg(3).checkint();
+            int length = varargs.arg(4).checkint();
+            float width = varargs.arg(5).tofloat();
             THCurvedLaser laser = THObjectContainer.this.createTHCurvedLaser(pos,colorIndex,length,width);
+            laser.setLuaClassKey(luaClassKey);
             laser.initLuaValue();
             return laser.getLuaValue();
         }
