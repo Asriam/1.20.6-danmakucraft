@@ -130,10 +130,12 @@ public class THObject implements IScript, ILuaValue {
     }
 
     public void spawn() {
+        /*
         if (!this.container.getObjectManager().contains(this)) {
             this.container.getObjectManager().addTHObject(this);
             this.isSpawned = true;
-        }
+        }*/
+        this.container.spawnTHObject(this);
     }
 
     public boolean isSpawned() {

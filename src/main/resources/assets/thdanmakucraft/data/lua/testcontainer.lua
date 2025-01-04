@@ -17,12 +17,14 @@ local testLaser = core.registerClass("testLaser")
 function testLaser:onInit(i)
     self.setLifetime(600)
     self.getParameterManager().register("Double","angle",360/num*i + 0.001)
+    --self.angle = 360/num*i + 0.001
     self.spawn()
 end
 
 function testLaser:onTick()
     local userRot = self.getContainer().getParameterManager().getDouble("userAngle")
     local angle = self.getParameterManager().getDouble("angle")
+    --local angle = self.angle
     self.setVelocityFromRotation(0.2,
             {
                 0.0,
