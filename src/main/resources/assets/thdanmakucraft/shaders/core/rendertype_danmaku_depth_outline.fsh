@@ -2,8 +2,8 @@
 
 uniform sampler2D DepthBuffer;
 uniform vec2 ScreenSize;
-uniform float Near;
-uniform float Far;
+//uniform float Near;
+//uniform float Far;
 
 in vec3 normal;
 in vec3 viewDir;

@@ -73,7 +73,7 @@ public class THObjectManager implements IDataStorage{
         return this.storage.isEmpty();
     }
 
-    public void THObjectsTick(){
+    public void tickTHObjects(){
         if(this.isEmpty()){
             return;
         }

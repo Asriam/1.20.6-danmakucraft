@@ -31,26 +31,29 @@ function container.getTarget() end
 function container.clearObjects() end
 
 ---@param key string
+---@param args table
 ---@param position Vec3
 ---@return THObject
-function container.createTHObject(key, position) end
+function container.createTHObject(key,args,position) end
 
 ---@param key string
+---@param args table
 ---@param position Vec3
 ---@param style string
 ---@param colorIndex number
 ---@return THBullet
-function container.createTHBullet(key, position,style,colorIndex) end
+function container.createTHBullet(key,args,position,style,colorIndex) end
 
 ---function container:createTHLaser() end
 
 ---@param key string
+---@param args table
 ---@param position Vec3
 ---@param colorIndex number
 ---@param length number
 ---@param width number
 ---@return THCurvedLaser
-function container.createTHCurvedLaser(key, position,colorIndex,length,width) end
+function container.createTHCurvedLaser(key,args,position,colorIndex,length,width) end
 
 ---@return AdditionalParameterManager
 function container.getParameterManager() end

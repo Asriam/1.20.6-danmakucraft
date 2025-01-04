@@ -96,12 +96,8 @@ public class THRenderType extends RenderType{
     //private static final RenderTarget DEPTH_BUFFER = new TextureTarget(1000,1000,true,true);
     public static final ShaderStateShard DANMAKU_DEPTH_OUTLINE_SHADER = new ShaderStateShard(() -> {
         MyShaderInstance shader = ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER;
-        //DEPTH_BUFFER.copyDepthFrom(Minecraft.getInstance().getMainRenderTarget());
-        //Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
-        //shader.setSampler("DepthBuffer", DEPTH_BUFFER.getDepthTextureId());
-        shader.safeGetUniform("Near").set(GameRenderer.PROJECTION_Z_NEAR);
-        shader.safeGetUniform("Far").set(Minecraft.getInstance().gameRenderer.getDepthFar());
-
+        //shader.safeGetUniform("Near").set(GameRenderer.PROJECTION_Z_NEAR);
+        //shader.safeGetUniform("Far").set(Minecraft.getInstance().gameRenderer.getDepthFar());
         //THDanmakuCraftCore.LOGGER.info(""+Minecraft.getInstance().gameRenderer.getDepthFar());
         return shader;
     });

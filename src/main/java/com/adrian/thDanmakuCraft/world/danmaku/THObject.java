@@ -5,7 +5,6 @@ import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.script.IScript;
 import com.adrian.thDanmakuCraft.script.ScriptManager;
 import com.adrian.thDanmakuCraft.script.lua.LuaCore;
-import com.adrian.thDanmakuCraft.script.lua.LuaManager;
 import com.adrian.thDanmakuCraft.world.AdditionalParameterManager;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
 import com.adrian.thDanmakuCraft.world.THObjectContainer;
@@ -27,6 +26,8 @@ import org.luaj.vm2.lib.LibFunction;
 import org.luaj.vm2.lib.OneArgFunction;
 import org.luaj.vm2.lib.VarArgFunction;
 import org.luaj.vm2.lib.ZeroArgFunction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.UUID;
@@ -34,8 +35,8 @@ import java.util.UUID;
 import static com.adrian.thDanmakuCraft.world.LuaValueHelper.*;
 
 public class THObject implements IScript, ILuaValue {
+    private static final Logger log = LoggerFactory.getLogger(THObject.class);
     private final THObjectType<? extends THObject> type;
-    private final ScriptManager scriptManager;
     private final AdditionalParameterManager parameterManager;
     private final Level level;
     protected final RandomSource random = RandomSource.create();
@@ -80,11 +81,8 @@ public class THObject implements IScript, ILuaValue {
     private LuaValue luaClass;
     private String luaClassKey = "";
     public int index = 0;
-    //private final static Globals globals = LuaCore.getGlobals();
-    //public int layer = 0;
 
     public Color color = Color(255, 255, 255, 255);
-    //public THRenderType.BLEND blend = THRenderType.BLEND.LIGHTEN;
     protected Blend blend = Blend.add;
     protected CollisionType collisionType = CollisionType.AABB;
     protected LuaValue luaValueForm;
@@ -93,11 +91,9 @@ public class THObject implements IScript, ILuaValue {
         this.type = type;
         this.container = container;
         this.level = container.level();
-        this.scriptManager = new LuaManager();
         this.parameterManager = new AdditionalParameterManager(this.container);
         this.uuid = Mth.createInsecureUUID(this.random);
         this.initPosition(container.getPosition());
-        //this.luaValueForm = this.ofLuaValue();
     }
 
     public THObject(THObjectContainer container, Vec3 position) {
@@ -127,10 +123,6 @@ public class THObject implements IScript, ILuaValue {
         this.setVelocityFromRotation(speed, rotation, isDeg, true);
         this.spawn();
         return (T) this;
-    }
-
-    public void injectScript(String script) {
-        this.scriptManager.setScript(script);
     }
 
     public void initLuaValue(){
@@ -367,12 +359,8 @@ public class THObject implements IScript, ILuaValue {
         return this.blend.name();
     }
 
-    public boolean getIsDead() {
+    public boolean isDead() {
         return this.isDead;
-    }
-
-    public boolean getIsAlive() {
-        return !this.isDead;
     }
 
     public void setCollisionType(CollisionType type) {
@@ -485,6 +473,31 @@ public class THObject implements IScript, ILuaValue {
         }
     }
 
+    /*
+    public void scriptEvent(String eventName,LuaValue... args){
+        this.scriptEvent(eventName,LuaValue.varargsOf(args));
+    }*/
+
+    public void scriptEvent(String eventName,Varargs args){
+        if(this.luaClass == null || this.luaClass.isnil()){
+            LuaValue luaClass1 = LuaCore.getInstance().getLuaClass(this.getLuaClassKey());
+            if (luaClass1 == null || luaClass1.isnil()) {
+                return;
+            }
+            this.luaClass = luaClass1;
+        }
+
+        LuaValue event = this.luaClass.get(eventName);
+        if(!event.isnil() && event.isfunction()){
+            try {
+                event.checkfunction().invoke(args);
+            }catch (Exception e){
+                THDanmakuCraftCore.LOGGER.error("Failed invoke script!", e);
+                this.remove();
+            }
+        }
+    }
+
     public int getIndex(){
         return this.index;
     }
@@ -494,9 +507,10 @@ public class THObject implements IScript, ILuaValue {
             this.initLuaValue();
         }
 
+        /*
         if (timer == 0){
             this.scriptEvent("onInit",this.getLuaValue());
-        }
+        }*/
 
         this.lastPosition = new Vec3(this.positionX, this.positionY, this.positionZ);
 
@@ -514,6 +528,8 @@ public class THObject implements IScript, ILuaValue {
                 this.velocity.z + this.acceleration.z
         );
 
+        this.scriptEvent("onTick",this.getLuaValue());
+
         if (this.collision) {
             this.collisionLogic();
         }
@@ -522,15 +538,13 @@ public class THObject implements IScript, ILuaValue {
             this.setRotation(VectorAngleToRadAngle(this.getMotionDirection()));
         }
 
-        if (--this.lifetime < 0 || (/*this.bound &&*/ !this.getContainer().getAabb().contains(this.getPosition()))) {
+        if (--this.lifetime < 0 || (!this.getContainer().getAabb().contains(this.getPosition()))) {
             this.setDead();
         }
 
         if (this.isDead) {
             this.onDead();
         }
-
-        this.scriptEvent("onTick",this.getLuaValue());
 
         this.timer++;
     }
@@ -549,12 +563,10 @@ public class THObject implements IScript, ILuaValue {
                 AABB aabb = this.getBoundingBox();
                 if (entity.getBoundingBox().intersects(aabb)) {
                     var result = new EntityHitResult(entity, this.getPosition());
-                    //this.onHitEntity(result);
                     this.onHit(result);
                 }
             }else if (this.collisionType.collisionEntity(this,entity)) {
                 var result = new EntityHitResult(entity, this.getPosition());
-                //this.onHitEntity(result);
                 this.onHit(result);
             }
         });
@@ -588,7 +600,6 @@ public class THObject implements IScript, ILuaValue {
                                             new Vec3(box.maxX, box.maxY, box.maxZ),
                                             Direction.getNearest(new Vec3(box.minX, box.minY, box.minZ)),
                                             pos, true);
-                                    //this.onHitBlock(result);
                                     this.onHit(result);
                                 }
                             }
@@ -700,7 +711,7 @@ public class THObject implements IScript, ILuaValue {
         buffer.writeBoolean(this.shouldSave);
         buffer.writeUtf(this.luaClassKey);
         //this.blend.writeData(buffer);
-        this.scriptManager.writeData(buffer);
+        //this.scriptManager.writeData(buffer);
         this.parameterManager.writeData(buffer);
     }
 
@@ -735,7 +746,7 @@ public class THObject implements IScript, ILuaValue {
         this.shouldSave = buffer.readBoolean();
         this.luaClassKey = buffer.readUtf();
         //this.blend.readData(buffer);
-        this.scriptManager.readData(buffer);
+        //this.scriptManager.readData(buffer);
         this.parameterManager.readData(buffer);
         this.setBoundingBox(this.getPosition(), this.size);
     }
@@ -758,7 +769,7 @@ public class THObject implements IScript, ILuaValue {
         tag.putInt("CollisionType", this.collisionType.ordinal());
         tag.putUUID("UUID", this.uuid);
         tag.putString("LuaClassKey", luaClassKey);
-        this.scriptManager.save(tag);
+        //this.scriptManager.save(tag);
         tag.put("parameters", this.parameterManager.save(new CompoundTag()));
         //this.blend.save(tag);
         return tag;
@@ -790,7 +801,7 @@ public class THObject implements IScript, ILuaValue {
         this.collision = tag.getBoolean("Collision");
         this.collisionType = THObject.CollisionType.class.getEnumConstants()[tag.getInt("CollisionType")];
         this.luaClassKey = tag.getString("LuaClassKey");
-        this.scriptManager.load(tag);
+        //this.scriptManager.load(tag);
         this.parameterManager.load(tag.getCompound("parameters"));
         this.uuid = tag.getUUID("UUID");
         //this.blend.load(tag);
@@ -881,8 +892,10 @@ public class THObject implements IScript, ILuaValue {
     }
 
     @Override
+    @Deprecated
     public ScriptManager getScriptManager() {
-        return this.scriptManager;
+        //return this.scriptManager;
+        return null;
     }
 
     public enum CollisionType{
@@ -941,14 +954,12 @@ public class THObject implements IScript, ILuaValue {
 
     public static class Color{
         public int r,g,b,a;
-
         /*
         private static final Color WHITE =   new Color(255,255,255,255);
         private static final Color GRAY =    new Color(255,255,255,255).multiply(0.5f);
         private static final Color BLACK =   new Color(0,0,0,255);
         private static final Color VOID =    new Color(0,0,0,0);
         */
-
         public static Color WHITE(){
             return new Color(255,255,255,255);
         }
@@ -1395,6 +1406,13 @@ public class THObject implements IScript, ILuaValue {
             return LuaValue.valueOf(THObject.this.isSpawned());
         }
     };
+    private final LibFunction setNavi = new OneArgFunction() {
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            THObject.this.setNavi(luaValue.checkboolean());
+            return LuaValue.NIL;
+        }
+    };
     /*
     private final LibFunction override = new OneArgFunction() {
         @Override
@@ -1406,13 +1424,7 @@ public class THObject implements IScript, ILuaValue {
 
     @Override
     public LuaValue ofLuaValue(){
-        /*
-        LuaValue library = LuaCore.getInstance().getLuaClass(this.getLuaClassKey());
-        if (library == null || library.isnil() || !library.istable()){
-            library = LuaValue.tableOf();
-        }*/
         LuaValue library = LuaValue.tableOf();
-        //LuaValue
         //functions
         library.set( "setPosition", this.setPosition);
         library.set( "setLifetime", this.setLifetime);
@@ -1450,10 +1462,12 @@ public class THObject implements IScript, ILuaValue {
         library.set( "remove", this.remove);
         library.set( "spawn", this.spawn);
         library.set( "isSpawned", this.getIsSpawned);
+        library.set( "setNavi", this.setNavi);
         //library.set( "override", this.override);
         //params
         library.set( "type", this.getType().getKey().toString());
         library.set( "uuid", this.getUUIDasString());
+        library.set( "source", LuaValue.userdataOf(this));
         return library;
     }
 

@@ -46,7 +46,7 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
         //VertexConsumer vertexConsumer = bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE);
 
         var nodes0 = laser.nodeManager.getAllNodes();
-        float width2 = laser.width * 3.0f * (float) Math.pow((double) (nodes0.size() - laser.getTimer()) / nodes0.size(),0.4f);
+        float width2 = laser.width * 3.0f * (float) Math.pow((double) (nodes0.size() - (laser.getTimer()+partialTicks)) / nodes0.size(),0.4f);
         if (width2 > 0) {
             poseStack.pushPose();
             Vec3 prePos = laserPos.vectorTo(nodes0.getLast().getOffsetPosition(partialTicks));
@@ -120,7 +120,7 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
                 break;
             }
 
-            if (node.isValid() && cull >= 1 && (cull == 1 || (index + cull) % cull == 0)) {
+            if (node.isValid() && (cull >= 1 && (cull == 1 || (index + cull) % cull == 0)) || index == nodeList.size() - 2) {
                 THCurvedLaser.LaserNode node2 = nodeList.get(index + 1);
                 Vec3 pos1 = node.getOffsetPosition(partialTicks);
                 Vec3 pos2 = node2.getOffsetPosition(partialTicks);

@@ -30,8 +30,9 @@ public class ItemTestCurvedLaser extends Item {
         container.setUser(player);
         String script = LuaLoader.getResourceAsString(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"data/lua/testcontainer.lua"));
         //THDanmakuCraftCore.LOGGER.info(script);
+        /*
         container.getScriptManager().enableScript();
-        container.injectScript(script);
+        container.injectScript(script);*/
         container.setLuaClassKey("testContainer");
         /*
         String script = LuaLoader.getResourceAsString(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"data/lua/testobject.lua"));

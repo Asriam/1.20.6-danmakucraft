@@ -1,11 +1,13 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku;
 
+import com.adrian.thDanmakuCraft.client.renderer.THObjectRenderHelper;
 import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -29,23 +31,43 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
         poseStack.popPose();
     }
 
-    public void renderTHBullet(THBullet.DefaultBulletStyle style, THBullet object, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer, int overlay) {
+    public void renderTHBullet(THBullet.DefaultBulletStyle style, THBullet bullet, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer, int overlay) {
         poseStack.pushPose();
         THBulletRenderers.THBulletRendererFactory factory = THBulletRenderers.getRenderer(style);
         if (style.is3D() && factory != null) {
-            if (style.shouldFaceCamera()) {
+            int time = 6;
+            float offSetTimer = bullet.getTimer() + partialTicks;
+            boolean flag = bullet.spawnAnimation && offSetTimer < time-time*0.2f;
+            if(flag){
+                float scale = bullet.getScale().x * 1.6f * (float) Math.pow((double) (time - offSetTimer) / time,1.2f);
+                poseStack.pushPose();
                 poseStack.mulPose(this.getRenderDispatcher().cameraOrientation());
-                poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
-            } else {
-                Vector3f rotation = object.getRotation();
-                poseStack.mulPose(new Quaternionf().rotationYXZ(rotation.y, -rotation.x + Mth.DEG_TO_RAD * 90.0f, rotation.z));
+                poseStack.mulPose(Axis.XP.rotationDegrees(-90.0F));
+                THObjectRenderHelper.renderSphere(vertexConsumer, poseStack.last(), overlay, 1,
+                        Vec3.ZERO,
+                        new Vec3(scale, scale, scale),
+                        6, 10, true,
+                        new Vec2(0.4f, 0.0f),
+                        Vec2.ONE,
+                        bullet.getBulletColor().getColor(),
+                        bullet.getBulletColor().getColor(),
+                        bullet.getColor());
+                poseStack.popPose();
+            }else {
+                if (style.shouldFaceCamera()) {
+                    poseStack.mulPose(this.getRenderDispatcher().cameraOrientation());
+                    poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
+                } else {
+                    Vector3f rotation = bullet.getRotation();
+                    poseStack.mulPose(new Quaternionf().rotationYXZ(rotation.y, -rotation.x + Mth.DEG_TO_RAD * 90.0f, rotation.z));
+                }
+                THBulletRenderers.render3DBullet(this, bullet, poseStack, vertexConsumer, factory, partialTicks, overlay);
             }
-            THBulletRenderers.render3DBullet(this, object, poseStack, vertexConsumer, factory, partialTicks, overlay);
 
         } else {
             poseStack.mulPose(this.getRenderDispatcher().cameraOrientation());
             poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
-            THBulletRenderers.render2DBullet(this, object, poseStack, vertexConsumer, partialTicks, overlay);
+            THBulletRenderers.render2DBullet(this, bullet, poseStack, vertexConsumer, partialTicks, overlay);
         }
         poseStack.popPose();
     }

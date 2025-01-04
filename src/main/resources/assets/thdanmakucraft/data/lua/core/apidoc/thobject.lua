@@ -161,6 +161,10 @@ function object.spawn() end
 ---@return boolean
 function object.isSpawned() end
 
+---@param flag boolean
+function object.setNavi(flag) end
+
+--[[
 ---@deprecated
 function object:override() end
 
@@ -175,5 +179,4 @@ function object.getY()  end
 ---@deprecated
 ---@return number
 function object.getZ()  end
-
-THObjectClass = object
+]]
