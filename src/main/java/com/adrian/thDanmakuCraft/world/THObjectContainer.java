@@ -10,6 +10,7 @@ import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
+import com.google.common.collect.Maps;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.Mth;
@@ -25,10 +26,7 @@ import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.*;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static com.adrian.thDanmakuCraft.world.LuaValueHelper.*;
 
@@ -162,11 +160,20 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         }
     }
 
+    private final Map<String,LuaValue> scriptEventCache = Maps.newHashMap();
     public void scriptEvent(String eventName,LuaValue... args){
         if(this.luaClass == null || this.luaClass.isnil()){
             return;
         }
-        LuaValue event = this.luaClass.get(eventName);
+
+        LuaValue event;
+        if(scriptEventCache.containsKey(eventName)){
+            event = scriptEventCache.get(eventName);
+        }else {
+            event = this.luaClass.get(eventName);
+            scriptEventCache.put(eventName,event);
+        }
+        //LuaValue event = this.luaClass.get(eventName);
         if(!event.isnil() && event.isfunction()){
             try {
                 event.checkfunction().invoke(args);

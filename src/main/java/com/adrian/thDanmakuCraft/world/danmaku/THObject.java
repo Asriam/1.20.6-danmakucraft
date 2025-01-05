@@ -8,6 +8,7 @@ import com.adrian.thDanmakuCraft.script.lua.LuaCore;
 import com.adrian.thDanmakuCraft.world.AdditionalParameterManager;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
 import com.adrian.thDanmakuCraft.world.THObjectContainer;
+import com.google.common.collect.Maps;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.*;
@@ -30,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static com.adrian.thDanmakuCraft.world.LuaValueHelper.*;
@@ -455,6 +457,8 @@ public class THObject implements IScript, ILuaValue {
         this.shouldSetDeadWhenCollision = shouldSetDeadWhenCollision;
     }
 
+
+    /*
     public void scriptEvent(String eventName,LuaValue... args){
         if(this.luaClass == null || this.luaClass.isnil()){
             LuaValue luaClass1 = LuaCore.getInstance().getLuaClass(this.getLuaClassKey());
@@ -473,12 +477,13 @@ public class THObject implements IScript, ILuaValue {
                 this.remove();
             }
         }
-    }
+    }*/
 
     /*
     public void scriptEvent(String eventName,LuaValue... args){
         this.scriptEvent(eventName,LuaValue.varargsOf(args));
     }*/
+    private final Map<String,LuaValue> scriptEventCache = Maps.newHashMap();
 
     public void scriptEvent(String eventName,Varargs args){
         if(this.luaClass == null || this.luaClass.isnil()){
@@ -489,7 +494,14 @@ public class THObject implements IScript, ILuaValue {
             this.luaClass = luaClass1;
         }
 
-        LuaValue event = this.luaClass.get(eventName);
+        LuaValue event;
+        if(scriptEventCache.containsKey(eventName)){
+            event = scriptEventCache.get(eventName);
+        }else {
+            event = this.luaClass.get(eventName);
+            scriptEventCache.put(eventName,event);
+        }
+        //LuaValue event = this.luaClass.get(eventName);
         if(!event.isnil() && event.isfunction()){
             try {
                 event.checkfunction().invoke(args);
@@ -613,7 +625,7 @@ public class THObject implements IScript, ILuaValue {
     }
 
     public void onHit(HitResult result) {
-        this.scriptEvent("onHit");
+        this.scriptEvent("onHit",this.getLuaValue());
         if(this.shouldSetDeadWhenCollision) {
             this.setDead();
         }
@@ -652,11 +664,11 @@ public class THObject implements IScript, ILuaValue {
             this.remove();
         }
 
-        this.scriptEvent("onDead");
+        this.scriptEvent("onDead",this.getLuaValue());
     }
 
     public void onRemove() {
-        this.scriptEvent("onRemove");
+        this.scriptEvent("onRemove",this.getLuaValue());
     }
 
     public void setBlend(Blend blend) {
