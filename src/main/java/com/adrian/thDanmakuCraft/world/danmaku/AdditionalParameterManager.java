@@ -383,12 +383,20 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
         }
     }
 
-    private final LibFunction register = new VarArgFunction() {
+    public static AdditionalParameterManager checkParameterManager(LuaValue luaValue) {
+        if (luaValue.get("source").checkuserdata() instanceof AdditionalParameterManager parameterManager){
+            return parameterManager;
+        }
+        throw new NullPointerException();
+        //return null;
+    }
+
+    private static final LibFunction register = new VarArgFunction() {
         @Override
         public LuaValue invoke(Varargs varargs) {
-            Type type = Type.valueOf(varargs.arg(1).checkjstring());
-            String key = varargs.arg(2).checkjstring();
-            LuaValue value = varargs.arg(3);
+            Type type = Type.valueOf(varargs.arg(2).checkjstring());
+            String key = varargs.arg(3).checkjstring();
+            LuaValue value = varargs.arg(4);
             Object outValue = null;
             switch (type){
                 case THObject -> {
@@ -411,17 +419,18 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
                     outValue = value.checkboolean();
                 }
             }
-            AdditionalParameterManager.this.parameterMap.put(key,new Parameter<>(type, outValue));
+            checkParameterManager(varargs.arg(1)).parameterMap.put(key,new Parameter<>(type, outValue));
             return LuaValue.NIL;
         }
     };
 
-    private final LibFunction setValue = new VarArgFunction() {
+    private static final LibFunction setValue = new VarArgFunction() {
         @Override
         public LuaValue invoke(Varargs varargs) {
-            String key = varargs.arg(1).checkjstring();
-            LuaValue value = varargs.arg(2);
-            Type type = AdditionalParameterManager.this.parameterMap.get(key).type;
+            AdditionalParameterManager parameterManager = checkParameterManager(varargs.arg(1));
+            String key = varargs.arg(2).checkjstring();
+            LuaValue value = varargs.arg(3);
+            Type type = parameterManager.parameterMap.get(key).type;
 
             Object outValue = null;
             switch (type){
@@ -436,20 +445,21 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
                 case Double -> outValue = value.checkdouble();
                 case Boolean -> outValue = value.checkboolean();
             }
-            AdditionalParameterManager.this.parameterMap.put(key,new Parameter<>(type, outValue));
+            parameterManager.parameterMap.put(key,new Parameter<>(type, outValue));
             return LuaValue.NIL;
         }
     };
 
-    private final LibFunction getValue = new OneArgFunction() {
+    private static final LibFunction getValue = new TwoArgFunction() {
         @Override
-        public LuaValue call(LuaValue luaValue) {
+        public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
+            AdditionalParameterManager parameterManager = checkParameterManager(luaValue0);
             String key = luaValue.checkjstring();
             LuaValue outValue = LuaValue.NIL;
-            Parameter<?> parameter = AdditionalParameterManager.this.parameterMap.get(key);
+            Parameter<?> parameter = parameterManager.parameterMap.get(key);
             Type type = parameter.type;
             switch (type){
-                case THObject -> outValue = AdditionalParameterManager.this.container.getObjectFromUUID((UUID)parameter.value).getLuaValue();
+                case THObject -> outValue = parameterManager.container.getObjectFromUUID((UUID)parameter.value).getLuaValue();
                 case String -> outValue = LuaValue.valueOf((String) parameter.value);
                 case Integer -> outValue = LuaValue.valueOf((int) parameter.value);
                 case Float -> outValue = LuaValue.valueOf((float) parameter.value);
@@ -460,69 +470,69 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
         }
     };
 
-    private final LibFunction getString = new OneArgFunction() {
+    private static final LibFunction getString = new TwoArgFunction() {
         @Override
-        public LuaValue call(LuaValue luaValue) {
+        public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
             String key = luaValue.checkjstring();
-            return LuaValue.valueOf((String) AdditionalParameterManager.this.parameterMap.get(key).value);
+            return LuaValue.valueOf((String) checkParameterManager(luaValue0).parameterMap.get(key).value);
         }
     };
 
-    private final LibFunction getInteger = new OneArgFunction() {
+    private static final LibFunction getInteger = new TwoArgFunction() {
         @Override
-        public LuaValue call(LuaValue luaValue) {
+        public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
             String key = luaValue.checkjstring();
-            return LuaValue.valueOf((int) AdditionalParameterManager.this.parameterMap.get(key).value);
+            return LuaValue.valueOf((int) checkParameterManager(luaValue0).parameterMap.get(key).value);
         }
     };
 
-    private final LibFunction getFloat = new OneArgFunction() {
+    private static final LibFunction getFloat = new TwoArgFunction() {
         @Override
-        public LuaValue call(LuaValue luaValue) {
+        public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
             String key = luaValue.checkjstring();
-            return LuaValue.valueOf((float) AdditionalParameterManager.this.parameterMap.get(key).value);
+            return LuaValue.valueOf((float) checkParameterManager(luaValue0).parameterMap.get(key).value);
         }
     };
 
-    private final LibFunction getDouble = new OneArgFunction() {
+    private static final LibFunction getDouble = new TwoArgFunction() {
         @Override
-        public LuaValue call(LuaValue luaValue) {
+        public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
             String key = luaValue.checkjstring();
-            return LuaValue.valueOf((double) AdditionalParameterManager.this.parameterMap.get(key).value);
+            return LuaValue.valueOf((double) checkParameterManager(luaValue0).parameterMap.get(key).value);
         }
     };
 
-    private final LibFunction getBoolean = new OneArgFunction() {
+    private static final LibFunction getBoolean = new TwoArgFunction() {
         @Override
-        public LuaValue call(LuaValue luaValue) {
+        public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
             String key = luaValue.checkjstring();
-            return LuaValue.valueOf((boolean) AdditionalParameterManager.this.parameterMap.get(key).value);
+            return LuaValue.valueOf((boolean) checkParameterManager(luaValue0).parameterMap.get(key).value);
         }
     };
 
-    private final LibFunction getTHObject = new OneArgFunction() {
+    private static final LibFunction getTHObject = new TwoArgFunction() {
         @Override
-        public LuaValue call(LuaValue luaValue) {
+        public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
             String key = luaValue.checkjstring();
-            THObject object = AdditionalParameterManager.this.getTHObject(key);
+            THObject object = checkParameterManager(luaValue0).getTHObject(key);
             return object != null ? object.getLuaValue() : LuaValue.NIL;
         }
     };
 
-    private final LibFunction getTHBullet = new OneArgFunction() {
+    private static final LibFunction getTHBullet = new TwoArgFunction() {
         @Override
-        public LuaValue call(LuaValue luaValue) {
+        public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
             String key = luaValue.checkjstring();
-            THObject object = AdditionalParameterManager.this.getTHBullet(key);
+            THObject object = checkParameterManager(luaValue0).getTHBullet(key);
             return object != null ? object.getLuaValue() : LuaValue.NIL;
         }
     };
 
-    private final LibFunction getTHCurvedLaser = new OneArgFunction() {
+    private static final LibFunction getTHCurvedLaser = new TwoArgFunction() {
         @Override
-        public LuaValue call(LuaValue luaValue) {
+        public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
             String key = luaValue.checkjstring();
-            THObject object = AdditionalParameterManager.this.getTHCurvedLaser(key);
+            THObject object = checkParameterManager(luaValue0).getTHCurvedLaser(key);
             return object != null ? object.getLuaValue() : LuaValue.NIL;
         }
     };
@@ -530,17 +540,20 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
     @Override
     public LuaValue ofLuaValue() {
         LuaValue library = LuaValue.tableOf();
-        library.set("register",this.register);
-        library.set("setValue",this.setValue);
-        library.set("getValue",this.getValue);
-        library.set("getString",this.getString);
-        library.set("getInteger",this.getInteger);
-        library.set("getFloat",this.getFloat);
-        library.set("getDouble",this.getDouble);
-        library.set("getBoolean",this.getBoolean);
-        library.set("getTHObject",this.getTHObject);
-        library.set("getTHBullet",this.getTHBullet);
-        library.set("getTHCurvedLaser",this.getTHCurvedLaser);
+        //Functions
+        library.set("register", register);
+        library.set("setValue", setValue);
+        library.set("getValue", getValue);
+        library.set("getString", getString);
+        library.set("getInteger", getInteger);
+        library.set("getFloat", getFloat);
+        library.set("getDouble", getDouble);
+        library.set("getBoolean", getBoolean);
+        library.set("getTHObject", getTHObject);
+        library.set("getTHBullet", getTHBullet);
+        library.set("getTHCurvedLaser", getTHCurvedLaser);
+        //Params
+        library.set("source", LuaValue.userdataOf(this));
         return library;
     }
 

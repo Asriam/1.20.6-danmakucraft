@@ -7,34 +7,35 @@
 ---@class THObjectContainer
 ---@field onInit fun(self)
 ---@field onTick fun(self)
+---@field source userdata
 local container = {
 }
 
 ---@return number
-function container.getMaxObjectAmount() end
+function container:getMaxObjectAmount() end
 
 ---@return Vec3
-function container.getPosition() end
+function container:getPosition() end
 
 ---@param time number
-function container.setTimer(time) end
+function container:setTimer(time) end
 
 ---@return number
-function container.getTimer() end
+function container:getTimer() end
 
 ---@return Entity
-function container.getUser() end
+function container:getUser() end
 
 ---@return Entity
-function container.getTarget() end
+function container:getTarget() end
 
-function container.clearObjects() end
+function container:clearObjects() end
 
 ---@param key string
 ---@param args table
 ---@param position Vec3
 ---@return THObject
-function container.createTHObject(key,args,position) end
+function container:createTHObject(key,args,position) end
 
 ---@param key string
 ---@param args table
@@ -42,7 +43,7 @@ function container.createTHObject(key,args,position) end
 ---@param style string
 ---@param colorIndex number
 ---@return THBullet
-function container.createTHBullet(key,args,position,style,colorIndex) end
+function container:createTHBullet(key,args,position,style,colorIndex) end
 
 ---function container:createTHLaser() end
 
@@ -53,9 +54,9 @@ function container.createTHBullet(key,args,position,style,colorIndex) end
 ---@param length number
 ---@param width number
 ---@return THCurvedLaser
-function container.createTHCurvedLaser(key,args,position,colorIndex,length,width) end
+function container:createTHCurvedLaser(key,args,position,colorIndex,length,width) end
 
 ---@return AdditionalParameterManager
-function container.getParameterManager() end
+function container:getParameterManager() end
 
-function container.discard() end
+function container:discard() end

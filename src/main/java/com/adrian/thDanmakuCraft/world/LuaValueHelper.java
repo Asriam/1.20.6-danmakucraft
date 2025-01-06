@@ -1,31 +1,49 @@
 package com.adrian.thDanmakuCraft.world;
 
+import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
-import org.luaj.vm2.Lua;
 import org.luaj.vm2.LuaValue;
-import org.luaj.vm2.lib.ZeroArgFunction;
-import org.luaj.vm2.lib.jse.CoerceJavaToLua;
+import org.luaj.vm2.lib.LibFunction;
+import org.luaj.vm2.lib.OneArgFunction;
 
 public class LuaValueHelper {
+    public static class LuaEntityClass {
+        private static Entity checkEntity(LuaValue luaValue){
+            if (luaValue.get("source").checkuserdata() instanceof Entity entity){
+                return entity;
+            }
+            throw new NullPointerException();
+            //return null;
+        }
+
+        private static final LibFunction getPosition = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                return Vec3ToLuaValue(checkEntity(luaValue0).position());
+            }
+        };
+
+        private static final LibFunction getRotation = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                Entity entity = checkEntity(luaValue0);
+                return Vec2ToLuaValue(new Vec2(entity.getXRot(), entity.getYRot()));
+            }
+        };
+
+    }
+
     public static LuaValue EntityToLuaValue(Entity entity) {
         if (entity == null) return LuaValue.NIL;
         LuaValue library = LuaValue.tableOf();
-        library.set("getPosition", new ZeroArgFunction() {
-            @Override
-            public LuaValue call() {
-                return Vec3ToLuaValue(entity.position());
-            }
-        });
-        library.set("getRotation", new ZeroArgFunction() {
-            @Override
-            public LuaValue call() {
-                return Vec2ToLuaValue(new Vec2(entity.getXRot(), entity.getYRot()));
-            }
-        });
+        //Fields
+        library.set("source",LuaValue.userdataOf(entity));
+        //Functions
+        library.set("getPosition", LuaEntityClass.getPosition);
+        library.set("getRotation", LuaEntityClass.getRotation);
         return library;
     }
 
@@ -75,7 +93,7 @@ public class LuaValueHelper {
             }
         }
 
-        return null;
+        return Vec3.ZERO;
     }
 
     public static Vec2 LuaValueToVec2(LuaValue luaValue) {
@@ -98,7 +116,7 @@ public class LuaValueHelper {
             }
         }
 
-        return null;
+        return Vec2.ZERO;
     }
 
     public static Vector3f LuaValueToVector3f(LuaValue luaValue) {
@@ -121,6 +139,6 @@ public class LuaValueHelper {
             }
         }
 
-        return null;
+        return new Vector3f(0.0f,0.0f,0.0f);
     }
 }

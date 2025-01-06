@@ -98,7 +98,8 @@ public class THObjectRenderHelper {
         consumer.vertex(pose.pose(), vertex.x, vertex.y, vertex.z)
                 .color(color.r, color.g, color.b, color.a)
                 .color(coreColor.r, coreColor.g, coreColor.b, coreColor.a)
-                .uv(uv.x, uv.y)
+                .uv(uv.x, 2.0f)
+                .uv(uv.y, 2.0f)
                 .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(uv2)
                 .normal(pose, normal.x, normal.y, normal.z)
                 .endVertex();

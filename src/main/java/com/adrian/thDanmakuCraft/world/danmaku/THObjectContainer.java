@@ -27,7 +27,9 @@ import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.*;
 
 import javax.annotation.Nullable;
+import java.security.Provider;
 import java.util.*;
+import java.util.function.Supplier;
 
 import static com.adrian.thDanmakuCraft.world.LuaValueHelper.*;
 
@@ -394,42 +396,13 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         return this.parameterManager;
     }
 
-    private final LibFunction getMaxObjectAmount = new ZeroArgFunction(){
-        @Override
-        public LuaValue call() {
-            return LuaValue.valueOf(THObjectContainer.this.getMaxObjectAmount());
+    public static THObjectContainer checkTHObjectContainer(LuaValue luaValue) {
+        if (luaValue.get("source").checkuserdata() instanceof THObjectContainer container){
+            return container;
         }
-    };
-
-    private final LibFunction getPosition = new ZeroArgFunction(){
-        @Override
-        public LuaValue call() {
-            return Vec3ToLuaValue(THObjectContainer.this.getPosition());
-        }
-    };
-
-    private final LibFunction getTimer = new ZeroArgFunction(){
-        @Override
-        public LuaValue call() {
-            return LuaValue.valueOf(THObjectContainer.this.getTimer());
-        }
-    };
-
-    private final LibFunction setTimer = new OneArgFunction(){
-        @Override
-        public LuaValue call(LuaValue luaValue) {
-            THObjectContainer.this.setTimer(luaValue.checkint());
-            return LuaValue.NIL;
-        }
-    };
-
-    private final LibFunction clearObjects = new ZeroArgFunction(){
-        @Override
-        public LuaValue call() {
-            THObjectContainer.this.clearObjects();
-            return LuaValue.NIL;
-        }
-    };
+        throw new NullPointerException();
+        //return null;
+    }
 
     private static String getLuaClassName(LuaValue luaValue){
         if(luaValue.isstring()){
@@ -452,84 +425,116 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         object.scriptEvent("onInit",LuaValue.varargsOf(luaObject,args));
     }
 
+    private static final LibFunction getMaxObjectAmount = new OneArgFunction(){
 
-    private final LibFunction createTHObject = new VarArgFunction(){
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            return LuaValue.valueOf(checkTHObjectContainer(luaValue).getMaxObjectAmount());
+        }
+    };
+
+    private static final LibFunction getPosition = new OneArgFunction(){
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            return Vec3ToLuaValue(checkTHObjectContainer(luaValue).getPosition());
+        }
+    };
+
+    private static final LibFunction getTimer = new OneArgFunction(){
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            return LuaValue.valueOf(checkTHObjectContainer(luaValue).getTimer());
+        }
+    };
+
+    private static final LibFunction setTimer = new TwoArgFunction(){
+        @Override
+        public LuaValue call(LuaValue luaValue, LuaValue luaValue1) {
+            checkTHObjectContainer(luaValue).setTimer(luaValue1.checkint());
+            return LuaValue.NIL;
+        }
+    };
+
+    private static final LibFunction clearObjects = new OneArgFunction(){
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            checkTHObjectContainer(luaValue).clearObjects();
+            return LuaValue.NIL;
+        }
+    };
+
+    private static final LibFunction createTHObject = new VarArgFunction(){
         @Override
         public Varargs invoke(Varargs varargs) {
-            String luaClassKey = getLuaClassName(varargs.arg(1));
-            THObject object = THObjectContainer.this.createTHObject(LuaValueToVec3(varargs.arg(3)));
-            initTHObject(object, luaClassKey, varargs.arg(2).checktable().unpack());
+            String luaClassKey = getLuaClassName(varargs.arg(2));
+            THObject object = checkTHObjectContainer(varargs.arg(1)).createTHObject(LuaValueToVec3(varargs.arg(4)));
+            initTHObject(object, luaClassKey, varargs.arg(3).checktable().unpack());
             return object.getLuaValue();
         }
     };
 
-    private final LibFunction createTHBullet = new VarArgFunction(){
+    private static final LibFunction createTHBullet = new VarArgFunction(){
         @Override
         public Varargs invoke(Varargs varargs) {
-            String luaClassKey = getLuaClassName(varargs.arg(1));
-            THBullet bullet = THObjectContainer.this.createTHBullet(
-                    LuaValueToVec3(varargs.arg(3)),
-                    varargs.arg(4).checkjstring(),
-                    varargs.arg(5).checkint());
-            initTHObject(bullet, luaClassKey, varargs.arg(2).checktable().unpack());
+            String luaClassKey = getLuaClassName(varargs.arg(2));
+            THBullet bullet = checkTHObjectContainer(varargs.arg(1)).createTHBullet(
+                    LuaValueToVec3(varargs.arg(4)),
+                    varargs.arg(5).checkjstring(),
+                    varargs.arg(6).checkint());
+            initTHObject(bullet, luaClassKey, varargs.arg(3).checktable().unpack());
             return bullet.getLuaValue();
         }
     };
 
-    private final LibFunction createTHCurvedLaser = new VarArgFunction(){
+    private static final LibFunction createTHCurvedLaser = new VarArgFunction(){
         @Override
         public Varargs invoke(Varargs varargs) {
-            String luaClassKey = getLuaClassName(varargs.arg(1));
-            Vec3 pos = LuaValueToVec3(varargs.arg(3));
-            int colorIndex = varargs.arg(4).checkint();
-            int length = varargs.arg(5).checkint();
-            float width = varargs.arg(6).tofloat();
-            THCurvedLaser laser = THObjectContainer.this.createTHCurvedLaser(pos,colorIndex,length,width);
-            initTHObject(laser, luaClassKey, varargs.arg(2).checktable().unpack());
+            String luaClassKey = getLuaClassName(varargs.arg(2));
+            Vec3 pos = LuaValueToVec3(varargs.arg(4));
+            int colorIndex = varargs.arg(5).checkint();
+            int length = varargs.arg(6).checkint();
+            float width = varargs.arg(7).tofloat();
+            THCurvedLaser laser = checkTHObjectContainer(varargs.arg(1)).createTHCurvedLaser(pos,colorIndex,length,width);
+            initTHObject(laser, luaClassKey, varargs.arg(3).checktable().unpack());
             return laser.getLuaValue();
         }
     };
 
-    private final LibFunction getParameterManager = new ZeroArgFunction(){
-        @Override
-        public LuaValue call() {
-            return THObjectContainer.this.getParameterManager().getLuaValue();
-        }
-    };
-
-    private final LibFunction discard = new ZeroArgFunction(){
-        @Override
-        public LuaValue call() {
-            THObjectContainer.this.discard();
-            return LuaValue.NIL;
-        }
-    };
-
-    private final LibFunction getUser = new ZeroArgFunction(){
-        @Override
-        public LuaValue call() {
-            return EntityToLuaValue(THObjectContainer.this.getUser());
-        }
-    };
-
-    private final LibFunction getTarget = new ZeroArgFunction(){
-        @Override
-        public LuaValue call() {
-            return EntityToLuaValue(THObjectContainer.this.getTarget());
-        }
-    };
-
-    /*
-    private final LibFunction spawnTHObject = new OneArgFunction(){
+    private static final LibFunction getUser = new OneArgFunction(){
         @Override
         public LuaValue call(LuaValue luaValue) {
-            THObjectContainer.this.spawnTHObject();
+            return EntityToLuaValue(checkTHObjectContainer(luaValue).getUser());
+        }
+    };
+
+    private static final LibFunction getTarget = new OneArgFunction(){
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            return EntityToLuaValue(checkTHObjectContainer(luaValue).getTarget());
+        }
+    };
+
+    private static final LibFunction getParameterManager = new OneArgFunction(){
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            THObjectContainer container = checkTHObjectContainer(luaValue);
+            return container.getParameterManager().getLuaValue();
+        }
+    };
+
+    private static final LibFunction discard = new OneArgFunction(){
+        @Override
+        public LuaValue call(LuaValue luaValue) {
+            checkTHObjectContainer(luaValue).discard();
             return LuaValue.NIL;
         }
-    };*/
+    };
 
     public LuaValue ofLuaValue(){
         LuaValue library = LuaValue.tableOf();
+        //fields
+        library.set( "source", LuaValue.userdataOf(this));
+        //functions
         library.set( "getMaxObjectAmount", getMaxObjectAmount);
         library.set( "getPosition", getPosition);
         library.set( "setTimer", setTimer);
@@ -542,8 +547,6 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         library.set( "createTHCurvedLaser", createTHCurvedLaser);
         library.set( "getParameterManager", getParameterManager);
         library.set( "discard", discard);
-
-        library.set( "source", LuaValue.userdataOf(this));
         return library;
     }
 
