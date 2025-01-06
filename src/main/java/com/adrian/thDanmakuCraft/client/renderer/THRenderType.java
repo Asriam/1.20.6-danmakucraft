@@ -95,11 +95,11 @@ public class THRenderType extends RenderType{
 
     //private static final RenderTarget DEPTH_BUFFER = new TextureTarget(1000,1000,true,true);
     public static final ShaderStateShard DANMAKU_DEPTH_OUTLINE_SHADER = new ShaderStateShard(() -> {
-        MyShaderInstance shader = ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER;
+        //MyShaderInstance shader = ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER;
         //shader.safeGetUniform("Near").set(GameRenderer.PROJECTION_Z_NEAR);
         //shader.safeGetUniform("Far").set(Minecraft.getInstance().gameRenderer.getDepthFar());
         //THDanmakuCraftCore.LOGGER.info(""+Minecraft.getInstance().gameRenderer.getDepthFar());
-        return shader;
+        return ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER;
     });
 
      public static final VertexFormat TEST_FORMAT = new VertexFormat(
@@ -108,6 +108,7 @@ public class THRenderType extends RenderType{
                     .put("Color"   , DefaultVertexFormat.ELEMENT_COLOR)
                     .put("Color2"  , DefaultVertexFormat.ELEMENT_COLOR)
                     .put("UV"      , DefaultVertexFormat.ELEMENT_UV)
+                    .put("UV2"     , DefaultVertexFormat.ELEMENT_UV)
                     .put("Normal"  , DefaultVertexFormat.ELEMENT_NORMAL)
                     .build()
     );

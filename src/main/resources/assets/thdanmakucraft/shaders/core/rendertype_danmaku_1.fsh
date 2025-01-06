@@ -46,7 +46,7 @@ void main() {
 
     //float rimFactor = pow(rimStrength, 1.0f)*1.6; // higher power = sharper rim light
     float rimFactor  = pow(max(rimStrength-feather,0.0f), 2) ; // higher power = sharper rim light
-    float rimFactor2 = pow(rimStrength+1.0f-coreSize, 2) ; // higher power = sharper rim light
+    float rimFactor2 = pow(rimStrength+1.0f-coreSize,     2) ; // higher power = sharper rim light
 
     //float rimFactor = (-cos(pow(min(rimStrength,0.5f)/0.5f,3.0f)*3.1415926)+1)/2;
     vec4 rim  = vec4(rimFactor);

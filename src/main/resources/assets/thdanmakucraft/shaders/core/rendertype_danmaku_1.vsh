@@ -4,6 +4,7 @@ in vec3 Position;
 in vec4 Color;
 in vec4 Color2;
 in vec2 UV;
+in vec2 UV2;
 in vec3 Normal;
 
 uniform mat4 ProjMat;
@@ -16,6 +17,7 @@ out vec3 viewDir;
 out vec4 vertexColor;
 out vec4 coreColor;
 out vec2 vertCoord;
+out vec2
 
 void main() {
     mat3 normalMat = mat3(transpose(inverse(ModelViewMat)));

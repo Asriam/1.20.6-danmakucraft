@@ -45,7 +45,7 @@ public class THBullet extends THObject {
         return bulletColor;
     }
 
-    public int getBulletColorIndex(){
+    public int getBulletIndex(){
         return bulletColor.getIndex();
     }
 
@@ -55,8 +55,11 @@ public class THBullet extends THObject {
     }
 
     public void setStyle(String style) {
+        this.setStyle(DefaultBulletStyle.valueOf(style));
+        /*
         this.style = DefaultBulletStyle.valueOf(style);
         this.size = this.style.getSize();
+         */
     }
 
     public DefaultBulletStyle getStyle() {
@@ -149,6 +152,11 @@ public class THBullet extends THObject {
         Vec3 getSize();
         CollisionType getCollisionType();
         THImage getImage();
+
+        void writeData(FriendlyByteBuf buffer);
+        IBulletStyle readData(FriendlyByteBuf buffer);
+        void save(CompoundTag tag);
+        IBulletStyle load(CompoundTag tag);
     }
 
     public enum DefaultBulletStyle implements IBulletStyle{
@@ -158,7 +166,7 @@ public class THBullet extends THObject {
         gun_bullet,
         butterfly,
         square,
-        ball_small,
+        ball_small(IMAGE_ARROW_BIG,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.SPHERE, true),
         ball_mid(IMAGE_BALL_MID,new Vec3(0.3f,0.3f,0.3f),false, CollisionType.SPHERE,true),
         ball_mid_c(IMAGE_BALL_MID),
         ball_big(IMAGE_BALL_MID,new Vec3(0.5f,0.5f,0.5f),false, CollisionType.SPHERE, true),
@@ -224,9 +232,32 @@ public class THBullet extends THObject {
             return this.image;
         }
 
+        @Override
+        public void writeData(FriendlyByteBuf buffer) {
+            buffer.writeEnum(this);
+        }
+
+        @Override
+        public IBulletStyle readData(FriendlyByteBuf buffer) {
+            return buffer.readEnum(DefaultBulletStyle.class);
+        }
+
+        @Override
+        public void save(CompoundTag tag) {
+            tag.putInt("Style",this.ordinal());
+        }
+
+        @Override
+        public IBulletStyle load(CompoundTag tag) {
+            return DefaultBulletStyle.class.getEnumConstants()[tag.getInt("Style")];
+        }
+
         public static DefaultBulletStyle getStyleByIndex(int index){
             return DefaultBulletStyle.class.getEnumConstants()[index];
         }
+    }
+
+    public static class UserBulletStyle{
     }
 
     private final LibFunction setStyle = new OneArgFunction() {

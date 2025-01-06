@@ -39,9 +39,10 @@ local container = core.registerClass("testContainer")
 function container:onInit()
     local userRot = self.getUser().getRotation().y
     self.getParameterManager().register("Double","userAngle",userRot)
+    --[[
     for i = 1,num  do
         local laser = self.createTHCurvedLaser(testLaser, {i}, self.getPosition(),1,12,0.5)
-    end
+    end]]
 
     for i = 1,32 do
         ---@type THBullet

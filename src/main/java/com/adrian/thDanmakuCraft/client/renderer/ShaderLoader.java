@@ -31,7 +31,8 @@ public class ShaderLoader {
     }
 
     public static void registryShaders(ResourceProvider resourceProvider){
-        DANMAKU_DEPTH_OUTLINE_SHADER = registryShader(resourceProvider,new ResourceLocation(THDanmakuCraftCore.MOD_ID,"rendertype_danmaku_depth_outline"), THRenderType.TEST_FORMAT);
+        DANMAKU_DEPTH_OUTLINE_SHADER = registryShader(resourceProvider,new ResourceLocation(THDanmakuCraftCore.MOD_ID,"rendertype_danmaku_1"), THRenderType.TEST_FORMAT);
+
         registryShader(resourceProvider,new ResourceLocation(THDanmakuCraftCore.MOD_ID,"box_blur"), DefaultVertexFormat.POSITION);
         registryShader(resourceProvider,new ResourceLocation(THDanmakuCraftCore.MOD_ID,"test_shader"), new VertexFormat(
                 ImmutableMap.<String, VertexFormatElement>builder()
@@ -48,21 +49,7 @@ public class ShaderLoader {
     @SubscribeEvent
     public static void onRegisterShaders(RegisterShadersEvent event) {
         registryShaders(event.getResourceProvider());
-        /*
-        Map<ResourceLocation, Resource> resourceMap =  resourceManager.listResources(new ResourceLocation(THDanmakuCraftCore.MODID,"shaders/core").getPath(), path -> path.toString().startsWith(THDanmakuCraftCore.MODID) && path.toString().endsWith("json"));
-        resourceMap.forEach((resourceLocation, resource) -> {
-            THDanmakuCraftCore.LOGGER.info("loading shader file {}",resourceLocation.toString());
-            registryShader(new ResourceLocation(THDanmakuCraftCore.MODID,resourceLocation.getPath().replace("shaders/core/","").replace(".json","")), DefaultVertexFormat.POSITION_TEX_COLOR);
-        });*/
-
-        /*
-        for(ShaderInstance shaderInstance:shaderMap.values()){
-            event.registerShader(shaderInstance, shader -> {
-                THDanmakuCraftCore.LOGGER.info("Shader: {} loaded successfully!",shader.getName());
-            });
-        }*/
         THDanmakuCraftCore.LOGGER.info("Shaders loaded successfully!");
-
     }
 
     public static MyShaderInstance registryShader(ResourceProvider resourceProvider, ResourceLocation resourceLocation, VertexFormat vertexFormat){

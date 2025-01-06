@@ -149,33 +149,6 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
                     float posB2 = !(index >= nodeList.size() - 2) ? nodeWidth4 * coreWidth : 0.0f;
 
                     for (int i = 0; i < edge; i++) {
-                        //external render
-                        Vec3 calculatedPos1_1 = lastNodePos_1[i] == null ? pos0.yRot(i * perAngle).xRot(right_angle + angle1.x).yRot(angle1.y).scale(posA).add(_pos1) : lastNodePos_1[i];
-                        Vec3 calculatedPos1_2 = lastNodePos_2[i] == null ? pos0.yRot((i + 1) * perAngle).xRot(right_angle + angle1.x).yRot(angle1.y).scale(posA).add(_pos1) : lastNodePos_2[i];
-
-                        //Vec3 normal1_1 = lastNormal_1[i] == null ? calculatedPos1_1.subtract(_pos1) : lastNormal_1[i];
-                        //Vec3 normal1_2 = lastNormal_2[i] == null ? calculatedPos1_2.subtract(_pos1) : lastNormal_2[i];
-
-                        Vec3 normal1_1 = lastNormal_1[i] == null ? pos0.yRot(i * perAngle).xRot(right_angle + angle1.x).yRot(angle1.y) : lastNormal_1[i];
-                        Vec3 normal1_2 = lastNormal_2[i] == null ? pos0.yRot((i + 1) * perAngle).xRot(right_angle + angle1.x).yRot(angle1.y) : lastNormal_2[i];
-
-                        Vec3 calculatedPos2_1 = pos0.yRot(i * perAngle).xRot(right_angle + angle2.x).yRot(angle2.y).scale(posB).add(_pos2);
-                        Vec3 calculatedPos2_2 = pos0.yRot((i + 1) * perAngle).xRot(right_angle + angle2.x).yRot(angle2.y).scale(posB).add(_pos2);
-
-                        Vec3 normal2_1 = pos0.yRot(i * perAngle).xRot(right_angle + angle2.x).yRot(angle2.y);
-                        Vec3 normal2_2 = pos0.yRot((i + 1) * perAngle).xRot(right_angle + angle2.x).yRot(angle2.y);
-
-                        lastNodePos_1[i] = calculatedPos2_1;
-                        lastNodePos_2[i] = calculatedPos2_2;
-
-                        lastNormal_1[i] = normal2_1;
-                        lastNormal_2[i] = normal2_2;
-
-                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos1_1.toVector3f(), normal1_1.toVector3f(), new Vector2f(0.4f, -0.1f), laserColor, coreColor2);
-                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos2_1.toVector3f(), normal2_1.toVector3f(), new Vector2f(0.4f, -0.1f), laserColor, coreColor2);
-                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos2_2.toVector3f(), normal2_2.toVector3f(), new Vector2f(0.4f, -0.1f), laserColor, coreColor2);
-                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos1_2.toVector3f(), normal1_2.toVector3f(), new Vector2f(0.4f, -0.1f), laserColor, coreColor2);
-
                         //core render
                         if (true) {
                             Vec3 calculatedPos3_1 = lastNodePos_3[i] == null ? pos0.yRot(i * perAngle).xRot(right_angle + angle1.x).yRot(angle1.y).scale(posA1).add(_pos1) : lastNodePos_3[i];
@@ -204,6 +177,33 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
                             THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos4_2.toVector3f(), normal4_2.toVector3f(), new Vector2f(0.5f, 0.0f), coreColor, GRAY);
                             THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos3_2.toVector3f(), normal3_2.toVector3f(), new Vector2f(0.5f, 0.0f), coreColor, GRAY);
                         }
+
+                        //external render
+                        Vec3 calculatedPos1_1 = lastNodePos_1[i] == null ? pos0.yRot(i * perAngle).xRot(right_angle + angle1.x).yRot(angle1.y).scale(posA).add(_pos1) : lastNodePos_1[i];
+                        Vec3 calculatedPos1_2 = lastNodePos_2[i] == null ? pos0.yRot((i + 1) * perAngle).xRot(right_angle + angle1.x).yRot(angle1.y).scale(posA).add(_pos1) : lastNodePos_2[i];
+
+                        //Vec3 normal1_1 = lastNormal_1[i] == null ? calculatedPos1_1.subtract(_pos1) : lastNormal_1[i];
+                        //Vec3 normal1_2 = lastNormal_2[i] == null ? calculatedPos1_2.subtract(_pos1) : lastNormal_2[i];
+
+                        Vec3 normal1_1 = lastNormal_1[i] == null ? pos0.yRot(i * perAngle).xRot(right_angle + angle1.x).yRot(angle1.y) : lastNormal_1[i];
+                        Vec3 normal1_2 = lastNormal_2[i] == null ? pos0.yRot((i + 1) * perAngle).xRot(right_angle + angle1.x).yRot(angle1.y) : lastNormal_2[i];
+
+                        Vec3 calculatedPos2_1 = pos0.yRot(i * perAngle).xRot(right_angle + angle2.x).yRot(angle2.y).scale(posB).add(_pos2);
+                        Vec3 calculatedPos2_2 = pos0.yRot((i + 1) * perAngle).xRot(right_angle + angle2.x).yRot(angle2.y).scale(posB).add(_pos2);
+
+                        Vec3 normal2_1 = pos0.yRot(i * perAngle).xRot(right_angle + angle2.x).yRot(angle2.y);
+                        Vec3 normal2_2 = pos0.yRot((i + 1) * perAngle).xRot(right_angle + angle2.x).yRot(angle2.y);
+
+                        lastNodePos_1[i] = calculatedPos2_1;
+                        lastNodePos_2[i] = calculatedPos2_2;
+
+                        lastNormal_1[i] = normal2_1;
+                        lastNormal_2[i] = normal2_2;
+
+                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos1_1.toVector3f(), normal1_1.toVector3f(), new Vector2f(0.4f, -0.1f), laserColor, coreColor2);
+                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos2_1.toVector3f(), normal2_1.toVector3f(), new Vector2f(0.4f, -0.1f), laserColor, coreColor2);
+                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos2_2.toVector3f(), normal2_2.toVector3f(), new Vector2f(0.4f, -0.1f), laserColor, coreColor2);
+                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos1_2.toVector3f(), normal1_2.toVector3f(), new Vector2f(0.4f, -0.1f), laserColor, coreColor2);
                     }
                 }
             }
