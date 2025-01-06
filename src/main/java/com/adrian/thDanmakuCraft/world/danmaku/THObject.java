@@ -5,9 +5,7 @@ import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.script.IScript;
 import com.adrian.thDanmakuCraft.script.ScriptManager;
 import com.adrian.thDanmakuCraft.script.lua.LuaCore;
-import com.adrian.thDanmakuCraft.world.AdditionalParameterManager;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
-import com.adrian.thDanmakuCraft.world.THObjectContainer;
 import com.google.common.collect.Maps;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -100,6 +98,7 @@ public class THObject implements IScript, ILuaValue {
 
     public THObject(THObjectContainer container, Vec3 position) {
         this(THObjectInit.TH_OBJECT.get(), container);
+        this.initPosition(position);
     }
 
     public <T extends THObject> T initPosition(Vec3 position) {
@@ -755,7 +754,7 @@ public class THObject implements IScript, ILuaValue {
         this.blend = buffer.readEnum(Blend.class);
         this.isDead = buffer.readBoolean();
         this.collision = buffer.readBoolean();
-        this.collisionType = buffer.readEnum(THObject.CollisionType.class);
+        this.collisionType = buffer.readEnum(CollisionType.class);
         //this.bound = buffer.readBoolean();
         this.shouldSave = buffer.readBoolean();
         this.luaClassKey = buffer.readUtf();
@@ -813,7 +812,7 @@ public class THObject implements IScript, ILuaValue {
         this.blend = Blend.class.getEnumConstants()[tag.getInt("Blend")];
         this.isDead = tag.getBoolean("IsDead");
         this.collision = tag.getBoolean("Collision");
-        this.collisionType = THObject.CollisionType.class.getEnumConstants()[tag.getInt("CollisionType")];
+        this.collisionType = CollisionType.class.getEnumConstants()[tag.getInt("CollisionType")];
         this.luaClassKey = tag.getString("LuaClassKey");
         //this.scriptManager.load(tag);
         this.parameterManager.load(tag.getCompound("parameters"));
@@ -912,68 +911,8 @@ public class THObject implements IScript, ILuaValue {
         return null;
     }
 
-    public enum CollisionType{
-        AABB(CollisionType::AABB),
-        SPHERE(CollisionType::SPHERE),
-        ELLIPSOID(CollisionType::Ellipsoid),
-        CUBOID(CollisionType::CUBOID),;
-
-        private final CollisionFactory factory;
-        CollisionType(CollisionFactory factory){
-            this.factory = factory;
-        }
-
-        public void collisionEntity(THObject object, Entity entity, Runnable whenColling){
-            if (this.factory.collision(object.getPosition(),object.getSize(),object.getRotation(),entity.getBoundingBox())){
-                whenColling.run();
-            }
-        }
-
-        public boolean collision(THObject object, AABB aabb){
-            return this.factory.collision(object.getPosition(),object.getSize(),object.getRotation(),aabb);
-        }
-
-        public boolean collisionEntity(THObject object, Entity entity){
-            return this.factory.collision(object.getPosition(),object.getSize(),object.getRotation(),entity.getBoundingBox());
-        }
-
-        public boolean collisionBlock(THObject object, BlockPos pos){
-            return this.factory.collision(object.getPosition(),object.getSize(),object.getRotation(),
-                    new AABB(pos.getX(),pos.getY(),pos.getZ(),
-                            pos.getX()+1,pos.getY()+1,pos.getZ()+1));
-        }
-
-        public static boolean AABB(Vec3 center, Vec3 size, Vector3f rotation, AABB aabb){
-            return CollisionHelper.isCollidingAABB(center,size,aabb);
-        }
-
-        public static boolean SPHERE(Vec3 center, Vec3 scale, Vector3f rotation, AABB aabb){
-            return CollisionHelper.isCollidingSphereBox(center,scale.x,aabb);
-        }
-
-        public static boolean Ellipsoid(Vec3 center, Vec3 scale, Vector3f rotation, AABB aabb){
-            return CollisionHelper.isCollidingOrientedEllipsoidBox(center,scale,rotation,aabb);
-        }
-
-        public static boolean CUBOID(Vec3 center, Vec3 scale, Vector3f rotation, AABB aabb){
-            return CollisionHelper.isCollidingAABB(center,scale,aabb);
-        }
-
-        public
-
-        interface CollisionFactory{
-            boolean collision(Vec3 center, Vec3 scale, Vector3f rotation, AABB aabb);
-        }
-    }
-
     public static class Color{
         public int r,g,b,a;
-        /*
-        private static final Color WHITE =   new Color(255,255,255,255);
-        private static final Color GRAY =    new Color(255,255,255,255).multiply(0.5f);
-        private static final Color BLACK =   new Color(0,0,0,255);
-        private static final Color VOID =    new Color(0,0,0,0);
-        */
         public static Color WHITE(){
             return new Color(255,255,255,255);
         }
@@ -1050,25 +989,62 @@ public class THObject implements IScript, ILuaValue {
         return Color(r,g,b,255);
     }
 
-    public enum Blend {
-        /*
-        public static int ADD = 32774;
-        public static int SUBTRACT = 32778;
-        public static int REVERSE_SUBTRACT = 32779;
-        public static int MIN = 32775;
-        public static int MAX = 32776;
+    public enum CollisionType {
+        AABB(CollisionType::AABB),
+        SPHERE(CollisionType::SPHERE),
+        ELLIPSOID(CollisionType::Ellipsoid),
+        CUBOID(CollisionType::CUBOID),
+        ;
 
-        public static int ZERO = 0;
-        public static int ONE = 1;
-        public static int SRC_COLOR = 768;
-        public static int ONE_MINUS_SRC_COLOR = 769;
-        public static int DST_COLOR = 774;
-        public static int ONE_MINUS_DST_COLOR = 775;
-        public static int SRC_ALPHA = 770;
-        public static int ONE_MINUS_SRC_ALPHA = 771;
-        public static int DST_ALPHA = 772;
-        public static int ONE_MINUS_DST_ALPHA = 773;
-         */
+        private final CollisionFactory factory;
+
+        CollisionType(CollisionFactory factory) {
+            this.factory = factory;
+        }
+
+        public void collisionEntity(THObject object, Entity entity, Runnable whenColling) {
+            if (this.factory.collision(object.getPosition(), object.getSize(), object.getRotation(), entity.getBoundingBox())) {
+                whenColling.run();
+            }
+        }
+
+        public boolean collision(THObject object, net.minecraft.world.phys.AABB aabb) {
+            return this.factory.collision(object.getPosition(), object.getSize(), object.getRotation(), aabb);
+        }
+
+        public boolean collisionEntity(THObject object, Entity entity) {
+            return this.factory.collision(object.getPosition(), object.getSize(), object.getRotation(), entity.getBoundingBox());
+        }
+
+        public boolean collisionBlock(THObject object, BlockPos pos) {
+            return this.factory.collision(object.getPosition(), object.getSize(), object.getRotation(),
+                    new AABB(pos.getX(), pos.getY(), pos.getZ(),
+                            pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1));
+        }
+
+        public static boolean AABB(Vec3 center, Vec3 size, Vector3f rotation, AABB aabb) {
+            return CollisionHelper.isCollidingAABB(center, size, aabb);
+        }
+
+        public static boolean SPHERE(Vec3 center, Vec3 scale, Vector3f rotation, AABB aabb) {
+            return CollisionHelper.isCollidingSphereBox(center, scale.x, aabb);
+        }
+
+        public static boolean Ellipsoid(Vec3 center, Vec3 scale, Vector3f rotation, AABB aabb) {
+            return CollisionHelper.isCollidingOrientedEllipsoidBox(center, scale, rotation, aabb);
+        }
+
+        public static boolean CUBOID(Vec3 center, Vec3 scale, Vector3f rotation, AABB aabb) {
+            return CollisionHelper.isCollidingAABB(center, scale, aabb);
+        }
+
+        public
+        interface CollisionFactory {
+            boolean collision(Vec3 center, Vec3 scale, Vector3f rotation, AABB aabb);
+        }
+    }
+
+    public enum Blend {
         normal("add","src_alpha","one_minus_src_alpha","one","one_minus_src_alpha"),
         add("add","src_alpha","one"),
         sub("subtract","src_alpha","one_minus_src_alpha"),
@@ -1481,7 +1457,6 @@ public class THObject implements IScript, ILuaValue {
         //params
         library.set( "type", this.getType().getKey().toString());
         library.set( "uuid", this.getUUIDasString());
-        library.set( "source", LuaValue.userdataOf(this));
         return library;
     }
 

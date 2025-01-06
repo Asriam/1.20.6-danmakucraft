@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.world;
 
+import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;

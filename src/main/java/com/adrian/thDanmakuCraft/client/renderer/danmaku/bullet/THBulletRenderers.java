@@ -1,4 +1,4 @@
-package com.adrian.thDanmakuCraft.client.renderer.danmaku;
+package com.adrian.thDanmakuCraft.client.renderer.danmaku.bullet;
 
 import com.adrian.thDanmakuCraft.client.renderer.THObjectRenderHelper;
 import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
@@ -63,8 +63,8 @@ public class THBulletRenderers {
                         offset.add(0.0f, 0.4f, 0.0f),
                         coreScale,
                         edgeA, edgeB, false,
-                        new Vec2(0.5f, 0.4f),
-                        Vec2.ONE,
+                        new Vec2(0.5f, 2.0f),
+                        new Vec2(0.4f, 2.0f),
                         coreColor.multiply(0.6f), 0, THBullet.Color.WHITE().multiply(0.5f));
                 THObjectRenderHelper.renderSphere(vertexconsumer, posestack_pose, combinedOverlay, 1.2f,
                         offset,
@@ -90,8 +90,8 @@ public class THBulletRenderers {
                         Vec3.ZERO,
                         scale,
                         edgeA, edgeB, false,
-                        new Vec2(0.7f, -0.1f),
-                        Vec2.ONE,
+                        new Vec2(0.33f, 6.0f),
+                        new Vec2(-0.1f, 2.0f),
                         color, color, coreColor);
             }
         }
@@ -110,8 +110,8 @@ public class THBulletRenderers {
                         Vec3.ZERO,
                         scale,
                         edgeA, edgeB, false,
-                        new Vec2(0.5f, 0.0f),
-                        Vec2.ONE,
+                        new Vec2(0.5f, 2.0f),
+                        new Vec2(0.0f, 2.0f),
                         color, color, coreColor);
             }
         }
@@ -130,8 +130,8 @@ public class THBulletRenderers {
                         Vec3.ZERO,
                         scale,
                         edgeA, edgeB, false,
-                        new Vec2(0.7f, -0.1f),
-                        Vec2.ONE,
+                        new Vec2(0.7f, 2.0f),
+                        new Vec2(-0.1f, 2.0f),
                         color, color, coreColor);
             }
         }
@@ -150,8 +150,8 @@ public class THBulletRenderers {
                         Vec3.ZERO,
                         scale,
                         edgeA, edgeB, false,
-                        new Vec2(0.8f, 0.1f),
-                        Vec2.ONE,
+                        new Vec2(0.8f, 2.0f),
+                        new Vec2(0.1f, 2.0f),
                         color, color.multiply(0.8f), coreColor.multiply(0.9f));
             }
         }
@@ -171,8 +171,8 @@ public class THBulletRenderers {
                         offset,
                         scale,
                         edgeA, edgeB, false,
-                        new Vec2(0.5f, 0.0f),
-                        Vec2.ONE,
+                        new Vec2(0.5f, 2.0f),
+                        new Vec2(0.0f, 2.0f),
                         color, color.multiply(0.5f), coreColor);
             }
         }
@@ -189,15 +189,15 @@ public class THBulletRenderers {
                         Vec3.ZERO,
                         coreScale,
                         edgeA, edgeB, false,
-                        new Vec2(0.5f, 0.0f),
-                        Vec2.ONE,
+                        new Vec2(0.5f, 2.0f),
+                        new Vec2(0.0f, 2.0f),
                         coreColor, coreColor.multiply(0.5f), coreColor.multiply(0.5f));
                 THObjectRenderHelper.renderSphere(vertexconsumer, posestack_pose, p_254296_, 2,
                         Vec3.ZERO,
                         scale,
                         edgeA, edgeB, false,
-                        new Vec2(0.5f, 0.1f),
-                        Vec2.ONE,
+                        new Vec2(0.5f, 2.0f),
+                        new Vec2(0.1f, 2.0f),
                         color, color.multiply(0.5f), coreColor.multiply(0.4f));
             }
         }

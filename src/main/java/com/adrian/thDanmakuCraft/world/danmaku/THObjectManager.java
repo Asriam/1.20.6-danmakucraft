@@ -1,8 +1,7 @@
-package com.adrian.thDanmakuCraft.world;
+package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.util.MultiMap;
-import com.adrian.thDanmakuCraft.world.danmaku.THObject;
-import com.adrian.thDanmakuCraft.world.danmaku.THObjectType;
+import com.adrian.thDanmakuCraft.world.IDataStorage;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -12,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class THObjectManager implements IDataStorage{
+public class THObjectManager implements IDataStorage {
 
     private final MultiMap<THObject> storage;
     private final THObjectContainer container;

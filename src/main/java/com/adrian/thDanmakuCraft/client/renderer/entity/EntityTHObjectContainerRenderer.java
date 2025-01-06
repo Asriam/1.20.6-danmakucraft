@@ -3,7 +3,7 @@ package com.adrian.thDanmakuCraft.client.renderer.entity;
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.client.renderer.*;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.AbstractTHObjectRenderer;
-import com.adrian.thDanmakuCraft.client.renderer.danmaku.THBulletRenderers;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.bullet.THBulletRenderers;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRenderers;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;

@@ -10,9 +10,9 @@ in vec3 viewDir;
 in vec4 vertexColor;
 in vec4 coreColor;
 in vec2 vertCoord;
+in vec4 params;
 
 out vec4 fragColor;
-
 /*
 float near = Near;
 float far = Far;
@@ -34,8 +34,8 @@ vec4 Overlay(vec4 targetColor, vec4 overlayColor){
 }*/
 
 void main() {
-    float coreSize = vertCoord.x;
-    float feather  = vertCoord.y;
+    //float coreSize = vertCoord.x;
+    //float feather  = vertCoord.y;
 
     vec3 viewAngle = normalize(-viewDir);
 
@@ -43,10 +43,9 @@ void main() {
     // The more orthogonal the camera is to the fragment, the stronger the rim light.
     // abs() so that the back faces get treated the same as the front, giving a rim effect.
     float rimStrength = 1 - max(dot(viewAngle, normal),0.0f); // The more orthogonal, the stronger
-
     //float rimFactor = pow(rimStrength, 1.0f)*1.6; // higher power = sharper rim light
-    float rimFactor  = pow(max(rimStrength-feather,0.0f), 2) ; // higher power = sharper rim light
-    float rimFactor2 = pow(rimStrength+1.0f-coreSize,     2) ; // higher power = sharper rim light
+    float rimFactor  = pow(rimStrength-params.z, params.w) ; // higher power = sharper rim light
+    float rimFactor2 = pow(rimStrength+1.0f-params.x, params.y) ; // higher power = sharper rim light
 
     //float rimFactor = (-cos(pow(min(rimStrength,0.5f)/0.5f,3.0f)*3.1415926)+1)/2;
     vec4 rim  = vec4(rimFactor);

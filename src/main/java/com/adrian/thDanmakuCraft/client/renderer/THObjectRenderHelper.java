@@ -187,9 +187,6 @@ public class THObjectRenderHelper {
                 Vector3f scaleF          = scale.toVector3f();
                 Vector3f offsetPositionF = offsetPosition.toVector3f();
 
-
-                //Vector3f vertex = new Vector3f(x1*sin1,cos1,z1*sin1).mul(scaleF).add(offsetPositionF);
-                //Vector3f normal = new Vector3f(x1*sin1,cos1,z1*sin1).mul(scaleF).normalize();
                 Vector3f[] vertex = new Vector3f[] {
                         new Vector3f(x1*sin1,cos1,z1*sin1).mul(scaleF).add(offsetPositionF),
                         new Vector3f(x2*sin1,cos1,z2*sin1).mul(scaleF).add(offsetPositionF),
@@ -197,45 +194,39 @@ public class THObjectRenderHelper {
                         new Vector3f(x1*sin2,cos2,z1*sin2).mul(scaleF).add(offsetPositionF),
                 };
                 Vector3f[] normal = vertex;
-                /*
-                Vector3f[] normal = new Vector3f[] {
-                        new Vector3f(x1*sin1,cos1,z1*sin1).mul(scaleF).normalize(),
-                        new Vector3f(x2*sin1,cos1,z2*sin1).mul(scaleF).normalize(),
-                        new Vector3f(x2*sin2,cos2,z2*sin2).mul(scaleF).normalize(),
-                        new Vector3f(x1*sin2,cos2,z1*sin2).mul(scaleF).normalize(),
-                };*/
                 consumer.vertex(pose.pose(),vertex[0].x,vertex[0].y,vertex[0].z)
                         .color(startColor.r, startColor.g, startColor.b, startColor.a)
                         .color(coreColor.r, coreColor.g, coreColor.b, coreColor.a)
+                        //.uv(0.0f, 0.0f)
                         .uv(uvStart.x, uvStart.y)
-                        .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(combinedOverlay)
+                        .uv(uvEnd.x  , uvEnd.y)
                         .normal(pose, normal[0].x, normal[0].y, normal[0].z)
                         .endVertex();
 
-                //vertex = new Vector3f(x2*sin1,cos1,z2*sin1).mul(scaleF).add(offsetPositionF);
                 consumer.vertex(pose.pose(),vertex[1].x,vertex[1].y,vertex[1].z)
                         .color(startColor.r, startColor.g, startColor.b, startColor.a)
                         .color(coreColor.r, coreColor.g, coreColor.b, coreColor.a)
+                        //.uv(0.0f, 0.0f)
                         .uv(uvStart.x, uvStart.y)
-                        .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(combinedOverlay)
+                        .uv(uvEnd.x  , uvEnd.y)
                         .normal(pose, normal[1].x, normal[1].y, normal[1].z)
                         .endVertex();
 
-                //vertex = new Vector3f(x2*sin2,cos2,z2*sin2).mul(scaleF).add(offsetPositionF);
                 consumer.vertex(pose.pose(),vertex[2].x,vertex[2].y,vertex[2].z)
                         .color(finalColor.r, finalColor.g, finalColor.b, finalColor.a)
                         .color(coreColor.r, coreColor.g, coreColor.b, coreColor.a)
+                        //.uv(0.0f, 0.0f)
                         .uv(uvStart.x, uvStart.y)
-                        .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(combinedOverlay)
+                        .uv(uvEnd.x  , uvEnd.y)
                         .normal(pose, normal[2].x, normal[2].y, normal[2].z)
                         .endVertex();
 
-                //vertex = new Vector3f(x1*sin2,cos2,z1*sin2).mul(scaleF).add(offsetPositionF);
                 consumer.vertex(pose.pose(),vertex[3].x,vertex[3].y,vertex[3].z)
                         .color(finalColor.r, finalColor.g, finalColor.b, finalColor.a)
                         .color(coreColor.r, coreColor.g, coreColor.b, coreColor.a)
+                        //.uv(0.0f, 0.0f)
                         .uv(uvStart.x, uvStart.y)
-                        .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(combinedOverlay)
+                        .uv(uvEnd.x  , uvEnd.y)
                         .normal(pose, normal[3].x, normal[3].y, normal[3].z)
                         .endVertex();
 

@@ -1,7 +1,7 @@
 package com.adrian.thDanmakuCraft.world.item;
 
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
-import com.adrian.thDanmakuCraft.world.THObjectContainer;
+import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;

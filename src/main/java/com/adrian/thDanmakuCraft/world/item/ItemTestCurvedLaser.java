@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.world.item;
 
-import com.adrian.thDanmakuCraft.world.THObjectContainer;
+import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -43,7 +43,6 @@ public class ItemTestCurvedLaser extends Item {
         container.setUser(player);
         container.setLuaClassKey("testContainer");
         container.scriptEvent("onInit",container.getLuaValue());
-        //level.addFreshEntity(entityTHObjectContainer);
         //player.getCooldowns().addCooldown(this, 20);
         return InteractionResultHolder.sidedSuccess(itemstack, level.isClientSide());
     }

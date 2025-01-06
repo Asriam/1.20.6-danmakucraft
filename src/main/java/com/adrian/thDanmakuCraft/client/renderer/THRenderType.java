@@ -107,8 +107,9 @@ public class THRenderType extends RenderType{
                     .put("Position", DefaultVertexFormat.ELEMENT_POSITION)
                     .put("Color"   , DefaultVertexFormat.ELEMENT_COLOR)
                     .put("Color2"  , DefaultVertexFormat.ELEMENT_COLOR)
-                    .put("UV"      , DefaultVertexFormat.ELEMENT_UV)
+                    //.put("UV"      , DefaultVertexFormat.ELEMENT_UV)
                     .put("UV2"     , DefaultVertexFormat.ELEMENT_UV)
+                    .put("UV3"     , DefaultVertexFormat.ELEMENT_UV)
                     .put("Normal"  , DefaultVertexFormat.ELEMENT_NORMAL)
                     .build()
     );

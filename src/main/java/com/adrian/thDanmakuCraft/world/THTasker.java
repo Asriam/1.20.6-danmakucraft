@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.world;
 
+import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.google.common.collect.Lists;
 
 import java.util.ArrayList;

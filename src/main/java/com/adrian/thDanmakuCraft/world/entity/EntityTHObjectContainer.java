@@ -1,7 +1,8 @@
 package com.adrian.thDanmakuCraft.world.entity;
 
 import com.adrian.thDanmakuCraft.init.EntityInit;
-import com.adrian.thDanmakuCraft.world.THObjectContainer;
+import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -20,6 +21,12 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
 
     public EntityTHObjectContainer(Level level, Vec3 pos) {
         this(EntityInit.ENTITY_THOBJECT_CONTAINER.get(),level);
+        this.setPos(pos);
+    }
+
+    public EntityTHObjectContainer(String luaClass, Level level, Vec3 pos) {
+        super(EntityInit.ENTITY_THOBJECT_CONTAINER.get(),level);
+        this.container = new THObjectContainer(this,luaClass);
         this.setPos(pos);
     }
 

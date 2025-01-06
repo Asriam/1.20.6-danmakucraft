@@ -1,4 +1,4 @@
-package com.adrian.thDanmakuCraft.world;
+package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.api.script.IScriptTHObjectContainerAPI;
@@ -6,8 +6,10 @@ import com.adrian.thDanmakuCraft.script.IScript;
 import com.adrian.thDanmakuCraft.script.ScriptManager;
 import com.adrian.thDanmakuCraft.script.lua.LuaCore;
 import com.adrian.thDanmakuCraft.script.lua.LuaManager;
+import com.adrian.thDanmakuCraft.world.ILuaValue;
+import com.adrian.thDanmakuCraft.world.THTasker;
+import com.adrian.thDanmakuCraft.world.TargetUserManager;
 import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
-import com.adrian.thDanmakuCraft.world.danmaku.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.google.common.collect.Maps;
@@ -20,7 +22,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.*;
@@ -110,7 +111,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
                             );
                     a.setLifetime(100);
                     a.setBlend(THObject.Blend.add);
-                    a.setBlend(THObject.Blend.class.getEnumConstants()[(int) ((THObject.Blend.class.getEnumConstants().length)*random.nextFloat())]);
+                    //a.setBlend(THObject.Blend.class.getEnumConstants()[(int) ((THObject.Blend.class.getEnumConstants().length)*random.nextFloat())]);
                     //a.blend = THObject.BlendMode.add;
                 }
             }
@@ -185,6 +186,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
     }
 
     public void tick() {
+        this.targetUserManager.loadUserAndTarget(level());
         if(luaClass == null || luaClass.isnil()) {
             this.luaClass = LuaCore.getInstance().getLuaClass(this.getLuaClassKey());
         }
@@ -194,7 +196,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
             this.scriptEvent("onInit",this.getLuaValue());
         }
         this.setBound(this.position(),this.bound);
-        //this.task();
+        this.task();
         this.entitiesInBound = this.level().getEntities(this.hostEntity,this.getAabb()).stream().filter((entity -> !(entity.equals(this.hostEntity)) && !(entity instanceof EntityTHObjectContainer))).toList();
 
         if(flag) {
@@ -259,7 +261,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
     @Nullable
     public Entity getUser(){
         //THDanmakuCraftCore.LOGGER.info(""+this.targetUserManager.safeGetUser());
-        return this.targetUserManager.safeGetUser();
+        return this.targetUserManager.unsafeGetUser();
     }
 
     public void setTarget(Entity target) {
@@ -268,7 +270,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
 
     @Nullable
     public Entity getTarget() {
-        return this.targetUserManager.safeGetTarget();
+        return this.targetUserManager.unsafeGetTarget();
     }
 
     public List<Entity> getEntitiesInBound(){
@@ -540,6 +542,8 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         library.set( "createTHCurvedLaser", createTHCurvedLaser);
         library.set( "getParameterManager", getParameterManager);
         library.set( "discard", discard);
+
+        library.set( "source", LuaValue.userdataOf(this));
         return library;
     }
 

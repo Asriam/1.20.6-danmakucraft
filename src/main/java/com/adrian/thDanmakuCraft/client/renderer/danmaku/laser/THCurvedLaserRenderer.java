@@ -1,7 +1,8 @@
-package com.adrian.thDanmakuCraft.client.renderer.danmaku;
+package com.adrian.thDanmakuCraft.client.renderer.danmaku.laser;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.client.renderer.THObjectRenderHelper;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.AbstractTHObjectRenderer;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -57,8 +58,8 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
                     Vec3.ZERO,
                     new Vec3(width2, width2, width2),
                     6, 10, true,
-                    new Vec2(0.4f, 0.0f),
-                    Vec2.ONE,
+                    new Vec2(0.4f, 2.0f),
+                    new Vec2(0.0f, 2.0f),
                     laserColor, laserColor, coreColor);
             poseStack.popPose();
         }

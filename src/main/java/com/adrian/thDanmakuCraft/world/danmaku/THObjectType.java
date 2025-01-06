@@ -1,7 +1,6 @@
 package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.registries.THDanmakuCraftRegistries;
-import com.adrian.thDanmakuCraft.world.THObjectContainer;
 import net.minecraft.resources.ResourceLocation;
 
 import org.jetbrains.annotations.Nullable;

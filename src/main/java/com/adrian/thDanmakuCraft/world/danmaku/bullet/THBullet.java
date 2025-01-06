@@ -2,10 +2,7 @@ package com.adrian.thDanmakuCraft.world.danmaku.bullet;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
-import com.adrian.thDanmakuCraft.world.THObjectContainer;
-import com.adrian.thDanmakuCraft.world.danmaku.THImage;
-import com.adrian.thDanmakuCraft.world.danmaku.THObject;
-import com.adrian.thDanmakuCraft.world.danmaku.THObjectType;
+import com.adrian.thDanmakuCraft.world.danmaku.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;

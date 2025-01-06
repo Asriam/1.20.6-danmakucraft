@@ -1,6 +1,9 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku;
 
 
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.bullet.THBulletRenderer;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.laser.THCurvedLaserRenderer;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.laser.THLaserRenderer;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectType;

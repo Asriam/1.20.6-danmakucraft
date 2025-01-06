@@ -1,6 +1,8 @@
-package com.adrian.thDanmakuCraft.client.renderer.danmaku;
+package com.adrian.thDanmakuCraft.client.renderer.danmaku.bullet;
 
 import com.adrian.thDanmakuCraft.client.renderer.THObjectRenderHelper;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.AbstractTHObjectRenderer;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -47,8 +49,8 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
                         Vec3.ZERO,
                         new Vec3(scale, scale, scale),
                         6, 10, true,
-                        new Vec2(0.4f, 0.0f),
-                        Vec2.ONE,
+                        new Vec2(0.4f, 2.0f),
+                        new Vec2(0.0f, 2.0f),
                         bullet.getBulletColor().getColor(),
                         bullet.getBulletColor().getColor(),
                         bullet.getColor());

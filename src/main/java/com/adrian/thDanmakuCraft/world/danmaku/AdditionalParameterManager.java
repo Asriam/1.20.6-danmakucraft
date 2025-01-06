@@ -1,6 +1,7 @@
-package com.adrian.thDanmakuCraft.world;
+package com.adrian.thDanmakuCraft.world.danmaku;
 
-import com.adrian.thDanmakuCraft.world.danmaku.THObject;
+import com.adrian.thDanmakuCraft.world.IDataStorage;
+import com.adrian.thDanmakuCraft.world.ILuaValue;
 import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
 import com.adrian.thDanmakuCraft.world.danmaku.laser.THLaser;
@@ -14,7 +15,7 @@ import org.luaj.vm2.lib.*;
 import java.util.Map;
 import java.util.UUID;
 
-public class AdditionalParameterManager implements IDataStorage, ILuaValue{
+public class AdditionalParameterManager implements IDataStorage, ILuaValue {
 
     private final THObjectContainer container;
     private final Map<String, Parameter<?>> parameterMap;
