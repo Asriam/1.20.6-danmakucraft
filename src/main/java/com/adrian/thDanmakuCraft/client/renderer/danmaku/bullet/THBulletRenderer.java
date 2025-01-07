@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku.bullet;
 
-import com.adrian.thDanmakuCraft.client.renderer.THObjectRenderHelper;
+import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
@@ -45,7 +45,7 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
                 poseStack.pushPose();
                 poseStack.mulPose(this.getRenderDispatcher().cameraOrientation());
                 poseStack.mulPose(Axis.XP.rotationDegrees(-90.0F));
-                THObjectRenderHelper.renderSphere(vertexConsumer, poseStack.last(), overlay, 1,
+                RenderUtil.renderSphere(vertexConsumer, poseStack.last(), overlay, 1,
                         Vec3.ZERO,
                         new Vec3(scale, scale, scale),
                         6, 10, true,

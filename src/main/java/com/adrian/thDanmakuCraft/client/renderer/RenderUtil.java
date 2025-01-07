@@ -14,7 +14,7 @@ import org.joml.*;
 import java.lang.Math;
 
 @OnlyIn(Dist.CLIENT)
-public class THObjectRenderHelper {
+public class RenderUtil {
     public static Vector3f calculateNormal(Vector3f vertex1, Vector3f vertex2, Vector3f vertex3, Vector3f vertex4){
         Vector3f edge1_1 = new Vector3f(vertex2).sub(vertex1);
         Vector3f edge2_1 = new Vector3f(vertex3).sub(vertex1);

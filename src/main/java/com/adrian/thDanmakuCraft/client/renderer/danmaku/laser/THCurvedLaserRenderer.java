@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku.laser;
 
-import com.adrian.thDanmakuCraft.client.renderer.THObjectRenderHelper;
+import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
@@ -47,21 +47,23 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
         //VertexConsumer vertexConsumer = bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE);
 
         var nodes0 = laser.nodeManager.getAllNodes();
-        float width2 = laser.width * 3.0f * (float) Math.pow((double) (nodes0.size() - (laser.getTimer()+partialTicks)) / nodes0.size(),0.4f);
-        if (width2 > 0) {
-            poseStack.pushPose();
-            Vec3 prePos = laserPos.vectorTo(nodes0.getLast().getOffsetPosition(partialTicks));
-            poseStack.translate(prePos.x, prePos.y, prePos.z);
-            poseStack.mulPose(this.getRenderDispatcher().cameraOrientation());
-            poseStack.mulPose(Axis.XP.rotationDegrees(-90.0F));
-            THObjectRenderHelper.renderSphere(vertexConsumer, poseStack.last(), combinedOverlay, 1,
-                    Vec3.ZERO,
-                    new Vec3(width2, width2, width2),
-                    6, 10, true,
-                    new Vec2(0.4f, 2.0f),
-                    new Vec2(0.0f, 2.0f),
-                    laserColor, laserColor, coreColor);
-            poseStack.popPose();
+        if(laser.spawnAnimation) {
+            float width2 = laser.width * 3.0f * (float) Math.pow((double) (nodes0.size() - (laser.getTimer() + partialTicks)) / nodes0.size(), 0.4f);
+            if (width2 > 0) {
+                poseStack.pushPose();
+                Vec3 prePos = laserPos.vectorTo(nodes0.getLast().getOffsetPosition(partialTicks));
+                poseStack.translate(prePos.x, prePos.y, prePos.z);
+                poseStack.mulPose(this.getRenderDispatcher().cameraOrientation());
+                poseStack.mulPose(Axis.XP.rotationDegrees(-90.0F));
+                RenderUtil.renderSphere(vertexConsumer, poseStack.last(), combinedOverlay, 1,
+                        Vec3.ZERO,
+                        new Vec3(width2, width2, width2),
+                        6, 10, true,
+                        new Vec2(0.4f, 2.0f),
+                        new Vec2(0.0f, 2.0f),
+                        laserColor, laserColor, coreColor);
+                poseStack.popPose();
+            }
         }
 
         List<List<THCurvedLaser.LaserNode>> piecewisedNodeList = Lists.newArrayList();
@@ -173,10 +175,10 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
                             lastNormal_3[i] = normal4_1;
                             lastNormal_4[i] = normal4_2;
 
-                            THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos3_1.toVector3f(), normal3_1.toVector3f(), new Vector2f(0.5f, 0.0f), coreColor, GRAY);
-                            THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos4_1.toVector3f(), normal4_1.toVector3f(), new Vector2f(0.5f, 0.0f), coreColor, GRAY);
-                            THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos4_2.toVector3f(), normal4_2.toVector3f(), new Vector2f(0.5f, 0.0f), coreColor, GRAY);
-                            THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos3_2.toVector3f(), normal3_2.toVector3f(), new Vector2f(0.5f, 0.0f), coreColor, GRAY);
+                            RenderUtil.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos3_1.toVector3f(), normal3_1.toVector3f(), new Vector2f(0.5f, 0.0f), coreColor, GRAY);
+                            RenderUtil.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos4_1.toVector3f(), normal4_1.toVector3f(), new Vector2f(0.5f, 0.0f), coreColor, GRAY);
+                            RenderUtil.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos4_2.toVector3f(), normal4_2.toVector3f(), new Vector2f(0.5f, 0.0f), coreColor, GRAY);
+                            RenderUtil.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos3_2.toVector3f(), normal3_2.toVector3f(), new Vector2f(0.5f, 0.0f), coreColor, GRAY);
                         }
 
                         //external render
@@ -201,10 +203,10 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
                         lastNormal_1[i] = normal2_1;
                         lastNormal_2[i] = normal2_2;
 
-                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos1_1.toVector3f(), normal1_1.toVector3f(), new Vector2f(0.4f, -0.1f), laserColor, coreColor2);
-                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos2_1.toVector3f(), normal2_1.toVector3f(), new Vector2f(0.4f, -0.1f), laserColor, coreColor2);
-                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos2_2.toVector3f(), normal2_2.toVector3f(), new Vector2f(0.4f, -0.1f), laserColor, coreColor2);
-                        THObjectRenderHelper.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos1_2.toVector3f(), normal1_2.toVector3f(), new Vector2f(0.4f, -0.1f), laserColor, coreColor2);
+                        RenderUtil.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos1_1.toVector3f(), normal1_1.toVector3f(), new Vector2f(0.4f, -0.1f), laserColor, coreColor2);
+                        RenderUtil.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos2_1.toVector3f(), normal2_1.toVector3f(), new Vector2f(0.4f, -0.1f), laserColor, coreColor2);
+                        RenderUtil.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos2_2.toVector3f(), normal2_2.toVector3f(), new Vector2f(0.4f, -0.1f), laserColor, coreColor2);
+                        RenderUtil.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos1_2.toVector3f(), normal1_2.toVector3f(), new Vector2f(0.4f, -0.1f), laserColor, coreColor2);
                     }
                 }
             }

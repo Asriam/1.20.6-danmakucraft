@@ -37,6 +37,8 @@ void main() {
     //float coreSize = vertCoord.x;
     //float feather  = vertCoord.y;
 
+    //gl_Position.y += 1.0f;
+
     vec3 viewAngle = normalize(-viewDir);
 
     vec2 texCoord = gl_FragCoord.xy/ScreenSize;
