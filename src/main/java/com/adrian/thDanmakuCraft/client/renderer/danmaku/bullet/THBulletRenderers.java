@@ -70,8 +70,8 @@ public class THBulletRenderers {
                         offset,
                         scale,
                         edgeA, edgeB, true,
-                        new Vec2(0.5f, 0.6f),
-                        Vec2.ONE,
+                        new Vec2(0.5f, 2.0f),
+                        new Vec2(0.6f, 2.0f),
                         color, 0, coreColor.multiply(0.4f));
             }
         }
