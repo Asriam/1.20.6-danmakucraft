@@ -100,7 +100,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
     }
 
     public void task(){
-        boolean flag = false;
+        boolean flag = true;
 
         if(this.objectManager.isEmpty() && !flag) {
             for (int j = 0; j< THBullet.DefaultBulletStyle.class.getEnumConstants().length; j++) {

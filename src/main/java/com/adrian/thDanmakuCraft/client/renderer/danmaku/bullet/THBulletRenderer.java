@@ -75,7 +75,7 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
     }
 
     @OnlyIn(Dist.CLIENT)
-    public enum BULLET_QUALITY_LEVEL {
+    public enum BULLET_LEVEL_OF_DETAIL {
         VERY_VERY_CLOSE(12,12,false),
         VERY_CLOSE(10,10,false),
         CLOSE(8,8,false),
@@ -88,13 +88,13 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
         public final int edgeBNum;
         public boolean is2D;
 
-        BULLET_QUALITY_LEVEL(int edgeA, int edgeB, boolean is2D){
+        BULLET_LEVEL_OF_DETAIL(int edgeA, int edgeB, boolean is2D){
             this.edgeANum = edgeA;
             this.edgeBNum = edgeB;
             this.is2D = is2D;
         }
 
-        public static BULLET_QUALITY_LEVEL getQualityLevel(THObject object, double camX, double camY, double camZ){
+        public static BULLET_LEVEL_OF_DETAIL getQualityLevel(THObject object, double camX, double camY, double camZ){
             Vec3 pos = object.getPosition();
             double d0 = pos.x - camX;
             double d1 = pos.y - camY;

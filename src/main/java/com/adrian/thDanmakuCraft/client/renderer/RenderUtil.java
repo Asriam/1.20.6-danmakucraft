@@ -9,12 +9,26 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.apache.commons.compress.utils.Lists;
 import org.joml.*;
 
 import java.lang.Math;
+import java.util.List;
 
 @OnlyIn(Dist.CLIENT)
 public class RenderUtil {
+    public static List<Quad> quadList = Lists.newArrayList();
+
+    public record Quad(Vertex vertex1,
+                       Vertex vertex2,
+                       Vertex vertex3,
+                       Vertex vertex4) {
+
+        public record Vertex(Matrix4f pose, Vector3f pos){
+
+        }
+    }
+
     public static Vector3f calculateNormal(Vector3f vertex1, Vector3f vertex2, Vector3f vertex3, Vector3f vertex4){
         Vector3f edge1_1 = new Vector3f(vertex2).sub(vertex1);
         Vector3f edge2_1 = new Vector3f(vertex3).sub(vertex1);
@@ -195,7 +209,14 @@ public class RenderUtil {
                         new Vector3f(x1*sin2,cos2,z1*sin2).mul(scaleF).add(offsetPositionF),
                 };
                 Vector3f[] normal = vertex;
-                consumer.vertex(pose.pose(),vertex[0].x,vertex[0].y,vertex[0].z)
+                Matrix4f pose$ = pose.pose();
+                /*
+                quadList.add(new Quad(new Quad.Vertex(pose$,vertex[0]),
+                                      new Quad.Vertex(pose$,vertex[1]),
+                                      new Quad.Vertex(pose$,vertex[2]),
+                                      new Quad.Vertex(pose$,vertex[3])
+                ));*/
+                consumer.vertex(pose$,vertex[0].x,vertex[0].y,vertex[0].z)
                         .color(startColor.r, startColor.g, startColor.b, startColor.a)
                         .color(coreColor.r, coreColor.g, coreColor.b, coreColor.a)
                         //.uv(0.0f, 0.0f)
@@ -204,7 +225,7 @@ public class RenderUtil {
                         .normal(pose, normal[0].x, normal[0].y, normal[0].z)
                         .endVertex();
 
-                consumer.vertex(pose.pose(),vertex[1].x,vertex[1].y,vertex[1].z)
+                consumer.vertex(pose$,vertex[1].x,vertex[1].y,vertex[1].z)
                         .color(startColor.r, startColor.g, startColor.b, startColor.a)
                         .color(coreColor.r, coreColor.g, coreColor.b, coreColor.a)
                         //.uv(0.0f, 0.0f)
@@ -213,7 +234,7 @@ public class RenderUtil {
                         .normal(pose, normal[1].x, normal[1].y, normal[1].z)
                         .endVertex();
 
-                consumer.vertex(pose.pose(),vertex[2].x,vertex[2].y,vertex[2].z)
+                consumer.vertex(pose$,vertex[2].x,vertex[2].y,vertex[2].z)
                         .color(finalColor.r, finalColor.g, finalColor.b, finalColor.a)
                         .color(coreColor.r, coreColor.g, coreColor.b, coreColor.a)
                         //.uv(0.0f, 0.0f)
@@ -222,7 +243,7 @@ public class RenderUtil {
                         .normal(pose, normal[2].x, normal[2].y, normal[2].z)
                         .endVertex();
 
-                consumer.vertex(pose.pose(),vertex[3].x,vertex[3].y,vertex[3].z)
+                consumer.vertex(pose$,vertex[3].x,vertex[3].y,vertex[3].z)
                         .color(finalColor.r, finalColor.g, finalColor.b, finalColor.a)
                         .color(coreColor.r, coreColor.g, coreColor.b, coreColor.a)
                         //.uv(0.0f, 0.0f)

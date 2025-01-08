@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderHighlightEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -32,12 +33,6 @@ public class RenderEvents {
          */
     }
 
-    @SubscribeEvent
-    public static void RenderHighlight(RenderHighlightEvent event){
-
-    }
-
-
     public static void registerRenderLevelStageTask(String name, RenderLevelStageEvent.Stage stage, RenderTask renderHelper){
         //if(renderLevelStageTasks.get(name) == null) renderLevelStageTasks.put(name, new RenderLevelStageTask(stage, renderHelper));
         renderLevelStageTasks.computeIfAbsent(name, k -> new RenderLevelStageTask(stage, renderHelper));
@@ -64,5 +59,15 @@ public class RenderEvents {
     public interface RenderTask {
 
         void render(PoseStack poseStack,float partialTick);
+    }
+
+    @SubscribeEvent
+    public static void renderTickPre(TickEvent.RenderTickEvent.Pre event) {
+        //RenderUtil.quadList.clear();
+    }
+
+    @SubscribeEvent
+    public static void renderTickPost(TickEvent.RenderTickEvent.Post event) {
+        //THDanmakuCraftCore.LOGGER.info("Quads mount:" + RenderUtil.quadList.size());
     }
 }

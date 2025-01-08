@@ -12,6 +12,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@Deprecated
 public class PlayerTHObjectContainerProvider implements ICapabilityProvider, INBTSerializable<CompoundTag> {
 
     public static Capability<PlayerTHObjectContainerProvider> PLAYER_THOBJECT_CONTAINER_CAPABILITY = CapabilityManager.get(new CapabilityToken<PlayerTHObjectContainerProvider>() { });

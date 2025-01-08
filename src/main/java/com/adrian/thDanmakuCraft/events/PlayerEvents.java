@@ -24,11 +24,12 @@ public class PlayerEvents {
     @SubscribeEvent
     public static void onAttachCapabilities(AttachCapabilitiesEvent<Entity> event) {
         Entity entity = event.getObject();
+        /*
         if(entity instanceof Player) {
             if(!entity.getCapability(PlayerTHObjectContainerProvider.PLAYER_THOBJECT_CONTAINER_CAPABILITY).isPresent()) {
                 event.addCapability(new ResourceLocation(THDanmakuCraftCore.MOD_ID, "thobject_container"), new PlayerTHObjectContainerProvider());
             }
-        }
+        }*/
     }
 
     /*

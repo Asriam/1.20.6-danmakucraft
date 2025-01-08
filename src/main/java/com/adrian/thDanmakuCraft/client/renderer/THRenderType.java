@@ -153,6 +153,7 @@ public class THRenderType extends RenderType{
                     .setLightmapState(NO_LIGHTMAP)
                     .setOverlayState(NO_OVERLAY)
                     .setWriteMaskState(COLOR_WRITE)
+                    .setLayeringState(VIEW_OFFSET_Z_LAYERING)
                     //.setWriteMaskState(COLOR_DEPTH_WRITE)
                     //.setDepthTestState(NO_DEPTH_TEST)
                     .setOutputState(TRANSLUCENT_TARGET)

@@ -26,6 +26,7 @@ void main() {
 
     vec4 viewSpace = ModelViewMat * vec4(Position, 1.0f);
     viewDir = vec3(viewSpace);
+    //real position
     gl_Position = ProjMat * viewSpace;
 
     vertexColor = Color;
