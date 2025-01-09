@@ -430,6 +430,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         }else {
             object.scriptEvent("onInit", LuaValue.varargsOf(luaObject, args));
         }
+        object.spawn();
     }
 
     private static final LibFunction getMaxObjectAmount = new OneArgFunction(){

@@ -32,7 +32,7 @@ import java.util.UUID;
 import static com.adrian.thDanmakuCraft.world.LuaValueHelper.*;
 
 public class THObject implements IScript, ILuaValue {
-    private static final Logger log = LoggerFactory.getLogger(THObject.class);
+    //private static final Logger log = LoggerFactory.getLogger(THObject.class);
     private final THObjectType<? extends THObject> type;
     private final AdditionalParameterManager parameterManager;
     private final Level level;

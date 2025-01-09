@@ -4,7 +4,6 @@ local num = 1
 local testBullet = core.registerClass("testBullet")
 function testBullet:onInit(i)
     self:setVelocity(core.newVec3(0.2,0.0,0.0):yRot(math.pi*2/32*i),true)
-    self:spawn()
     self:setNavi(true)
 end
 
@@ -15,7 +14,6 @@ end
 ---@type THBullet
 local testBullet2 = core.registerClass("testBullet2",testBullet)
 function testBullet2:onInit(i)
-    --self:spawn()
     self.class.super.onInit(self,i)
 end
 
@@ -28,14 +26,13 @@ end
 local testLaser = core.registerClass("testLaser")
 function testLaser:onInit(i)
     self:setLifetime(600)
-    self:getParameterManager():register("Double","angle",360/num*i + 0.001)
-    local userRot = self:getContainer():getParameterManager():getDouble("userAngle")
-    self:spawn()
+    self.parameterManager:register("Double","angle",360/num*i + 0.001)
+    local userRot = self:getContainer().parameterManager:getDouble("userAngle")
 end
 
 function testLaser:onTick()
-    local userRot = self:getContainer():getParameterManager():getDouble("userAngle")
-    local angle = self:getParameterManager():getDouble("angle")
+    local userRot = self:getContainer().parameterManager:getDouble("userAngle")
+    local angle = self.parameterManager:getDouble("angle")
     --local angle = self.angle
     self:setVelocityFromRotation(0.2,
             {
@@ -50,7 +47,7 @@ end
 local container = core.registerClass("testContainer")
 function container:onInit()
     local userRot = self:getUser():getRotation().y
-    self:getParameterManager():register("Double","userAngle",userRot)
+    self.parameterManager:register("Double","userAngle",userRot)
     for i = 1,num  do
         local laser = self:createTHCurvedLaser(testLaser, {i}, self:getPosition(),1,12,0.5)
     end
