@@ -383,14 +383,14 @@ public class THCurvedLaser extends THObject {
     }
 
     @Override
-    public LuaValue ofLuaValue(){
-        LuaValue library = super.ofLuaValue();
+    public LuaValue ofLuaClass(){
+        LuaValue library = super.ofLuaClass();
         return library;
     }
 
     @Override
-    public LuaValue getLuaValue(){
-        LuaValue library = super.getLuaValue();
+    public LuaValue ofLuaValue(){
+        LuaValue library = super.ofLuaValue();
         return library;
     }
 

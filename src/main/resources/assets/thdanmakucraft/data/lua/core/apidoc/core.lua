@@ -38,3 +38,7 @@ function core.newVec3(x,y,z) end
 ---@overload fun(className:string, parentClass:Class)
 ---@overload fun(className:string, parentClassName:string)
 function core.registerClass(className, parentClass) end
+
+---@param className self
+---@return Class
+function core.getClass(className) end

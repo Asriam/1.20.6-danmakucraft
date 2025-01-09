@@ -4,7 +4,7 @@ import org.luaj.vm2.LuaValue;
 
 public interface ILuaValue {
 
-    LuaValue ofLuaValue();
+    LuaValue ofLuaClass();
 
-    LuaValue getLuaValue();
+    LuaValue ofLuaValue();
 }

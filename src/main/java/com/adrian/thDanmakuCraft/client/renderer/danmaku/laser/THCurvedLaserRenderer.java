@@ -55,7 +55,7 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
                 poseStack.translate(prePos.x, prePos.y, prePos.z);
                 poseStack.mulPose(this.getRenderDispatcher().cameraOrientation());
                 poseStack.mulPose(Axis.XP.rotationDegrees(-90.0F));
-                RenderUtil.renderSphere(vertexConsumer, poseStack.last(), combinedOverlay, 1,
+                RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 1,
                         Vec3.ZERO,
                         new Vec3(width2, width2, width2),
                         6, 10, true,

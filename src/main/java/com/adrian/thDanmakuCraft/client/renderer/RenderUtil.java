@@ -119,7 +119,7 @@ public class RenderUtil {
                 .endVertex();
     }
 
-    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, int combinedOverlay, float pow, Vec3 offsetPosition, Vec3 scale, final int edgeA, final int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, THObject.Color color, THObject.Color endColor, THObject.Color coreColor) {
+    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, float pow, Vec3 offsetPosition, Vec3 scale, final int edgeA, final int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, THObject.Color color, THObject.Color endColor, THObject.Color coreColor) {
         //THDanmakuCraftCore.LOGGER.info(THObjectRenderHelper.class.getName());
 
         THObject.Color startColor = color;
@@ -136,6 +136,12 @@ public class RenderUtil {
 
         angle2 = Mth.DEG_TO_RAD * (360.0f/edgeB);
         int edge3 = edgeADiv2-1;
+        /*
+        deColor.r = (startColor.r - endColor.r)/ edge3;
+        deColor.g = (startColor.g - endColor.g)/ edge3;
+        deColor.b = (startColor.b - endColor.b)/ edge3;
+        deColor.a = (startColor.a - endColor.a)/ edge3;*/
+
         if (startColor.r != endColor.r){
             deColor.r = (startColor.r - endColor.r)/ edge3;
         }
@@ -156,10 +162,6 @@ public class RenderUtil {
                 currentX1 = Mth.cos((angle2 * j));
                 currentZ1 = Mth.sin((angle2 * j));
             }
-            /*
-            float x1 = Mth.cos((angle2 * j));
-            float z1 = Mth.sin((angle2 * j));
-             */
             float x1 = currentX1;
             float z1 = currentZ1;
 
@@ -177,9 +179,6 @@ public class RenderUtil {
                     currentSin01 = Mth.sin(i*angle1);
                     currentCos1  = Mth.cos(i*angle1);
                 }
-
-                //float sin01 = Mth.sin(i*angle1);
-                //float cos1 = Mth.cos(i*angle1);
                 float sin01 = currentSin01;
                 float cos1 = currentCos1;
                 float sin02 = Mth.sin((i+1)*angle1);
@@ -189,7 +188,7 @@ public class RenderUtil {
                 currentCos1  = cos2;
 
                 float sin1,sin2;
-                if (pow == 1.0){
+                if (pow == 1.0f){
                     sin1 = sin01;
                     sin2 = sin02;
                 }else {
@@ -257,11 +256,11 @@ public class RenderUtil {
         }
     }
 
-    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, int combinedOverlay, float pow, Vec3 offsetPosition, Vec3 scale, int edgeA, int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, THObject.Color color, int alpha, THObject.Color coreColor) {
-        renderSphere(consumer,pose,combinedOverlay,pow,offsetPosition,scale,edgeA,edgeB,isHalf,uvStart,uvEnd,color,THObject.Color(color.r,color.g,color.b,alpha),coreColor);
+    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, float pow, Vec3 offsetPosition, Vec3 scale, int edgeA, int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, THObject.Color color, int alpha, THObject.Color coreColor) {
+        renderSphere(consumer,pose,pow,offsetPosition,scale,edgeA,edgeB,isHalf,uvStart,uvEnd,color,THObject.Color(color.r,color.g,color.b,alpha),coreColor);
     }
 
-    public static void renderCuboid(VertexConsumer consumer, PoseStack.Pose pose,int combinedOverlay, Vec3 posOffset, Vec3 scale){
+    public static void renderCuboid(VertexConsumer consumer, PoseStack.Pose pose, Vec3 posOffset, Vec3 scale){
 
     }
 }

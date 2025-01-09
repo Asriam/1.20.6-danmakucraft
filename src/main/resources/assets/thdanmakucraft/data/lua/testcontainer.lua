@@ -9,7 +9,19 @@ function testBullet:onInit(i)
 end
 
 function testBullet:onTick()
-    ---self.move(0.0,0.1,0.0)
+    self:move(0.0,0.1,0.0)
+end
+
+---@type THBullet
+local testBullet2 = core.registerClass("testBullet2",testBullet)
+function testBullet2:onInit(i)
+    --self:spawn()
+    self.class.super.onInit(self,i)
+end
+
+function testBullet2:onTick()
+    --print("fuck")
+    self.class.super.onTick(self)
 end
 
 ---@type THCurvedLaser
@@ -17,7 +29,7 @@ local testLaser = core.registerClass("testLaser")
 function testLaser:onInit(i)
     self:setLifetime(600)
     self:getParameterManager():register("Double","angle",360/num*i + 0.001)
-    --self.angle = 360/num*i + 0.001
+    local userRot = self:getContainer():getParameterManager():getDouble("userAngle")
     self:spawn()
 end
 
@@ -45,7 +57,7 @@ function container:onInit()
 
     for i = 1,32 do
         ---@type THBullet
-        local bullet = self:createTHBullet(testBullet, {i}, self:getPosition(),"arrow_big",1)
+        local bullet = self:createTHBullet(testBullet2, {i}, self:getPosition(),"arrow_big",1)
     end
 end
 

@@ -271,7 +271,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
             LevelRenderer.renderLineBox(poseStack, vertexConsumer, aabb, 0.0F, 1.0F, 1.0F, 1.0F);
         }else if(object.getCollisionType() == THObject.CollisionType.SPHERE){
             THObject.Color color = THObject.Color(0,255,255,255);
-            RenderUtil.renderSphere(vertexConsumer,poseStack.last(), 0,1,
+            RenderUtil.renderSphere(vertexConsumer,poseStack.last(),1,
                     Vec3.ZERO,
                     new Vec3(object.getSize().x,object.getSize().x,object.getSize().x),
                     6,6,false,
@@ -283,7 +283,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
             Vector3f rotation = object.getRotation();
             poseStack.mulPose(new Quaternionf().rotationYXZ(rotation.y,-rotation.x,rotation.z));
             THObject.Color color = THObject.Color(0,255,255,255);
-            RenderUtil.renderSphere(vertexConsumer,poseStack.last(), 0,1,
+            RenderUtil.renderSphere(vertexConsumer,poseStack.last(),1,
                     Vec3.ZERO,
                     object.getSize(),
                     6,6,false,

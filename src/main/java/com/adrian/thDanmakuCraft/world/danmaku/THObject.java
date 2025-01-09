@@ -98,6 +98,22 @@ public class THObject implements IScript, ILuaValue {
         this.initPosition(position);
     }
 
+    public THObject(THObjectContainer container, Vec3 position, String luaClassKey) {
+        this(container,position);
+        this.init(luaClassKey,LuaValue.NIL);
+    }
+
+    public void init(String luaClassKey, Varargs args) {
+        this.setLuaClassKey(luaClassKey);
+        this.initLuaValue();
+        LuaValue luaObject = this.ofLuaValue();
+        if(args == LuaValue.NIL){
+            this.scriptEvent("onInit",luaObject);
+        }else {
+            this.scriptEvent("onInit", LuaValue.varargsOf(luaObject, args));
+        }
+    }
+
     public <T extends THObject> T initPosition(Vec3 position) {
         this.setPosition(position);
         this.lastPosition = position;
@@ -121,10 +137,6 @@ public class THObject implements IScript, ILuaValue {
         this.setVelocityFromRotation(speed, rotation, isDeg, true);
         this.spawn();
         return (T) this;
-    }
-
-    public void initLuaValue() {
-        this.luaValueForm = this.ofLuaValue();
     }
 
     public void spawn() {
@@ -481,20 +493,25 @@ public class THObject implements IScript, ILuaValue {
     }*/
     private final Map<String, LuaValue> scriptEventCache = Maps.newHashMap();
 
-    public void scriptEvent(String eventName, Varargs args) {
+    public LuaValue getLuaClass(){
         if (this.luaClass == null || this.luaClass.isnil()) {
             LuaValue luaClass1 = LuaCore.getInstance().getLuaClass(this.getLuaClassKey());
-            if (luaClass1 == null || luaClass1.isnil()) {
-                return;
+            if (luaClass1 != null && !luaClass1.isnil()) {
+                this.luaClass = luaClass1;
+            }else {
+                return LuaValue.NIL;
             }
-            this.luaClass = luaClass1;
         }
+        return this.luaClass;
+    }
 
+    public void scriptEvent(String eventName, Varargs args) {
+        LuaValue luaClass = this.getLuaClass();
         LuaValue event;
         if (scriptEventCache.containsKey(eventName)) {
             event = scriptEventCache.get(eventName);
         } else {
-            event = this.luaClass.get(eventName);
+            event = luaClass.get(eventName);
             scriptEventCache.put(eventName, event);
         }
         //LuaValue event = this.luaClass.get(eventName);
@@ -513,15 +530,6 @@ public class THObject implements IScript, ILuaValue {
     }
 
     public void onTick() {
-        if (this.luaValueForm == null) {
-            this.initLuaValue();
-        }
-
-        /*
-        if (timer == 0){
-            this.scriptEvent("onInit",this.getLuaValue());
-        }*/
-
         this.lastPosition = new Vec3(this.positionX, this.positionY, this.positionZ);
 
         if (!this.shouldTick) {
@@ -538,7 +546,7 @@ public class THObject implements IScript, ILuaValue {
                 this.velocity.z + this.acceleration.z
         );
 
-        this.scriptEvent("onTick", this.getLuaValue());
+        this.scriptEvent("onTick", this.ofLuaValue());
 
         if (this.collision) {
             this.collisionLogic();
@@ -621,7 +629,7 @@ public class THObject implements IScript, ILuaValue {
     }
 
     public void onHit(HitResult result) {
-        this.scriptEvent("onHit", this.getLuaValue());
+        this.scriptEvent("onHit", this.ofLuaValue());
         if (this.shouldSetDeadWhenCollision) {
             this.setDead();
         }
@@ -660,11 +668,11 @@ public class THObject implements IScript, ILuaValue {
             this.remove();
         }
 
-        this.scriptEvent("onDead", this.getLuaValue());
+        this.scriptEvent("onDead", this.ofLuaValue());
     }
 
     public void onRemove() {
-        this.scriptEvent("onRemove", this.getLuaValue());
+        this.scriptEvent("onRemove", this.ofLuaValue());
     }
 
     public void setBlend(Blend blend) {
@@ -977,6 +985,19 @@ public class THObject implements IScript, ILuaValue {
             return this.divide(factor, factor, factor, factor);
         }
 
+        public static float lerp(float start, float end, float amt) {
+            return end + start * (amt - end);
+        }
+
+        public static Color lerp(Color startColor, Color endColor, float amt){
+            return Color(
+                    (int) (endColor.r + startColor.r * (amt - endColor.r)),
+                    (int) (endColor.g + startColor.g * (amt - endColor.g)),
+                    (int) (endColor.b + startColor.b * (amt - endColor.b)),
+                    (int) (endColor.a + startColor.a * (amt - endColor.a))
+            );
+        }
+
         public int[] getAll() {
             return new int[]{r, g, b, a};
         }
@@ -1189,7 +1210,7 @@ public class THObject implements IScript, ILuaValue {
     private static final LibFunction getParameterManager = new OneArgFunction() {
         @Override
         public LuaValue call(LuaValue luaValue0) {
-            return checkTHObject(luaValue0).getParameterManager().getLuaValue();
+            return checkTHObject(luaValue0).getParameterManager().ofLuaValue();
         }
     };
 
@@ -1276,7 +1297,7 @@ public class THObject implements IScript, ILuaValue {
     private static final LibFunction getContainer = new OneArgFunction() {
         @Override
         public LuaValue call(LuaValue luaValue0) {
-            return checkTHObject(luaValue0).getContainer().getLuaValue();
+            return checkTHObject(luaValue0).getContainer().ofLuaValue();
         }
     };
     private static final LibFunction getPosition = new OneArgFunction() {
@@ -1410,13 +1431,19 @@ public class THObject implements IScript, ILuaValue {
         }
     };
 
+    public void initLuaValue() {
+        this.luaValueForm = this.ofLuaClass();
+    }
+
     @Override
-    public LuaValue ofLuaValue() {
+    public LuaValue ofLuaClass() {
         LuaValue library = LuaValue.tableOf();
         //params
+        library.set("class", this.getLuaClass());
         library.set("type", this.getType().getKey().toString());
         library.set("uuid", this.getUUIDasString());
         library.set("source", LuaValue.userdataOf(this));
+        library.set("parameterManager", this.getParameterManager().ofLuaValue());
         //functions
         library.set("setPosition", setPosition);
         library.set("setLifetime", setLifetime);
@@ -1459,13 +1486,16 @@ public class THObject implements IScript, ILuaValue {
     }
 
     @Override
-    public LuaValue getLuaValue() {
+    public LuaValue ofLuaValue() {
         if (this.luaValueForm == null) {
+            //this.luaValueForm = this.ofLuaClass();
             this.initLuaValue();
         }
+        //luaValueForm.set("class", this.getLuaClass());
+        /*
         luaValueForm.set("x", THObject.this.positionX);
         luaValueForm.set("y", THObject.this.positionY);
-        luaValueForm.set("z", THObject.this.positionZ);
+        luaValueForm.set("z", THObject.this.positionZ);*/
         return luaValueForm;
     }
 }

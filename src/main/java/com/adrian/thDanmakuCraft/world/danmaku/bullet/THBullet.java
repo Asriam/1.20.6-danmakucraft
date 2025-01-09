@@ -288,8 +288,8 @@ public class THBullet extends THObject {
     };
 
     @Override
-    public LuaValue ofLuaValue(){
-        LuaValue library = super.ofLuaValue();
+    public LuaValue ofLuaClass(){
+        LuaValue library = super.ofLuaClass();
         library.set("setStyle",this.setStyle);
         library.set("setBulletColor",this.setBulletColor);
         library.set("getStyle",this.getStyle);

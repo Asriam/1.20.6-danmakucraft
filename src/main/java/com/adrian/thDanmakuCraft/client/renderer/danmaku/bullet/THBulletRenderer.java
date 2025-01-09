@@ -45,7 +45,7 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
                 poseStack.pushPose();
                 poseStack.mulPose(this.getRenderDispatcher().cameraOrientation());
                 poseStack.mulPose(Axis.XP.rotationDegrees(-90.0F));
-                RenderUtil.renderSphere(vertexConsumer, poseStack.last(), overlay, 1,
+                RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 1,
                         Vec3.ZERO,
                         new Vec3(scale, scale, scale),
                         6, 10, true,

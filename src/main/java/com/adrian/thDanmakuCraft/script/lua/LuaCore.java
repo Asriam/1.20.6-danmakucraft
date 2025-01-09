@@ -144,6 +144,17 @@ public class LuaCore {
             }
         });
 
+        library.set("getClass", new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue) {
+                LuaValue clazz = LuaCore.this.getLuaClass(luaValue.checkjstring());
+                if(clazz != null){
+                    return clazz;
+                }
+                return LuaValue.NIL;
+            }
+        });
+
         return library;
     }
 

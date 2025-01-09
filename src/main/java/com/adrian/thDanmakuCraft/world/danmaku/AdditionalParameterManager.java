@@ -23,7 +23,7 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
     public AdditionalParameterManager(THObjectContainer container) {
         this.container = container;
         this.parameterMap = Maps.newHashMap();
-        this.luaValueForm = this.ofLuaValue();
+        this.luaValueForm = this.ofLuaClass();
     }
 
     public void register(Type type, String key, Object value) {
@@ -459,7 +459,7 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
             Parameter<?> parameter = parameterManager.parameterMap.get(key);
             Type type = parameter.type;
             switch (type){
-                case THObject -> outValue = parameterManager.container.getObjectFromUUID((UUID)parameter.value).getLuaValue();
+                case THObject -> outValue = parameterManager.container.getObjectFromUUID((UUID)parameter.value).ofLuaValue();
                 case String -> outValue = LuaValue.valueOf((String) parameter.value);
                 case Integer -> outValue = LuaValue.valueOf((int) parameter.value);
                 case Float -> outValue = LuaValue.valueOf((float) parameter.value);
@@ -515,7 +515,7 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
         public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
             String key = luaValue.checkjstring();
             THObject object = checkParameterManager(luaValue0).getTHObject(key);
-            return object != null ? object.getLuaValue() : LuaValue.NIL;
+            return object != null ? object.ofLuaValue() : LuaValue.NIL;
         }
     };
 
@@ -524,7 +524,7 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
         public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
             String key = luaValue.checkjstring();
             THObject object = checkParameterManager(luaValue0).getTHBullet(key);
-            return object != null ? object.getLuaValue() : LuaValue.NIL;
+            return object != null ? object.ofLuaValue() : LuaValue.NIL;
         }
     };
 
@@ -533,12 +533,12 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
         public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
             String key = luaValue.checkjstring();
             THObject object = checkParameterManager(luaValue0).getTHCurvedLaser(key);
-            return object != null ? object.getLuaValue() : LuaValue.NIL;
+            return object != null ? object.ofLuaValue() : LuaValue.NIL;
         }
     };
 
     @Override
-    public LuaValue ofLuaValue() {
+    public LuaValue ofLuaClass() {
         LuaValue library = LuaValue.tableOf();
         //Functions
         library.set("register", register);
@@ -558,7 +558,7 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
     }
 
     @Override
-    public LuaValue getLuaValue() {
+    public LuaValue ofLuaValue() {
         return this.luaValueForm;
     }
 }

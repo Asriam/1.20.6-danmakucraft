@@ -3,7 +3,6 @@ package com.adrian.thDanmakuCraft.client.renderer;
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderHighlightEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;

@@ -14,6 +14,8 @@
 ---@field z number
 ---@field type string
 ---@field uuid string
+---@field class Class
+---@field parameterManager AdditionalParameterManager
 local object = {
 }
 

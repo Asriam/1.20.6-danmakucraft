@@ -8,6 +8,7 @@
 ---@field onInit fun(self)
 ---@field onTick fun(self)
 ---@field source userdata
+---@field parameterManager AdditionalParameterManager
 local container = {
 }
 
