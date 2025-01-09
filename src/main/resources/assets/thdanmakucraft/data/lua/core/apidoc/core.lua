@@ -5,7 +5,6 @@
 ---
 
 ---@class core
----@field super Class
 local core = {}
 
 ---@param path string
@@ -24,20 +23,22 @@ function core.warn(msg) end
 ---@param x number
 ---@param y number
 ---@return Vec2
-function core.newVec2(x,y) end
+function core.vec2(x, y) end
 
 ---@param x number
 ---@param y number
 ---@param z number
 ---@return Vec3
-function core.newVec3(x,y,z) end
+function core.vec3(x, y, z) end
 
 ---@param className string
 ---@param parentClass Class
 ---@return Class
----@overload fun(className:string, parentClass:Class)
----@overload fun(className:string, parentClassName:string)
-function core.registerClass(className, parentClass) end
+---@overload fun(className:string, superClass:Class)
+---@overload fun(className:string, superClass:string)
+---@overload fun()
+---@overload fun(superClass:Class)
+function core.registerClass(className, superClass) end
 
 ---@param className self
 ---@return Class

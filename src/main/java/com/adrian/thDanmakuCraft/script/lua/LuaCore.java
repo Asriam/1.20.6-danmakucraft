@@ -107,7 +107,7 @@ public class LuaCore {
             }
         });
 
-        library.set("newVec3", new VarArgFunction() {
+        library.set("vec3", new VarArgFunction() {
             @Override
             public LuaValue invoke(Varargs varargs) {
                 return CoerceJavaToLua.coerce(new Vec3(
@@ -117,7 +117,7 @@ public class LuaCore {
             }
         });
 
-        library.set("newVec2", new VarArgFunction() {
+        library.set("vec2", new VarArgFunction() {
             @Override
             public LuaValue invoke(Varargs varargs) {
                 return CoerceJavaToLua.coerce(new Vec2(
@@ -130,16 +130,33 @@ public class LuaCore {
             @Override
             public LuaValue invoke(Varargs varargs) {
                 LuaValue clazz = LuaValue.tableOf();
-                String className = varargs.arg(1).checkjstring();
-                clazz.set("className", className);
-
-                LuaValue parentClass = varargs.arg(2);
-                if(isLuaClass(parentClass)){
-                    clazz.set("super", parentClass);
-                }else if(parentClass.isstring()){
-                    clazz.set("super", LuaCore.this.getLuaClass(parentClass.checkjstring()));
+                LuaValue arg1 = varargs.arg(1);
+                if (arg1.isstring()) {
+                    String className = arg1.checkjstring();
+                    clazz.set("className", className);
+                    /*
+                    LuaValue superClass = LuaValue.NIL;
+                    if (isLuaClass(arg2)) {
+                        superClass = arg2;
+                    } else if (arg2.isstring()) {
+                        superClass = LuaCore.this.getLuaClass(arg2.checkjstring());
+                    }*/
+                    clazz.set("super", checkLuaClass(varargs.arg(2)));
+                    LUA.luaClassMap.put(className, clazz);
+                }else {
+                    String className = "class$"+(luaClassMap.size()+1);
+                    clazz.set("className", className);
+                    /*
+                    LuaValue superClass = arg1;
+                    if (isLuaClass(superClass)) {
+                        clazz.set("super", superClass);
+                    } else if (superClass.isstring()) {
+                        clazz.set("super", LuaCore.this.getLuaClass(superClass.checkjstring()));
+                    }*/
+                    clazz.set("super", checkLuaClass(varargs.arg(1)));
+                    LUA.luaClassMap.put(className, clazz);
+                    System.out.print(className+"\n");
                 }
-                LUA.luaClassMap.put(className, clazz);
                 return clazz;
             }
         });
@@ -156,6 +173,15 @@ public class LuaCore {
         });
 
         return library;
+    }
+
+    public static LuaValue checkLuaClass(LuaValue value){
+        if (isLuaClass(value)) {
+            return value;
+        } else if (value.isstring()) {
+            return LuaCore.getInstance().getLuaClass(value.checkjstring());
+        }
+        return NIL;
     }
 
     public static boolean isLuaClass(LuaValue luaClass){

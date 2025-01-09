@@ -62,7 +62,7 @@ public class RenderEvents {
 
     @SubscribeEvent
     public static void renderTickPre(TickEvent.RenderTickEvent.Pre event) {
-        //RenderUtil.quadList.clear();
+        RenderUtil.quadList.clear();
     }
 
     @SubscribeEvent

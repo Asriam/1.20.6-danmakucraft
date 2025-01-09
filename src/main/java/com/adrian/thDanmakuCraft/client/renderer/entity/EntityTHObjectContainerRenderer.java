@@ -6,6 +6,7 @@ import com.adrian.thDanmakuCraft.client.renderer.danmaku.AbstractTHObjectRendere
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.bullet.THBulletRenderers;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRenderers;
+import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
@@ -89,6 +90,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
                     GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
             );
             RenderSystem.depthFunc(519);
+            /*
             BufferBuilder bufferbuilder = RenderSystem.renderThreadTesselator().getBuilder();
             bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
             bufferbuilder.vertex(0.0, 0.0, 0.0).endVertex();
@@ -96,6 +98,9 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
             bufferbuilder.vertex(outSize[0], outSize[1], 0.0).endVertex();
             bufferbuilder.vertex(0.0, outSize[1], 0.0).endVertex();
             BufferUploader.draw(bufferbuilder.end());
+             */
+            drawOnScreen(outSize[0],outSize[1]);
+
             customShader.clear();
             RenderSystem.depthFunc(515);
             RenderSystem.disableBlend();
@@ -107,7 +112,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
         }
     }
 
-    public void drawOnScreen(float screenWidth, float screenHeight){
+    public static void drawOnScreen(float screenWidth, float screenHeight){
         BufferBuilder bufferbuilder = RenderSystem.renderThreadTesselator().getBuilder();
         bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
         bufferbuilder.vertex(0.0, 0.0, 0.0).endVertex();
@@ -120,8 +125,9 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
     @Override
     public void render(EntityTHObjectContainer entity, float rotationX, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int combinedOverlay){
         //super.render(entity, rotationX, partialTicks, poseStack, bufferSource, combinedOverlay);
+        THObjectContainer container = entity.getContainer();
         if (this.entityRenderDispatcher.shouldRenderHitBoxes()) {
-            renderContainerBound(entity, poseStack, bufferSource.getBuffer(RenderType.lines()));
+            renderContainerBound(container, poseStack, bufferSource.getBuffer(RenderType.lines()));
         }
 
         poseStack.popPose();
@@ -144,15 +150,15 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
 
         boolean shouldApplyEffect = false;
 
-        if (shouldApplyEffect) {
+        /*if (shouldApplyEffect) {
             mainRenderTarget.unbindWrite();
             TEST_RENDER_TARGET.copyDepthFrom(mainRenderTarget);
             TEST_RENDER_TARGET.bindWrite(true);
-        }
+        }*/
 
         RenderSystem.enableBlend();
         //final List<? extends THObject> objectList = layerObjects(entity.getObjectManager().getTHObjectsForRender(),camX,camY,camZ);
-        final List<? extends THObject> objectList = entity.getContainer().getObjectManager().getTHObjectsForRender();
+        final List<? extends THObject> objectList = container.getObjectManager().getTHObjectsForRender();
         if (!objectList.isEmpty()) {
             Frustum frustum = this.getFrustum();
             if (this.entityRenderDispatcher.shouldRenderHitBoxes()) {
@@ -205,13 +211,13 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
                 }
 
                 renderType.setupRenderState();
-                if(shouldApplyEffect) {
+                /*if(shouldApplyEffect) {
                     TEST_RENDER_TARGET.bindWrite(true);
-                }
+                }*/
                 BufferUploader.drawWithShader(vertexConsumer.end());
-                if(shouldApplyEffect) {
+                /*if(shouldApplyEffect) {
                     TEST_RENDER_TARGET.unbindWrite();
-                }
+                }*/
                 renderType.clearRenderState();
                 vertexConsumer.begin(renderType.mode(),renderType.format());
             });
@@ -225,15 +231,17 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
 
         //profiler.pop();
 
-        if(shouldApplyEffect) {
+
+        /*if(shouldApplyEffect) {
             TEST_RENDER_TARGET.unbindWrite();
             mainRenderTarget.copyDepthFrom(TEST_RENDER_TARGET);
             mainRenderTarget.bindWrite(true);
             //testRenderTarget.blitToScreen(mainRenderTarget.width,mainRenderTarget.height,true);
-        }
+        }*/
 
         poseStack.popPose();
         poseStack.pushPose();
+
         Vec3 entityPos = entity.getPosition(partialTicks);
         poseStack.translate(entityPos.x-camX, entityPos.y-camY, entityPos.z-camZ);
     }
@@ -351,8 +359,8 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
     }
 
 
-    private static void renderContainerBound(EntityTHObjectContainer entity, PoseStack poseStack, VertexConsumer vertexConsumer) {
-        AABB aabb = entity.getContainer().getAabb().move(-entity.getX(), -entity.getY(), -entity.getZ());
+    private static void renderContainerBound(THObjectContainer container, PoseStack poseStack, VertexConsumer vertexConsumer) {
+        AABB aabb = container.getAabb().move(container.getPosition().reverse());
         LevelRenderer.renderLineBox(poseStack, vertexConsumer, aabb, 0.0F, 0.0F, 1.0F, 1.0F);
     }
 

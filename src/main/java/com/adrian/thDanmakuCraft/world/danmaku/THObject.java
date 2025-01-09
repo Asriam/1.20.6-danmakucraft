@@ -444,6 +444,7 @@ public class THObject implements IScript, ILuaValue {
         }
 
         this.container.getObjectManager().removeTHObject(this);
+
         if (!container.getObjectManager().contains(this)) {
             container.getObjectManager().addTHObject(this);
         }
@@ -465,32 +466,6 @@ public class THObject implements IScript, ILuaValue {
         this.shouldSetDeadWhenCollision = shouldSetDeadWhenCollision;
     }
 
-
-    /*
-    public void scriptEvent(String eventName,LuaValue... args){
-        if(this.luaClass == null || this.luaClass.isnil()){
-            LuaValue luaClass1 = LuaCore.getInstance().getLuaClass(this.getLuaClassKey());
-            if (luaClass1 == null || luaClass1.isnil()) {
-                return;
-            }
-            this.luaClass = luaClass1;
-        }
-
-        LuaValue event = this.luaClass.get(eventName);
-        if(!event.isnil() && event.isfunction()){
-            try {
-                event.checkfunction().invoke(args);
-            }catch (Exception e){
-                THDanmakuCraftCore.LOGGER.error("Failed invoke script!", e);
-                this.remove();
-            }
-        }
-    }*/
-
-    /*
-    public void scriptEvent(String eventName,LuaValue... args){
-        this.scriptEvent(eventName,LuaValue.varargsOf(args));
-    }*/
     private final Map<String, LuaValue> scriptEventCache = Maps.newHashMap();
 
     public LuaValue getLuaClass(){
@@ -507,6 +482,12 @@ public class THObject implements IScript, ILuaValue {
 
     public void scriptEvent(String eventName, Varargs args) {
         LuaValue luaClass = this.getLuaClass();
+        //luaClass = this.ofLuaValue().get("class");
+
+        if(luaClass == null || luaClass.isnil()) {
+            return;
+        }
+
         LuaValue event;
         if (scriptEventCache.containsKey(eventName)) {
             event = scriptEventCache.get(eventName);

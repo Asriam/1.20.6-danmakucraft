@@ -11,6 +11,7 @@ import net.minecraft.world.phys.Vec3;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.LibFunction;
 import org.luaj.vm2.lib.OneArgFunction;
+import org.luaj.vm2.lib.TwoArgFunction;
 import org.luaj.vm2.lib.ZeroArgFunction;
 
 public class THBullet extends THObject {
@@ -257,43 +258,52 @@ public class THBullet extends THObject {
     public static class UserBulletStyle{
     }
 
-    private final LibFunction setStyle = new OneArgFunction() {
+    private static THBullet checkTHBullet(LuaValue luaValue) {
+        if (luaValue.get("source").checkuserdata() instanceof THBullet bullet) {
+            return bullet;
+        }
+        throw new NullPointerException();
+    }
+
+    private static final LibFunction setStyle = new TwoArgFunction() {
         @Override
-        public LuaValue call(LuaValue luaValue) {
-            THBullet.this.setStyle(luaValue.checkjstring());
+        public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
+            checkTHBullet(luaValue0).setStyle(luaValue.checkjstring());
             return LuaValue.NIL;
         }
     };
 
-    private final LibFunction setBulletColor = new OneArgFunction() {
+    private static final LibFunction setBulletColor = new TwoArgFunction() {
         @Override
-        public LuaValue call(LuaValue luaValue) {
-            THBullet.this.setBulletColor(luaValue.checkint());
+        public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
+            checkTHBullet(luaValue0).setBulletColor(luaValue.checkint());
             return LuaValue.NIL;
         }
     };
 
-    private final LibFunction getStyle = new ZeroArgFunction() {
+    private static final LibFunction getStyle = new OneArgFunction() {
         @Override
-        public LuaValue call() {
-            return LuaValue.valueOf(THBullet.this.getStyle().toString());
+        public LuaValue call(LuaValue luaValue0) {
+            return LuaValue.valueOf(checkTHBullet(luaValue0).getStyle().toString());
         }
     };
 
-    private final LibFunction getBulletColor = new ZeroArgFunction() {
+    private static final LibFunction getBulletColor = new OneArgFunction() {
         @Override
-        public LuaValue call() {
-            return LuaValue.valueOf(THBullet.this.getBulletColor().getIndex());
+        public LuaValue call(LuaValue luaValue0) {
+            return LuaValue.valueOf(checkTHBullet(luaValue0).getBulletColor().getIndex());
         }
     };
 
     @Override
     public LuaValue ofLuaClass(){
         LuaValue library = super.ofLuaClass();
-        library.set("setStyle",this.setStyle);
-        library.set("setBulletColor",this.setBulletColor);
-        library.set("getStyle",this.getStyle);
-        library.set("getBulletColor",this.getBulletColor);
+        library.set("setStyle",       setStyle);
+        library.set("setBulletColor", setBulletColor);
+        library.set("getStyle",       getStyle);
+        library.set("getBulletColor", getBulletColor);
+
+
         return library;
     }
 }

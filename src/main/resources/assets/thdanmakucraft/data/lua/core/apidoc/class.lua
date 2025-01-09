@@ -6,4 +6,5 @@
 
 ---@class Class
 ---@field className string
+---@field super Class
 local Class = {}

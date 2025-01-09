@@ -209,12 +209,13 @@ public class RenderUtil {
                 };
                 Vector3f[] normal = vertex;
                 Matrix4f pose$ = pose.pose();
-                /*
+
                 quadList.add(new Quad(new Quad.Vertex(pose$,vertex[0]),
                                       new Quad.Vertex(pose$,vertex[1]),
                                       new Quad.Vertex(pose$,vertex[2]),
                                       new Quad.Vertex(pose$,vertex[3])
-                ));*/
+                ));
+
                 consumer.vertex(pose$,vertex[0].x,vertex[0].y,vertex[0].z)
                         .color(startColor.r, startColor.g, startColor.b, startColor.a)
                         .color(coreColor.r, coreColor.g, coreColor.b, coreColor.a)

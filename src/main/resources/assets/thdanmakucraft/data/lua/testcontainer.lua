@@ -1,9 +1,9 @@
-local num = 1
+local num = 3
 
 ---@type THBullet
-local testBullet = core.registerClass("testBullet")
+local testBullet = core.registerClass()
 function testBullet:onInit(i)
-    self:setVelocity(core.newVec3(0.2,0.0,0.0):yRot(math.pi*2/32*i),true)
+    self:setVelocity(core.vec3(0.2,0.0,0.0):yRot(math.pi*2/32*i),true)
     self:setNavi(true)
 end
 
@@ -12,7 +12,7 @@ function testBullet:onTick()
 end
 
 ---@type THBullet
-local testBullet2 = core.registerClass("testBullet2",testBullet)
+local testBullet2 = core.registerClass(testBullet)
 function testBullet2:onInit(i)
     self.class.super.onInit(self,i)
 end
@@ -23,7 +23,7 @@ function testBullet2:onTick()
 end
 
 ---@type THCurvedLaser
-local testLaser = core.registerClass("testLaser")
+local testLaser = core.registerClass()
 function testLaser:onInit(i)
     self:setLifetime(600)
     self.parameterManager:register("Double","angle",360/num*i + 0.001)
@@ -58,6 +58,5 @@ function container:onInit()
     end
 end
 
----@param self THBullet
 function container:onTick()
 end
