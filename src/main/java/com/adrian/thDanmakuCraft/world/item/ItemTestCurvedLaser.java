@@ -35,14 +35,14 @@ public class ItemTestCurvedLaser extends Item {
 
         if(entityTHObjectContainer == null){
             entityTHObjectContainer = new EntityTHObjectContainer(level, player.position());
-            entityTHObjectContainer.startRiding(player);
+            //entityTHObjectContainer.startRiding(player);
             level.addFreshEntity(entityTHObjectContainer);
         }
 
         THObjectContainer container = entityTHObjectContainer.getContainer();
         container.setUser(player);
-        container.setLuaClassKey("testContainer");
-        container.scriptEvent("onInit",container.ofLuaValue());
+        container.setLuaClass("testContainer");
+        //container.scriptEvent("onInit",container.ofLuaValue());
         //player.getCooldowns().addCooldown(this, 20);
         return InteractionResultHolder.sidedSuccess(itemstack, level.isClientSide());
     }

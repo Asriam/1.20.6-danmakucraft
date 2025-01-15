@@ -5,6 +5,7 @@
 #if (flag == 1)
 uniform sampler2D DepthBuffer;
 #endif
+
 uniform vec2 ScreenSize;
 
 in vec3 normal;
@@ -57,11 +58,11 @@ void main() {
 
     // - Create the intersection line -
     // Turn frag coord from screenspace -> NDC, which corresponds to the UV
-    #if (flag == 1)
-        float sceneDepth  = LinearizeDepth(texture(DepthBuffer, texCoord).r);
-    #else
-        float sceneDepth  = 1.0f;
-    #endif
+#if (flag == 1)
+    float sceneDepth  = LinearizeDepth(texture(DepthBuffer, texCoord).r);
+#else
+    float sceneDepth  = 1.0f;
+#endif
     float bubbleDepth = LinearizeDepth(gl_FragCoord.z);
 
     float distance = abs(bubbleDepth - sceneDepth); // linear difference in depth

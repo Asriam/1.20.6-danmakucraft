@@ -22,6 +22,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.luaj.vm2.Lua;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.*;
@@ -328,8 +329,15 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         return this.getObjectFromUUID(UUID.fromString(uuid));
     }
 
+    @Deprecated
     public void setLuaClassKey(String className) {
         this.luaClassKey = className;
+    }
+
+    public void setLuaClass(String className){
+        this.luaClassKey = className;
+        LuaValue luaClass1 = LuaCore.getInstance().getLuaClass(className);
+        this.luaClass = luaClass1 == null ? LuaValue.NIL : luaClass1;
     }
 
     public String getLuaClassKey() {

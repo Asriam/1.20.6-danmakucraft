@@ -208,6 +208,10 @@ public class RenderUtil {
                         new Vector3f(x1*sin2,cos2,z1*sin2).mul(scaleF).add(offsetPositionF),
                 };
                 Vector3f[] normal = vertex;
+
+
+
+
                 Matrix4f pose$ = pose.pose();
 
                 quadList.add(new Quad(new Quad.Vertex(pose$,vertex[0]),

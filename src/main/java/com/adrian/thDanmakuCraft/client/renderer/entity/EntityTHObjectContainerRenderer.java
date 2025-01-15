@@ -189,23 +189,22 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
             Map<RenderType,List<THObject>> map = new HashMap<>();
             for (THObject object:objectList) {
                 RenderType renderType = this.getRenderType(object);
-
-                map.computeIfAbsent(renderType, (key) -> new ArrayList<>());
-                List<THObject> list1 = map.get(renderType);
-                list1.add(object);
+                map.computeIfAbsent(renderType, (key) -> new ArrayList<>()).add(object);
+                //List<THObject> list1 = map.get(renderType);
+                //list1.add(object);
             }
 
             map.forEach((renderType, list) -> {
-                List<THObject> list1 = layerObjects(list,camX,camY,camZ);
+                List<THObject> sortedList = layerObjects(list,camX,camY,camZ);
                 BufferBuilder vertexConsumer = (BufferBuilder) bufferSource.getBuffer(renderType);
-                //vertexConsumer.begin(renderType.mode(),renderType.format());
-
-                for (THObject object:list1) {
+                //BufferBuilder vertexConsumer = RenderSystem.renderThreadTesselator().getBuilder();
+                //vertexConsumer.begin(renderType.mode(), renderType.format());
+                for (THObject object:sortedList) {
                     if (object != null && (object instanceof THCurvedLaser || this.shouldRenderTHObject(object, frustum, camX, camY, camZ))) {
                         poseStack.pushPose();
-                        Vec3 objectPos = object.getOffsetPosition(partialTicks);
-                        poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
-                        this.getTHObjectRenderer(object).render(object, objectPos, partialTicks, poseStack, vertexConsumer, combinedOverlay);
+                            Vec3 objectPos = object.getOffsetPosition(partialTicks);
+                            poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
+                            this.getTHObjectRenderer(object).render(object, objectPos, partialTicks, poseStack, vertexConsumer, combinedOverlay);
                         poseStack.popPose();
                     }
                 }
@@ -213,16 +212,13 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
                 renderType.setupRenderState();
                 /*if(shouldApplyEffect) {
                     TEST_RENDER_TARGET.bindWrite(true);
-                }*/
-                BufferUploader.drawWithShader(vertexConsumer.end());
-                /*if(shouldApplyEffect) {
+                    BufferUploader.drawWithShader(vertexConsumer.end());
                     TEST_RENDER_TARGET.unbindWrite();
                 }*/
+                BufferUploader.drawWithShader(vertexConsumer.end());
                 renderType.clearRenderState();
                 vertexConsumer.begin(renderType.mode(),renderType.format());
             });
-            //THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THObjectRenderHelper.parseBlend(THObject.Blend.normal),true));
-            //bufferSource.getBuffer(RenderType.lines());
         }
 
         RenderSystem.blendEquation(32774);
@@ -331,17 +327,23 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
     }
 
     public static List<THObject> layerObjects(List<THObject> list, double camX, double camY, double camZ){
+        if (list == null || list.size() <= 1) {
+            return list;
+        }
+        
         try {
             list.sort((o1, o2) -> {
                 if (o1 == null || o2 == null) {
                     return 0;
                 }
+                /*
                 Vec3 pos1 = o1.getPosition();
                 Vec3 pos2 = o2.getPosition();
                 double d1x = pos1.x - camX;
                 double d1y = pos1.y - camY;
                 double d1z = pos1.z - camZ;
                 double dist1Square = (d1x * d1x + d1y * d1y + d1z * d1z);
+
                 double d2x = pos2.x - camX;
                 double d2y = pos2.y - camY;
                 double d2z = pos2.z - camZ;
@@ -350,11 +352,46 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
                     return 1;
                 } else {
                     return -1;
-                }
+                }*/
+                return Double.compare(
+                        o1.getPosition().distanceToSqr(camX,camY,camZ),
+                        o2.getPosition().distanceToSqr(camX,camY,camZ)
+                );
             });
         }catch (Exception e){
             THDanmakuCraftCore.LOGGER.error(e.toString());
         }
+        return list;
+    }
+
+    public static List<THObject> layerObjects2(List<THObject> list, double camX, double camY, double camZ) {
+        if (list == null || list.size() <= 1) {
+            return list;
+        }
+
+        try {
+            // 计算每个对象到摄像机的距离平方，并缓存结果
+            Map<THObject, Double> distanceMap = new HashMap<>();
+            for (THObject obj : list) {
+                if (obj != null) {
+                    Vec3 pos = obj.getPosition();
+                    double dX = pos.x - camX;
+                    double dY = pos.y - camY;
+                    double dZ = pos.z - camZ;
+                    double distSquare = dX * dX + dY * dY + dZ * dZ;
+                    distanceMap.put(obj, distSquare);
+                }
+            }
+
+            // 使用缓存的距离平方值进行排序
+            list.sort((o1, o2) -> {
+                return Double.compare(distanceMap.get(o2), distanceMap.get(o1));
+            });
+        } catch (NullPointerException | ClassCastException e) {
+            THDanmakuCraftCore.LOGGER.error(e.toString());
+            throw e; // 重新抛出异常以便调用方处理
+        }
+
         return list;
     }
 

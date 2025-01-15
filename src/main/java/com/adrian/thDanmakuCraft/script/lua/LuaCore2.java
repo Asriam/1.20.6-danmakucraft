@@ -45,7 +45,8 @@ public class LuaCore2 {
     }
 
     public void bindClass(String key, Class<?> Class) throws ScriptException {
-        this.scriptEngine.eval(key + " = luajava.bindClass('"+Class.getName()+"');");
+        //this.scriptEngine.eval(key + " = luajava.bindClass('"+Class.getName()+"');");
+        this.scriptEngine.put(key, Class);
     }
 
     public static LuaCore2 getInstance(){

@@ -5,43 +5,50 @@
 ---
 
 ---@class Mth
-local Mth = {}
+Mth = {}
 
 ---@param number number
 ---@return number
-function Mth:sin(number) end
+function Mth.sin(number) end
 
 ---@param number number
 ---@return number
-function Mth:cos(number) end
+function Mth.cos(number) end
 
 ---@param number number
 ---@return number
-function Mth:sqrt(number) end
+function Mth.sqrt(number) end
+
+---@param a number
+---@param b number
+---@param t number
+---@return number
+function Mth.lerp(a, b, t) end
+--[[
+---@param number number
+---@return number
+function Mth.floor(number) end
 
 ---@param number number
 ---@return number
-function Mth:floor(number) end
+function Mth.lfloor(number) end
 
 ---@param number number
 ---@return number
-function Mth:lfloor(number) end
+function Mth.abs(number) end
 
 ---@param number number
 ---@return number
-function Mth:abs(number) end
-
----@param number number
----@return number
-function Mth:ceil(number) end
+function Mth.ceil(number) end
 
 ---@param number number
 ---@param max number
 ---@param min number
 ---@return number
-function Mth:clamp(number, max, min) end
+function Mth.clamp(number, max, min) end
 
 ---@param number number
 ---@param number2 number
 ---@return boolean
-function Mth:equal(number,number2) end
+function Mth.equal(number,number2) end
+]]

@@ -11,6 +11,7 @@ import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.OneArgFunction;
+import org.luaj.vm2.lib.ThreeArgFunction;
 import org.luaj.vm2.lib.VarArgFunction;
 import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 import org.luaj.vm2.lib.jse.JsePlatform;
@@ -25,11 +26,11 @@ public class LuaCore {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     private static LuaCore LUA = new LuaCore();
-    private final Globals GLOBALS;
+    private final Globals GLOBALS = JsePlatform.standardGlobals();
     private final Map<String,LuaValue> luaClassMap = Maps.newHashMap();
 
     public LuaCore() {
-        GLOBALS = JsePlatform.standardGlobals();
+        //GLOBALS = JsePlatform.standardGlobals();
         this.putAPI();
     }
 
@@ -43,7 +44,8 @@ public class LuaCore {
     public void putAPI(){
         try {
             GLOBALS.set("core",coreAPI());
-            this.bindClass("Mth" ,              Mth.class);
+            GLOBALS.set("Mth", mthAPI());
+            //this.bindClass("Mth" ,              Mth.class);
             //this.bindClass("Vec2" ,             Vec2.class);
             //this.bindClass("Vec3" ,             Vec3.class);
             //this.bindClass("THObject" ,         THObject.class);
@@ -134,26 +136,28 @@ public class LuaCore {
                 if (arg1.isstring()) {
                     String className = arg1.checkjstring();
                     clazz.set("className", className);
+                    LuaValue superClass = checkLuaClass(varargs.arg(2));
                     /*
-                    LuaValue superClass = LuaValue.NIL;
-                    if (isLuaClass(arg2)) {
-                        superClass = arg2;
-                    } else if (arg2.isstring()) {
-                        superClass = LuaCore.this.getLuaClass(arg2.checkjstring());
+                    if (superClass != LuaValue.NIL) {
+                        LuaValue meta = tableOf();
+                        meta.set("__index",superClass);
+                        clazz.setmetatable(meta);
+                        clazz.set("super", superClass);
                     }*/
-                    clazz.set("super", checkLuaClass(varargs.arg(2)));
+                    setSuperClass(clazz,superClass);
                     LUA.luaClassMap.put(className, clazz);
                 }else {
                     String className = "class$"+(luaClassMap.size()+1);
                     clazz.set("className", className);
+                    LuaValue superClass = checkLuaClass(varargs.arg(1));
                     /*
-                    LuaValue superClass = arg1;
-                    if (isLuaClass(superClass)) {
+                    if (superClass != LuaValue.NIL) {
+                        LuaValue meta = tableOf();
+                        meta.set("__index",superClass);
+                        clazz.setmetatable(meta);
                         clazz.set("super", superClass);
-                    } else if (superClass.isstring()) {
-                        clazz.set("super", LuaCore.this.getLuaClass(superClass.checkjstring()));
                     }*/
-                    clazz.set("super", checkLuaClass(varargs.arg(1)));
+                    setSuperClass(clazz,superClass);
                     LUA.luaClassMap.put(className, clazz);
                     System.out.print(className+"\n");
                 }
@@ -175,6 +179,49 @@ public class LuaCore {
         return library;
     }
 
+    public static void setSuperClass(LuaValue clazz,LuaValue superClass){
+        if (superClass != LuaValue.NIL) {
+            LuaValue meta = LuaValue.tableOf();
+            meta.set("__index",superClass);
+            clazz.setmetatable(meta);
+            clazz.set("super", superClass);
+        }
+    }
+
+    public LuaValue mthAPI(){
+        LuaValue library = LuaValue.tableOf();
+        library.set("sin", new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue) {
+                return LuaValue.valueOf(Mth.sin(luaValue.tofloat()));
+            }
+        });
+        library.set("cos", new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue) {
+                return LuaValue.valueOf(Mth.cos(luaValue.tofloat()));
+            }
+        });
+        library.set("sqrt", new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue) {
+                return LuaValue.valueOf(Mth.sqrt(luaValue.tofloat()));
+            }
+        });
+        library.set("lerp", new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                return LuaValue.valueOf(Mth.lerp(
+                        varargs.arg(1).checkdouble(),
+                        varargs.arg(2).checkdouble(),
+                        varargs.arg(3).checkdouble()
+                ));
+            }
+        });
+        library.set("DEG_TO_RAD",Mth.DEG_TO_RAD);
+        library.set("RAD_TO_DEG",Mth.RAD_TO_DEG);
+        return library;
+    }
     public static LuaValue checkLuaClass(LuaValue value){
         if (isLuaClass(value)) {
             return value;

@@ -22,8 +22,6 @@ import org.joml.Vector3f;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -151,6 +149,17 @@ public class THObject implements IScript, ILuaValue {
     public boolean isSpawned() {
         this.isSpawned = !this.removeFlag && (this.isSpawned || this.container.getObjectManager().contains(this));
         return this.isSpawned;
+    }
+
+    public void copy(THObject object){
+        this.positionX = object.positionX;
+        this.positionY = object.positionY;
+        this.positionZ = object.positionZ;
+        this.lastPosition = object.lastPosition;
+        this.prePosition = object.prePosition;
+        this.xRot = object.xRot;
+        this.yRot = object.yRot;
+        this.zRot = object.zRot;
     }
 
     public void setDead() {
@@ -1419,13 +1428,24 @@ public class THObject implements IScript, ILuaValue {
     @Override
     public LuaValue ofLuaClass() {
         LuaValue library = LuaValue.tableOf();
+        //functions
+        library.setmetatable(meta);
         //params
         library.set("class", this.getLuaClass());
         library.set("type", this.getType().getKey().toString());
         library.set("uuid", this.getUUIDasString());
         library.set("source", LuaValue.userdataOf(this));
         library.set("parameterManager", this.getParameterManager().ofLuaValue());
-        //functions
+        return library;
+    }
+
+    private static final LuaValue meta = LuaValue.tableOf();
+    static {
+        meta.set("__index", luaClassFunctions());
+    }
+
+    public static LuaValue luaClassFunctions(){
+        LuaValue library = LuaValue.tableOf();
         library.set("setPosition", setPosition);
         library.set("setLifetime", setLifetime);
         library.set("setScale", setScale);
@@ -1469,10 +1489,8 @@ public class THObject implements IScript, ILuaValue {
     @Override
     public LuaValue ofLuaValue() {
         if (this.luaValueForm == null) {
-            //this.luaValueForm = this.ofLuaClass();
             this.initLuaValue();
         }
-        //luaValueForm.set("class", this.getLuaClass());
         /*
         luaValueForm.set("x", THObject.this.positionX);
         luaValueForm.set("y", THObject.this.positionY);

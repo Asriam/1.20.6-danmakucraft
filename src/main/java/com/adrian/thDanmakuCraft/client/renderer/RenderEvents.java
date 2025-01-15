@@ -67,6 +67,6 @@ public class RenderEvents {
 
     @SubscribeEvent
     public static void renderTickPost(TickEvent.RenderTickEvent.Post event) {
-        //THDanmakuCraftCore.LOGGER.info("Quads mount:" + RenderUtil.quadList.size());
+        THDanmakuCraftCore.LOGGER.info("Quads mount:" + RenderUtil.quadList.size());
     }
 }

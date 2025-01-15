@@ -5,12 +5,12 @@
 ---
 
 ---@class core
-local core = {}
+core = {}
 
----@param path string
-function core.doFile(path) end
+---@param filePath string
+function core.doFile(filePath) end
 
----@param object userdata
+---@param object any
 ---@return boolean
 function core.isValid(object) end
 

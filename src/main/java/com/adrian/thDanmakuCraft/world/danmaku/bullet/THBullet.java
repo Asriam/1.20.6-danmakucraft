@@ -8,6 +8,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
+import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.LibFunction;
 import org.luaj.vm2.lib.OneArgFunction;
@@ -298,12 +299,21 @@ public class THBullet extends THObject {
     @Override
     public LuaValue ofLuaClass(){
         LuaValue library = super.ofLuaClass();
+        //functions
+        library.setmetatable(meta);
+        return library;
+    }
+
+    private static final LuaValue meta = LuaValue.tableOf();
+    static {
+        meta.set("__index", luaClassFunctions());
+    }
+    public static LuaValue luaClassFunctions(){
+        LuaValue library = THObject.luaClassFunctions();
         library.set("setStyle",       setStyle);
         library.set("setBulletColor", setBulletColor);
         library.set("getStyle",       getStyle);
         library.set("getBulletColor", getBulletColor);
-
-
         return library;
     }
 }

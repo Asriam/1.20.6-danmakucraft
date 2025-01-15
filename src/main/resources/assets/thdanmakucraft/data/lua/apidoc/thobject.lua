@@ -3,21 +3,18 @@
 --- Created by Administrator:
 --- DateTime: 2024/12/31 00:36
 ---
----@class THObject:table
+---@class THObject
 ---@field onInit   fun(self)
 ---@field onTick   fun(self)
+---@field onAddToWorld fun(self)
 ---@field onHit    fun(self)
 ---@field onDead   fun(self)
 ---@field onRemove fun(self)
----@field x number
----@field y number
----@field z number
 ---@field type string
 ---@field uuid string
 ---@field class Class
 ---@field parameterManager AdditionalParameterManager
-local object = {
-}
+local object = {}
 
 ---@param x number
 ---@param y number
@@ -41,7 +38,7 @@ function object:setScale(x,y,z) end
 function object:setSize(x,y,z) end
 
 ---@param velocity Vec3
----@param shouldSetRotation boolean
+---@param setRotation boolean
 ---@overload fun(velocity:table|{x,y,z}, setRotation:boolean)
 function object:setVelocity(velocity, setRotation) end
 
@@ -166,6 +163,8 @@ function object:isSpawned() end
 ---@param flag boolean
 function object:setNavi(flag) end
 
+
+---@deprecated
 --[[
 ---@deprecated
 function object:override() end
