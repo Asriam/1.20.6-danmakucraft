@@ -31,3 +31,5 @@ function node:setPosition(pos) end
 
 ---@return Vec3
 function node:getPosition() end
+
+THCurvedLaser = laser

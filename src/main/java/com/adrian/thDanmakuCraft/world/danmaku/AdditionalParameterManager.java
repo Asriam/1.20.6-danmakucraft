@@ -540,7 +540,24 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
     @Override
     public LuaValue ofLuaClass() {
         LuaValue library = LuaValue.tableOf();
-        //Functions
+        library.setmetatable(this.getMeta());
+        //Params
+        library.set("source", LuaValue.userdataOf(this));
+        return library;
+    }
+
+    private static final LuaValue meta = LuaValue.tableOf();
+    static {
+        meta.set("__index", luaClassFunctions());
+    }
+
+    @Override
+    public LuaValue getMeta() {
+        return meta;
+    }
+
+    public static LuaValue luaClassFunctions(){
+        LuaValue library = LuaValue.tableOf();
         library.set("register", register);
         library.set("setValue", setValue);
         library.set("getValue", getValue);
@@ -552,8 +569,6 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
         library.set("getTHObject", getTHObject);
         library.set("getTHBullet", getTHBullet);
         library.set("getTHCurvedLaser", getTHCurvedLaser);
-        //Params
-        library.set("source", LuaValue.userdataOf(this));
         return library;
     }
 
@@ -561,4 +576,6 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
     public LuaValue ofLuaValue() {
         return this.luaValueForm;
     }
+
+
 }

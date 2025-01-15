@@ -6,7 +6,9 @@ import com.adrian.thDanmakuCraft.client.renderer.danmaku.AbstractTHObjectRendere
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.bullet.THBulletRenderers;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRenderers;
+import com.adrian.thDanmakuCraft.world.danmaku.Color;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
+import com.adrian.thDanmakuCraft.world.danmaku.laser.THLaser;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
@@ -90,15 +92,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
                     GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
             );
             RenderSystem.depthFunc(519);
-            /*
-            BufferBuilder bufferbuilder = RenderSystem.renderThreadTesselator().getBuilder();
-            bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-            bufferbuilder.vertex(0.0, 0.0, 0.0).endVertex();
-            bufferbuilder.vertex(outSize[0], 0.0, 0.0).endVertex();
-            bufferbuilder.vertex(outSize[0], outSize[1], 0.0).endVertex();
-            bufferbuilder.vertex(0.0, outSize[1], 0.0).endVertex();
-            BufferUploader.draw(bufferbuilder.end());
-             */
+
             drawOnScreen(outSize[0],outSize[1]);
 
             customShader.clear();
@@ -244,12 +238,13 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
 
     public RenderType getRenderType(THObject object) {
         RenderType renderType;
-        if (object.getClass() == THObject.class) {
+        /*if (object.getClass() == THObject.class) {
             renderType = THRenderType.RENDER_TYPE_2D_DANMAKU.apply(new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(
                     object.getImage().getTextureLocation(),
                     THBlendMode.getBlendMode(object.getBlend()))
             );
-        }else if(object instanceof THBullet bullet) {
+        }else*/
+        if(object instanceof THBullet bullet) {
             if(bullet.getStyle().is3D()){
                 boolean shouldCull = THBulletRenderers.getRenderer(bullet.getStyle()).shouldCull;
                 renderType = THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(object.getBlend()), shouldCull));
@@ -259,8 +254,13 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
                         THBlendMode.getBlendMode(bullet.getBlend()))
                 );
             }
-        }else{
+        }else if(object instanceof THCurvedLaser || object instanceof THLaser){
             renderType = THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(object.getBlend()), true));
+        }else {
+            renderType = THRenderType.RENDER_TYPE_2D_DANMAKU.apply(new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(
+                    object.getImage().getTextureLocation(),
+                    THBlendMode.getBlendMode(object.getBlend()))
+            );
         }
         return renderType;
     }
@@ -274,7 +274,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
         if(object.getCollisionType() == THObject.CollisionType.AABB) {
             LevelRenderer.renderLineBox(poseStack, vertexConsumer, aabb, 0.0F, 1.0F, 1.0F, 1.0F);
         }else if(object.getCollisionType() == THObject.CollisionType.SPHERE){
-            THObject.Color color = THObject.Color(0,255,255,255);
+            Color color = THObject.Color(0,255,255,255);
             RenderUtil.renderSphere(vertexConsumer,poseStack.last(),1,
                     Vec3.ZERO,
                     new Vec3(object.getSize().x,object.getSize().x,object.getSize().x),
@@ -286,7 +286,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
             poseStack.pushPose();
             Vector3f rotation = object.getRotation();
             poseStack.mulPose(new Quaternionf().rotationYXZ(rotation.y,-rotation.x,rotation.z));
-            THObject.Color color = THObject.Color(0,255,255,255);
+            Color color = THObject.Color(0,255,255,255);
             RenderUtil.renderSphere(vertexConsumer,poseStack.last(),1,
                     Vec3.ZERO,
                     object.getSize(),

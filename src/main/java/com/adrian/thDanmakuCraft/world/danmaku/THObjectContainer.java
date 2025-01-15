@@ -22,7 +22,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import org.luaj.vm2.Lua;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.*;
@@ -100,7 +99,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
     }
 
     public void task(){
-        boolean flag = true;
+        boolean flag = false;
 
         if(this.objectManager.isEmpty() && !flag) {
             for (int j = 0; j< THBullet.DefaultBulletStyle.class.getEnumConstants().length; j++) {
@@ -209,7 +208,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
             this.scriptEvent("onInit",this.ofLuaValue());
         }
         this.setBound(this.position(),this.bound);
-        //this.task();
+        this.task();
         this.entitiesInBound = this.level().getEntities(this.hostEntity,this.getAabb()).stream().filter((entity -> !(entity.equals(this.hostEntity)) && !(entity instanceof EntityTHObjectContainer))).toList();
 
         this.scriptEvent("onTick",this.ofLuaValue());
@@ -347,7 +346,6 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
     public void writeSpawnData(FriendlyByteBuf buffer) {
         buffer.writeInt(this.maxObjectAmount);
         buffer.writeInt(this.timer);
-        //buffer.writeBoolean(this.bindingToUserPosition);
         buffer.writeUtf(this.luaClassKey);
         this.targetUserManager.writeData(buffer);
         this.objectManager.writeData(buffer);
@@ -550,13 +548,28 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         this.luaValueForm = this.ofLuaClass();
     }
 
+    public static final LuaValue meta = LuaValue.tableOf();
+    static {
+        meta.set("__index", luaClassFunctions());
+    }
+
+    @Override
     public LuaValue ofLuaClass(){
         LuaValue library = LuaValue.tableOf();
+        library.setmetatable(this.getMeta());
         //fields
         library.set( "class", this.getLuaClass());
         library.set( "source", LuaValue.userdataOf(this));
         library.set( "parameterManager", this.getParameterManager().ofLuaValue());
-        //functions
+        return library;
+    }
+
+    public LuaValue getMeta(){
+        return meta;
+    }
+
+    private static LuaValue luaClassFunctions(){
+        LuaValue library = LuaValue.tableOf();
         library.set( "getMaxObjectAmount", getMaxObjectAmount);
         library.set( "getPosition", getPosition);
         library.set( "setTimer", setTimer);

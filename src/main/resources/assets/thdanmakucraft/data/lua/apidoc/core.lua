@@ -5,7 +5,7 @@
 ---
 
 ---@class core
-core = {}
+local core = {}
 
 ---@param filePath string
 function core.doFile(filePath) end

@@ -4,7 +4,13 @@ import org.luaj.vm2.LuaValue;
 
 public interface ILuaValue {
 
-    LuaValue ofLuaClass();
+    default LuaValue ofLuaClass(){
+        LuaValue library = LuaValue.tableOf();
+        library.setmetatable(this.getMeta());
+        return library;
+    };
 
     LuaValue ofLuaValue();
+
+    LuaValue getMeta();
 }

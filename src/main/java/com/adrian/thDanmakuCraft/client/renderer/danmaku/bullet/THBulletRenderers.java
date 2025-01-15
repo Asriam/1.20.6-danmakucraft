@@ -1,6 +1,8 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku.bullet;
 
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
+import com.adrian.thDanmakuCraft.world.danmaku.Color;
+import com.adrian.thDanmakuCraft.world.danmaku.Image;
 import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;
 import com.mojang.blaze3d.vertex.*;
@@ -18,22 +20,23 @@ public class THBulletRenderers {
         poseStack.scale(bullet.getScale().x, bullet.getScale().y,bullet.getScale().z);
         PoseStack.Pose posestack_pose = poseStack.last();
         //VertexConsumer vertexConsumer = bufferSource.getBuffer(THRenderType.BLEND_NONE.apply(bullet.getTexture()));
-        int index = bullet.getBulletColor().getIndex();
+        //int index = bullet.getBulletColor().getIndex();
+        Image image = bullet.getImage();
         RenderUtil.renderTexture(vertexConsumer, posestack_pose, combinedOverlay, Vec3.ZERO, Vec2.ONE,
-                new Vec2(0.0f,1.0f/16*(index-1)),
-                new Vec2(1.0f,1.0f/16*(index)),
+                image.getUVStart(),
+                image.getUVEnd(),
                 bullet.getColor());
     }
 
     public static void render3DBullet(THBulletRenderer renderer, THBullet bullet, PoseStack poseStack, VertexConsumer vertexConsumer, THBulletRendererFactory factory, float partialTicks, int combinedOverlay) {
-        THObject.Color indexColor = bullet.getBulletColor().getColor();
-        THObject.Color color = THObject.Color(
+        Color indexColor = bullet.getBulletColor().getColor();
+        Color color = THObject.Color(
                 bullet.color.r * indexColor.r/255,
                 bullet.color.g * indexColor.g/255,
                 bullet.color.b * indexColor.b/255,
                 (int) (bullet.color.a * 0.6)
         );
-        THObject.Color coreColor = bullet.color;
+        Color coreColor = bullet.color;
         factory.render(renderer,bullet, vertexConsumer, poseStack,combinedOverlay,partialTicks,color,coreColor);
     }
 
@@ -41,7 +44,7 @@ public class THBulletRenderers {
         public static abstract class BulletRenderer implements THBulletRendererFactory {
             public boolean shouldCull = true;
 
-            public abstract void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, int combinedOverlay, float partialTicks, THObject.Color color, THObject.Color coreColor);
+            public abstract void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, int combinedOverlay, float partialTicks, Color color, Color coreColor);
         }
 
         public static class arrow_big extends BulletRenderer {
@@ -49,7 +52,8 @@ public class THBulletRenderers {
                 this.shouldCull = false;
             }
 
-            public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, int combinedOverlay, float partialTicks, THObject.Color color, THObject.Color coreColor) {
+            public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, int combinedOverlay, float partialTicks, Color color, Color coreColor) {
+                this.shouldCull = true;
                 poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
                 Vec3 scale = new Vec3(0.4f, 0.8f, 0.4f);
                 Vec3 coreScale = scale.multiply(0.4f, 0.4f, 0.4f);
@@ -65,19 +69,20 @@ public class THBulletRenderers {
                         edgeA, edgeB, false,
                         new Vec2(0.5f, 2.0f),
                         new Vec2(0.4f, 2.0f),
-                        coreColor.multiply(0.6f), 0, THBullet.Color.WHITE().multiply(0.5f));
+                        coreColor.multiply(0.6f), Color.VOID(), Color.WHITE().multiply(0.5f));
+                this.shouldCull = false;
                 RenderUtil.renderSphere(vertexconsumer, posestack_pose, 1.2f,
                         offset,
                         scale,
                         edgeA, edgeB, true,
                         new Vec2(0.5f, 2.0f),
                         new Vec2(0.6f, 2.0f),
-                        color, 0, coreColor.multiply(0.4f));
+                        color, Color.VOID(), coreColor.multiply(0.4f));
             }
         }
 
         public static class ball_small extends BulletRenderer {
-            public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, int p_254296_, float partialTicks, THObject.Color color, THObject.Color coreColor) {
+            public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, int p_254296_, float partialTicks, Color color, Color coreColor) {
                 poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
                 Vec3 scale = new Vec3(0.2f, 0.2f, 0.2f);
                 //Vec3 coreScale = scale.multiply(0.6f,0.6f,0.6f);
@@ -97,7 +102,7 @@ public class THBulletRenderers {
         }
 
         public static class ball_mid extends BulletRenderer {
-            public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, int p_254296_, float partialTicks, THObject.Color color, THObject.Color coreColor) {
+            public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, int p_254296_, float partialTicks, Color color, Color coreColor) {
                 poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
                 Vec3 scale = new Vec3(0.5f, 0.5f, 0.5f);
                 //Vec3 coreScale = scale.multiply(0.6f,0.6f,0.6f);
@@ -117,7 +122,7 @@ public class THBulletRenderers {
         }
 
         public static class ball_big extends BulletRenderer {
-            public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, int p_254296_, float partialTicks, THObject.Color color, THObject.Color coreColor) {
+            public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, int p_254296_, float partialTicks, Color color, Color coreColor) {
                 poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
                 Vec3 scale = new Vec3(0.8f, 0.8f, 0.8f);
                 //Vec3 coreScale = scale.multiply(0.8f, 0.8f, 0.8f);
@@ -137,7 +142,7 @@ public class THBulletRenderers {
         }
 
         public static class ellipse extends BulletRenderer {
-            public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, int p_254296_, float partialTicks, THObject.Color color, THObject.Color coreColor) {
+            public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, int p_254296_, float partialTicks, Color color, Color coreColor) {
                 poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
                 Vec3 scale = new Vec3(0.5f, 1.0f, 0.5f);
                 //Vec3 coreScale = scale.multiply(0.7f, 0.7f, 0.7f);
@@ -157,7 +162,7 @@ public class THBulletRenderers {
         }
 
         public static class grain_a extends BulletRenderer {
-            public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, int p_254296_, float partialTicks, THObject.Color color, THObject.Color coreColor) {
+            public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, int p_254296_, float partialTicks, Color color, Color coreColor) {
                 poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
                 Vec3 scale = new Vec3(0.2f, 0.4f, 0.2f);
                 //Vec3 coreScale = scale.multiply(0.6f, 0.6f, 0.6f);
@@ -178,7 +183,7 @@ public class THBulletRenderers {
         }
 
         public static class grain_b extends BulletRenderer {
-            public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, int p_254296_, float partialTicks, THObject.Color color, THObject.Color coreColor) {
+            public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, int p_254296_, float partialTicks, Color color, Color coreColor) {
                 poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
                 Vec3 scale = new Vec3(0.25f, 0.5f, 0.25f);
                 Vec3 coreScale = scale.multiply(0.6f, 0.6f, 0.6f);
@@ -213,7 +218,7 @@ public class THBulletRenderers {
         return DefaultBulletRenderers.get(bulletStyle);
     }
 
-    public static void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, int p_254296_, float partialTicks, THObject.Color color, THObject.Color coreColor) {
+    public static void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, int p_254296_, float partialTicks, Color color, Color coreColor) {
         poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
         Vec3 scale = new Vec3(0.25f, 0.5f, 0.25f);
         Vec3 coreScale = scale.multiply(0.6f, 0.6f, 0.6f);
@@ -247,6 +252,6 @@ public class THBulletRenderers {
     }
 
     public interface THBulletRendererFactory {
-        void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer consumer, PoseStack poseStack, int p_254296_, float partialTicks, THObject.Color color, THObject.Color coreColor);
+        void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer consumer, PoseStack poseStack, int p_254296_, float partialTicks, Color color, Color coreColor);
     }
 }

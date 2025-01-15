@@ -61,3 +61,5 @@ function container:createTHCurvedLaser(key,args,position,colorIndex,length,width
 function container:getParameterManager() end
 
 function container:discard() end
+
+THObjectContainer = container

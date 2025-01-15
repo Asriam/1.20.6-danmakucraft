@@ -1,6 +1,7 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
@@ -14,6 +15,8 @@ import java.util.Map;
 @Mod.EventBusSubscriber(modid = THDanmakuCraftCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class RenderEvents {
     private static final Map<String, RenderLevelStageTask> renderLevelStageTasks = new HashMap<>();
+
+    public static int renderTickCount = 0;
 
     @SubscribeEvent
     public static void renderLevelStage(RenderLevelStageEvent event) {
@@ -68,5 +71,6 @@ public class RenderEvents {
     @SubscribeEvent
     public static void renderTickPost(TickEvent.RenderTickEvent.Post event) {
         THDanmakuCraftCore.LOGGER.info("Quads mount:" + RenderUtil.quadList.size());
+        renderTickCount++;
     }
 }

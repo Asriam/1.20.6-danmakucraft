@@ -181,3 +181,5 @@ function object:getY()  end
 ---@return number
 function object:getZ()  end
 ]]
+
+THObject = object

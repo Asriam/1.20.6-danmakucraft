@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.api.script;
 
+import com.adrian.thDanmakuCraft.world.danmaku.Color;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -24,7 +25,7 @@ public interface IScriptTHObjectAPI {
     void setAccelerationFromRotation(float acceleration, Vec2 rotation, boolean isDeg);
 
     void setColor(int r, int g, int b, int a);
-    THObject.Color getColor();
+    Color getColor();
 
     int getTimer();
 }

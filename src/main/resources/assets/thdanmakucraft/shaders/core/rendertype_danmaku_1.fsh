@@ -1,6 +1,6 @@
 #version 150
 
-#define flag 0
+#define flag 1
 
 #if (flag == 1)
 uniform sampler2D DepthBuffer;

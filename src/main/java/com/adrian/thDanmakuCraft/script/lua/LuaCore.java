@@ -1,6 +1,9 @@
 package com.adrian.thDanmakuCraft.script.lua;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.world.danmaku.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
+import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
@@ -51,6 +54,10 @@ public class LuaCore {
             //this.bindClass("THObject" ,         THObject.class);
             //this.bindClass("THBullet" ,         THBullet.class);
             //this.bindClass("THCurvedLaser" ,    THCurvedLaser.class);
+            GLOBALS.set("THObjectContainer", THObjectContainer.meta.get("__index"));
+            GLOBALS.set("THObject", THObject.meta.get("__index"));
+            GLOBALS.set("THBullet", THBullet.meta.get("__index"));
+
             GLOBALS.set("luajava", NIL);
         } catch (Exception e) {
             LOGGER.warn("Failed put api!", e);

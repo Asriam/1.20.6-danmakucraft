@@ -42,6 +42,7 @@ public class THRenderType extends RenderType{
                     .setOverlayState(NO_OVERLAY)
                     .setWriteMaskState(COLOR_DEPTH_WRITE)
                     .setOutputState(TRANSLUCENT_TARGET)
+                    //.setOutputState(ITEM_ENTITY_TARGET)
                     .createCompositeState(false)
     ));
 

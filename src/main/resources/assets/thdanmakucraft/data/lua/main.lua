@@ -7,7 +7,4 @@
 core.doFile("doc/vec3.lua")
 core.doFile("doc/vec2.lua")
 ]]
-
 core.doFile("testcontainer.lua")
-
-print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")

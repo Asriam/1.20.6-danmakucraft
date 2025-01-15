@@ -61,7 +61,6 @@ end
 function container:onTick()
 end
 
-
 local testBullet3 = core.registerClass()
 function testBullet3:onInit()
     self:setLifetime(10000)
@@ -69,9 +68,10 @@ end
 
 
 ---@type Class|THObjectContainer
-local container2 = core.registerClass("testContainer2")
+local container2 = core.registerClass("testContainer")
 function container2:onInit()
-    self:createTHBullet(testBullet3, {i}, self:getPosition(),"arrow_big",1)
+    local bullet = self:createTHBullet(testBullet3, {i}, self:getPosition(),"arrow_big",1)
+    bullet:setStyle("ball_big")
 end
 
 function container2:onTick()

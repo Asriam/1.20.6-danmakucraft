@@ -19,4 +19,4 @@ function bullet:getStyle() end
 ---@return number
 function bullet:getBulletColor() end
 
-THBulletClass = bullet
+THBullet = bullet

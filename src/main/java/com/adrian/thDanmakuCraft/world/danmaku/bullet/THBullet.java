@@ -8,12 +8,10 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
-import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.LibFunction;
 import org.luaj.vm2.lib.OneArgFunction;
 import org.luaj.vm2.lib.TwoArgFunction;
-import org.luaj.vm2.lib.ZeroArgFunction;
 
 public class THBullet extends THObject {
     protected DefaultBulletStyle style;
@@ -99,27 +97,27 @@ public class THBullet extends THObject {
     }
 
     @Override
-    public THImage getImage() {
-        return this.style.getImage();
+    public Image getImage() {
+        return this.style.getImage(this.bulletColor.index);
     }
 
     public enum BULLET_COLOR {
-        COLOR_DEEP_RED(1,       Color(200,20,20)),
-        COLOR_RED(2,            Color(255,0,0)),
-        COLOR_DEEP_PURPLE(3,    Color(190,0,255)),
-        COLOR_PURPLE(4,         Color(255,0,255)),
-        COLOR_DEEP_BLUE(5,      Color(107,0,255)),
-        COLOR_BLUE(6,           Color(0,0,255)),
-        COLOR_ROYAL_BLUE(7,     Color(40,84,145)),
-        COLOR_CYAN (8,          Color(0,255,255)),
-        COLOR_DEEP_GREEN(9,     Color(62,207,112)),
-        COLOR_GREEN(10,         Color(0,255,0)),
-        COLOR_CHARTREUSE(11,    Color(223,255,0)),
-        COLOR_YELLOW (12,       Color(255,255,0)),
-        COLOR_GOLDEN_YELLOW(13, Color(255,229,88)),
-        COLOR_ORANGE(14,        Color(255,145,37)),
-        COLOR_GRAY(15,          Color(199,199,199)),
-        COLOR_DEEP_GRAY(16,     Color(137,137,137));
+        COLOR_DEEP_RED(0,       Color(200,20,20)),
+        COLOR_RED(1,            Color(255,0,0)),
+        COLOR_DEEP_PURPLE(2,    Color(190,0,255)),
+        COLOR_PURPLE(3,         Color(255,0,255)),
+        COLOR_DEEP_BLUE(4,      Color(107,0,255)),
+        COLOR_BLUE(5,           Color(0,0,255)),
+        COLOR_ROYAL_BLUE(6,     Color(40,84,145)),
+        COLOR_CYAN (7,          Color(0,255,255)),
+        COLOR_DEEP_GREEN(8,     Color(62,207,112)),
+        COLOR_GREEN(9,         Color(0,255,0)),
+        COLOR_CHARTREUSE(10,    Color(223,255,0)),
+        COLOR_YELLOW (11,       Color(255,255,0)),
+        COLOR_GOLDEN_YELLOW(12, Color(255,229,88)),
+        COLOR_ORANGE(13,        Color(255,145,37)),
+        COLOR_GRAY(14,          Color(199,199,199)),
+        COLOR_DEEP_GRAY(15,     Color(137,137,137));
 
         private final int index;
         private final Color color;
@@ -141,22 +139,40 @@ public class THBullet extends THObject {
         }
     }
 
-    public static final THImage IMAGE_WHITE = new THImage(TEXTURE_WHITE,0.0f,0.0f,1.0f,1.0f);
-    public static final THImage IMAGE_BALL_MID = new THImage(new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/danmaku/ball_mid.png"),0.0f,0.0f,1.0f,1.0f);
-    public static final THImage IMAGE_ARROW_BIG = new THImage(new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/danmaku/arrow_big.png"),0.0f,0.0f,1.0f,1.0f);
+    public static final Image IMAGE_WHITE = new Image(TEXTURE_WHITE,0.0f,0.0f,1.0f,1.0f);
+    //public static final Image IMAGE_BALL_MID = new Image(new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/danmaku/ball_mid.png"),0.0f,0.0f,1.0f,1.0f);
+    //public static final Image IMAGE_ARROW_BIG = new Image(new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/danmaku/arrow_big.png"),0.0f,0.0f,1.0f,1.0f);
+    public static final Image.ImageGroup IMAGE_BALL_MID = new Image.ImageGroup(new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/danmaku/ball_mid.png"),
+            0.0f,0.0f,1.0f,1.0f/16,1,16);
+    public static final Image.ImageGroup IMAGE_ARROW_BIG = new Image.ImageGroup(new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/danmaku/arrow_big.png"),
+            0.0f,0.0f,1.0f,1.0f/16,1,16);
     private static final Vec3 DEFAULT_SIZE = new Vec3(0.5f,0.5f,0.5f);
     public interface IBulletStyle{
         boolean is3D();
         boolean shouldFaceCamera();
         Vec3 getSize();
         CollisionType getCollisionType();
-        THImage getImage();
+        Image getImage(int index);
 
         void writeData(FriendlyByteBuf buffer);
         IBulletStyle readData(FriendlyByteBuf buffer);
         void save(CompoundTag tag);
         IBulletStyle load(CompoundTag tag);
     }
+
+    /*
+    public static void main(String[] args){
+        String[] styleNames;
+        DefaultBulletStyle[] styles = DefaultBulletStyle.values();
+        styleNames = new String[styles.length];
+        for(DefaultBulletStyle style:styles){
+            styleNames[style.ordinal()] = style.name();
+        }
+
+        for(String styleName : styleNames){
+            System.out.println("\"" + styleName + "\",");
+        }
+    }*/
 
     public enum DefaultBulletStyle implements IBulletStyle{
         arrow_big(IMAGE_ARROW_BIG,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.SPHERE, true),
@@ -181,13 +197,13 @@ public class THBullet extends THObject {
         heart, money, music, silence,
         water_drop_dark, ball_huge_dark, ball_light_dark;
 
-        private final THImage image;
+        private final IImage image;
         private final Vec3 size;
         private final boolean faceCam;
         private final boolean is3D;
         private final CollisionType collisionType;
 
-        DefaultBulletStyle(THImage image, Vec3 size, boolean faceCam, CollisionType collisionType, boolean is3D){
+        DefaultBulletStyle(IImage image, Vec3 size, boolean faceCam, CollisionType collisionType, boolean is3D){
             this.image = image;
             this.size = size;
             this.faceCam = faceCam;
@@ -195,7 +211,7 @@ public class THBullet extends THObject {
             this.is3D = is3D;
         }
 
-        DefaultBulletStyle(THImage image, Vec3 size, CollisionType collisionType){
+        DefaultBulletStyle(IImage image, Vec3 size, CollisionType collisionType){
             this.image = image;
             this.size = size;
             this.faceCam = false;
@@ -207,7 +223,7 @@ public class THBullet extends THObject {
             this(IMAGE_WHITE,DEFAULT_SIZE,CollisionType.AABB);
         }
 
-        DefaultBulletStyle(THImage image){
+        DefaultBulletStyle(IImage image){
             this(image,DEFAULT_SIZE,CollisionType.AABB);
         }
 
@@ -227,8 +243,8 @@ public class THBullet extends THObject {
             return this.faceCam;
         }
 
-        public THImage getImage(){
-            return this.image;
+        public Image getImage(int index){
+            return this.image.getImage(index);
         }
 
         @Override
@@ -299,12 +315,15 @@ public class THBullet extends THObject {
     @Override
     public LuaValue ofLuaClass(){
         LuaValue library = super.ofLuaClass();
-        //functions
-        library.setmetatable(meta);
         return library;
     }
 
-    private static final LuaValue meta = LuaValue.tableOf();
+    @Override
+    public LuaValue getMeta(){
+        return meta;
+    }
+
+    public static final LuaValue meta = LuaValue.tableOf();
     static {
         meta.set("__index", luaClassFunctions());
     }

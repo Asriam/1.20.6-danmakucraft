@@ -3,6 +3,7 @@ package com.adrian.thDanmakuCraft.client.renderer.danmaku.laser;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRendererProvider;
+import com.adrian.thDanmakuCraft.world.danmaku.Color;
 import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -35,14 +36,14 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
 
         poseStack.pushPose();
         int edge = 4;
-        THObject.Color indexColor = laser.laserColor.getColor();
-        THObject.Color laserColor = THObject.Color(
+        Color indexColor = laser.laserColor.getColor();
+        Color laserColor = THObject.Color(
                 laser.color.r * indexColor.r / 255,
                 laser.color.g * indexColor.g / 255,
                 laser.color.b * indexColor.b / 255,
                 (int) (laser.color.a * 0.7f)
         );
-        THObject.Color coreColor = laser.color;
+        Color coreColor = laser.color;
 
         //VertexConsumer vertexConsumer = bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE);
 
@@ -88,7 +89,7 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
 
     //曲線聚光渲染的一坨屎山
     @OnlyIn(value = Dist.CLIENT)
-    public void renderCurvedLaser(Vec3 laserPos, VertexConsumer vertexConsumer, PoseStack poseStack, List<THCurvedLaser.LaserNode> nodeList, float width, float coreWidth, int edge, int cull, THObject.Color laserColor, THObject.Color coreColor, float partialTicks, int combinedOverlay, float laserLength, float coreLength) {
+    public void renderCurvedLaser(Vec3 laserPos, VertexConsumer vertexConsumer, PoseStack poseStack, List<THCurvedLaser.LaserNode> nodeList, float width, float coreWidth, int edge, int cull, Color laserColor, Color coreColor, float partialTicks, int combinedOverlay, float laserLength, float coreLength) {
         if (nodeList.isEmpty() || nodeList.size() < 3) {
             return;
         }
@@ -109,13 +110,13 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
         Vec3[] lastNormal_3 = new Vec3[edge];
         Vec3[] lastNormal_4 = new Vec3[edge];
 
-        THObject.Color coreColor2 = coreColor.multiply(0.5f);
+        Color coreColor2 = coreColor.multiply(0.5f);
 
         Vec3 _pos1;
         Vec3 _pos2;
 
         int index = 0;
-        THObject.Color GRAY = THObject.Color.GRAY();
+        Color GRAY = Color.GRAY();
         Vec3 pos0 = new Vec3(1.0f, 0.0d, 0.0d);
 
         for (THCurvedLaser.LaserNode node : nodeList) {
