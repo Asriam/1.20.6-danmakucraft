@@ -81,9 +81,10 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
         CLOSE(8,8,false),
         MEDIUM(6,6,false),
         FAR(5,6,false),
-        VERY_FAR(4,4,true);
+        VERY_FAR(4,4,true),
+        TEST(30,30,false);
 
-        public static final double[] distOfLevel = {0.0D,8.0D,16.0D,32.0D,48.0D,60.0D,80.0D};
+        public static final double[] distOfLevel = {4.0D,8.0D,16.0D,32.0D,48.0D,60.0D,80.0D};
         public final int edgeANum;
         public final int edgeBNum;
         public boolean is2D;
@@ -108,7 +109,7 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
             d4 *= d4;
 
             if(distSquare < d4*distOfLevel[0]*distOfLevel[0]){
-                return VERY_CLOSE;
+                return TEST;
             }else if(distSquare < d4*distOfLevel[1]*distOfLevel[1]){
                 return VERY_CLOSE;
             }else if(distSquare < d4*distOfLevel[2]*distOfLevel[2]){

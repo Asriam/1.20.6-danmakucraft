@@ -19,7 +19,6 @@ public class THBullet extends THObject {
 
     public THBullet(THObjectType<THBullet> type, THObjectContainer container) {
         super(type, container);
-        //this.luaValueForm = this.ofLuaValue();
     }
 
     public THBullet(THObjectContainer container, DefaultBulletStyle style, BULLET_COLOR bulletColor) {
@@ -53,10 +52,6 @@ public class THBullet extends THObject {
 
     public void setStyle(String style) {
         this.setStyle(DefaultBulletStyle.valueOf(style));
-        /*
-        this.style = DefaultBulletStyle.valueOf(style);
-        this.size = this.style.getSize();
-         */
     }
 
     public DefaultBulletStyle getStyle() {
@@ -111,7 +106,7 @@ public class THBullet extends THObject {
         COLOR_ROYAL_BLUE(6,     Color(40,84,145)),
         COLOR_CYAN (7,          Color(0,255,255)),
         COLOR_DEEP_GREEN(8,     Color(62,207,112)),
-        COLOR_GREEN(9,         Color(0,255,0)),
+        COLOR_GREEN(9,          Color(0,255,0)),
         COLOR_CHARTREUSE(10,    Color(223,255,0)),
         COLOR_YELLOW (11,       Color(255,255,0)),
         COLOR_GOLDEN_YELLOW(12, Color(255,229,88)),
@@ -153,26 +148,13 @@ public class THBullet extends THObject {
         Vec3 getSize();
         CollisionType getCollisionType();
         Image getImage(int index);
+        String getName();
 
         void writeData(FriendlyByteBuf buffer);
         IBulletStyle readData(FriendlyByteBuf buffer);
         void save(CompoundTag tag);
         IBulletStyle load(CompoundTag tag);
     }
-
-    /*
-    public static void main(String[] args){
-        String[] styleNames;
-        DefaultBulletStyle[] styles = DefaultBulletStyle.values();
-        styleNames = new String[styles.length];
-        for(DefaultBulletStyle style:styles){
-            styleNames[style.ordinal()] = style.name();
-        }
-
-        for(String styleName : styleNames){
-            System.out.println("\"" + styleName + "\",");
-        }
-    }*/
 
     public enum DefaultBulletStyle implements IBulletStyle{
         arrow_big(IMAGE_ARROW_BIG,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.SPHERE, true),
@@ -245,6 +227,10 @@ public class THBullet extends THObject {
 
         public Image getImage(int index){
             return this.image.getImage(index);
+        }
+
+        public String getName(){
+            return this.name();
         }
 
         @Override

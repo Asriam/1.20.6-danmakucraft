@@ -142,7 +142,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
             mainRenderTarget.bindWrite(true);
         }
 
-        boolean shouldApplyEffect = false;
+        //boolean shouldApplyEffect = false;
 
         /*if (shouldApplyEffect) {
             mainRenderTarget.unbindWrite();
@@ -164,7 +164,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
                         poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
                         if (object.collision) {
                             if (object instanceof THCurvedLaser laser) {
-                                renderTHCurvedLaserHitBoxes(laser, objectPos, poseStack, vertexConsumer, partialTicks, frustum, cameraPosition);
+                                renderTHCurvedLaserHitBoxes(laser, objectPos, poseStack, vertexConsumer, partialTicks, frustum);
                             } else {
                                 renderTHObjectsHitBox(object, poseStack, vertexConsumer);
                             }
@@ -306,7 +306,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
         vertexConsumer.vertex(matrix4f, (float)(vec31.x * 2.0D), (float)((vec31.y * 2.0D)), (float)(vec31.z * 2.0D)).color(0, 0, 255, 255).normal(poseStack.last(), (float)vec31.x, (float)vec31.y, (float)vec31.z).endVertex();
     }
 
-    private static void renderTHCurvedLaserHitBoxes(THCurvedLaser laser, Vec3 laserPos,PoseStack poseStack, VertexConsumer vertexConsumer, float partialTicks, Frustum frustum, Vec3 cameraPosition){
+    private static void renderTHCurvedLaserHitBoxes(THCurvedLaser laser, Vec3 laserPos,PoseStack poseStack, VertexConsumer vertexConsumer, float partialTicks, Frustum frustum){
         List<THCurvedLaser.LaserNode> nodes = laser.nodeManager.getAllNodes();
         for(THCurvedLaser.LaserNode node: nodes){
             Vec3 pos = node.getPosition();
