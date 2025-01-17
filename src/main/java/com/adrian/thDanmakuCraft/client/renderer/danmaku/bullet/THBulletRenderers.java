@@ -69,7 +69,7 @@ public class THBulletRenderers {
                         edgeA, edgeB, false,
                         new Vec2(0.5f, 2.0f),
                         new Vec2(0.4f, 2.0f),
-                        coreColor.multiply(0.6f), Color.VOID(), Color.WHITE().multiply(0.5f));
+                        coreColor.multiply(0.6f), 0, Color.WHITE().multiply(0.5f));
                 this.shouldCull = false;
                 RenderUtil.renderSphere(vertexconsumer, posestack_pose, 1.2f,
                         offset,
@@ -77,7 +77,7 @@ public class THBulletRenderers {
                         edgeA, edgeB, true,
                         new Vec2(0.6f, 1.0f),
                         new Vec2(0.6f, 2.0f),
-                        color, Color.VOID(), coreColor.multiply(0.3f));
+                        color, 0, coreColor.multiply(0.3f));
             }
         }
 

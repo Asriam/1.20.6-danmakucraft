@@ -1,12 +1,9 @@
 package com.adrian.thDanmakuCraft.world.entity;
 
 import com.adrian.thDanmakuCraft.init.EntityInit;
-import com.adrian.thDanmakuCraft.network.syncher.MyEntityDataSerializers;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
-import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -56,12 +53,12 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
 
     @Override
     protected void readAdditionalSaveData(CompoundTag tag) {
-        this.container.readAdditionalSaveData(tag);
+        this.container.load(tag);
     }
 
     @Override
     protected void addAdditionalSaveData(CompoundTag tag) {
-        this.container.addAdditionalSaveData(tag);
+        this.container.save(tag);
     }
 
     @Override

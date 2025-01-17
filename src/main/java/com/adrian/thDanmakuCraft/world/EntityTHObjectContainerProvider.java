@@ -13,14 +13,17 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @Deprecated
-public class PlayerTHObjectContainerProvider implements ICapabilityProvider, INBTSerializable<CompoundTag> {
+public class EntityTHObjectContainerProvider implements ICapabilityProvider, INBTSerializable<CompoundTag> {
 
-    public static Capability<PlayerTHObjectContainerProvider> PLAYER_THOBJECT_CONTAINER_CAPABILITY = CapabilityManager.get(new CapabilityToken<PlayerTHObjectContainerProvider>() { });
+    public static Capability<EntityTHObjectContainerProvider> PLAYER_THOBJECT_CONTAINER_CAPABILITY = CapabilityManager.get(new CapabilityToken<EntityTHObjectContainerProvider>() { });
     private THObjectContainer container = null;
     private final LazyOptional<THObjectContainer> optional = LazyOptional.of(this::createTHObjectContainer);
 
     public THObjectContainer createTHObjectContainer() {
-        return null;
+        if (this.container == null) {
+            this.container = new THObjectContainer(null);
+        }
+        return this.container;
     }
 
     @Override
@@ -33,12 +36,12 @@ public class PlayerTHObjectContainerProvider implements ICapabilityProvider, INB
 
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
-
+        createTHObjectContainer().save(tag);
         return tag;
     }
 
     public void deserializeNBT(CompoundTag tag) {
-
+        createTHObjectContainer().load(tag);
     }
 
 

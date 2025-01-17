@@ -377,7 +377,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         this.setBound(this.position(),this.bound);
     }
 
-    public void addAdditionalSaveData(CompoundTag tag) {
+    public void save(CompoundTag tag) {
         tag.putInt("Timer",this.timer);
         tag.putInt("MaxObjectAmount",this.maxObjectAmount);
         //compoundTag.putBoolean("PositionBinding",this.bindingToUserPosition);
@@ -388,7 +388,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         tag.put("parameters", this.parameterManager.save(new CompoundTag()));
     }
 
-    public void readAdditionalSaveData(CompoundTag tag) {
+    public void load(CompoundTag tag) {
         this.timer = tag.getInt("Timer");
         this.maxObjectAmount = tag.getInt("MaxObjectAmount");
         //this.bindingToUserPosition = compoundTag.getBoolean("PositionBinding");
