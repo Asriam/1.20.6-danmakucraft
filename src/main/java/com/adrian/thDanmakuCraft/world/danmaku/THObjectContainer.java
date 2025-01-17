@@ -4,8 +4,8 @@ import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.api.script.IScriptTHObjectContainerAPI;
 import com.adrian.thDanmakuCraft.script.IScript;
 import com.adrian.thDanmakuCraft.script.ScriptManager;
-import com.adrian.thDanmakuCraft.script.lua.LuaCore;
-import com.adrian.thDanmakuCraft.script.lua.LuaManager;
+import com.adrian.thDanmakuCraft.lua.LuaCore;
+import com.adrian.thDanmakuCraft.lua.LuaManager;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
 import com.adrian.thDanmakuCraft.world.THTasker;
 import com.adrian.thDanmakuCraft.world.TargetUserManager;
@@ -34,7 +34,7 @@ import static com.adrian.thDanmakuCraft.world.LuaValueHelper.*;
 public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, ILuaValue {
     public static final List<THObjectContainer> allContainers = new ArrayList<>();
 
-    private final Entity hostEntity;
+    private Entity hostEntity;
     private int maxObjectAmount = 2000;
     protected final TargetUserManager targetUserManager;
     protected final THObjectManager objectManager;
@@ -105,7 +105,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
             for (int j = 0; j< THBullet.DefaultBulletStyle.class.getEnumConstants().length; j++) {
                 for (int i = 0; i < 16; i++) {
                     THObject a = (THObject) new THBullet(this, THBullet.DefaultBulletStyle.getStyleByIndex(j),THBullet.BULLET_COLOR.getColorByIndex(i + 1))
-                            .initPosition(this.position().add(i*2, 0.0d, j*1))
+                            .initPosition(this.position().add(i*2, 0.0d, j*2))
                             .shoot(
                                     0.0f,
                                     Vec3.ZERO
@@ -289,6 +289,16 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
 
     public Entity getHostEntity(){
         return this.hostEntity;
+    }
+
+    private void setHostEntity(Entity entity){
+        this.hostEntity = entity;
+    }
+
+    public void initHostEntity(Entity entity){
+        if(this.hostEntity == null){
+            this.setHostEntity(entity);
+        }
     }
 
     public THObject createTHObject(Vec3 pos) {

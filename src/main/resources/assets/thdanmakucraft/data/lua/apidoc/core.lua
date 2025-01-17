@@ -5,31 +5,32 @@
 ---
 
 ---@class core
-local core = {}
+local c = {}
+core = c
 
 ---@param filePath string
-function core.doFile(filePath) end
+function c.doFile(filePath) end
 
 ---@param object any
 ---@return boolean
-function core.isValid(object) end
+function c.isValid(object) end
 
 ---@param msg string
-function core.info(msg) end
+function c.info(msg) end
 
 ---@param msg string
-function core.warn(msg) end
+function c.warn(msg) end
 
 ---@param x number
 ---@param y number
 ---@return Vec2
-function core.vec2(x, y) end
+function c.vec2(x, y) end
 
 ---@param x number
 ---@param y number
 ---@param z number
 ---@return Vec3
-function core.vec3(x, y, z) end
+function c.vec3(x, y, z) end
 
 ---@param className string
 ---@param parentClass Class
@@ -38,8 +39,8 @@ function core.vec3(x, y, z) end
 ---@overload fun(className:string, superClass:string)
 ---@overload fun()
 ---@overload fun(superClass:Class)
-function core.registerClass(className, superClass) end
+function c.registerClass(className, superClass) end
 
 ---@param className self
 ---@return Class
-function core.getClass(className) end
+function c.getClass(className) end

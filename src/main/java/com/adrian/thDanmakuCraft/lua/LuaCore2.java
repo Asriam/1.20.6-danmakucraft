@@ -1,4 +1,4 @@
-package com.adrian.thDanmakuCraft.script.lua;
+package com.adrian.thDanmakuCraft.lua;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;

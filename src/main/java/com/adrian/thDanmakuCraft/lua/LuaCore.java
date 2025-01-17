@@ -1,6 +1,7 @@
-package com.adrian.thDanmakuCraft.script.lua;
+package com.adrian.thDanmakuCraft.lua;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.world.LuaValueHelper;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
@@ -14,14 +15,12 @@ import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.OneArgFunction;
-import org.luaj.vm2.lib.ThreeArgFunction;
 import org.luaj.vm2.lib.VarArgFunction;
 import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 import org.luaj.vm2.lib.jse.JsePlatform;
 import org.slf4j.Logger;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static org.luaj.vm2.LuaValue.NIL;
 
@@ -119,8 +118,9 @@ public class LuaCore {
         library.set("vec3", new VarArgFunction() {
             @Override
             public LuaValue invoke(Varargs varargs) {
+                LuaValue arg1 = varargs.arg(1);
                 return CoerceJavaToLua.coerce(new Vec3(
-                        varargs.arg(1).checkdouble(),
+                        arg1.checkdouble(),
                         varargs.arg(2).checkdouble(),
                         varargs.arg(3).checkdouble()));
             }

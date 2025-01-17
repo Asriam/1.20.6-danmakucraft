@@ -5,25 +5,26 @@
 ---
 
 ---@class Mth
-Mth = {}
+local m = {}
+Mth = m
 
 ---@param number number
 ---@return number
-function Mth.sin(number) end
+function m.sin(number) end
 
 ---@param number number
 ---@return number
-function Mth.cos(number) end
+function m.cos(number) end
 
 ---@param number number
 ---@return number
-function Mth.sqrt(number) end
+function m.sqrt(number) end
 
 ---@param a number
 ---@param b number
 ---@param t number
 ---@return number
-function Mth.lerp(a, b, t) end
+function m.lerp(a, b, t) end
 --[[
 ---@param number number
 ---@return number

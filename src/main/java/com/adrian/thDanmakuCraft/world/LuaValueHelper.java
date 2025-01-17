@@ -36,6 +36,11 @@ public class LuaValueHelper {
 
     }
 
+    public static LuaValue Vec3MemberFunctions(){
+        LuaValue luaValue = LuaValue.tableOf();
+
+        return luaValue;
+    };
     public static LuaValue EntityToLuaValue(Entity entity) {
         if (entity == null) return LuaValue.NIL;
         LuaValue library = LuaValue.tableOf();
@@ -48,29 +53,39 @@ public class LuaValueHelper {
     }
 
     public static LuaValue Vec3ToLuaValue(Vec3 vec3) {
+        return Vec3ToLuaValue(vec3.x,vec3.y,vec3.z);
+    }
+
+    public static LuaValue Vec3ToLuaValue(double x, double y, double z) {
         LuaValue library = LuaValue.tableOf();
-        library.set("x", vec3.x);
-        library.set("y", vec3.y);
-        library.set("z", vec3.z);
+        library.set("x", x);
+        library.set("y", y);
+        library.set("z", z);
         return library;
-        //return CoerceJavaToLua.coerce(vec3);
     }
 
     public static LuaValue Vec2ToLuaValue(Vec2 vec2) {
+        return Vec2ToLuaValue(vec2.x,vec2.y);
+    }
+
+    public static LuaValue Vec2ToLuaValue(double x, double y) {
         LuaValue library = LuaValue.tableOf();
-        library.set("x", vec2.x);
-        library.set("y", vec2.y);
+        library.set("x", x);
+        library.set("y", y);
         return library;
         //return CoerceJavaToLua.coerce(vec2);
     }
 
     public static LuaValue Vector3fToLuaValue(Vector3f vec3f) {
+        return Vec3ToLuaValue(vec3f.x,vec3f.y,vec3f.z);
+    }
+
+    public static LuaValue Vector3fToLuaValue(float x, float y, float z) {
         LuaValue library = LuaValue.tableOf();
-        library.set("x", vec3f.x);
-        library.set("y", vec3f.y);
-        library.set("z", vec3f.z);
+        library.set("x", x);
+        library.set("y", y);
+        library.set("z", z);
         return library;
-        //return CoerceJavaToLua.coerce(vec3f);
     }
 
     public static Vec3 LuaValueToVec3(LuaValue luaValue) {

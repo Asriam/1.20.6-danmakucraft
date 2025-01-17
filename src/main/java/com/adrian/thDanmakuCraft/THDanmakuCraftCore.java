@@ -1,8 +1,8 @@
 package com.adrian.thDanmakuCraft;
 
 import com.adrian.thDanmakuCraft.init.*;
-import com.adrian.thDanmakuCraft.script.lua.LuaCore;
-import com.adrian.thDanmakuCraft.script.lua.LuaLoader;
+import com.adrian.thDanmakuCraft.lua.LuaCore;
+import com.adrian.thDanmakuCraft.lua.LuaLoader;
 import com.mojang.logging.LogUtils;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.packs.resources.ResourceManager;

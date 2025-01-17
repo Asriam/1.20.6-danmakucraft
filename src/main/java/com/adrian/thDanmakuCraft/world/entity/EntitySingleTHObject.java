@@ -12,7 +12,6 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 
 public class EntitySingleTHObject extends Entity implements IEntityAdditionalSpawnData {
-
     protected final TargetUserManager targetUserManager;
     protected THObject object;
 

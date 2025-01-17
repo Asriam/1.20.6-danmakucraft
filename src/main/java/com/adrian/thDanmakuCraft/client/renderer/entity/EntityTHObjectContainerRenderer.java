@@ -47,19 +47,18 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
     private static final RenderTarget TEST_RENDER_TARGET = new TextureTarget(1000,1000,true,true);
     private static final RenderTarget MAIN_RENDER_TARGET = Minecraft.getInstance().getMainRenderTarget();
     private static final RenderTarget DEPTH_BUFFER = new TextureTarget(800,800,true,true);
+    //private static final RenderTarget DEPTH_BUFFER = new TextureTarget(MAIN_RENDER_TARGET.width,MAIN_RENDER_TARGET.height,true,true);
     private final Map<THObjectType<?>, AbstractTHObjectRenderer<?>> thobjectRenderers;
     //private Frustum frustum;
 
     public EntityTHObjectContainerRenderer(EntityRendererProvider.Context context) {
         super(context);
         this.thobjectRenderers = THObjectRenderers.createEntityRenderers(new THObjectRendererProvider.Context(this));
-
         RenderEvents.registerRenderLevelStageTask("test_effect_clear", RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS, (poseStack, partialTick) -> {
             TEST_RENDER_TARGET.resize(MAIN_RENDER_TARGET.width , MAIN_RENDER_TARGET.height, false);
             TEST_RENDER_TARGET.setClearColor(0.0f,0.0f,0.0f,0.0f);
             TEST_RENDER_TARGET.clear(true);
         });
-
         RenderEvents.registerRenderLevelStageTask("test_effect_applier", RenderLevelStageEvent.Stage.AFTER_WEATHER, EntityTHObjectContainerRenderer::applyEffect);
     }
 
@@ -91,8 +90,8 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
                     GlStateManager.SourceFactor.SRC_ALPHA,
                     GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
             );
-            RenderSystem.depthFunc(519);
-
+            //RenderSystem.depthFunc(519);
+            RenderSystem.depthFunc(515);
             drawOnScreen(outSize[0],outSize[1]);
 
             customShader.clear();
@@ -129,30 +128,29 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
 
 
         Vec3 cameraPosition = this.entityRenderDispatcher.camera.getPosition();
-        double camX = cameraPosition.x;
-        double camY = cameraPosition.y;
-        double camZ = cameraPosition.z;
+        final double camX = cameraPosition.x;
+        final double camY = cameraPosition.y;
+        final double camZ = cameraPosition.z;
 
         RenderTarget mainRenderTarget = MAIN_RENDER_TARGET;
         ShaderInstance shader = ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER;
         if(shader != null) {
-            //DEPTH_BUFFER.resize(800,800,false);
             DEPTH_BUFFER.copyDepthFrom(mainRenderTarget);
             shader.setSampler("DepthBuffer", DEPTH_BUFFER.getDepthTextureId());
             mainRenderTarget.bindWrite(true);
         }
 
-        //boolean shouldApplyEffect = false;
+        boolean shouldApplyEffect = true;
 
-        /*if (shouldApplyEffect) {
+        if (shouldApplyEffect) {
             mainRenderTarget.unbindWrite();
             TEST_RENDER_TARGET.copyDepthFrom(mainRenderTarget);
             TEST_RENDER_TARGET.bindWrite(true);
-        }*/
+        }
 
-        RenderSystem.enableBlend();
-        //final List<? extends THObject> objectList = layerObjects(entity.getObjectManager().getTHObjectsForRender(),camX,camY,camZ);
         final List<? extends THObject> objectList = container.getObjectManager().getTHObjectsForRender();
+        //poseStack.translate(- camX, - camY, - camZ);
+        RenderSystem.enableBlend();
         if (!objectList.isEmpty()) {
             Frustum frustum = this.getFrustum();
             if (this.entityRenderDispatcher.shouldRenderHitBoxes()) {
@@ -162,6 +160,7 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
                         poseStack.pushPose();
                         Vec3 objectPos = object.getOffsetPosition(partialTicks);
                         poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
+                        //poseStack.translate(objectPos.x(), objectPos.y(), objectPos.z());
                         if (object.collision) {
                             if (object instanceof THCurvedLaser laser) {
                                 renderTHCurvedLaserHitBoxes(laser, objectPos, poseStack, vertexConsumer, partialTicks, frustum);
@@ -173,43 +172,36 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
 
                     }
                 }
-                /*
-                RenderType.lines().setupRenderState();
-                BufferUploader.drawWithShader(vertexConsumer.end());
-                RenderType.lines().clearRenderState();
-                 */
             }
 
             Map<RenderType,List<THObject>> map = new HashMap<>();
             for (THObject object:objectList) {
                 RenderType renderType = this.getRenderType(object);
                 map.computeIfAbsent(renderType, (key) -> new ArrayList<>()).add(object);
-                //List<THObject> list1 = map.get(renderType);
-                //list1.add(object);
             }
 
             map.forEach((renderType, list) -> {
                 List<THObject> sortedList = layerObjects(list,camX,camY,camZ);
                 BufferBuilder vertexConsumer = (BufferBuilder) bufferSource.getBuffer(renderType);
-                //BufferBuilder vertexConsumer = RenderSystem.renderThreadTesselator().getBuilder();
-                //vertexConsumer.begin(renderType.mode(), renderType.format());
                 for (THObject object:sortedList) {
                     if (object != null && (object instanceof THCurvedLaser || this.shouldRenderTHObject(object, frustum, camX, camY, camZ))) {
                         poseStack.pushPose();
                             Vec3 objectPos = object.getOffsetPosition(partialTicks);
                             poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
+                            //poseStack.translate(objectPos.x(), objectPos.y(), objectPos.z());
                             this.getTHObjectRenderer(object).render(object, objectPos, partialTicks, poseStack, vertexConsumer, combinedOverlay);
                         poseStack.popPose();
                     }
                 }
 
                 renderType.setupRenderState();
-                /*if(shouldApplyEffect) {
+                if(shouldApplyEffect) {
                     TEST_RENDER_TARGET.bindWrite(true);
                     BufferUploader.drawWithShader(vertexConsumer.end());
                     TEST_RENDER_TARGET.unbindWrite();
-                }*/
-                BufferUploader.drawWithShader(vertexConsumer.end());
+                }else {
+                    BufferUploader.drawWithShader(vertexConsumer.end());
+                }
                 renderType.clearRenderState();
                 vertexConsumer.begin(renderType.mode(),renderType.format());
             });
@@ -222,12 +214,12 @@ public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObje
         //profiler.pop();
 
 
-        /*if(shouldApplyEffect) {
+        if(shouldApplyEffect) {
             TEST_RENDER_TARGET.unbindWrite();
             mainRenderTarget.copyDepthFrom(TEST_RENDER_TARGET);
             mainRenderTarget.bindWrite(true);
             //testRenderTarget.blitToScreen(mainRenderTarget.width,mainRenderTarget.height,true);
-        }*/
+        }
 
         poseStack.popPose();
         poseStack.pushPose();

@@ -1,4 +1,4 @@
-package com.adrian.thDanmakuCraft.script.lua;
+package com.adrian.thDanmakuCraft.lua;
 
 import com.adrian.thDanmakuCraft.script.ScriptManager;
 import com.adrian.thDanmakuCraft.util.ResourceLoader;
@@ -7,7 +7,6 @@ import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 
-import javax.swing.plaf.PanelUI;
 import java.util.ArrayList;
 import java.util.List;
 

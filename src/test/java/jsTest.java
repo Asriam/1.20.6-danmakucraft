@@ -1,12 +1,5 @@
-import com.adrian.thDanmakuCraft.script.lua.LuaCore;
-import net.minecraft.server.packs.resources.ReloadableResourceManager;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.PackType;
+import com.adrian.thDanmakuCraft.lua.LuaCore;
 import org.luaj.vm2.Globals;
-import org.luaj.vm2.LuaValue;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class jsTest {
 

@@ -75,9 +75,9 @@ public class THBulletRenderers {
                         offset,
                         scale,
                         edgeA, edgeB, true,
-                        new Vec2(0.5f, 2.0f),
+                        new Vec2(0.6f, 1.0f),
                         new Vec2(0.6f, 2.0f),
-                        color, Color.VOID(), coreColor.multiply(0.4f));
+                        color, Color.VOID(), coreColor.multiply(0.3f));
             }
         }
 
@@ -96,7 +96,7 @@ public class THBulletRenderers {
                         scale,
                         edgeA, edgeB, false,
                         new Vec2(0.33f, 6.0f),
-                        new Vec2(-0.1f, 2.0f),
+                        new Vec2(-0.1f, 1.0f),
                         color, color, coreColor);
             }
         }
@@ -155,8 +155,8 @@ public class THBulletRenderers {
                         Vec3.ZERO,
                         scale,
                         edgeA, edgeB, false,
-                        new Vec2(0.8f, 2.0f),
-                        new Vec2(0.1f, 2.0f),
+                        new Vec2(0.5f, 3.0f),
+                        new Vec2(0.0f, 2.0f),
                         color, color.multiply(0.8f), coreColor.multiply(0.9f));
             }
         }

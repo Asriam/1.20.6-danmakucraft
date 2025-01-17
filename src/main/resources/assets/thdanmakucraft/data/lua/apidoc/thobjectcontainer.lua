@@ -9,8 +9,7 @@
 ---@field onTick fun(self)
 ---@field source userdata
 ---@field parameterManager AdditionalParameterManager
-local container = {
-}
+local container = {}
 
 ---@return number
 function container:getMaxObjectAmount() end

@@ -88,6 +88,9 @@ public class THObjectManager implements IDataStorage {
         int index = 0;
         for (THObject object: this.getTHObjects()){
             if (object != null && !object.removeFlag){
+                if(object.container == null){
+                    object.container = this.container;
+                }
                 object.index = index;
                 object.onTick();
             }else {

@@ -37,7 +37,7 @@ function testLaser:onTick()
     self:setVelocityFromRotation(0.2,
             {
                 0.0,
-                angle + 60 * Mth.sin(self:getTimer() * 0.1) + userRot
+                angle + 60 * M.sin(self:getTimer() * 0.1) + userRot
             },
             true,
             true);
