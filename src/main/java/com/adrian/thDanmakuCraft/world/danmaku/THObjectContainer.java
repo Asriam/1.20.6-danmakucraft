@@ -39,7 +39,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
     protected final TargetUserManager targetUserManager;
     protected final THObjectManager objectManager;
     protected final LuaManager scriptManager;
-    protected final THTasker.THTaskerManager taskerManager;
+    //protected final THTasker.THTaskerManager taskerManager;
     protected final AdditionalParameterManager parameterManager;
     protected final RandomSource random = RandomSource.create();
     private int timer = 0;
@@ -60,7 +60,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         this.parameterManager  = new AdditionalParameterManager(this);
         this.targetUserManager = new TargetUserManager(this);
         this.objectManager     = new THObjectManager(this);
-        this.taskerManager     = new THTasker.THTaskerManager(this);
+        //this.taskerManager     = new THTasker.THTaskerManager(this);
         this.scriptManager     = new LuaManager();
         this.entitiesInBound   = new ArrayList<>();
         this.setMaxObjectAmount(2000);
@@ -202,6 +202,12 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
     }
 
     public void tick() {
+        if(this.hostEntity == null){
+            //throw new NullPointerException("Host Entity is null!");
+            THDanmakuCraftCore.LOGGER.warn("Host Entity is null!");
+            return;
+        }
+
         this.targetUserManager.loadUserAndTarget(level());
 
         if (timer == 0){

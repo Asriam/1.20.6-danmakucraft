@@ -12,14 +12,13 @@ import net.minecraftforge.common.util.LazyOptional;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-@Deprecated
-public class EntityTHObjectContainerProvider implements ICapabilityProvider, INBTSerializable<CompoundTag> {
+public class THObjectContainerProvider implements ICapabilityProvider, INBTSerializable<CompoundTag> {
 
-    public static Capability<EntityTHObjectContainerProvider> PLAYER_THOBJECT_CONTAINER_CAPABILITY = CapabilityManager.get(new CapabilityToken<EntityTHObjectContainerProvider>() { });
+    public static Capability<THObjectContainer> PLAYER_THOBJECT_CONTAINER_CAPABILITY = CapabilityManager.get(new CapabilityToken<THObjectContainer>() { });
     private THObjectContainer container = null;
     private final LazyOptional<THObjectContainer> optional = LazyOptional.of(this::createTHObjectContainer);
 
-    public THObjectContainer createTHObjectContainer() {
+    private THObjectContainer createTHObjectContainer() {
         if (this.container == null) {
             this.container = new THObjectContainer(null);
         }
@@ -34,9 +33,13 @@ public class EntityTHObjectContainerProvider implements ICapabilityProvider, INB
         return LazyOptional.empty();
     }
 
+    public THObjectContainer getContainer(){
+        return this.createTHObjectContainer();
+    }
+
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
-        createTHObjectContainer().save(tag);
+        //createTHObjectContainer().save(tag);
         return tag;
     }
 

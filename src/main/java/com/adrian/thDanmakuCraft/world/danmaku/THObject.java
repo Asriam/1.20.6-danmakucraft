@@ -34,7 +34,7 @@ public class THObject implements IScript, ILuaValue {
     //private static final Logger log = LoggerFactory.getLogger(THObject.class);
     private final THObjectType<? extends THObject> type;
     private final AdditionalParameterManager parameterManager;
-    private final Level level;
+    //private final Level level;
     protected final RandomSource random = RandomSource.create();
     protected THObjectContainer container;
     protected static final ResourceLocation TEXTURE_WHITE = new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/white.png");
@@ -86,7 +86,7 @@ public class THObject implements IScript, ILuaValue {
     public THObject(THObjectType<? extends THObject> type, THObjectContainer container) {
         this.type = type;
         this.container = container;
-        this.level = container.level();
+        //this.level = container.level();
         this.parameterManager = new AdditionalParameterManager(this.container);
         this.uuid = Mth.createInsecureUUID(this.random);
         this.initPosition(container.getPosition());
@@ -558,6 +558,10 @@ public class THObject implements IScript, ILuaValue {
         this.timer++;
     }
 
+    public Level level(){
+        return this.container.level();
+    }
+
     public void collisionLogic() {
         List<Entity> entitiesInBound = this.container.getEntitiesInBound();
         if (entitiesInBound.isEmpty()) {
@@ -583,7 +587,7 @@ public class THObject implements IScript, ILuaValue {
         if (this.shouldCollingWithBlock) {
             if (this.collisionType == CollisionType.AABB) {
                 AABB aabb = this.getBoundingBox();
-                BlockHitResult result = this.level.clip(new ClipContext(
+                BlockHitResult result = this.level().clip(new ClipContext(
                         new Vec3(aabb.minX, aabb.minY, aabb.minZ),
                         new Vec3(aabb.maxX, aabb.maxY, aabb.maxZ),
                         ClipContext.Block.COLLIDER,
@@ -603,7 +607,7 @@ public class THObject implements IScript, ILuaValue {
                     for (double y = box.minY; y <= box.maxY; y += 1) {
                         for (double x = box.minX; x <= box.maxX; x += 1) {
                             BlockPos pos = new BlockPos(Mth.floor(x), Mth.floor(y), Mth.floor(z));
-                            if (!this.level.getBlockState(pos).isAir()) {
+                            if (!this.level().getBlockState(pos).isAir()) {
                                 if (this.collisionType.collisionBlock(this, pos)) {
                                     BlockHitResult result = new BlockHitResult(
                                             new Vec3(box.maxX, box.maxY, box.maxZ),
@@ -639,7 +643,7 @@ public class THObject implements IScript, ILuaValue {
         if (this.damage <= 0.0f) {
             return;
         }
-        entity.hurt(this.level.damageSources().magic(), this.damage);
+        entity.hurt(this.level().damageSources().magic(), this.damage);
     }
 
     public void onHitBlock(BlockHitResult result) {

@@ -1,10 +1,14 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.adrian.thDanmakuCraft.client.renderer.entity.THObjectContainerRenderer;
+import com.adrian.thDanmakuCraft.world.THObjectContainerProvider;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.Entity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -72,5 +76,22 @@ public class RenderEvents {
     public static void renderTickPost(TickEvent.RenderTickEvent.Post event) {
         //THDanmakuCraftCore.LOGGER.info("Quads mount:" + RenderUtil.quadList.size());
         renderTickCount++;
+    }
+
+    @SubscribeEvent
+    public static void playerRenderTick(RenderPlayerEvent.Post event) {
+        Entity player = event.getEntity();
+        /*
+        THObjectContainer container = MyPlayer.getEntityTHObjectContainer(player);
+        if(container != null){
+            THObjectContainerRenderer.render(Minecraft.getInstance().getEntityRenderDispatcher(), Minecraft.getInstance().levelRenderer.getFrustum(), container, event.getPartialTick(), event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight());
+        }*/
+        /*
+        player.getCapability(THObjectContainerProvider.PLAYER_THOBJECT_CONTAINER_CAPABILITY).ifPresent(container -> {
+            THObjectContainerRenderer.render(
+                    Minecraft.getInstance().getEntityRenderDispatcher(),
+                    Minecraft.getInstance().levelRenderer.getFrustum(),
+                    container, event.getPartialTick(), event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight());
+        });*/
     }
 }

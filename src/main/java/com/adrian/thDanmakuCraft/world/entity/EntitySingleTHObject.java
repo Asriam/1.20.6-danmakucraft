@@ -12,12 +12,10 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 
 public class EntitySingleTHObject extends Entity implements IEntityAdditionalSpawnData {
-    protected final TargetUserManager targetUserManager;
     protected THObject object;
 
     public EntitySingleTHObject(EntityType<?> type, Level level) {
         super(type, level);
-        this.targetUserManager = new TargetUserManager(level);
         this.object = null;
     }
 

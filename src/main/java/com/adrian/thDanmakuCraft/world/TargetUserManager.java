@@ -13,22 +13,18 @@ import java.util.UUID;
 public class TargetUserManager implements IDataStorage{
     private @Nullable Entity user,    target;
     private @Nullable UUID userUUID,targetUUID;
-    private final Level level;
+    private final THObjectContainer container;
 
-    public TargetUserManager(Level level, Entity user, Entity target){
-        this.level = level;
+    public TargetUserManager(THObjectContainer container) {
+        this.container = container;
+    }
+
+    public TargetUserManager(THObjectContainer container, Entity user, Entity target){
+        this(container);
         this.user = user;
         this.target = target;
         this.userUUID = user.getUUID();
         this.targetUUID = target.getUUID();
-    }
-
-    public TargetUserManager(Level level){
-        this.level = level;
-    }
-
-    public TargetUserManager(THObjectContainer container) {
-        this(container.level());
     }
 
     public void setUser(Entity user){
@@ -49,15 +45,19 @@ public class TargetUserManager implements IDataStorage{
         this.targetUUID = target.getUUID();
     }
 
+    public Level level(){
+        return this.container.level();
+    }
+
     public Entity getEntityFromUUID(UUID uuid){
-        ServerLevel serverLevel = (ServerLevel) this.level;
+        ServerLevel serverLevel = (ServerLevel) this.level();
         return serverLevel.getEntity(uuid);
     }
 
     @Nullable
     public Entity safeGetUser(){
         if(this.user == null && this.userUUID != null){
-            ServerLevel serverLevel = (ServerLevel) this.level;
+            ServerLevel serverLevel = (ServerLevel) this.level();
             this.user = serverLevel.getEntity(this.userUUID);
             return this.user;
         }
@@ -67,7 +67,7 @@ public class TargetUserManager implements IDataStorage{
     @Nullable
     public Entity safeGetTarget(){
         if(this.target == null && this.targetUUID != null){
-            ServerLevel serverLevel = (ServerLevel) this.level;
+            ServerLevel serverLevel = (ServerLevel) this.level();
             this.target = serverLevel.getEntity(this.targetUUID);
             return this.target;
         }
@@ -100,8 +100,8 @@ public class TargetUserManager implements IDataStorage{
     }
 
     public void readData(FriendlyByteBuf buffer){
-        this.setUser(this.level.getEntity(buffer.readVarInt()));
-        this.setTarget(this.level.getEntity(buffer.readVarInt()));
+        this.setUser(this.level().getEntity(buffer.readVarInt()));
+        this.setTarget(this.level().getEntity(buffer.readVarInt()));
     }
 
     public CompoundTag save(CompoundTag compoundTag){

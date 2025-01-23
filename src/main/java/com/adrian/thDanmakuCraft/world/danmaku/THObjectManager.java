@@ -80,7 +80,7 @@ public class THObjectManager implements IDataStorage {
         if(this.storage.size() > this.container.getMaxObjectAmount()){
             int mount = this.storage.size() - this.container.getMaxObjectAmount();
             for(int i=1;i<=mount;i++) {
-                this.getTHObjects().get(i).remove();
+                this.getTHObjects().get(i-1).remove();
             }
         }
 

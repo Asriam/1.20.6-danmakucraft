@@ -6,7 +6,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
@@ -49,6 +51,13 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     @Override
     public void tick(){
         this.container.tick();
+        this.setBoundingBox(this.container.getAabb());
+
+    }
+
+    public EntityDimensions getDimensions(Pose p_19975_) {
+        //return new EntityDimensions((float) this.container.aabb.getXsize(), (float) this.container.aabb.getYsize(), 0.0F, null, false);
+        return null;
     }
 
     @Override
