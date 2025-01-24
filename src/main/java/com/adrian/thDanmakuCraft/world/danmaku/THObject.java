@@ -725,7 +725,8 @@ public class THObject implements IScript, ILuaValue {
         buffer.writeUtf(this.luaClassKey);
         //this.blend.writeData(buffer);
         //this.scriptManager.writeData(buffer);
-        this.parameterManager.writeData(buffer);
+        this.parameterManager.encode(buffer);
+        //LuaValueStorageHelper.writeLuaTable(buffer, this.ofLuaValue().get("params"));
     }
 
     public void readData(FriendlyByteBuf buffer) {
@@ -760,8 +761,9 @@ public class THObject implements IScript, ILuaValue {
         this.luaClassKey = buffer.readUtf();
         //this.blend.readData(buffer);
         //this.scriptManager.readData(buffer);
-        this.parameterManager.readData(buffer);
+        this.parameterManager.decode(buffer);
         this.setBoundingBox(this.getPosition(), this.size);
+        //this.ofLuaValue().set("params", LuaValueStorageHelper.readLuaTable(buffer));
     }
 
     public CompoundTag save(CompoundTag tag) {
@@ -785,6 +787,7 @@ public class THObject implements IScript, ILuaValue {
         //this.scriptManager.save(tag);
         tag.put("parameters", this.parameterManager.save(new CompoundTag()));
         //this.blend.save(tag);
+        //tag.put("params", LuaValueStorageHelper.saveLuaTable(this.ofLuaValue().get("params")));
         return tag;
     }
 
@@ -817,6 +820,7 @@ public class THObject implements IScript, ILuaValue {
         //this.scriptManager.load(tag);
         this.parameterManager.load(tag.getCompound("parameters"));
         this.uuid = tag.getUUID("UUID");
+        //this.ofLuaValue().set("params", LuaValueStorageHelper.loadLuaValue(tag.getCompound("params")));
         //this.blend.load(tag);
     }
 
@@ -1047,6 +1051,7 @@ public class THObject implements IScript, ILuaValue {
         if (luaValue.get("source").checkuserdata() instanceof THObject object) {
             return object;
         }
+
         throw new NullPointerException();
     }
 
@@ -1354,6 +1359,7 @@ public class THObject implements IScript, ILuaValue {
         library.set("uuid", this.getUUIDasString());
         library.set("source", LuaValue.userdataOf(this));
         library.set("parameterManager", this.getParameterManager().ofLuaValue());
+        library.set( "params", LuaValue.tableOf());
         return library;
     }
 

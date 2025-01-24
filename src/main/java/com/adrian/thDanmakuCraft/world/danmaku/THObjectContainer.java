@@ -7,7 +7,6 @@ import com.adrian.thDanmakuCraft.script.ScriptManager;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.lua.LuaManager;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
-import com.adrian.thDanmakuCraft.world.THTasker;
 import com.adrian.thDanmakuCraft.world.TargetUserManager;
 import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
@@ -214,7 +213,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
             this.scriptEvent("onInit",this.ofLuaValue());
         }
         this.setBound(this.position(),this.bound);
-        this.task();
+        //this.task();
         this.entitiesInBound = this.level().getEntities(this.hostEntity,this.getAabb()).stream().filter((entity -> !(entity.equals(this.hostEntity)) && !(entity instanceof EntityTHObjectContainer))).toList();
 
         this.scriptEvent("onTick",this.ofLuaValue());
@@ -363,24 +362,26 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         buffer.writeInt(this.maxObjectAmount);
         buffer.writeInt(this.timer);
         buffer.writeUtf(this.luaClassKey);
-        this.targetUserManager.writeData(buffer);
-        this.objectManager.writeData(buffer);
+        this.targetUserManager.encode(buffer);
+        this.objectManager.encode(buffer);
         this.scriptManager.writeData(buffer);
-        this.parameterManager.writeData(buffer);
+        this.parameterManager.encode(buffer);
         //this.taskerManager.writeData(buffer);
+        //LuaValueStorageHelper.writeLuaTable(buffer, this.ofLuaValue().get("params"));
     }
 
-    public void readSpawnData(FriendlyByteBuf additionalData) {
-        this.maxObjectAmount = additionalData.readInt();
-        this.timer = additionalData.readInt();
+    public void readSpawnData(FriendlyByteBuf buffer) {
+        this.maxObjectAmount = buffer.readInt();
+        this.timer = buffer.readInt();
         //this.bindingToUserPosition = additionalData.readBoolean();
-        this.luaClassKey = additionalData.readUtf();
-        this.targetUserManager.readData(additionalData);
-        this.objectManager.readData(additionalData);
-        this.scriptManager.readData(additionalData);
-        this.parameterManager.readData(additionalData);
+        this.luaClassKey = buffer.readUtf();
+        this.targetUserManager.decode(buffer);
+        this.objectManager.decode(buffer);
+        this.scriptManager.readData(buffer);
+        this.parameterManager.decode(buffer);
         //this.taskerManager.readData(additionalData);
         this.setBound(this.position(),this.bound);
+        //this.ofLuaValue().set("params", LuaValueStorageHelper.readLuaTable(buffer));
     }
 
     public void save(CompoundTag tag) {
@@ -392,6 +393,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         tag.put("script",this.scriptManager.save(new CompoundTag()));
         tag.put("user_target", this.targetUserManager.save(new CompoundTag()));
         tag.put("parameters", this.parameterManager.save(new CompoundTag()));
+        //tag.put("params", LuaValueStorageHelper.saveLuaTable(this.ofLuaValue().get("params")));
     }
 
     public void load(CompoundTag tag) {
@@ -403,6 +405,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         this.scriptManager.load(tag.getCompound("script"));
         this.targetUserManager.load(tag.getCompound("user_target"));
         this.parameterManager.load(tag.getCompound("parameters"));
+        //this.ofLuaValue().set("params", LuaValueStorageHelper.loadLuaValue(tag.getCompound("params")));
     }
 
     public void injectScript(String script) {
@@ -577,6 +580,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         library.set( "class", this.getLuaClass());
         library.set( "source", LuaValue.userdataOf(this));
         library.set( "parameterManager", this.getParameterManager().ofLuaValue());
+        library.set( "params", LuaValue.tableOf());
         return library;
     }
 

@@ -114,7 +114,7 @@ public class THObjectManager implements IDataStorage {
     }
 
 
-    public void writeData(FriendlyByteBuf buffer) {
+    public void encode(FriendlyByteBuf buffer) {
         List<THObject> objects = this.getTHObjects();
         buffer.writeInt(objects.size());
         for (THObject object : this.getTHObjects()) {
@@ -124,7 +124,7 @@ public class THObjectManager implements IDataStorage {
         }
     }
 
-    public void readData(FriendlyByteBuf buffer) {
+    public void decode(FriendlyByteBuf buffer) {
         int listSize = buffer.readInt();
         List<THObject> objects = Lists.newArrayList();
         for (int i = 0; i < listSize; i++) {

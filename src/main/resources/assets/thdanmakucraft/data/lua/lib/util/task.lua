@@ -7,19 +7,3 @@
 ---@class Task
 local task = {}
 
----@param taskName string
----@param runnable function
-function task.create(taskName, runnable)
-    local task = {}
-    task.coroutine = coroutine.create(runnable)
-
-end
-
----@param time number
-function task.wait(time)
-    time = time or 1
-    time = max(1, int(time))
-    for i = 1, time do
-        coroutine.yield()
-    end
-end

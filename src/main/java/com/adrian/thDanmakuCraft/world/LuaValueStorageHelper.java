@@ -7,9 +7,18 @@ import org.jetbrains.annotations.TestOnly;
 import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class LuaValueStorageHelper {
+    private static final Map<Integer,LuaValue> userDataMap = new HashMap<>();
+
     public static void writeLuaTable(FriendlyByteBuf byteBuf, LuaTable table) {
-        LuaValue[] keys = table.keys();
+        if(!table.istable()){
+            byteBuf.writeShort(0);
+            return;
+        }
+        LuaValue[] keys = table.checktable().keys();
         byteBuf.writeShort(keys.length);
         for (LuaValue key : keys) {
             String keyName = key.checkjstring();
@@ -17,19 +26,6 @@ public class LuaValueStorageHelper {
             writeLuaValue(byteBuf, table.get(key));
         }
     }
-
-    public static void writeLuaValue(FriendlyByteBuf byteBuf, LuaValue luaValue) {
-        short type = (short) luaValue.type();
-        byteBuf.writeShort(type);
-        switch (type) {
-            case LuaValue.TBOOLEAN -> byteBuf.writeBoolean(luaValue.checkboolean());
-            case LuaValue.TINT -> byteBuf.writeInt(luaValue.checkint());
-            case LuaValue.TNUMBER -> byteBuf.writeDouble(luaValue.checkdouble());
-            case LuaValue.TSTRING -> byteBuf.writeUtf(luaValue.checkjstring());
-            case LuaValue.TTABLE -> writeLuaTable(byteBuf, luaValue.checktable());
-        }
-    }
-
     public static LuaTable readLuaTable(FriendlyByteBuf byteBuf) {
         LuaTable table = LuaValue.tableOf();
         int length = byteBuf.readShort();
@@ -41,6 +37,25 @@ public class LuaValueStorageHelper {
         return table;
     }
 
+    public static void writeLuaValue(FriendlyByteBuf byteBuf, LuaValue luaValue) {
+        short type = (short) luaValue.type();
+        byteBuf.writeShort(type);
+        switch (type) {
+            case LuaValue.TBOOLEAN -> byteBuf.writeBoolean(luaValue.checkboolean());
+            case LuaValue.TINT -> byteBuf.writeInt(luaValue.checkint());
+            case LuaValue.TNUMBER -> byteBuf.writeDouble(luaValue.checkdouble());
+            case LuaValue.TSTRING -> byteBuf.writeUtf(luaValue.checkjstring());
+            case LuaValue.TTABLE -> writeLuaTable(byteBuf, luaValue.checktable());
+            case LuaValue.TUSERDATA -> {
+                int hashCode = luaValue.hashCode();
+                userDataMap.put(hashCode, luaValue);
+                byteBuf.writeInt(hashCode);
+                //byteBuf.writeUtf(luaValue.typename());
+                //byteBuf.writeUtf(luaValue.checkjstring());
+            }
+        }
+    }
+
     public static LuaValue readLuaValue(FriendlyByteBuf byteBuf) {
         short type = byteBuf.readShort();
         return switch (type) {
@@ -49,34 +64,28 @@ public class LuaValueStorageHelper {
             case LuaValue.TNUMBER -> LuaValue.valueOf(byteBuf.readDouble());
             case LuaValue.TSTRING -> LuaValue.valueOf(byteBuf.readUtf());
             case LuaValue.TTABLE -> readLuaTable(byteBuf);
+            case LuaValue.TUSERDATA -> {
+                int hashCode = byteBuf.readInt();
+                LuaValue luaValue = userDataMap.get(hashCode);
+                yield luaValue;
+            }
             default -> LuaValue.NIL;
         };
     }
 
-    public static CompoundTag saveLuaTable(LuaTable table) {
+    public static CompoundTag saveLuaTable(LuaValue table) {
+        if(!table.istable()){
+            return new CompoundTag();
+        }
+
         CompoundTag tag = new CompoundTag();
-        LuaValue[] keys = table.keys();
+        LuaValue[] keys = table.checktable().keys();
         for (LuaValue key : keys) {
             String keyName = key.checkjstring();
             tag.put(keyName, saveLuaValue(table.get(key)));
         }
         return tag;
     }
-
-    public static CompoundTag saveLuaValue(LuaValue luaValue) {
-        short type = (short) luaValue.type();
-        CompoundTag valueTag = new CompoundTag();
-        valueTag.putShort("type", (short) type);
-        switch (type) {
-            case LuaValue.TBOOLEAN -> valueTag.putBoolean("value", luaValue.checkboolean());
-            case LuaValue.TINT -> valueTag.putInt("value", luaValue.checkint());
-            case LuaValue.TNUMBER -> valueTag.putDouble("value", luaValue.checkdouble());
-            case LuaValue.TSTRING -> valueTag.putString("value", luaValue.checkjstring());
-            case LuaValue.TTABLE -> valueTag.put("value", saveLuaTable(luaValue.checktable()));
-        }
-        return valueTag;
-    }
-
     public static LuaTable loadLuaTable(CompoundTag tag) {
         LuaTable table = LuaValue.tableOf();
         for (String key : tag.getAllKeys()) {
@@ -86,6 +95,19 @@ public class LuaValueStorageHelper {
         return table;
     }
 
+    public static CompoundTag saveLuaValue(LuaValue luaValue) {
+        short type = (short) luaValue.type();
+        CompoundTag valueTag = new CompoundTag();
+        valueTag.putShort("type", type);
+        switch (type) {
+            case LuaValue.TBOOLEAN -> valueTag.putBoolean("value", luaValue.checkboolean());
+            case LuaValue.TINT -> valueTag.putInt("value", luaValue.checkint());
+            case LuaValue.TNUMBER -> valueTag.putDouble("value", luaValue.checkdouble());
+            case LuaValue.TSTRING -> valueTag.putString("value", luaValue.checkjstring());
+            case LuaValue.TTABLE -> valueTag.put("value", saveLuaTable(luaValue.checktable()));
+        }
+        return valueTag;
+    }
 
     public static LuaValue loadLuaValue(CompoundTag tag) {
         short type = tag.getShort("type");

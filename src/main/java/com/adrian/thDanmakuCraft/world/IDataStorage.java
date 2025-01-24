@@ -5,9 +5,9 @@ import net.minecraft.network.FriendlyByteBuf;
 
 public interface IDataStorage {
 
-    void writeData(FriendlyByteBuf buffer);
+    void encode(FriendlyByteBuf buffer);
 
-    void readData(FriendlyByteBuf buffer);
+    void decode(FriendlyByteBuf buffer);
 
     CompoundTag save(CompoundTag compoundTag);
 

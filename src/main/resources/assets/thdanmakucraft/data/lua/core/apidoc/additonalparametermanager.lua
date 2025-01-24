@@ -35,7 +35,7 @@ function M:getParam(key) end
 
 ---@param key string
 ---@return any
-function M:getValue(key) end
+function M:get(key) end
 
 ---@param key string
 ---@return string

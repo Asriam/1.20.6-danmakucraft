@@ -98,7 +98,7 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
     }
 
     @Override
-    public void writeData(FriendlyByteBuf buffer) {
+    public void encode(FriendlyByteBuf buffer) {
         //THDanmakuCraftCore.LOGGER.info(this.parameterMap+"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" + this.parameterMap.size());
         buffer.writeInt(this.parameterMap.size());
         this.parameterMap.forEach((key, parameter) -> {
@@ -109,7 +109,7 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
     }
 
     @Override
-    public void readData(FriendlyByteBuf buffer) {
+    public void decode(FriendlyByteBuf buffer) {
         //THDanmakuCraftCore.LOGGER.info(this.parameterMap.toString()+"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" + this.parameterMap.size());
         int size = buffer.readInt();
         for (int i = 0; i < size; i++) {
@@ -559,7 +559,7 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
         LuaValue library = LuaValue.tableOf();
         library.set("register", register);
         library.set("setValue", setValue);
-        library.set("getValue", getValue);
+        library.set("get", getValue);
         library.set("getString", getString);
         library.set("getInteger", getInteger);
         library.set("getFloat", getFloat);

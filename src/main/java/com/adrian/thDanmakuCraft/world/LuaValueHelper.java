@@ -77,7 +77,7 @@ public class LuaValueHelper {
     }
 
     public static LuaValue Vector3fToLuaValue(Vector3f vec3f) {
-        return Vec3ToLuaValue(vec3f.x,vec3f.y,vec3f.z);
+        return Vector3fToLuaValue(vec3f.x,vec3f.y,vec3f.z);
     }
 
     public static LuaValue Vector3fToLuaValue(float x, float y, float z) {

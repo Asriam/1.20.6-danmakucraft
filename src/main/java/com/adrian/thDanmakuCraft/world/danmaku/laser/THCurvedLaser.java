@@ -68,12 +68,12 @@ public class THCurvedLaser extends THObject {
 
     @Override
     public CompoundTag save(CompoundTag tag) {
-        CompoundTag nbt = super.save(tag);
+        super.save(tag);
         tag.putFloat("Width",this.width);
         tag.putInt("LaserColor",this.laserColor.ordinal());
         tag.putInt("RenderCull",this.renderCull);
         this.nodeManager.save(tag);
-        return nbt;
+        return tag;
     }
 
     @Override

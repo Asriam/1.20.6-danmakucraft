@@ -6,4 +6,7 @@
 
 util = {}
 core.doFile("lib/util/vec3.lua")
+core.doFile("lib/util/vec2.lua")
 core.doFile("lib/util/task.lua")
+core.doFile("lib/util/map.lua")
+--core.doFile("lib/util/tableClone.lua")

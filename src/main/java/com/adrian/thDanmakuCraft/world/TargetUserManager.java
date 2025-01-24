@@ -94,12 +94,12 @@ public class TargetUserManager implements IDataStorage{
         return this.target;
     }
 
-    public void writeData(FriendlyByteBuf buffer){
+    public void encode(FriendlyByteBuf buffer){
         buffer.writeVarInt(this.user   != null ? user.getId() : 0);
         buffer.writeVarInt(this.target != null ? target.getId() : 0);
     }
 
-    public void readData(FriendlyByteBuf buffer){
+    public void decode(FriendlyByteBuf buffer){
         this.setUser(this.level().getEntity(buffer.readVarInt()));
         this.setTarget(this.level().getEntity(buffer.readVarInt()));
     }

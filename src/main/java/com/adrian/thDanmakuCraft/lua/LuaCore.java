@@ -141,29 +141,17 @@ public class LuaCore {
                 LuaValue clazz = LuaValue.tableOf();
                 LuaValue arg1 = varargs.arg(1);
                 if (arg1.isstring()) {
-                    String className = arg1.checkjstring();
-                    clazz.set("className", className);
                     LuaValue superClass = checkLuaClass(varargs.arg(2));
-                    /*
-                    if (superClass != LuaValue.NIL) {
-                        LuaValue meta = tableOf();
-                        meta.set("__index",superClass);
-                        clazz.setmetatable(meta);
-                        clazz.set("super", superClass);
-                    }*/
+                    String className = arg1.checkjstring();
+                    className = superClass.isnil() ? className : superClass.get("className").checkjstring() + "#" + className;
+                    clazz.set("className", className);
                     setSuperClass(clazz,superClass);
                     LUA.luaClassMap.put(className, clazz);
                 }else {
-                    String className = "class$"+(luaClassMap.size()+1);
-                    clazz.set("className", className);
                     LuaValue superClass = checkLuaClass(varargs.arg(1));
-                    /*
-                    if (superClass != LuaValue.NIL) {
-                        LuaValue meta = tableOf();
-                        meta.set("__index",superClass);
-                        clazz.setmetatable(meta);
-                        clazz.set("super", superClass);
-                    }*/
+                    String className = "class$"+(luaClassMap.size()+1);
+                    className = superClass.isnil() ? className : superClass.get("className").checkjstring() + "#" + className;
+                    clazz.set("className", className);
                     setSuperClass(clazz,superClass);
                     LUA.luaClassMap.put(className, clazz);
                     System.out.print(className+"\n");
