@@ -7,6 +7,7 @@ import com.adrian.thDanmakuCraft.script.ScriptManager;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.lua.LuaManager;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
+import com.adrian.thDanmakuCraft.world.LuaValueStorageHelper;
 import com.adrian.thDanmakuCraft.world.TargetUserManager;
 import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
@@ -21,6 +22,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.*;
@@ -367,8 +369,13 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         this.scriptManager.writeData(buffer);
         this.parameterManager.encode(buffer);
         //this.taskerManager.writeData(buffer);
-        //LuaValueStorageHelper.writeLuaTable(buffer, this.ofLuaValue().get("params"));
-    }
+        LuaValue params = this.ofLuaValue().get("params");
+        if(params.istable()) {
+            LuaValueStorageHelper.writeLuaTable(buffer, params.checktable());
+        }else {
+            buffer.writeShort(0);
+        }
+   }
 
     public void readSpawnData(FriendlyByteBuf buffer) {
         this.maxObjectAmount = buffer.readInt();
@@ -381,7 +388,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         this.parameterManager.decode(buffer);
         //this.taskerManager.readData(additionalData);
         this.setBound(this.position(),this.bound);
-        //this.ofLuaValue().set("params", LuaValueStorageHelper.readLuaTable(buffer));
+        this.ofLuaValue().set("params", LuaValueStorageHelper.readLuaTable(buffer));
     }
 
     public void save(CompoundTag tag) {
@@ -393,7 +400,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         tag.put("script",this.scriptManager.save(new CompoundTag()));
         tag.put("user_target", this.targetUserManager.save(new CompoundTag()));
         tag.put("parameters", this.parameterManager.save(new CompoundTag()));
-        //tag.put("params", LuaValueStorageHelper.saveLuaTable(this.ofLuaValue().get("params")));
+        tag.put("params", LuaValueStorageHelper.saveLuaTable(this.ofLuaValue().get("params")));
     }
 
     public void load(CompoundTag tag) {
@@ -406,6 +413,7 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         this.targetUserManager.load(tag.getCompound("user_target"));
         this.parameterManager.load(tag.getCompound("parameters"));
         //this.ofLuaValue().set("params", LuaValueStorageHelper.loadLuaValue(tag.getCompound("params")));
+        this.ofLuaValue().set("params", LuaValueStorageHelper.loadLuaTable(tag.getCompound("params")));
     }
 
     public void injectScript(String script) {

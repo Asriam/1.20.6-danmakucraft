@@ -81,11 +81,13 @@ function vec2:multiply(_vec2)
     return vec2.new(self.x * _vec2.x, self.y * _vec2.y)
 end
 
+---@param _vec2 util.Vec2
 ---@return boolean
 function vec2:equals(_vec2)
     return self.x == _vec2.x and self.y == _vec2.y
 end
 
+---@param _number number
 ---@return util.Vec2
 function vec2:rotate(_number)
     local cos = math.cos(_number)

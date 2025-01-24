@@ -22,11 +22,11 @@ local M = {}
 ---@param type string "String","Integer","Float","Boolean","THObject"
 ---@param key string
 ---@param value any
-function M:register(type, key, value) end
+function M:define(type, key, value) end
 
 ---@param key:string
 ---@param value any
-function M:setValue(key, value) end
+function M:set(key, value) end
 
 ---@deprecated
 ---@param key string

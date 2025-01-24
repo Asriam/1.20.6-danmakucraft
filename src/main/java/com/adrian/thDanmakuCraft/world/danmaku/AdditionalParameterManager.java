@@ -557,8 +557,8 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
 
     public static LuaValue luaClassFunctions(){
         LuaValue library = LuaValue.tableOf();
-        library.set("register", register);
-        library.set("setValue", setValue);
+        library.set("define", register);
+        library.set("set", setValue);
         library.set("get", getValue);
         library.set("getString", getString);
         library.set("getInteger", getInteger);

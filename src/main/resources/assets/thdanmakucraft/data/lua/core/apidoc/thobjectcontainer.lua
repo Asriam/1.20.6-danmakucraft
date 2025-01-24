@@ -9,6 +9,7 @@
 ---@field onTick fun(self)
 ---@field source userdata
 ---@field parameterManager AdditionalParameterManager
+---@field params table auto save parameters
 local container = {}
 
 ---@return number

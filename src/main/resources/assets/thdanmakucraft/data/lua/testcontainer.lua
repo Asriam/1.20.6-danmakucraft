@@ -26,15 +26,15 @@ end
 local testLaser = core.registerClass()
 function testLaser:onInit(i)
     self:setLifetime(600)
-    self.parameterManager:register("Double","angle",360/num*i + 0.001)
-    --self.params.angle = 360/num*i + 0.001
+    --self.parameterManager:register("Double","angle",360/num*i + 0.001)
+    self.params.angle = 360/num*i + 0.001
     --local userRot = self:getContainer().parameterManager:getDouble("userAngle")
 end
 
 function testLaser:onTick()
-    local userRot = self:getContainer().parameterManager:get("userAngle")
-    local angle = self.parameterManager:get("angle")
-    --local angle = self.params.angle --self.parameterManager:getDouble("angle")
+    --local userRot = self:getContainer().parameterManager:get("userAngle")
+    local userRot = self:getContainer().params.userRot
+    local angle = self.params.angle
     --local angle = self.angle
     self:setVelocityFromRotation(0.2,
             {
@@ -50,7 +50,7 @@ end
 local container = core.registerClass("testContainer")
 function container:onInit()
     local userRot = self:getUser():getRotation().y
-    self.parameterManager:register("Double","userAngle",userRot)
+    self.params.userRot = userRot
     for i = 1,num  do
         self:createTHCurvedLaser(testLaser, {i}, self:getPosition(),1,12,0.5)
     end
@@ -68,7 +68,7 @@ function testBullet3:onInit()
     self:setLifetime(10000)
 end
 
-
+--[[
 ---@type Class|THObjectContainer
 local container2 = core.registerClass("testContainer3")
 function container2:onInit()
@@ -77,4 +77,4 @@ function container2:onInit()
 end
 
 function container2:onTick()
-end
+end]]

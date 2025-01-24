@@ -14,6 +14,7 @@
 ---@field uuid string
 ---@field class Class
 ---@field parameterManager AdditionalParameterManager
+---@field params table auto save parameters
 local object = {}
 
 ---@param x number

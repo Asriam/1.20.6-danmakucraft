@@ -7,6 +7,7 @@ import com.adrian.thDanmakuCraft.script.ScriptManager;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.util.CollisionHelper;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
+import com.adrian.thDanmakuCraft.world.LuaValueStorageHelper;
 import com.google.common.collect.Maps;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -20,6 +21,7 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
 import org.joml.Vector3f;
+import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.*;
@@ -726,7 +728,12 @@ public class THObject implements IScript, ILuaValue {
         //this.blend.writeData(buffer);
         //this.scriptManager.writeData(buffer);
         this.parameterManager.encode(buffer);
-        //LuaValueStorageHelper.writeLuaTable(buffer, this.ofLuaValue().get("params"));
+        LuaValue params = this.ofLuaValue().get("params");
+        if(params.istable()) {
+            LuaValueStorageHelper.writeLuaTable(buffer, params.checktable());
+        }else {
+            buffer.writeShort(0);
+        }
     }
 
     public void readData(FriendlyByteBuf buffer) {
@@ -763,7 +770,7 @@ public class THObject implements IScript, ILuaValue {
         //this.scriptManager.readData(buffer);
         this.parameterManager.decode(buffer);
         this.setBoundingBox(this.getPosition(), this.size);
-        //this.ofLuaValue().set("params", LuaValueStorageHelper.readLuaTable(buffer));
+        this.ofLuaValue().set("params", LuaValueStorageHelper.readLuaTable(buffer));
     }
 
     public CompoundTag save(CompoundTag tag) {
@@ -787,7 +794,7 @@ public class THObject implements IScript, ILuaValue {
         //this.scriptManager.save(tag);
         tag.put("parameters", this.parameterManager.save(new CompoundTag()));
         //this.blend.save(tag);
-        //tag.put("params", LuaValueStorageHelper.saveLuaTable(this.ofLuaValue().get("params")));
+        tag.put("params", LuaValueStorageHelper.saveLuaTable(this.ofLuaValue().get("params")));
         return tag;
     }
 
@@ -820,7 +827,13 @@ public class THObject implements IScript, ILuaValue {
         //this.scriptManager.load(tag);
         this.parameterManager.load(tag.getCompound("parameters"));
         this.uuid = tag.getUUID("UUID");
-        //this.ofLuaValue().set("params", LuaValueStorageHelper.loadLuaValue(tag.getCompound("params")));
+        this.ofLuaValue().set("params", LuaValueStorageHelper.loadLuaTable(tag.getCompound("params")));
+        /*
+        for(LuaValue key:table.keys()){
+            LuaValue luaForm = this.ofLuaValue();
+            if(luaForm.get(key).isnil())
+                luaForm.set(key, table.get(key));
+        }*/
         //this.blend.load(tag);
     }
 
