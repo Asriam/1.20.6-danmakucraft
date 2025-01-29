@@ -22,7 +22,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.*;
@@ -459,9 +458,9 @@ public class THObjectContainer implements IScript, IScriptTHObjectContainerAPI, 
         object.initLuaValue();
         LuaValue luaObject = object.ofLuaValue();
         if(args == LuaValue.NIL){
-            object.scriptEvent("onInit",luaObject);
+            object.invokeScriptEvent("onInit",luaObject);
         }else {
-            object.scriptEvent("onInit", LuaValue.varargsOf(luaObject, args));
+            object.invokeScriptEvent("onInit", LuaValue.varargsOf(luaObject, args));
         }
         object.spawn();
     }

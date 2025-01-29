@@ -15,7 +15,7 @@ local container = {}
 ---@return number
 function container:getMaxObjectAmount() end
 
----@return core.Vec3
+---@return util.Vec3
 function container:getPosition() end
 
 ---@param time number
@@ -34,13 +34,13 @@ function container:clearObjects() end
 
 ---@param key string
 ---@param args table
----@param position core.Vec3
+---@param position util.Vec3
 ---@return THObject
 function container:createTHObject(key,args,position) end
 
 ---@param key string
 ---@param args table
----@param position core.Vec3
+---@param position util.Vec3
 ---@param style string
 ---@param colorIndex number
 ---@return THBullet
@@ -50,7 +50,7 @@ function container:createTHBullet(key,args,position,style,colorIndex) end
 
 ---@param key string
 ---@param args table
----@param position core.Vec3
+---@param position util.Vec3
 ---@param colorIndex number
 ---@param length number
 ---@param width number

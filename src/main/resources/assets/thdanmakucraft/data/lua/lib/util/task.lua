@@ -5,5 +5,47 @@
 ---
 
 ---@class Task
-local task = {}
+---@field progress number
+---@field co thread
+---@field runnable fun(target:table)
+task = {}
 
+---@param target table
+---@param runnable fun(target:table)
+---@return Task
+function task.new(target, runnable)
+    self.target = target
+    ---@type Task
+    local t = {}
+    setmetatable(t, {__index = task})
+    t.progress = 0
+    t.runnable = runnable
+    t.co = coroutine.create(t.runnable)
+    return t
+end
+
+function task:run()
+    if(coroutine.status(self.co) ~= "dead") then
+        coroutine.resume(self.co, self.target)
+        self.progress = self.progress + 1
+    end
+end
+
+---@param progress number
+function task:reload(progress)
+    for i = self.progress, progress do
+        if(coroutine.status(self.co) ~= "dead") then
+            coroutine.resume(self.co, nil)
+            self.progress = self.progress + 1
+        end
+    end
+end
+
+---@param time number
+function task.wait(time)
+    local t = time or 1
+    t = math.max(1, math.int(t))
+    for i = 1, t do
+        coroutine.yield()
+    end
+end

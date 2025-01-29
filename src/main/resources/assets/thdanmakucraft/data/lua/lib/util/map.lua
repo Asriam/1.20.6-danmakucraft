@@ -4,7 +4,7 @@
 --- DateTime: 2025/1/24 下午 05:06
 ---
 
-local map = {}
+map = {}
 
 function map.new()
     local m = {}

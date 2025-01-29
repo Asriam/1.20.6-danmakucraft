@@ -135,7 +135,7 @@ public class LuaCore {
             }
         });
 
-        library.set("registerClass", new VarArgFunction() {
+        library.set("defineClass", new VarArgFunction() {
             @Override
             public LuaValue invoke(Varargs varargs) {
                 LuaValue clazz = LuaValue.tableOf();

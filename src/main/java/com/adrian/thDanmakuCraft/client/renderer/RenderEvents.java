@@ -1,10 +1,7 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
-import com.adrian.thDanmakuCraft.client.renderer.entity.THObjectContainerRenderer;
-import com.adrian.thDanmakuCraft.world.THObjectContainerProvider;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;

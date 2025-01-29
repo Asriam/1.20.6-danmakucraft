@@ -5,7 +5,7 @@
 ---
 
 ---@type THObjectContainer
-local container = core.registerClass("testContainer4")
+local container = core.defineClass("testContainer4")
 
 function container:onInit()
 end

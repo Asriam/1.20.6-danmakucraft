@@ -21,7 +21,6 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
 import org.joml.Vector3f;
-import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.*;
@@ -109,9 +108,9 @@ public class THObject implements IScript, ILuaValue {
         this.initLuaValue();
         LuaValue luaObject = this.ofLuaValue();
         if(args == LuaValue.NIL){
-            this.scriptEvent("onInit",luaObject);
+            this.invokeScriptEvent("onInit",luaObject);
         }else {
-            this.scriptEvent("onInit", LuaValue.varargsOf(luaObject, args));
+            this.invokeScriptEvent("onInit", LuaValue.varargsOf(luaObject, args));
         }
     }
 
@@ -492,7 +491,7 @@ public class THObject implements IScript, ILuaValue {
         return this.luaClass;
     }
 
-    public void scriptEvent(String eventName, Varargs args) {
+    public void invokeScriptEvent(String eventName, Varargs args) {
         LuaValue luaClass = this.getLuaClass();
         //luaClass = this.ofLuaValue().get("class");
 
@@ -518,6 +517,11 @@ public class THObject implements IScript, ILuaValue {
         }
     }
 
+    public void invokeScriptEvent(String eventName, LuaValue... args){
+        Varargs varargs = LuaValue.varargsOf(args);
+        this.invokeScriptEvent(eventName, varargs);
+    }
+
     public int getIndex() {
         return this.index;
     }
@@ -539,7 +543,7 @@ public class THObject implements IScript, ILuaValue {
                 this.velocity.z + this.acceleration.z
         );
 
-        this.scriptEvent("onTick", this.ofLuaValue());
+        this.invokeScriptEvent("onTick", this.ofLuaValue());
 
         if (this.collision) {
             this.collisionLogic();
@@ -626,7 +630,7 @@ public class THObject implements IScript, ILuaValue {
     }
 
     public void onHit(HitResult result) {
-        this.scriptEvent("onHit", this.ofLuaValue());
+        this.invokeScriptEvent("onHit", this.ofLuaValue());
         if (this.shouldSetDeadWhenCollision) {
             this.setDead();
         }
@@ -665,11 +669,11 @@ public class THObject implements IScript, ILuaValue {
             this.remove();
         }
 
-        this.scriptEvent("onDead", this.ofLuaValue());
+        this.invokeScriptEvent("onDead", this.ofLuaValue());
     }
 
     public void onRemove() {
-        this.scriptEvent("onRemove", this.ofLuaValue());
+        this.invokeScriptEvent("onRemove", this.ofLuaValue());
     }
 
     public void setBlend(Blend blend) {
@@ -1076,6 +1080,14 @@ public class THObject implements IScript, ILuaValue {
         }
     };
 
+    private static final LibFunction initPosition = new VarArgFunction() {
+        @Override
+        public Varargs invoke(Varargs varargs) {
+            checkTHObject(varargs.arg(1)).initPosition(LuaValueToVec3(varargs.arg(2)));
+            return null;
+        }
+    };
+
     private static final LibFunction setLifetime = new TwoArgFunction() {
         @Override
         public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
@@ -1359,6 +1371,7 @@ public class THObject implements IScript, ILuaValue {
 
     public void initLuaValue() {
         this.luaValueForm = this.ofLuaClass();
+        this.invokeScriptEvent("onRecreate",this.ofLuaValue());
     }
 
     @Override
@@ -1368,9 +1381,10 @@ public class THObject implements IScript, ILuaValue {
         library.setmetatable(this.getMeta());
         //fields
         library.set("class", this.getLuaClass());
+        library.set("source", LuaValue.userdataOf(this));
         library.set("type", this.getType().getKey().toString());
         library.set("uuid", this.getUUIDasString());
-        library.set("source", LuaValue.userdataOf(this));
+        library.set("container", this.getContainer().ofLuaValue());
         library.set("parameterManager", this.getParameterManager().ofLuaValue());
         library.set( "params", LuaValue.tableOf());
         return library;
@@ -1388,6 +1402,7 @@ public class THObject implements IScript, ILuaValue {
 
     public static LuaValue luaClassFunctions(){
         LuaValue library = LuaValue.tableOf();
+        library.set("initPosition", initPosition);
         library.set("setPosition", setPosition);
         library.set("setLifetime", setLifetime);
         library.set("setScale", setScale);

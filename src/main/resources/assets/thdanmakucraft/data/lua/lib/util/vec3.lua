@@ -7,8 +7,9 @@
 ---@field x number
 ---@field y number
 ---@field z number
----@class util.Vec3
+---@class util.Vec3:abstractVec3
 local vec3 = {}
+local metatable = {__index = vec3 }
 
 ---@return util.Vec3
 function vec3.new(x, y, z)
@@ -17,7 +18,7 @@ function vec3.new(x, y, z)
         y = y or 0,
         z = z or 0
     }
-    setmetatable(v, {__index = vec3 })
+    setmetatable(v, metatable)
     return v
 end
 

@@ -13,6 +13,7 @@
 ---@field type string
 ---@field uuid string
 ---@field class Class
+---@field container THObjectContainer
 ---@field parameterManager AdditionalParameterManager
 ---@field params table auto save parameters
 local object = {}
@@ -20,7 +21,13 @@ local object = {}
 ---@param x number
 ---@param y number
 ---@param z number
----@overload fun(vec3:core.Vec3)
+---@overload fun(vec3:util.Vec3)
+function object:initPosition(x,y,z) end
+
+---@param x number
+---@param y number
+---@param z number
+---@overload fun(vec3:util.Vec3)
 function object:setPosition(x,y,z) end
 
 ---@param life number
@@ -29,43 +36,43 @@ function object:setLifetime(life) end
 ---@param x number
 ---@param y number
 ---@param z number
----@overload fun(vec3:core.Vec3)
+---@overload fun(vec3:util.Vec3)
 function object:setScale(x,y,z) end
 
 ---@param x number
 ---@param y number
 ---@param z number
----@overload fun(vec3:core.Vec3)
+---@overload fun(vec3:util.Vec3)
 function object:setSize(x,y,z) end
 
----@param velocity core.Vec3
+---@param velocity util.Vec3
 ---@param setRotation boolean
 ---@overload fun(velocity:table|{x,y,z}, setRotation:boolean)
 function object:setVelocity(velocity, setRotation) end
 
 ---@param speed number
----@param direction core.Vec3
+---@param direction util.Vec3
 ---@param setRotation boolean
 ---@overload fun(speed:number, direction:table|{x,y,z}, setRotation:boolean)
 function object:setVelocityFromDirection(speed, direction, setRotation) end
 
 ---@param speed number
----@param rotation core.Vec2
+---@param rotation util.Vec3
 ---@param isDeg boolean
 ---@param setRotation boolean
 ---@overload fun(speed:number, rotation:table|{x,y}, isDeg:boolean, setRotation:boolean)
 function object:setVelocityFromRotation(speed, rotation, isDeg, setRotation) end
 
----@param acceleration core.Vec3
+---@param acceleration util.Vec3
 function object:setAcceleration(acceleration) end
 
 ---@param acceleration number
----@param direction core.Vec3
+---@param direction util.Vec3
 ---@overload fun(acceleration:number, direction:table|{x,y,z})
 function object:setAccelerationFromDirection(acceleration, direction) end
 
 ---@param acceleration number
----@param rotation core.Vec3
+---@param rotation util.Vec3
 ---@param isDeg boolean
 ------@overload fun(acceleration:number, direction:table|{x,y}, isDeg:boolean)
 function object:setAccelerationFromRotation(acceleration, rotation, isDeg) end
@@ -75,7 +82,7 @@ function object:setAccelerationFromRotation(acceleration, rotation, isDeg) end
 ---@param z number
 function object:setRotation(x,y,z) end
 
----@param vec3 core.Vec3
+---@param vec3 util.Vec3
 ---@overload fun(vec3:table|{x,y,z})
 function object:setRotationByDirectionalVector(vec3)  end
 
@@ -98,19 +105,19 @@ function object:getTimer()  end
 ---@return THObjectContainer
 function object:getContainer() end
 
----@return core.Vec3
+---@return util.Vec3
 function object:getPosition()  end
 
----@return core.Vec3
+---@return util.Vec3
 function object:getPrePosition()  end
 
 ---@return number
 function object:getSpeed()  end
 
----@return core.Vec3
+---@return util.Vec3
 function object:getVelocity()  end
 
----@return core.Vec3
+---@return util.Vec3
 function object:getMotionDirection()  end
 
 ---@return core.Vector3f
@@ -128,13 +135,13 @@ function object:getYRot()   end
 ---@return number
 function object:getZRot()   end
 
----@return core.Vec3
+---@return util.Vec3
 function object:getAcceleration()  end
 
 ---@return core.Vector3f
 function object:getScale() end
 
----@return core.Vec3
+---@return util.Vec3
 function object:getSize() end
 
 ---@return string
@@ -146,7 +153,7 @@ function object:getParameterManager() end
 ---@param x number
 ---@param y number
 ---@param z number
----@overload fun(vec3:core.Vec3)
+---@overload fun(vec3:util.Vec3)
 function object:move(x,y,z) end
 
 function object:setDead()  end

@@ -6,7 +6,7 @@
 
 ---@field x number
 ---@field y number
----@class util.Vec2
+---@class util.Vec2:abstractVec2
 local vec2 = {}
 
 ---@return util.Vec2

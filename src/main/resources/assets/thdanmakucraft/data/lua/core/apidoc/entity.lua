@@ -7,7 +7,7 @@
 ---@class Entity
 local entity = {}
 
----@return core.Vec3
+---@return util.Vec3
 function entity:getPosition() end
 
 ---@return core.Vec2

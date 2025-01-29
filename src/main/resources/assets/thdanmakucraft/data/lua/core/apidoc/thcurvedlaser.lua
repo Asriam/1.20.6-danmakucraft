@@ -20,16 +20,16 @@ function laser:getNode(index) end
 function laser:getAllNodes() end
 
 ---@param index number
----@param pos core.Vec3
+---@param pos util.Vec3
 function laser:setNode(index, pos) end
 
----@param pos core.Vec3
+---@param pos util.Vec3
 function node:updateNode(pos) end
 
----@param pos core.Vec3
+---@param pos util.Vec3
 function node:setPosition(pos) end
 
----@return core.Vec3
+---@return util.Vec3
 function node:getPosition() end
 
 THCurvedLaser = laser

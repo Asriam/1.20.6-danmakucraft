@@ -29,7 +29,7 @@ function c.vec2(x, y) end
 ---@param x number
 ---@param y number
 ---@param z number
----@return core.Vec3
+---@return util.Vec3
 function c.vec3(x, y, z) end
 
 ---@param className string
@@ -39,7 +39,7 @@ function c.vec3(x, y, z) end
 ---@overload fun(className:string, superClass:string)
 ---@overload fun()
 ---@overload fun(superClass:Class)
-function c.registerClass(className, superClass) end
+function c.defineClass(className, superClass) end
 
 ---@param className self
 ---@return Class

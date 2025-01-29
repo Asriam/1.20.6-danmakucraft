@@ -1,7 +1,7 @@
 local num = 3
 
 ---@type Class|THBullet
-local testBullet = core.registerClass()
+local testBullet = core.defineClass()
 function testBullet:onInit(i)
     self:setVelocity(util.vec3(0.2,0.0,0.0):yRot(math.pi*2/32*i),true)
     self:setNavi(true)
@@ -12,42 +12,41 @@ function testBullet:onTick()
 end
 
 ---@type Class|THBullet
-local testBullet2 = core.registerClass(testBullet)
+local testBullet2 = core.defineClass(testBullet)
 function testBullet2:onInit(i)
     self.class.super.onInit(self,i)
 end
 
 function testBullet2:onTick()
-    --print("fuck")
     self.class.super.onTick(self)
 end
 
 ---@type Class|THCurvedLaser
-local testLaser = core.registerClass()
+local testLaser = core.defineClass()
 function testLaser:onInit(i)
     self:setLifetime(600)
-    --self.parameterManager:register("Double","angle",360/num*i + 0.001)
+    --self.parameterManager:define("Double","angle",360/num*i + 0.001)
     self.params.angle = 360/num*i + 0.001
     --local userRot = self:getContainer().parameterManager:getDouble("userAngle")
 end
 
 function testLaser:onTick()
     --local userRot = self:getContainer().parameterManager:get("userAngle")
-    local userRot = self:getContainer().params.userRot
+    local userRot = self.container.params.userRot
     local angle = self.params.angle
     --local angle = self.angle
     self:setVelocityFromRotation(0.2,
-            {
-                0.0,
-                angle + 60 * Mth.sin(self:getTimer() * 0.1) + userRot
-            },
+            util.vec2(
+                    0.0,
+            angle + 60 * Mth.sin(self:getTimer() * 0.1) + userRot
+            ),
             true,
             true);
 end
 
 
 ---@type Class|THObjectContainer
-local container = core.registerClass("testContainer")
+local container = core.defineClass("testContainer")
 function container:onInit()
     local userRot = self:getUser():getRotation().y
     self.params.userRot = userRot
@@ -63,7 +62,7 @@ end
 function container:onTick()
 end
 
-local testBullet3 = core.registerClass()
+local testBullet3 = core.defineClass()
 function testBullet3:onInit()
     self:setLifetime(10000)
 end

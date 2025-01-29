@@ -4,7 +4,7 @@
 --- DateTime: 2024/12/7 上午 05:01
 ---
 
----@class core.Vec2
+---@class core.Vec2:abstractVec2
 ---@field x number
 ---@field y number
 local Vec2 = {}

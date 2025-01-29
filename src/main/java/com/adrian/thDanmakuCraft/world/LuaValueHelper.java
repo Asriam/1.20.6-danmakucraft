@@ -5,6 +5,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
+import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.LibFunction;
 import org.luaj.vm2.lib.OneArgFunction;
@@ -89,6 +90,7 @@ public class LuaValueHelper {
     }
 
     public static Vec3 LuaValueToVec3(LuaValue luaValue) {
+        /*
         if (luaValue.isuserdata() && luaValue.checkuserdata() instanceof Vec3 vec3){
             return vec3;
         }else if (luaValue.istable()){
@@ -109,9 +111,16 @@ public class LuaValueHelper {
         }
 
         return Vec3.ZERO;
+         */
+        return new Vec3(
+                luaValue.get("x").checkdouble(),
+                luaValue.get("y").checkdouble(),
+                luaValue.get("z").checkdouble()
+        );
     }
 
     public static Vec2 LuaValueToVec2(LuaValue luaValue) {
+        /*
         if (luaValue.isuserdata() && luaValue.checkuserdata() instanceof Vec2 vec2){
             return vec2;
         }
@@ -131,10 +140,15 @@ public class LuaValueHelper {
             }
         }
 
-        return Vec2.ZERO;
+        return Vec2.ZERO;*/
+        return new Vec2(
+                luaValue.get("x").tofloat(),
+                luaValue.get("y").tofloat()
+        );
     }
 
     public static Vector3f LuaValueToVector3f(LuaValue luaValue) {
+        /*
         if (luaValue.isuserdata() && luaValue.checkuserdata() instanceof Vector3f vector3f){
             return vector3f;
         }else if (luaValue.istable()){
@@ -155,5 +169,13 @@ public class LuaValueHelper {
         }
 
         return new Vector3f(0.0f,0.0f,0.0f);
+
+         */
+
+        return new Vector3f(
+                luaValue.get("x").tofloat(),
+                luaValue.get("y").tofloat(),
+                luaValue.get("z").tofloat()
+        );
     }
 }

@@ -7,12 +7,11 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.CapabilityToken;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.common.util.LazyOptional;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class THObjectContainerProvider implements ICapabilityProvider, INBTSerializable<CompoundTag> {
+public class THObjectContainerProvider implements ICapabilityProvider {
 
     public static Capability<THObjectContainer> PLAYER_THOBJECT_CONTAINER_CAPABILITY = CapabilityManager.get(new CapabilityToken<THObjectContainer>() { });
     private THObjectContainer container = null;
