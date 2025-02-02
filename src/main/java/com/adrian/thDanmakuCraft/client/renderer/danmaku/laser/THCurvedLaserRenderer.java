@@ -3,7 +3,7 @@ package com.adrian.thDanmakuCraft.client.renderer.danmaku.laser;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRendererProvider;
-import com.adrian.thDanmakuCraft.world.danmaku.Color;
+import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;
 import com.mojang.blaze3d.vertex.PoseStack;

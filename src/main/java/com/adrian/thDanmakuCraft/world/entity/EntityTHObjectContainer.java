@@ -51,7 +51,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     @Override
     public void tick(){
         this.container.tick();
-        this.setBoundingBox(this.container.getAabb());
+        this.setBoundingBox(this.container.getContainerBound());
 
     }
 

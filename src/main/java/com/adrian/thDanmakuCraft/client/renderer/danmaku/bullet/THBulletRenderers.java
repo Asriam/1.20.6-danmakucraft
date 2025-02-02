@@ -1,8 +1,8 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku.bullet;
 
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
-import com.adrian.thDanmakuCraft.world.danmaku.Color;
-import com.adrian.thDanmakuCraft.world.danmaku.Image;
+import com.adrian.thDanmakuCraft.util.IImage;
+import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;
 import com.mojang.blaze3d.vertex.*;
@@ -21,7 +21,7 @@ public class THBulletRenderers {
         PoseStack.Pose posestack_pose = poseStack.last();
         //VertexConsumer vertexConsumer = bufferSource.getBuffer(THRenderType.BLEND_NONE.apply(bullet.getTexture()));
         //int index = bullet.getBulletColor().getIndex();
-        Image image = bullet.getImage();
+        IImage.Image image = bullet.getImage();
         RenderUtil.renderTexture(vertexConsumer, posestack_pose, combinedOverlay, Vec3.ZERO, Vec2.ONE,
                 image.getUVStart(),
                 image.getUVEnd(),

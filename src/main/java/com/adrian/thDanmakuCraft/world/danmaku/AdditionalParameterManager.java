@@ -17,10 +17,10 @@ import java.util.UUID;
 
 public class AdditionalParameterManager implements IDataStorage, ILuaValue {
 
-    private final THObjectContainer container;
+    private final ITHObjectContainer container;
     private final Map<String, Parameter<?>> parameterMap;
     private final LuaValue luaValueForm;
-    public AdditionalParameterManager(THObjectContainer container) {
+    public AdditionalParameterManager(ITHObjectContainer container) {
         this.container = container;
         this.parameterMap = Maps.newHashMap();
         this.luaValueForm = this.ofLuaClass();

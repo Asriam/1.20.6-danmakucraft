@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
-import com.adrian.thDanmakuCraft.world.danmaku.Color;
+import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;

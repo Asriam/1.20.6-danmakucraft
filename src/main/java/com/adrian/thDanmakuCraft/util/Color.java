@@ -1,5 +1,6 @@
-package com.adrian.thDanmakuCraft.world.danmaku;
+package com.adrian.thDanmakuCraft.util;
 
+import com.adrian.thDanmakuCraft.world.danmaku.THObject;
 import net.minecraft.util.Mth;
 
 public class Color {
@@ -21,7 +22,7 @@ public class Color {
         return new Color(0, 0, 0, 0);
     }
 
-    Color(int r, int g, int b, int a) {
+    public Color(int r, int g, int b, int a) {
         this.r = r;
         this.g = g;
         this.b = b;
@@ -35,6 +36,9 @@ public class Color {
         this.a = color.a;
     }
 
+    public static Color of(int r, int g, int b, int a) {
+        return new Color(r, g, b, a);
+    }
     public Color normalize() {
         int r = Mth.clamp(this.r, 0, 255);
         int g = Mth.clamp(this.g, 0, 255);

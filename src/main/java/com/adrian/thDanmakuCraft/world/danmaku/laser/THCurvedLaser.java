@@ -1,7 +1,7 @@
 package com.adrian.thDanmakuCraft.world.danmaku.laser;
 
 import com.adrian.thDanmakuCraft.init.THObjectInit;
-import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
+import com.adrian.thDanmakuCraft.world.danmaku.ITHObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectType;
@@ -32,13 +32,13 @@ public class THCurvedLaser extends THObject {
     public boolean breakable = true;
     public int renderCull = 2;
 
-    public THCurvedLaser(THObjectType<THCurvedLaser> type, THObjectContainer container) {
+    public THCurvedLaser(THObjectType<THCurvedLaser> type, ITHObjectContainer container) {
         super(type, container);
         this.nodeManager = new NodeManager(this);
         this.shouldSetDeadWhenCollision = false;
     }
 
-    public THCurvedLaser(THObjectContainer container, THBullet.BULLET_COLOR laserColor, int nodeMount, float width){
+    public THCurvedLaser(ITHObjectContainer container, THBullet.BULLET_COLOR laserColor, int nodeMount, float width){
         this(THObjectInit.TH_CURVED_LASER.get(),container);
         this.laserColor = laserColor;
         this.nodeMount = nodeMount;

@@ -1,9 +1,7 @@
-package com.adrian.thDanmakuCraft.world;
+package com.adrian.thDanmakuCraft.world.danmaku;
 
-import io.netty.buffer.Unpooled;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
-import org.jetbrains.annotations.TestOnly;
 import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 
@@ -13,7 +11,24 @@ import java.util.Map;
 public class LuaValueStorageHelper {
     private static final Map<Integer,LuaValue> userDataMap = new HashMap<>();
 
-    public static void writeLuaTable(FriendlyByteBuf byteBuf, LuaTable table) {
+    private final ITHObjectContainer container;
+    public LuaValueStorageHelper(ITHObjectContainer container){
+        this.container = container;
+    }
+    public void writeLuaTable(FriendlyByteBuf byteBuf, LuaTable table) {
+        /*
+        LuaValue table_type = table.get("type");
+        if(table_type.isstring()){
+            String table_type_name = table_type.checkjstring();
+            byteBuf.writeUtf(table_type_name);
+            switch (table_type_name){
+                case "thobject" -> byteBuf.writeUUID(UUID.fromString(table.get("uuid").checkjstring()));
+                case "thobject_container" -> {}
+            }
+            return;
+        }
+
+        byteBuf.writeUtf("table");*/
         if(!table.istable()){
             byteBuf.writeShort(0);
             return;
@@ -26,7 +41,8 @@ public class LuaValueStorageHelper {
             writeLuaValue(byteBuf, table.get(key));
         }
     }
-    public static LuaTable readLuaTable(FriendlyByteBuf byteBuf) {
+    public LuaTable readLuaTable(FriendlyByteBuf byteBuf) {
+
         LuaTable table = LuaValue.tableOf();
         int length = byteBuf.readShort();
         for (int i = 0; i < length; i++) {
@@ -37,7 +53,7 @@ public class LuaValueStorageHelper {
         return table;
     }
 
-    public static void writeLuaValue(FriendlyByteBuf byteBuf, LuaValue luaValue) {
+    public void writeLuaValue(FriendlyByteBuf byteBuf, LuaValue luaValue) {
         short type = (short) luaValue.type();
         byteBuf.writeShort(type);
         switch (type) {
@@ -56,7 +72,7 @@ public class LuaValueStorageHelper {
         }
     }
 
-    public static LuaValue readLuaValue(FriendlyByteBuf byteBuf) {
+    public LuaValue readLuaValue(FriendlyByteBuf byteBuf) {
         short type = byteBuf.readShort();
         return switch (type) {
             case LuaValue.TBOOLEAN -> LuaValue.valueOf(byteBuf.readBoolean());
@@ -66,14 +82,13 @@ public class LuaValueStorageHelper {
             case LuaValue.TTABLE -> readLuaTable(byteBuf);
             case LuaValue.TUSERDATA -> {
                 int hashCode = byteBuf.readInt();
-                LuaValue luaValue = userDataMap.get(hashCode);
-                yield luaValue;
+                yield userDataMap.get(hashCode);
             }
             default -> LuaValue.NIL;
         };
     }
 
-    public static CompoundTag saveLuaTable(LuaValue table) {
+    public CompoundTag saveLuaTable(LuaValue table) {
         if(!table.istable()){
             return new CompoundTag();
         }
@@ -86,7 +101,7 @@ public class LuaValueStorageHelper {
         }
         return tag;
     }
-    public static LuaTable loadLuaTable(CompoundTag tag) {
+    public LuaTable loadLuaTable(CompoundTag tag) {
         LuaTable table = LuaValue.tableOf();
         for (String key : tag.getAllKeys()) {
             LuaValue value = loadLuaValue(tag.getCompound(key));
@@ -95,7 +110,7 @@ public class LuaValueStorageHelper {
         return table;
     }
 
-    public static CompoundTag saveLuaValue(LuaValue luaValue) {
+    public CompoundTag saveLuaValue(LuaValue luaValue) {
         short type = (short) luaValue.type();
         CompoundTag valueTag = new CompoundTag();
         valueTag.putShort("type", type);
@@ -109,7 +124,7 @@ public class LuaValueStorageHelper {
         return valueTag;
     }
 
-    public static LuaValue loadLuaValue(CompoundTag tag) {
+    public LuaValue loadLuaValue(CompoundTag tag) {
         short type = tag.getShort("type");
         return switch (type) {
             case LuaValue.TBOOLEAN -> LuaValue.valueOf(tag.getBoolean("value"));
@@ -121,6 +136,7 @@ public class LuaValueStorageHelper {
         };
     }
 
+    /*
     @TestOnly
     public static void main(String[] args) {
 
@@ -130,16 +146,17 @@ public class LuaValueStorageHelper {
         testTable.set("test", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
         testTable3.set("test", testTable);
 
-        CompoundTag tag = saveLuaTable(testTable3);
-        LuaTable testTable2 = loadLuaTable(tag);
+        LuaValueStorageHelper helper = new LuaValueStorageHelper();
+        CompoundTag tag = helper.saveLuaTable(testTable3);
+        LuaTable testTable2 = helper.loadLuaTable(tag);
 
         //System.out.print("ssssssssssssssssssssssssssssssssssss");
         //System.out.print(testTable2.get("test"));
 
 
         final FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
-        writeLuaTable(buffer, testTable3);
-        LuaTable table = readLuaTable(buffer);
+        helper.writeLuaTable(buffer, testTable3);
+        LuaTable table = helper.readLuaTable(buffer);
         System.out.print(table.get("test").get("test"));
-    }
+    }*/
 }

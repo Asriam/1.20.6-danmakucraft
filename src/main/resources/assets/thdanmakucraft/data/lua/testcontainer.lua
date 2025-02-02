@@ -30,7 +30,23 @@ function testLaser:onInit(i)
     --local userRot = self:getContainer().parameterManager:getDouble("userAngle")
 end
 
+function testLaser:onAddTasks()
+    --[[
+    self.taskManager:addTask({co = coroutine.create(function(target)
+        goto next_yield
+
+        ::next_yield::
+        for i=1,1000 do
+            --print("sad"..i)
+            target:move(0,-0.2,0)
+            ---task.wait()
+            coroutine.yield()
+        end
+    end)})]]
+end
+
 function testLaser:onTick()
+    --self.taskManager:doTasks()
     --local userRot = self:getContainer().parameterManager:get("userAngle")
     local userRot = self.container.params.userRot
     local angle = self.params.angle

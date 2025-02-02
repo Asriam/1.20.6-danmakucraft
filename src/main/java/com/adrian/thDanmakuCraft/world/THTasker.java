@@ -10,6 +10,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 
+@Deprecated
 public class THTasker {
     //public LinkedList<BooleanSupplier> SUPPLIERS = Lists.newLinkedList();
     private final List<BooleanSupplier> SUPPLIERS = Lists.newArrayList();
@@ -59,8 +60,7 @@ public class THTasker {
 
     public static class THTaskerManager{
 
-        private static final Map<String,THTaskerManager> taskerManagerMap = new WeakHashMap<>();
-        private final        List<THTasker>              taskerList       = new ArrayList<>();
+        private final List<THTasker> taskerList = new ArrayList<>();
         private final THObjectContainer container;
 
         public THTaskerManager(THObjectContainer container){

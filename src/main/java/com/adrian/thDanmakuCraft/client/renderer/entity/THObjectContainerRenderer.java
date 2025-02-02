@@ -6,7 +6,7 @@ import com.adrian.thDanmakuCraft.client.renderer.danmaku.AbstractTHObjectRendere
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRenderers;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.bullet.THBulletRenderers;
-import com.adrian.thDanmakuCraft.world.danmaku.Color;
+import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.world.danmaku.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectType;
@@ -260,7 +260,7 @@ public class THObjectContainerRenderer {
     }
 
     static void renderContainerBound(THObjectContainer container, PoseStack poseStack, VertexConsumer vertexConsumer) {
-        AABB aabb = container.getAabb().move(container.getPosition().reverse());
+        AABB aabb = container.getContainerBound().move(container.getPosition().reverse());
         LevelRenderer.renderLineBox(poseStack, vertexConsumer, aabb, 0.0F, 0.0F, 1.0F, 1.0F);
     }
 

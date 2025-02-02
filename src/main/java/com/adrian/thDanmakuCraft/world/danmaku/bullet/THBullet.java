@@ -2,6 +2,9 @@ package com.adrian.thDanmakuCraft.world.danmaku.bullet;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
+import com.adrian.thDanmakuCraft.util.Color;
+import com.adrian.thDanmakuCraft.util.IImage;
+import com.adrian.thDanmakuCraft.world.danmaku.ITHObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -17,7 +20,7 @@ public class THBullet extends THObject {
     protected DefaultBulletStyle style;
     protected BULLET_COLOR bulletColor;
 
-    public THBullet(THObjectType<THBullet> type, THObjectContainer container) {
+    public THBullet(THObjectType<THBullet> type, ITHObjectContainer container) {
         super(type, container);
     }
 
@@ -92,7 +95,7 @@ public class THBullet extends THObject {
     }
 
     @Override
-    public Image getImage() {
+    public IImage.Image getImage() {
         return this.style.getImage(this.bulletColor.index);
     }
 
@@ -134,12 +137,12 @@ public class THBullet extends THObject {
         }
     }
 
-    public static final Image IMAGE_WHITE = new Image(TEXTURE_WHITE,0.0f,0.0f,1.0f,1.0f);
+    public static final IImage.Image IMAGE_WHITE = new IImage.Image(TEXTURE_WHITE,0.0f,0.0f,1.0f,1.0f);
     //public static final Image IMAGE_BALL_MID = new Image(new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/danmaku/ball_mid.png"),0.0f,0.0f,1.0f,1.0f);
     //public static final Image IMAGE_ARROW_BIG = new Image(new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/danmaku/arrow_big.png"),0.0f,0.0f,1.0f,1.0f);
-    public static final Image.ImageGroup IMAGE_BALL_MID = new Image.ImageGroup(new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/danmaku/ball_mid.png"),
+    public static final IImage.Image.ImageGroup IMAGE_BALL_MID = new IImage.Image.ImageGroup(new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/danmaku/ball_mid.png"),
             0.0f,0.0f,1.0f,1.0f/16,1,16);
-    public static final Image.ImageGroup IMAGE_ARROW_BIG = new Image.ImageGroup(new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/danmaku/arrow_big.png"),
+    public static final IImage.Image.ImageGroup IMAGE_ARROW_BIG = new IImage.Image.ImageGroup(new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/danmaku/arrow_big.png"),
             0.0f,0.0f,1.0f,1.0f/16,1,16);
     private static final Vec3 DEFAULT_SIZE = new Vec3(0.5f,0.5f,0.5f);
     public interface IBulletStyle{
@@ -147,7 +150,7 @@ public class THBullet extends THObject {
         boolean shouldFaceCamera();
         Vec3 getSize();
         CollisionType getCollisionType();
-        Image getImage(int index);
+        IImage.Image getImage(int index);
         String getName();
 
         void writeData(FriendlyByteBuf buffer);
@@ -225,7 +228,7 @@ public class THBullet extends THObject {
             return this.faceCam;
         }
 
-        public Image getImage(int index){
+        public IImage.Image getImage(int index){
             return this.image.getImage(index);
         }
 

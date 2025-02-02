@@ -15,6 +15,7 @@
 ---@field class Class
 ---@field container THObjectContainer
 ---@field parameterManager AdditionalParameterManager
+---@field taskManager LuaTaskManager
 ---@field params table auto save parameters
 local object = {}
 
@@ -171,7 +172,6 @@ function object:isSpawned() end
 ---@param flag boolean
 function object:setNavi(flag) end
 
-
 ---@deprecated
 --[[
 ---@deprecated
@@ -191,3 +191,15 @@ function object:getZ()  end
 ]]
 
 THObject = object
+
+---@class LuaTaskManager
+local taskManager = {}
+
+---@param task Task
+function taskManager:addTask(task) end
+
+---@param task Task
+---@overload fun(task_index:number)
+function taskManager:removeTask(task) end
+
+function taskManager:doTasks() end

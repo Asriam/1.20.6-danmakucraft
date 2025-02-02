@@ -6,8 +6,9 @@ import com.adrian.thDanmakuCraft.script.IScript;
 import com.adrian.thDanmakuCraft.script.ScriptManager;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.util.CollisionHelper;
+import com.adrian.thDanmakuCraft.util.Color;
+import com.adrian.thDanmakuCraft.util.IImage;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
-import com.adrian.thDanmakuCraft.world.LuaValueStorageHelper;
 import com.google.common.collect.Maps;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -35,11 +36,12 @@ public class THObject implements IScript, ILuaValue {
     //private static final Logger log = LoggerFactory.getLogger(THObject.class);
     private final THObjectType<? extends THObject> type;
     private final AdditionalParameterManager parameterManager;
+    private final LuaTaskManager luaTaskManager;
     //private final Level level;
     protected final RandomSource random = RandomSource.create();
-    protected THObjectContainer container;
+    protected ITHObjectContainer container;
     protected static final ResourceLocation TEXTURE_WHITE = new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/white.png");
-    protected Image image = new Image(TEXTURE_WHITE, 0.0f, 0.0f, 1.0f, 1.0f);
+    protected IImage.Image image = new IImage.Image(TEXTURE_WHITE, 0.0f, 0.0f, 1.0f, 1.0f);
     protected static final AABB INITIAL_AABB = new AABB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
     protected AABB bb = INITIAL_AABB;
     protected double positionX;                    //Object Position
@@ -83,14 +85,19 @@ public class THObject implements IScript, ILuaValue {
     protected Blend blend = Blend.add;
     protected CollisionType collisionType = CollisionType.AABB;
     protected LuaValue luaValueForm;
+    private final LuaValueStorageHelper luaValueStorageHelper;
 
-    public THObject(THObjectType<? extends THObject> type, THObjectContainer container) {
+    public THObject(THObjectType<? extends THObject> type, ITHObjectContainer container) {
         this.type = type;
         this.container = container;
         //this.level = container.level();
         this.parameterManager = new AdditionalParameterManager(this.container);
+        this.luaTaskManager = new LuaTaskManager(this);
+        this.luaValueStorageHelper = new LuaValueStorageHelper(this.container);
         this.uuid = Mth.createInsecureUUID(this.random);
         this.initPosition(container.getPosition());
+        //this.initLuaValue();
+        //this.addTasks();
     }
 
     public THObject(THObjectContainer container, Vec3 position) {
@@ -441,7 +448,7 @@ public class THObject implements IScript, ILuaValue {
         return this.getBoundingBox();
     }
 
-    public THObjectContainer getContainer() {
+    public ITHObjectContainer getContainer() {
         return this.container;
     }
 
@@ -553,7 +560,7 @@ public class THObject implements IScript, ILuaValue {
             this.setRotation(VectorAngleToRadAngle(this.getMotionDirection()));
         }
 
-        if (--this.lifetime < 0 || (!this.getContainer().getAabb().contains(this.getPosition()))) {
+        if (--this.lifetime < 0 || (!this.getContainer().getContainerBound().contains(this.getPosition()))) {
             this.setDead();
         }
 
@@ -732,9 +739,10 @@ public class THObject implements IScript, ILuaValue {
         //this.blend.writeData(buffer);
         //this.scriptManager.writeData(buffer);
         this.parameterManager.encode(buffer);
+        this.luaTaskManager.encode(buffer);
         LuaValue params = this.ofLuaValue().get("params");
         if(params.istable()) {
-            LuaValueStorageHelper.writeLuaTable(buffer, params.checktable());
+            luaValueStorageHelper.writeLuaTable(buffer, params.checktable());
         }else {
             buffer.writeShort(0);
         }
@@ -773,8 +781,9 @@ public class THObject implements IScript, ILuaValue {
         //this.blend.readData(buffer);
         //this.scriptManager.readData(buffer);
         this.parameterManager.decode(buffer);
+        this.luaTaskManager.decode(buffer);
         this.setBoundingBox(this.getPosition(), this.size);
-        this.ofLuaValue().set("params", LuaValueStorageHelper.readLuaTable(buffer));
+        this.ofLuaValue().set("params", luaValueStorageHelper.readLuaTable(buffer));
     }
 
     public CompoundTag save(CompoundTag tag) {
@@ -798,7 +807,7 @@ public class THObject implements IScript, ILuaValue {
         //this.scriptManager.save(tag);
         tag.put("parameters", this.parameterManager.save(new CompoundTag()));
         //this.blend.save(tag);
-        tag.put("params", LuaValueStorageHelper.saveLuaTable(this.ofLuaValue().get("params")));
+        tag.put("params", luaValueStorageHelper.saveLuaTable(this.ofLuaValue().get("params")));
         return tag;
     }
 
@@ -831,7 +840,7 @@ public class THObject implements IScript, ILuaValue {
         //this.scriptManager.load(tag);
         this.parameterManager.load(tag.getCompound("parameters"));
         this.uuid = tag.getUUID("UUID");
-        this.ofLuaValue().set("params", LuaValueStorageHelper.loadLuaTable(tag.getCompound("params")));
+        this.ofLuaValue().set("params", luaValueStorageHelper.loadLuaTable(tag.getCompound("params")));
         /*
         for(LuaValue key:table.keys()){
             LuaValue luaForm = this.ofLuaValue();
@@ -863,11 +872,11 @@ public class THObject implements IScript, ILuaValue {
         return sqrDist < d0 * d0;
     }
 
-    public void setImage(Image image) {
+    public void setImage(IImage.Image image) {
         this.image = image;
     }
 
-    public Image getImage() {
+    public IImage.Image getImage() {
         return this.image;
     }
 
@@ -1064,12 +1073,12 @@ public class THObject implements IScript, ILuaValue {
         }
     }
 
-    private static THObject checkTHObject(LuaValue luaValue) {
+    public static THObject checkTHObject(LuaValue luaValue) {
         if (luaValue.get("source").checkuserdata() instanceof THObject object) {
             return object;
         }
 
-        throw new NullPointerException();
+        return null;
     }
 
     private static final LibFunction setPosition = new VarArgFunction() {
@@ -1371,7 +1380,7 @@ public class THObject implements IScript, ILuaValue {
 
     public void initLuaValue() {
         this.luaValueForm = this.ofLuaClass();
-        this.invokeScriptEvent("onRecreate",this.ofLuaValue());
+        this.addTasks();
     }
 
     @Override
@@ -1381,11 +1390,13 @@ public class THObject implements IScript, ILuaValue {
         library.setmetatable(this.getMeta());
         //fields
         library.set("class", this.getLuaClass());
+        library.set("type", "thobject");
         library.set("source", LuaValue.userdataOf(this));
         library.set("type", this.getType().getKey().toString());
         library.set("uuid", this.getUUIDasString());
         library.set("container", this.getContainer().ofLuaValue());
         library.set("parameterManager", this.getParameterManager().ofLuaValue());
+        library.set("taskManager", this.luaTaskManager.ofLuaValue());
         library.set( "params", LuaValue.tableOf());
         return library;
     }
@@ -1441,6 +1452,12 @@ public class THObject implements IScript, ILuaValue {
         library.set("isSpawned", getIsSpawned);
         library.set("setNavi", setNavi);
         return library;
+    }
+
+    public void addTasks(){
+        //if (level().isClientSide()) {
+            this.invokeScriptEvent("onAddTasks", this.ofLuaValue());
+        //}
     }
 
     @Override

@@ -23,8 +23,9 @@ public class ItemTestDanmaku extends Item {
         EntityTHObjectContainer entityTHObjectContainer = new EntityTHObjectContainer(level, player.position());
         THObjectContainer container = entityTHObjectContainer.getContainer();
         container.setUser(player);
+        container.setLuaClass("testContainer");
         level.addFreshEntity(entityTHObjectContainer);
-        player.getCooldowns().addCooldown(this, 200);
+        //player.getCooldowns().addCooldown(this, 200);
         return InteractionResultHolder.sidedSuccess(itemstack, level.isClientSide());
     }
 }

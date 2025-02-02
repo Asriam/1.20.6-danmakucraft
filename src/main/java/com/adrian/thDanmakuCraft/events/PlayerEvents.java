@@ -16,22 +16,22 @@ public class PlayerEvents {
     @SubscribeEvent
     public static void onAttachCapabilities(AttachCapabilitiesEvent<Entity> event) {
         if(event.getObject() instanceof Player){
-            MyPlayer.onAttachCapabilities(event);
+            //MyPlayer.onAttachCapabilities(event);
         }
     }
 
     @SubscribeEvent
     public static void onPlayerPreTick(TickEvent.PlayerTickEvent.Pre event) {
-        MyPlayer.onPreTick(event);
+        //MyPlayer.onPreTick(event);
     }
     @SubscribeEvent
     public static void onPlayerPostTick(TickEvent.PlayerTickEvent.Post event) {
-        MyPlayer.onPostTick(event);
+        //MyPlayer.onPostTick(event);
     }
 
     @SubscribeEvent
     public static void onPlayerCloned(PlayerEvent.Clone event) {
-        MyPlayer.onPlayerClone(event);
+        //MyPlayer.onPlayerClone(event);
     }
 
     @SubscribeEvent

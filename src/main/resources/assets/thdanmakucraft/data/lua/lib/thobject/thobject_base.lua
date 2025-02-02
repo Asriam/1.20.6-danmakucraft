@@ -12,7 +12,7 @@ function o:onInit(vec3)
     self:initPosition(vec3)
 end
 
-function o:onRecreate()
+function o:onAddTasks()
 end
 
 function o:onTick()

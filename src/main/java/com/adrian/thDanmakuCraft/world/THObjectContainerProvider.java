@@ -11,6 +11,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@Deprecated
 public class THObjectContainerProvider implements ICapabilityProvider {
 
     public static Capability<THObjectContainer> PLAYER_THOBJECT_CONTAINER_CAPABILITY = CapabilityManager.get(new CapabilityToken<THObjectContainer>() { });

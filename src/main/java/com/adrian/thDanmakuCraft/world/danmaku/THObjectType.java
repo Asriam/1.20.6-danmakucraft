@@ -24,7 +24,7 @@ public record THObjectType<T extends THObject>(THObjectFactory<T> factory) {
         return THDanmakuCraftRegistries.THOBJECT_TYPE.getValue(key);
     }
 
-    public T create(THObjectContainer container) {
+    public T create(ITHObjectContainer container) {
         return this.factory.create(this, container);
     }
 
@@ -40,6 +40,6 @@ public record THObjectType<T extends THObject>(THObjectFactory<T> factory) {
     }
 
     public interface THObjectFactory<T extends THObject> {
-        T create(THObjectType<T> type, THObjectContainer container);
+        T create(THObjectType<T> type, ITHObjectContainer container);
     }
 }

@@ -1,6 +1,6 @@
-package com.adrian.thDanmakuCraft.world;
+package com.adrian.thDanmakuCraft.world.danmaku;
 
-import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
+import com.adrian.thDanmakuCraft.world.IDataStorage;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
@@ -10,7 +10,7 @@ import net.minecraft.world.level.Level;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-public class TargetUserManager implements IDataStorage{
+public class TargetUserManager implements IDataStorage {
     private @Nullable Entity user,    target;
     private @Nullable UUID userUUID,targetUUID;
     private final THObjectContainer container;

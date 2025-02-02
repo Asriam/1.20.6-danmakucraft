@@ -15,6 +15,7 @@ import net.minecraftforge.fml.LogicalSide;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+@Deprecated
 public class MyPlayer {
 
     public static void onAttachCapabilities(AttachCapabilitiesEvent<Entity> event){
