@@ -31,18 +31,14 @@ function testLaser:onInit(i)
 end
 
 function testLaser:onAddTasks()
-    --[[
     self.taskManager:addTask({co = coroutine.create(function(target)
-        goto next_yield
-
-        ::next_yield::
-        for i=1,1000 do
+        for i = 1, 100 do
             --print("sad"..i)
-            target:move(0,-0.2,0)
-            ---task.wait()
+            self:move(0, -0.2, 0)
+            --task.wait()
             coroutine.yield()
         end
-    end)})]]
+    end)})
 end
 
 function testLaser:onTick()
@@ -58,6 +54,10 @@ function testLaser:onTick()
             ),
             true,
             true);
+end
+
+function testLaser:onRemove()
+    self.taskManager:clear()
 end
 
 

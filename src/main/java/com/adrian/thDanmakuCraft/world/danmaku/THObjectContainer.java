@@ -2,6 +2,7 @@ package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.api.script.IScriptTHObjectContainerAPI;
+import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.script.IScript;
 import com.adrian.thDanmakuCraft.script.ScriptManager;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
@@ -13,6 +14,7 @@ import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -43,12 +45,10 @@ public class THObjectContainer implements ITHObjectContainer, IScript, IScriptTH
     private int timer = 0;
     public AABB aabb = new AABB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
     public AABB bound = new AABB(-60.0D,-60.0D,-60.0D,60.0D,60.0D,60.0D);
-    //public boolean bindingToUserPosition = false;
     public boolean autoRemove = true;
     public int autoRemoveLife = 60;
     private List<Entity> entitiesInBound;
     private LuaValue luaValueForm;
-    //private final static Globals globals = LuaCore.getGlobals();
     private LuaValue luaClass;
     private String luaClassKey = "";
     private final LuaValueStorageHelper luaValueStorageHelper;
@@ -72,11 +72,6 @@ public class THObjectContainer implements ITHObjectContainer, IScript, IScriptTH
         this.luaClassKey = luaClassKey;
         this.scriptEvent("onInit",this.ofLuaValue());
     }
-    /*
-    public THObjectContainer(Entity hostEntity, String script){
-        this(hostEntity);
-        this.injectScript(script);
-    }*/
 
     public void onAddToWorld(){
         //this.scriptInit();
@@ -365,7 +360,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, IScriptTH
         buffer.writeUtf(this.luaClassKey);
         this.targetUserManager.encode(buffer);
         this.objectManager.encode(buffer);
-        this.scriptManager.writeData(buffer);
+        this.scriptManager.encode(buffer);
         this.parameterManager.encode(buffer);
         //this.taskerManager.writeData(buffer);
         LuaValue params = this.ofLuaValue().get("params");
@@ -383,7 +378,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, IScriptTH
         this.luaClassKey = buffer.readUtf();
         this.targetUserManager.decode(buffer);
         this.objectManager.decode(buffer);
-        this.scriptManager.readData(buffer);
+        this.scriptManager.decode(buffer);
         this.parameterManager.decode(buffer);
         //this.taskerManager.readData(additionalData);
         this.setBound(this.position(),this.bound);
@@ -570,6 +565,33 @@ public class THObjectContainer implements ITHObjectContainer, IScript, IScriptTH
         }
     };
 
+    public static THObjectType<?> checkObjectType(LuaValue luaValue){
+        if (luaValue.isuserdata()){
+            return (THObjectType<?>) luaValue.checkuserdata();
+        }
+
+        if (luaValue.isstring()){
+            return THObjectType.getValue(new ResourceLocation(luaValue.checkjstring()));
+        }
+
+        return null;
+    }
+
+    private static final LibFunction newTHObject = new VarArgFunction() {
+        @Override
+        public Varargs invoke(Varargs varargs) {
+            LuaValue luaClass = varargs.arg(2);
+            String luaClassKey = getLuaClassName(luaClass);
+            THObjectType<?> thobject_type = checkObjectType(luaClass.get("thobject_type"));
+            if(thobject_type == null){
+                thobject_type = THObjectInit.TH_OBJECT.get();
+            }
+            THObject object = thobject_type.create(checkTHObjectContainer(varargs.arg(1)));
+            initTHObject(object, luaClassKey, varargs.arg(3).checktable().unpack());
+            return object.ofLuaValue();
+        }
+    };
+
     public void initLuaValue() {
         this.luaValueForm = this.ofLuaClass();
     }
@@ -610,6 +632,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, IScriptTH
         library.set( "createTHCurvedLaser", createTHCurvedLaser);
         library.set( "getParameterManager", getParameterManager);
         library.set( "discard", discard);
+        library.set( "newTHObject", newTHObject);
         return library;
     }
 
@@ -619,6 +642,5 @@ public class THObjectContainer implements ITHObjectContainer, IScript, IScriptTH
             this.initLuaValue();
         }
         return luaValueForm;
-        //return this.luaValueForm == null ? LuaValue.NIL : this.luaValueForm;
     }
 }

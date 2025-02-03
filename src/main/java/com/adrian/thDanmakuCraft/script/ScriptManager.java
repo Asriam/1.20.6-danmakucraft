@@ -40,12 +40,12 @@ public abstract class ScriptManager {
         return this.hasScript() && this.shouldExecuteScript;
     }
 
-    public void writeData(FriendlyByteBuf buffer){
+    public void encode(FriendlyByteBuf buffer){
         buffer.writeBoolean(this.shouldExecuteScript);
         buffer.writeUtf(this.script);
     }
 
-    public void readData(FriendlyByteBuf buffer){
+    public void decode(FriendlyByteBuf buffer){
         this.shouldExecuteScript = buffer.readBoolean();
         this.script = buffer.readUtf();
     }

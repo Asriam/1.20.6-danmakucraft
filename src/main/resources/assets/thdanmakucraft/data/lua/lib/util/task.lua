@@ -15,16 +15,16 @@ task = {}
 ---@return Task
 function task.new(runnable)
     ---@type Task
-    local t = {}
-    t.progress = 0
-    t.runnable = runnable
-    t.co = coroutine.create(t.runnable)
+    local t = {
+        co = coroutine.create(runnable),
+        progress = 0
+    }
     return t
 end
 
 ---@param time number
 function task.wait(time)
-    for i = 0, (time or 1) do
+    for i = 1, (time or 1) do
         coroutine.yield()
     end
 end

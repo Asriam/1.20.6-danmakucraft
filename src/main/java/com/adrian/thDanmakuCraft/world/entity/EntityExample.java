@@ -28,7 +28,6 @@ public class EntityExample extends Entity{
 
     @Override
     protected void addAdditionalSaveData(CompoundTag compoundTag) {
-        //super.addAdditionalSaveData();
         compoundTag.putInt("Index",this.getIndex());
     }
 
@@ -39,9 +38,6 @@ public class EntityExample extends Entity{
 
     @Override
     protected void readAdditionalSaveData(CompoundTag compoundTag) {
-       // entityData.set(INDEX, compoundTag.getInt("Index") != 0 ? compoundTag.getInt("Index"):this.entityData.get(INDEX));
         entityData.set(INDEX, compoundTag.getInt("Index"));
-        //THDanmakuCraftCore.LOGGER.info("LOAD!!!!!!!!!!!!!!!!!!!!!");
-        //entityData.set(INDEX, 2);
     }
 }

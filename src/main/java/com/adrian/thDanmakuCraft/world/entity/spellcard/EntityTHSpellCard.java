@@ -27,6 +27,7 @@ public class EntityTHSpellCard extends EntityTHObjectContainer {
         return this.cardName == null || this.cardName.isEmpty();
     }
 
+    /*
     @Override
     public void writeSpawnData(FriendlyByteBuf buffer) {
         super.writeSpawnData(buffer);
@@ -37,7 +38,7 @@ public class EntityTHSpellCard extends EntityTHObjectContainer {
     public void readSpawnData(FriendlyByteBuf additionalData) {
         super.readSpawnData(additionalData);
         this.cardName = additionalData.readUtf();
-    }
+    }*/
 
     @Override
     protected void addAdditionalSaveData(CompoundTag compoundTag) {

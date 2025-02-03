@@ -36,7 +36,7 @@ public class THObject implements IScript, ILuaValue {
     //private static final Logger log = LoggerFactory.getLogger(THObject.class);
     private final THObjectType<? extends THObject> type;
     private final AdditionalParameterManager parameterManager;
-    private final LuaTaskManager luaTaskManager;
+    //private final LuaTaskManager luaTaskManager;
     //private final Level level;
     protected final RandomSource random = RandomSource.create();
     protected ITHObjectContainer container;
@@ -92,7 +92,7 @@ public class THObject implements IScript, ILuaValue {
         this.container = container;
         //this.level = container.level();
         this.parameterManager = new AdditionalParameterManager(this.container);
-        this.luaTaskManager = new LuaTaskManager(this);
+        //this.luaTaskManager = new LuaTaskManager(this);
         this.luaValueStorageHelper = new LuaValueStorageHelper(this.container);
         this.uuid = Mth.createInsecureUUID(this.random);
         this.initPosition(container.getPosition());
@@ -739,7 +739,7 @@ public class THObject implements IScript, ILuaValue {
         //this.blend.writeData(buffer);
         //this.scriptManager.writeData(buffer);
         this.parameterManager.encode(buffer);
-        this.luaTaskManager.encode(buffer);
+        //this.luaTaskManager.encode(buffer);
         LuaValue params = this.ofLuaValue().get("params");
         if(params.istable()) {
             luaValueStorageHelper.writeLuaTable(buffer, params.checktable());
@@ -781,7 +781,7 @@ public class THObject implements IScript, ILuaValue {
         //this.blend.readData(buffer);
         //this.scriptManager.readData(buffer);
         this.parameterManager.decode(buffer);
-        this.luaTaskManager.decode(buffer);
+        //this.luaTaskManager.decode(buffer);
         this.setBoundingBox(this.getPosition(), this.size);
         this.ofLuaValue().set("params", luaValueStorageHelper.readLuaTable(buffer));
     }
@@ -1396,7 +1396,7 @@ public class THObject implements IScript, ILuaValue {
         library.set("uuid", this.getUUIDasString());
         library.set("container", this.getContainer().ofLuaValue());
         library.set("parameterManager", this.getParameterManager().ofLuaValue());
-        library.set("taskManager", this.luaTaskManager.ofLuaValue());
+        //library.set("taskManager", this.luaTaskManager.ofLuaValue());
         library.set( "params", LuaValue.tableOf());
         return library;
     }

@@ -202,4 +202,6 @@ function taskManager:addTask(task) end
 ---@overload fun(task_index:number)
 function taskManager:removeTask(task) end
 
+function taskManager:clear() end
+
 function taskManager:doTasks() end

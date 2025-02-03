@@ -38,7 +38,7 @@ public class LuaTaskManager implements IDataStorage, ILuaValue{
                 Integer progress = progresses.get(tasks.size() - 1);
                 if (progress != null) {
                     for (int j = 0; j < progress; j++) {
-                        coroutine.resume(null);
+                        coroutine.resume(target.ofLuaValue());
                     }
                 }
             }
@@ -51,6 +51,10 @@ public class LuaTaskManager implements IDataStorage, ILuaValue{
             return;
         }
         tasks.remove(task);
+    }
+
+    public void clear(){
+        tasks.clear();
     }
 
     public void doTasks(){
@@ -108,6 +112,14 @@ public class LuaTaskManager implements IDataStorage, ILuaValue{
         }
     };
 
+    private static final LibFunction clear = new TwoArgFunction() {
+        @Override
+        public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
+            checkLuaTaskManager(luaValue0).clear();
+            return null;
+        }
+    };
+
     private static final LibFunction doTasks = new OneArgFunction() {
         @Override
         public LuaValue call(LuaValue luaValue0) {
@@ -144,6 +156,7 @@ public class LuaTaskManager implements IDataStorage, ILuaValue{
         library.set("addTask",    addTask);
         library.set("removeTask", removeTask);
         library.set("doTasks",    doTasks);
+        library.set("clear",      clear);
         return library;
     }
 
@@ -159,11 +172,12 @@ public class LuaTaskManager implements IDataStorage, ILuaValue{
     @Override
     public void decode(FriendlyByteBuf buffer) {
         short size = buffer.readShort();
+        /*
         for(int i=0;i<size;i++){
             int progress = buffer.readInt();
             this.progresses.clear();
             this.progresses.add(i,progress);
-        }
+        }*/
     }
 
     @Override

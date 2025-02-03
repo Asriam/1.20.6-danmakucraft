@@ -1,9 +1,11 @@
 package com.adrian.thDanmakuCraft.events;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.lua.LuaCore;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.luaj.vm2.LuaThread;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +28,7 @@ public class TickEvents {
 
     @SubscribeEvent
     public static void clientTick(TickEvent.ClientTickEvent event){
-
+        //System.out.print(LuaThread.coroutine_count+"\n");
     }
 
     @SubscribeEvent

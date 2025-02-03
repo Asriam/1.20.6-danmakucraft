@@ -17,7 +17,6 @@ public class LuaValueHelper {
                 return entity;
             }
             throw new NullPointerException();
-            //return null;
         }
 
         private static final LibFunction getPosition = new OneArgFunction() {
@@ -74,7 +73,6 @@ public class LuaValueHelper {
         library.set("x", x);
         library.set("y", y);
         return library;
-        //return CoerceJavaToLua.coerce(vec2);
     }
 
     public static LuaValue Vector3fToLuaValue(Vector3f vec3f) {
@@ -90,28 +88,6 @@ public class LuaValueHelper {
     }
 
     public static Vec3 LuaValueToVec3(LuaValue luaValue) {
-        /*
-        if (luaValue.isuserdata() && luaValue.checkuserdata() instanceof Vec3 vec3){
-            return vec3;
-        }else if (luaValue.istable()){
-            LuaValue x = luaValue.get("x");
-            if(!x.isnil()) {
-                return new Vec3(
-                        x.checkdouble(),
-                        luaValue.get("y").checkdouble(),
-                        luaValue.get("z").checkdouble()
-                );
-            }else {
-                return new Vec3(
-                        luaValue.get(1).checkdouble(),
-                        luaValue.get(2).checkdouble(),
-                        luaValue.get(3).checkdouble()
-                );
-            }
-        }
-
-        return Vec3.ZERO;
-         */
         return new Vec3(
                 luaValue.get("x").checkdouble(),
                 luaValue.get("y").checkdouble(),
@@ -120,27 +96,6 @@ public class LuaValueHelper {
     }
 
     public static Vec2 LuaValueToVec2(LuaValue luaValue) {
-        /*
-        if (luaValue.isuserdata() && luaValue.checkuserdata() instanceof Vec2 vec2){
-            return vec2;
-        }
-
-        if (luaValue.istable()){
-            LuaValue x = luaValue.get("x");
-            if(!x.isnil()) {
-                return new Vec2(
-                        x.tofloat(),
-                        luaValue.get("y").tofloat()
-                );
-            }else {
-                return new Vec2(
-                        luaValue.get(1).tofloat(),
-                        luaValue.get(2).tofloat()
-                );
-            }
-        }
-
-        return Vec2.ZERO;*/
         return new Vec2(
                 luaValue.get("x").tofloat(),
                 luaValue.get("y").tofloat()
@@ -148,30 +103,6 @@ public class LuaValueHelper {
     }
 
     public static Vector3f LuaValueToVector3f(LuaValue luaValue) {
-        /*
-        if (luaValue.isuserdata() && luaValue.checkuserdata() instanceof Vector3f vector3f){
-            return vector3f;
-        }else if (luaValue.istable()){
-            LuaValue x = luaValue.get("x");
-            if(!x.isnil()) {
-                return new Vector3f(
-                        x.tofloat(),
-                        luaValue.get("y").tofloat(),
-                        luaValue.get("z").tofloat()
-                );
-            }else {
-                return new Vector3f(
-                        luaValue.get(1).tofloat(),
-                        luaValue.get(2).tofloat(),
-                        luaValue.get(3).tofloat()
-                );
-            }
-        }
-
-        return new Vector3f(0.0f,0.0f,0.0f);
-
-         */
-
         return new Vector3f(
                 luaValue.get("x").tofloat(),
                 luaValue.get("y").tofloat(),

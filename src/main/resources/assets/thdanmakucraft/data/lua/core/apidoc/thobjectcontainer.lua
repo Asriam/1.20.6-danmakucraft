@@ -62,4 +62,10 @@ function container:getParameterManager() end
 
 function container:discard() end
 
+---@param key string
+---@param args table
+---@param position util.Vec3
+---@return THObject
+function container:newTHObject(key,args) end
+
 THObjectContainer = container
