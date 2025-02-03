@@ -72,11 +72,11 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
 
     @Override
     public void writeSpawnData(FriendlyByteBuf buffer) {
-        this.container.writeSpawnData(buffer);
+        this.container.encode(buffer);
     }
 
     @Override
     public void readSpawnData(FriendlyByteBuf buffer) {
-        this.container.readSpawnData(buffer);
+        this.container.decode(buffer);
     }
 }

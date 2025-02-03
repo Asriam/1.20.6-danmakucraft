@@ -11,7 +11,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.fml.LogicalSide;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -41,9 +40,9 @@ public class MyPlayer {
         event.getOriginal().getCapability(THObjectContainerProvider.PLAYER_THOBJECT_CONTAINER_CAPABILITY).ifPresent(oldContainer -> {
             event.getEntity().getCapability(THObjectContainerProvider.PLAYER_THOBJECT_CONTAINER_CAPABILITY).ifPresent(newContainer -> {
                 final FriendlyByteBuf spawnDataBuffer = new FriendlyByteBuf(Unpooled.buffer());
-                oldContainer.writeSpawnData(spawnDataBuffer);
+                oldContainer.encode(spawnDataBuffer);
 
-                newContainer.readSpawnData(spawnDataBuffer);
+                newContainer.decode(spawnDataBuffer);
             });
         });
     }

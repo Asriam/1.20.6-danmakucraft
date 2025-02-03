@@ -15,11 +15,11 @@ public class MyEntityDataSerializers {
 
     public static final EntityDataSerializer<THObjectContainer> THOBJECT_CONTAINER = EntityDataSerializer.forValueType(new StreamCodec<ByteBuf, THObjectContainer>() {
         public void encode(@NotNull ByteBuf byteBuf, @NotNull THObjectContainer container) {
-            container.writeSpawnData((FriendlyByteBuf) byteBuf);
+            container.encode((FriendlyByteBuf) byteBuf);
         }
         public @NotNull THObjectContainer decode(@NotNull ByteBuf byteBuf) {
             THObjectContainer container = new THObjectContainer(null);
-            container.readSpawnData((FriendlyByteBuf) byteBuf);
+            container.decode((FriendlyByteBuf) byteBuf);
             return container;
         }
     });

@@ -313,7 +313,7 @@ public class THObject implements IScript, ILuaValue {
         return new Vec3(positionX, positionY, positionZ);
     }
 
-    public double[] getPositionArray() {
+    public double[] getPositionAsArray() {
         return new double[]{positionX, positionY, positionZ};
     }
 
@@ -733,10 +733,8 @@ public class THObject implements IScript, ILuaValue {
         buffer.writeBoolean(this.isDead);
         buffer.writeBoolean(this.collision);
         buffer.writeEnum(this.collisionType);
-        //buffer.writeBoolean(this.bound);
         buffer.writeBoolean(this.shouldSave);
         buffer.writeUtf(this.luaClassKey);
-        //this.blend.writeData(buffer);
         //this.scriptManager.writeData(buffer);
         this.parameterManager.encode(buffer);
         //this.luaTaskManager.encode(buffer);
@@ -775,10 +773,8 @@ public class THObject implements IScript, ILuaValue {
         this.isDead = buffer.readBoolean();
         this.collision = buffer.readBoolean();
         this.collisionType = buffer.readEnum(CollisionType.class);
-        //this.bound = buffer.readBoolean();
         this.shouldSave = buffer.readBoolean();
         this.luaClassKey = buffer.readUtf();
-        //this.blend.readData(buffer);
         //this.scriptManager.readData(buffer);
         this.parameterManager.decode(buffer);
         //this.luaTaskManager.decode(buffer);
@@ -787,7 +783,6 @@ public class THObject implements IScript, ILuaValue {
     }
 
     public CompoundTag save(CompoundTag tag) {
-        //tag.putString("type", this.getType().getKey().toString());
         tag.put("Pos", newDoubleList(this.positionX, this.positionY, this.positionZ));
         tag.put("PrePos", newVec3(this.prePosition));
         tag.put("Rotation", newVector3f(this.getRotation()));
@@ -806,7 +801,6 @@ public class THObject implements IScript, ILuaValue {
         tag.putString("LuaClassKey", luaClassKey);
         //this.scriptManager.save(tag);
         tag.put("parameters", this.parameterManager.save(new CompoundTag()));
-        //this.blend.save(tag);
         tag.put("params", luaValueStorageHelper.saveLuaTable(this.ofLuaValue().get("params")));
         return tag;
     }
@@ -841,13 +835,6 @@ public class THObject implements IScript, ILuaValue {
         this.parameterManager.load(tag.getCompound("parameters"));
         this.uuid = tag.getUUID("UUID");
         this.ofLuaValue().set("params", luaValueStorageHelper.loadLuaTable(tag.getCompound("params")));
-        /*
-        for(LuaValue key:table.keys()){
-            LuaValue luaForm = this.ofLuaValue();
-            if(luaForm.get(key).isnil())
-                luaForm.set(key, table.get(key));
-        }*/
-        //this.blend.load(tag);
     }
 
     public AdditionalParameterManager getParameterManager() {
@@ -1250,7 +1237,9 @@ public class THObject implements IScript, ILuaValue {
     private static final LibFunction getPosition = new OneArgFunction() {
         @Override
         public LuaValue call(LuaValue luaValue0) {
-            return Vec3ToLuaValue(checkTHObject(luaValue0).getPosition());
+            THObject object = checkTHObject(luaValue0);
+            //return Vec3ToLuaValue(checkTHObject(luaValue0).getPosition());
+            return Vec3ToLuaValue(object.positionX, object.positionY, object.positionZ);
         }
     };
     private static final LibFunction getPrePosition = new OneArgFunction() {
@@ -1280,7 +1269,9 @@ public class THObject implements IScript, ILuaValue {
     private static final LibFunction getRotation = new OneArgFunction() {
         @Override
         public LuaValue call(LuaValue luaValue0) {
-            return Vector3fToLuaValue(checkTHObject(luaValue0).getRotation());
+            THObject object = checkTHObject(luaValue0);
+            return Vector3fToLuaValue(object.xRot, object.yRot, object.zRot);
+            //return Vector3fToLuaValue(checkTHObject(luaValue0).getRotation());
         }
     };
     private static final LibFunction getXRot = new OneArgFunction() {
@@ -1455,9 +1446,7 @@ public class THObject implements IScript, ILuaValue {
     }
 
     public void addTasks(){
-        //if (level().isClientSide()) {
-            this.invokeScriptEvent("onAddTasks", this.ofLuaValue());
-        //}
+        this.invokeScriptEvent("onAddTasks", this.ofLuaValue());
     }
 
     @Override

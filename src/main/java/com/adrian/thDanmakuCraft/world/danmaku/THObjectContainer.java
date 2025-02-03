@@ -354,7 +354,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, IScriptTH
         return this.luaClassKey;
     }
 
-    public void writeSpawnData(FriendlyByteBuf buffer) {
+    public void encode(FriendlyByteBuf buffer) {
         buffer.writeInt(this.maxObjectAmount);
         buffer.writeInt(this.timer);
         buffer.writeUtf(this.luaClassKey);
@@ -371,10 +371,9 @@ public class THObjectContainer implements ITHObjectContainer, IScript, IScriptTH
         }
    }
 
-    public void readSpawnData(FriendlyByteBuf buffer) {
+    public void decode(FriendlyByteBuf buffer) {
         this.maxObjectAmount = buffer.readInt();
         this.timer = buffer.readInt();
-        //this.bindingToUserPosition = additionalData.readBoolean();
         this.luaClassKey = buffer.readUtf();
         this.targetUserManager.decode(buffer);
         this.objectManager.decode(buffer);
@@ -388,7 +387,6 @@ public class THObjectContainer implements ITHObjectContainer, IScript, IScriptTH
     public void save(CompoundTag tag) {
         tag.putInt("Timer",this.timer);
         tag.putInt("MaxObjectAmount",this.maxObjectAmount);
-        //compoundTag.putBoolean("PositionBinding",this.bindingToUserPosition);
         tag.putString("LuaClassKey", luaClassKey);
         tag.put("object_storage", this.objectManager.save(new CompoundTag()));
         tag.put("script",this.scriptManager.save(new CompoundTag()));
@@ -400,13 +398,11 @@ public class THObjectContainer implements ITHObjectContainer, IScript, IScriptTH
     public void load(CompoundTag tag) {
         this.timer = tag.getInt("Timer");
         this.maxObjectAmount = tag.getInt("MaxObjectAmount");
-        //this.bindingToUserPosition = compoundTag.getBoolean("PositionBinding");
         this.luaClassKey = tag.getString("LuaClassKey");
         this.objectManager.load(tag.getCompound("object_storage"));
         this.scriptManager.load(tag.getCompound("script"));
         this.targetUserManager.load(tag.getCompound("user_target"));
         this.parameterManager.load(tag.getCompound("parameters"));
-        //this.ofLuaValue().set("params", LuaValueStorageHelper.loadLuaValue(tag.getCompound("params")));
         this.ofLuaValue().set("params", luaValueStorageHelper.loadLuaTable(tag.getCompound("params")));
     }
 

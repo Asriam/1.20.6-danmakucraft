@@ -4,7 +4,7 @@ import com.adrian.thDanmakuCraft.util.ResourceLoader;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 
-public abstract class ScriptManager {
+public abstract class ScriptManager<T> {
     protected String script = "";
     protected boolean shouldExecuteScript = false;
 
@@ -12,9 +12,9 @@ public abstract class ScriptManager {
         this.disableScript();
     }
 
-    public abstract Object invokeScript(String functionName, Object... args) throws Exception;
+    public abstract Object invokeScript(String functionName, T... args) throws Exception;
 
-    public abstract Object invokeScript(String functionName, ResourceLoader.RunnableWithException whenException, Object... args);
+    public abstract Object invokeScript(String functionName, ResourceLoader.RunnableWithException whenException, T... args);
 
     public boolean hasScript(){
         return this.script != null && !this.script.equals("");
@@ -47,7 +47,7 @@ public abstract class ScriptManager {
 
     public void decode(FriendlyByteBuf buffer){
         this.shouldExecuteScript = buffer.readBoolean();
-        this.script = buffer.readUtf();
+        this.setScript(buffer.readUtf());
     }
 
     public CompoundTag save(CompoundTag tag){
@@ -58,7 +58,7 @@ public abstract class ScriptManager {
 
     public void load(CompoundTag tag){
         this.shouldExecuteScript = tag.getBoolean("ShouldExecuteScript");
-        this.script = tag.getString("Script");
+        this.setScript(tag.getString("Script"));
     }
 
     public abstract ScriptType type();
