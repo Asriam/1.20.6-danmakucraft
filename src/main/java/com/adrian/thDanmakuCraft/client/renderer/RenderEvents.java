@@ -30,10 +30,6 @@ public class RenderEvents {
                 renderHelper.renderTask.render(poseStack,partialTick);
             }
         }
-        /*
-        THDanmakuCraftCore.LOGGER.info(event.getStage().toString());
-
-         */
     }
 
     public static void registerRenderLevelStageTask(String name, RenderLevelStageEvent.Stage stage, RenderTask renderHelper){

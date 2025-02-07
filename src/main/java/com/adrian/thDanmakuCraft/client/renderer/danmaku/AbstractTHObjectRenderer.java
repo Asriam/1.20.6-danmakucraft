@@ -1,7 +1,6 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku;
 
-import com.adrian.thDanmakuCraft.client.renderer.entity.EntityTHObjectContainerRenderer;
-import com.adrian.thDanmakuCraft.world.danmaku.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;

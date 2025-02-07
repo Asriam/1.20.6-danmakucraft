@@ -7,7 +7,13 @@
 local function clone(table)
     local newTable = {}
     for key,value in ipairs(table) do
-        newTable[key] = value
+        local metatable = getmetatable(table)
+        setmetatable(newTable,metatable)
+        if table(value) == 'table' then
+            newTable[key] = clone(value)
+        else
+            newTable[key] = value
+        end
     end
     return newTable
 end

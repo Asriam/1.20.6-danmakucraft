@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.world;
 
+import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec2;
@@ -10,23 +11,25 @@ import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.LibFunction;
 import org.luaj.vm2.lib.OneArgFunction;
 
+import java.util.Objects;
+
 public class LuaValueHelper {
     public static class LuaEntityClass {
-        private static Entity checkEntity(LuaValue luaValue){
+        public static Entity checkEntity(LuaValue luaValue){
             if (luaValue.get("source").checkuserdata() instanceof Entity entity){
                 return entity;
             }
             throw new NullPointerException();
         }
 
-        private static final LibFunction getPosition = new OneArgFunction() {
+        public static final LibFunction getPosition = new OneArgFunction() {
             @Override
             public LuaValue call(LuaValue luaValue0) {
                 return Vec3ToLuaValue(checkEntity(luaValue0).position());
             }
         };
 
-        private static final LibFunction getRotation = new OneArgFunction() {
+        public static final LibFunction getRotation = new OneArgFunction() {
             @Override
             public LuaValue call(LuaValue luaValue0) {
                 Entity entity = checkEntity(luaValue0);
@@ -34,13 +37,18 @@ public class LuaValueHelper {
             }
         };
 
+        private static LuaValue functions(){
+            LuaTable library = LuaValue.tableOf();
+            library.set("getPosition", LuaEntityClass.getPosition);
+            library.set("getRotation", LuaEntityClass.getRotation);
+            return library;
+        }
+
+        public static LuaValue meta = new LuaTable();
+        static {
+            meta.set("__index", functions());
+        }
     }
-
-    public static LuaValue Vec3MemberFunctions(){
-        LuaValue luaValue = LuaValue.tableOf();
-
-        return luaValue;
-    };
     public static LuaValue EntityToLuaValue(Entity entity) {
         if (entity == null) return LuaValue.NIL;
         LuaValue library = LuaValue.tableOf();
@@ -61,6 +69,8 @@ public class LuaValueHelper {
         library.set("x", x);
         library.set("y", y);
         library.set("z", z);
+        if(LuaCore.LuaUtilVec3Meta != null);
+        library.setmetatable(LuaCore.LuaUtilVec3Meta);
         return library;
     }
 
@@ -72,6 +82,7 @@ public class LuaValueHelper {
         LuaValue library = LuaValue.tableOf();
         library.set("x", x);
         library.set("y", y);
+        library.setmetatable(LuaCore.LuaUtilVec2Meta);
         return library;
     }
 
@@ -80,11 +91,12 @@ public class LuaValueHelper {
     }
 
     public static LuaValue Vector3fToLuaValue(float x, float y, float z) {
-        LuaValue library = LuaValue.tableOf();
+        /*LuaValue library = LuaValue.tableOf();
         library.set("x", x);
         library.set("y", y);
         library.set("z", z);
-        return library;
+        return library;*/
+        return Vec3ToLuaValue(x,y,z);
     }
 
     public static Vec3 LuaValueToVec3(LuaValue luaValue) {

@@ -43,8 +43,6 @@ public class THDanmakuCraftCore
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
-        //JSLoader.init();
-        //JSCore.init();
         LuaLoader.init();
         LuaCore.init();
     }
@@ -53,9 +51,6 @@ public class THDanmakuCraftCore
 
     @SubscribeEvent
     public void onServerStarting(final @NotNull ServerStartingEvent event) {
-        //THDanmakuCraftCore.LOGGER.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
-        //JSLoader.init();
-        //JSCore.init();
         LuaLoader.init();
         LuaCore.init();
 

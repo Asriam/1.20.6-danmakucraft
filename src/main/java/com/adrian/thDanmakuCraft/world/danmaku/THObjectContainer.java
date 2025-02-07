@@ -1,15 +1,15 @@
 package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
-import com.adrian.thDanmakuCraft.api.script.IScriptTHObjectContainerAPI;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.script.IScript;
-import com.adrian.thDanmakuCraft.script.ScriptManager;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.lua.LuaManager;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
-import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
-import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet.THBullet;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THCurvedLaser;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.CompoundTag;
@@ -31,14 +31,14 @@ import java.util.*;
 
 import static com.adrian.thDanmakuCraft.world.LuaValueHelper.*;
 
-public class THObjectContainer implements ITHObjectContainer, IScript, IScriptTHObjectContainerAPI, ILuaValue {
+public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue {
     public static final List<THObjectContainer> allContainers = new ArrayList<>();
 
     private Entity hostEntity;
     private int maxObjectAmount = 2000;
     protected final TargetUserManager targetUserManager;
     protected final THObjectManager objectManager;
-    protected final LuaManager scriptManager;
+    //protected final LuaManager scriptManager;
     //protected final THTasker.THTaskerManager taskerManager;
     protected final AdditionalParameterManager parameterManager;
     protected final RandomSource random = RandomSource.create();
@@ -61,7 +61,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, IScriptTH
         this.objectManager     = new THObjectManager(this);
         //this.taskerManager     = new THTasker.THTaskerManager(this);
         this.luaValueStorageHelper = new LuaValueStorageHelper(this);
-        this.scriptManager     = new LuaManager();
+        //this.scriptManager     = new LuaManager();
         this.entitiesInBound   = new ArrayList<>();
         this.setMaxObjectAmount(2000);
         //this.luaValueForm = this.ofLuaClass();
@@ -198,7 +198,6 @@ public class THObjectContainer implements ITHObjectContainer, IScript, IScriptTH
 
     public void tick() {
         if(this.hostEntity == null){
-            //throw new NullPointerException("Host Entity is null!");
             THDanmakuCraftCore.LOGGER.warn("Host Entity is null!");
             return;
         }
@@ -221,8 +220,6 @@ public class THObjectContainer implements ITHObjectContainer, IScript, IScriptTH
                 this.getHostEntity().remove(Entity.RemovalReason.DISCARDED);
             }
         }
-
-        //this.scriptTick();
 
         this.timer++;
     }
@@ -360,7 +357,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, IScriptTH
         buffer.writeUtf(this.luaClassKey);
         this.targetUserManager.encode(buffer);
         this.objectManager.encode(buffer);
-        this.scriptManager.encode(buffer);
+        //this.scriptManager.encode(buffer);
         this.parameterManager.encode(buffer);
         //this.taskerManager.writeData(buffer);
         LuaValue params = this.ofLuaValue().get("params");
@@ -377,7 +374,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, IScriptTH
         this.luaClassKey = buffer.readUtf();
         this.targetUserManager.decode(buffer);
         this.objectManager.decode(buffer);
-        this.scriptManager.decode(buffer);
+        //this.scriptManager.decode(buffer);
         this.parameterManager.decode(buffer);
         //this.taskerManager.readData(additionalData);
         this.setBound(this.position(),this.bound);
@@ -389,7 +386,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, IScriptTH
         tag.putInt("MaxObjectAmount",this.maxObjectAmount);
         tag.putString("LuaClassKey", luaClassKey);
         tag.put("object_storage", this.objectManager.save(new CompoundTag()));
-        tag.put("script",this.scriptManager.save(new CompoundTag()));
+        //tag.put("script",this.scriptManager.save(new CompoundTag()));
         tag.put("user_target", this.targetUserManager.save(new CompoundTag()));
         tag.put("parameters", this.parameterManager.save(new CompoundTag()));
         tag.put("params", luaValueStorageHelper.saveLuaTable(this.ofLuaValue().get("params")));
@@ -400,19 +397,20 @@ public class THObjectContainer implements ITHObjectContainer, IScript, IScriptTH
         this.maxObjectAmount = tag.getInt("MaxObjectAmount");
         this.luaClassKey = tag.getString("LuaClassKey");
         this.objectManager.load(tag.getCompound("object_storage"));
-        this.scriptManager.load(tag.getCompound("script"));
+        //this.scriptManager.load(tag.getCompound("script"));
         this.targetUserManager.load(tag.getCompound("user_target"));
         this.parameterManager.load(tag.getCompound("parameters"));
         this.ofLuaValue().set("params", luaValueStorageHelper.loadLuaTable(tag.getCompound("params")));
     }
 
     public void injectScript(String script) {
-        this.scriptManager.setScript(script);
+        //this.scriptManager.setScript(script);
     }
 
     @Override
-    public ScriptManager getScriptManager() {
-        return this.scriptManager;
+    public LuaManager getScriptManager() {
+        //return this.scriptManager;
+        return null;
     }
 
     public RandomSource getRandomSource() {
@@ -594,7 +592,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, IScriptTH
 
     public static final LuaValue meta = LuaValue.tableOf();
     static {
-        meta.set("__index", luaClassFunctions());
+        meta.set("__index", functions());
     }
 
     @Override
@@ -614,7 +612,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, IScriptTH
         return meta;
     }
 
-    private static LuaValue luaClassFunctions(){
+    private static LuaValue functions(){
         LuaValue library = LuaValue.tableOf();
         library.set( "getMaxObjectAmount", getMaxObjectAmount);
         library.set( "getPosition", getPosition);

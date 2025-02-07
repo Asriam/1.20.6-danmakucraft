@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.registries;
 
-import com.adrian.thDanmakuCraft.world.danmaku.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package com.adrian.thDanmakuCraft.world.danmaku.bullet;
+package com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
@@ -6,6 +6,8 @@ import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.IImage;
 import com.adrian.thDanmakuCraft.world.danmaku.ITHObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.*;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -314,10 +316,11 @@ public class THBullet extends THObject {
 
     public static final LuaValue meta = LuaValue.tableOf();
     static {
-        meta.set("__index", luaClassFunctions());
+        meta.set("__index", functions());
     }
-    public static LuaValue luaClassFunctions(){
-        LuaValue library = THObject.luaClassFunctions();
+    
+    public static LuaValue functions(){
+        LuaValue library = THObject.functions();
         library.set("setStyle",       setStyle);
         library.set("setBulletColor", setBulletColor);
         library.set("getStyle",       getStyle);

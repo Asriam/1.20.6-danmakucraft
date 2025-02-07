@@ -4,41 +4,44 @@
 --- DateTime: 2025/1/24 下午 05:06
 ---
 
-map = {}
+---@class Map
+local m = {}
+map = m
 
-function map.new()
+---@return Map
+function m.new()
     local m = {}
-    setmetatable(m, {__index = map})
+    setmetatable(m, {__index = m })
     return
 end
 
-function map:put(key, value)
+function m:put(key, value)
     self[key] = value
 end
 
-function map:get(key)
+function m:get(key)
     return self[key]
 end
 
-function map:remove(key)
+function m:remove(key)
     self[key] = nil
 end
 
-function map:clear()
+function m:clear()
     for k, v in pairs(self) do
         self[k] = nil
     end
 end
 
-function map:size()
+function m:size()
     return #self
 end
 
-function map:containsKey(key)
+function m:containsKey(key)
     return self[key] ~= nil
 end
 
-function map:containsValue(value)
+function m:containsValue(value)
     for k, v in pairs(self) do
         if v == value then
             return true
@@ -48,7 +51,7 @@ function map:containsValue(value)
 end
 
 ---@param func fun(key, value)
-function map:forEach(func)
+function m:forEach(func)
     for k, v in pairs(self) do
         func(k, v)
     end

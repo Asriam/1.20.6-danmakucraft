@@ -1,10 +1,6 @@
 package com.adrian.thDanmakuCraft.lua;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
-import com.adrian.thDanmakuCraft.world.LuaValueHelper;
-import com.adrian.thDanmakuCraft.world.danmaku.THObject;
-import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
-import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
@@ -31,16 +27,25 @@ public class LuaCore {
     private final Globals GLOBALS = JsePlatform.standardGlobals();
     private final Map<String,LuaValue> luaClassMap = Maps.newHashMap();
 
+    public static LuaValue LuaUtilVec2;
+    public static LuaValue LuaUtilVec3;
+    public static LuaValue LuaUtilVec2Meta;
+    public static LuaValue LuaUtilVec3Meta;
+
+    private final LuaLoader luaLoader;
+
     public LuaCore() {
         //GLOBALS = JsePlatform.standardGlobals();
         this.putAPI();
+        luaLoader = LuaLoader.instance;
     }
 
     public static void init(){
         LUA = new LuaCore();
         String path = "main.lua";
-        String script = LuaLoader.getResourceAsString(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"data/lua/"+path));
-        LuaCore.getInstance().GLOBALS.load(script,path).call();
+        String script = LUA.luaLoader.getResourceAsString(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"data/lua/"+path));
+        LuaCore luaCore = LuaCore.getInstance();
+        luaCore.GLOBALS.load(script,path).call();
     }
 
     public void putAPI(){
@@ -53,9 +58,9 @@ public class LuaCore {
             //this.bindClass("THObject" ,         THObject.class);
             //this.bindClass("THBullet" ,         THBullet.class);
             //this.bindClass("THCurvedLaser" ,    THCurvedLaser.class);
-            GLOBALS.set("THObjectContainer", THObjectContainer.meta.get("__index"));
-            GLOBALS.set("THObject", THObject.meta.get("__index"));
-            GLOBALS.set("THBullet", THBullet.meta.get("__index"));
+            //GLOBALS.set("THObjectContainer", THObjectContainer.meta.get("__index"));
+            //GLOBALS.set("THObject", THObject.meta.get("__index"));
+            //GLOBALS.set("THBullet", THBullet.meta.get("__index"));
 
             GLOBALS.set("luajava", NIL);
         } catch (Exception e) {
@@ -76,9 +81,9 @@ public class LuaCore {
         return LUA;
     }
 
-    public LuaValue doScript(String path){
+    public LuaValue doFile(String path){
         try {
-            String script = LuaLoader.getResourceAsString(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"data/lua/"+path));
+            String script = luaLoader.getResourceAsString(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"data/lua/"+path));
             return this.GLOBALS.load(script,path).call();
         } catch (Exception e) {
             e.printStackTrace();
@@ -171,6 +176,28 @@ public class LuaCore {
             }
         });
 
+        library.set("setVec3Lib", new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue) {
+                LuaCore.LuaUtilVec3 = luaValue;
+                LuaValue meta = LuaValue.tableOf();
+                meta.set("__index", luaValue);
+                LuaCore.LuaUtilVec3Meta = meta;
+                return null;
+            }
+        });
+
+        library.set("setVec2Lib", new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue) {
+                LuaCore.LuaUtilVec2 = luaValue;
+                LuaValue meta = LuaValue.tableOf();
+                meta.set("__index", luaValue);
+                LuaCore.LuaUtilVec2Meta = meta;
+                return null;
+            }
+        });
+
         return library;
     }
 
@@ -250,7 +277,7 @@ public class LuaCore {
 
     public static class core {
         public static LuaValue doFile(String path) {
-            return LuaCore.getInstance().doScript(path);
+            return LuaCore.getInstance().doFile(path);
         }
 
         public static boolean isValid(Object object) {

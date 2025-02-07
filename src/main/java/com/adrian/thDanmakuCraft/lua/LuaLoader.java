@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class LuaLoader {
 
-    private static LuaLoader luaLoader;
+    public static LuaLoader instance;
 
     private final Map<ResourceLocation,Resource> resourceMap;
     private final Map<ResourceLocation,String>   resourceMap2 = new HashMap<>();
@@ -29,21 +29,21 @@ public class LuaLoader {
     }
 
     public static void init(){
-        luaLoader = new LuaLoader();
+        instance = new LuaLoader();
     }
 
     @Nullable
-    public static Resource getResource(ResourceLocation resourceLocation){
-        return luaLoader.resourceMap.get(resourceLocation);
+    public Resource getResource(ResourceLocation resourceLocation){
+        return this.resourceMap.get(resourceLocation);
     }
 
     @Nullable
-    public static String getResourceAsString(ResourceLocation resourceLocation){
-        return luaLoader.resourceMap2.get(resourceLocation);
+    public String getResourceAsString(ResourceLocation resourceLocation){
+        return this.resourceMap2.get(resourceLocation);
     }
 
     @Nullable
-    public static Map<ResourceLocation,String> getResourceMap(){
-        return luaLoader.resourceMap2;
+    public Map<ResourceLocation,String> getResourceMap(){
+        return this.resourceMap2;
     }
 }

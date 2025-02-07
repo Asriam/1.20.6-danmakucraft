@@ -4,13 +4,36 @@
 --- DateTime: 2025/1/23 下午 08:33
 ---
 
+---@class abstractVec3
+---@field x number
+---@field y number
+---@field z number
+local abstractVec3 = {}
+
 ---@field x number
 ---@field y number
 ---@field z number
 ---@class util.Vec3:abstractVec3
 local vec3 = {}
+core.setVec3Lib(vec3)
+
 local metatable = {__index = vec3 }
 
+---@field vec3 table
+---@return util.Vec3
+function vec3.of(_vec3)
+    local v = {
+        x = _vec3.x or 0,
+        y = _vec3.y or 0,
+        z = _vec3.z or 0
+    }
+    setmetatable(v, metatable)
+    return v
+end
+
+---@param x number
+---@param y number
+---@param z number
 ---@return util.Vec3
 function vec3.new(x, y, z)
     local v = {
@@ -22,7 +45,7 @@ function vec3.new(x, y, z)
     return v
 end
 
-util.vec3 = vec3.new
+util.vec3 = vec3
 
 ---@param _vec3 util.Vec3
 ---@return util.Vec3

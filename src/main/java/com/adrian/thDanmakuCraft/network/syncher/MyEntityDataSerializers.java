@@ -1,8 +1,8 @@
 package com.adrian.thDanmakuCraft.network.syncher;
 
-import com.adrian.thDanmakuCraft.world.danmaku.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
-import com.adrian.thDanmakuCraft.world.danmaku.THObjectType;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;

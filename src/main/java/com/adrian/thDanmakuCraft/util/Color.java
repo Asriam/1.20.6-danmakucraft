@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.util;
 
-import com.adrian.thDanmakuCraft.world.danmaku.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import net.minecraft.util.Mth;
 
 public class Color {

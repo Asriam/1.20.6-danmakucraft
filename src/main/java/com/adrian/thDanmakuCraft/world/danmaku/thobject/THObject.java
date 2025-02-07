@@ -1,14 +1,13 @@
-package com.adrian.thDanmakuCraft.world.danmaku;
+package com.adrian.thDanmakuCraft.world.danmaku.thobject;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
-import com.adrian.thDanmakuCraft.script.IScript;
-import com.adrian.thDanmakuCraft.script.ScriptManager;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.util.CollisionHelper;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.IImage;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
+import com.adrian.thDanmakuCraft.world.danmaku.*;
 import com.google.common.collect.Maps;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -20,6 +19,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
 import org.joml.Vector3f;
 import org.luaj.vm2.LuaValue;
@@ -31,8 +31,9 @@ import java.util.Map;
 import java.util.UUID;
 
 import static com.adrian.thDanmakuCraft.world.LuaValueHelper.*;
+import static com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject.api.*;
 
-public class THObject implements IScript, ILuaValue {
+public class THObject implements ILuaValue {
     //private static final Logger log = LoggerFactory.getLogger(THObject.class);
     private final THObjectType<? extends THObject> type;
     private final AdditionalParameterManager parameterManager;
@@ -513,7 +514,7 @@ public class THObject implements IScript, ILuaValue {
             event = luaClass.get(eventName);
             scriptEventCache.put(eventName, event);
         }
-        //LuaValue event = this.luaClass.get(eventName);
+
         if (!event.isnil() && event.isfunction()) {
             try {
                 event.checkfunction().invoke(args);
@@ -581,6 +582,7 @@ public class THObject implements IScript, ILuaValue {
             return;
         }
 
+        /*
         entitiesInBound.forEach(entity -> {
             if (!this.canHitUser && entity.equals(this.getContainer().getUser())) {
                 return;
@@ -595,7 +597,22 @@ public class THObject implements IScript, ILuaValue {
                 var result = new EntityHitResult(entity, this.getPosition());
                 this.onHit(result);
             }
-        });
+        });*/
+
+        for (Entity entity : entitiesInBound) {
+            if (!this.canHitUser && entity.equals(this.getContainer().getUser())) {
+                continue;
+            }
+
+            if (this.collisionType == CollisionType.AABB) {
+                AABB aabb = this.getBoundingBox();
+                if (entity.getBoundingBox().intersects(aabb)) {
+                    onHit(new EntityHitResult(entity, this.getPosition()));
+                }
+            } else if (this.collisionType.collisionEntity(this, entity)) {
+                onHit(new EntityHitResult(entity, this.getPosition()));
+            }
+        }
 
         if (this.shouldCollingWithBlock) {
             if (this.collisionType == CollisionType.AABB) {
@@ -620,7 +637,8 @@ public class THObject implements IScript, ILuaValue {
                     for (double y = box.minY; y <= box.maxY; y += 1) {
                         for (double x = box.minX; x <= box.maxX; x += 1) {
                             BlockPos pos = new BlockPos(Mth.floor(x), Mth.floor(y), Mth.floor(z));
-                            if (!this.level().getBlockState(pos).isAir()) {
+                            BlockState blockState = this.level().getBlockState(pos);
+                            if (!blockState.isAir() && blockState.isCollisionShapeFullBlock(this.level(), pos)) {
                                 if (this.collisionType.collisionBlock(this, pos)) {
                                     BlockHitResult result = new BlockHitResult(
                                             new Vec3(box.maxX, box.maxY, box.maxZ),
@@ -921,13 +939,6 @@ public class THObject implements IScript, ILuaValue {
         return object != null;
     }
 
-    @Override
-    @Deprecated
-    public ScriptManager getScriptManager() {
-        //return this.scriptManager;
-        return null;
-    }
-
     public static Color Color(int r, int g, int b, int a) {
         return new Color(r, g, b, a);
     }
@@ -1065,309 +1076,310 @@ public class THObject implements IScript, ILuaValue {
             return object;
         }
 
-        return null;
+        throw new NullPointerException();
     }
 
-    private static final LibFunction setPosition = new VarArgFunction() {
-        @Override
-        public Varargs invoke(Varargs varargs) {
-            checkTHObject(varargs.arg(1)).setPosition(LuaValueToVec3(varargs.arg(2)));
-            return null;
-        }
-    };
-
-    private static final LibFunction initPosition = new VarArgFunction() {
-        @Override
-        public Varargs invoke(Varargs varargs) {
-            checkTHObject(varargs.arg(1)).initPosition(LuaValueToVec3(varargs.arg(2)));
-            return null;
-        }
-    };
-
-    private static final LibFunction setLifetime = new TwoArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
-            checkTHObject(luaValue0).setLifetime(luaValue.checkint());
-            return LuaValue.NIL;
-        }
-    };
-
-    private static final LibFunction setScale = new VarArgFunction() {
-        @Override
-        public Varargs invoke(Varargs varargs) {
-            checkTHObject(varargs.arg(1)).setScale(LuaValueToVec3(varargs.arg(2)));
-            return LuaValue.NIL;
-        }
-    };
-
-    private static final LibFunction setSize = new VarArgFunction() {
-        @Override
-        public Varargs invoke(Varargs varargs) {
-            checkTHObject(varargs.arg(1)).setSize(LuaValueToVec3(varargs.arg(2)));
-            return LuaValue.NIL;
-        }
-    };
-
-    private static final LibFunction setVelocity = new VarArgFunction() {
-        @Override
-        public Varargs invoke(Varargs varargs) {
-            LuaValue velocity = varargs.arg(2);
-            boolean shouldSetRotation = varargs.arg(3).checkboolean();
-            checkTHObject(varargs.arg(1)).setVelocity(LuaValueToVec3(velocity), shouldSetRotation);
-            return LuaValue.NIL;
-        }
-    };
-
-    private static final LibFunction setVelocityFromDirection = new VarArgFunction() {
-        @Override
-        public Varargs invoke(Varargs varargs) {
-            double speed = varargs.arg(2).checkdouble();
-            LuaValue direction = varargs.arg(3);
-            boolean shouldSetRotation = varargs.arg(4).checkboolean();
-            checkTHObject(varargs.arg(1)).setVelocityFromDirection(speed, LuaValueToVec3(direction), shouldSetRotation);
-            return LuaValue.NIL;
-        }
-    };
-
-    private static final LibFunction setVelocityFromRotation = new VarArgFunction() {
-        @Override
-        public Varargs invoke(Varargs varargs) {
-            double speed = varargs.arg(2).checkdouble();
-            LuaValue rotation = varargs.arg(3);
-            boolean isDeg = varargs.arg(4).checkboolean();
-            boolean shouldSetRotation = varargs.arg(5).checkboolean();
-            checkTHObject(varargs.arg(1)).setVelocityFromRotation(speed, LuaValueToVec2(rotation), isDeg, shouldSetRotation);
-            return LuaValue.NIL;
-        }
-    };
-
-    private static final LibFunction getParameterManager = new OneArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0) {
-            return checkTHObject(luaValue0).getParameterManager().ofLuaValue();
-        }
-    };
-
-    private static final LibFunction setAcceleration = new VarArgFunction() {
-        @Override
-        public Varargs invoke(Varargs varargs) {
-            LuaValue acc = varargs.arg(2);
-            checkTHObject(varargs.arg(1)).setAcceleration(LuaValueToVec3(acc));
-            return LuaValue.NIL;
-        }
-    };
-    private static final LibFunction setAccelerationFromDirection = new VarArgFunction() {
-        @Override
-        public Varargs invoke(Varargs varargs) {
-            double acc = varargs.arg(2).checkdouble();
-            LuaValue direction = varargs.arg(3);
-            checkTHObject(varargs.arg(1)).setAccelerationFromDirection(acc, LuaValueToVec3(direction));
-            return LuaValue.NIL;
-        }
-    };
-
-    private static final LibFunction setAccelerationFromRotation = new VarArgFunction() {
-        @Override
-        public Varargs invoke(Varargs varargs) {
-            double acc = varargs.arg(2).checkdouble();
-            LuaValue rotation = varargs.arg(3);
-            boolean isDeg = varargs.arg(4).checkboolean();
-            checkTHObject(varargs.arg(1)).setAccelerationFromRotation(acc, LuaValueToVec2(rotation), isDeg);
-            return LuaValue.NIL;
-        }
-    };
-
-    private static final LibFunction setRotation = new VarArgFunction() {
-        @Override
-        public Varargs invoke(Varargs varargs) {
-            checkTHObject(varargs.arg(1)).setRotation(
-                    varargs.arg(2).tofloat(),
-                    varargs.arg(3).tofloat(),
-                    varargs.arg(4).tofloat()
-            );
-            return LuaValue.NIL;
-        }
-    };
-
-    private static final LibFunction setRotationByDirectionalVector = new TwoArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
-            checkTHObject(luaValue0).setRotationByDirectionalVector(LuaValueToVec3(luaValue));
-            return LuaValue.NIL;
-        }
-    };
-    private static final LibFunction setColor = new VarArgFunction() {
-        @Override
-        public Varargs invoke(Varargs varargs) {
-            checkTHObject(varargs.arg(1)).setColor(
-                    varargs.arg(2).checkint(),
-                    varargs.arg(3).checkint(),
-                    varargs.arg(4).checkint(),
-                    varargs.arg(5).checkint()
-            );
-            return LuaValue.NIL;
-        }
-    };
-    private static final LibFunction setBlend = new VarArgFunction() {
-        @Override
-        public Varargs invoke(Varargs varargs) {
-            checkTHObject(varargs.arg(1)).setBlend(varargs.arg(2).checkjstring());
-            return LuaValue.NIL;
-        }
-    };
-    private static final LibFunction setCollisionType = new VarArgFunction() {
-        @Override
-        public Varargs invoke(Varargs varargs) {
-            checkTHObject(varargs.arg(1)).setCollisionType(varargs.arg(2).checkjstring());
-            return LuaValue.NIL;
-        }
-    };
-    private static final LibFunction getTimer = new OneArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0) {
-            return LuaValue.valueOf(checkTHObject(luaValue0).getTimer());
-        }
-    };
-    private static final LibFunction getContainer = new OneArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0) {
-            return checkTHObject(luaValue0).getContainer().ofLuaValue();
-        }
-    };
-    private static final LibFunction getPosition = new OneArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0) {
-            THObject object = checkTHObject(luaValue0);
-            //return Vec3ToLuaValue(checkTHObject(luaValue0).getPosition());
-            return Vec3ToLuaValue(object.positionX, object.positionY, object.positionZ);
-        }
-    };
-    private static final LibFunction getPrePosition = new OneArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0) {
-            return Vec3ToLuaValue(checkTHObject(luaValue0).getPrePosition());
-        }
-    };
-    private static final LibFunction getSpeed = new OneArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0) {
-            return LuaValue.valueOf(checkTHObject(luaValue0).getSpeed());
-        }
-    };
-    private static final LibFunction getVelocity = new OneArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0) {
-            return Vec3ToLuaValue(checkTHObject(luaValue0).getVelocity());
-        }
-    };
-    private static final LibFunction getMotionDirection = new OneArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0) {
-            return Vec3ToLuaValue(checkTHObject(luaValue0).getMotionDirection());
-        }
-    };
-    private static final LibFunction getRotation = new OneArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0) {
-            THObject object = checkTHObject(luaValue0);
-            return Vector3fToLuaValue(object.xRot, object.yRot, object.zRot);
-            //return Vector3fToLuaValue(checkTHObject(luaValue0).getRotation());
-        }
-    };
-    private static final LibFunction getXRot = new OneArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0) {
-            return LuaValue.valueOf(checkTHObject(luaValue0).getXRot());
-        }
-    };
-    private static final LibFunction getYRot = new OneArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0) {
-            return LuaValue.valueOf(checkTHObject(luaValue0).getYRot());
-        }
-    };
-    private static final LibFunction getZRot = new OneArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0) {
-            return LuaValue.valueOf(checkTHObject(luaValue0).getZRot());
-        }
-    };
-    private static final LibFunction getAcceleration = new OneArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0) {
-            return Vec3ToLuaValue(checkTHObject(luaValue0).getAcceleration());
-        }
-    };
-    private static final LibFunction getScale = new OneArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0) {
-            return Vector3fToLuaValue(checkTHObject(luaValue0).getScale());
-        }
-    };
-    private static final LibFunction getSize = new OneArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0) {
-            return Vec3ToLuaValue(checkTHObject(luaValue0).getSize());
-        }
-    };
-    private static final LibFunction move = new VarArgFunction() {
-        @Override
-        public Varargs invoke(Varargs varargs) {
-            LuaValue arg1 = varargs.arg(2);
-            THObject object = checkTHObject(varargs.arg(1));
-            if (arg1.isuserdata() || arg1.istable()) {
-                object.move(LuaValueToVec3(arg1));
-            } else {
-                object.move(new Vec3(
-                        arg1.checkdouble(),
-                        varargs.arg(3).checkdouble(),
-                        varargs.arg(4).checkdouble()
-                ));
+    public static class api {
+        protected static final LibFunction setPosition = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                checkTHObject(varargs.arg(1)).setPosition(LuaValueToVec3(varargs.arg(2)));
+                return LuaValue.NIL;
             }
-            return LuaValue.NIL;
-        }
-    };
-    private static final LibFunction setDead = new OneArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0) {
-            checkTHObject(luaValue0).setDead();
-            return LuaValue.NIL;
-        }
-    };
-    private static final LibFunction setShouldSetDeadWhenCollision = new TwoArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
-            checkTHObject(luaValue0).setShouldSetDeadWhenCollision(luaValue.checkboolean());
-            return LuaValue.NIL;
-        }
-    };
-    private static final LibFunction remove = new OneArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0) {
-            checkTHObject(luaValue0).remove();
-            return LuaValue.NIL;
-        }
-    };
-    private static final LibFunction spawn = new OneArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0) {
-            checkTHObject(luaValue0).spawn();
-            return LuaValue.NIL;
-        }
-    };
-    private static final LibFunction getIsSpawned = new OneArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0) {
-            return LuaValue.valueOf(checkTHObject(luaValue0).isSpawned());
-        }
-    };
-    private static final LibFunction setNavi = new TwoArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
-            checkTHObject(luaValue0).setNavi(luaValue.checkboolean());
-            return LuaValue.NIL;
-        }
-    };
+        };
+
+        protected static final LibFunction initPosition = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                checkTHObject(varargs.arg(1)).initPosition(LuaValueToVec3(varargs.arg(2)));
+                return LuaValue.NIL;
+            }
+        };
+
+        protected static final LibFunction setLifetime = new TwoArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
+                checkTHObject(luaValue0).setLifetime(luaValue.checkint());
+                return LuaValue.NIL;
+            }
+        };
+
+        protected static final LibFunction setScale = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                checkTHObject(varargs.arg(1)).setScale(LuaValueToVec3(varargs.arg(2)));
+                return LuaValue.NIL;
+            }
+        };
+
+        protected static final LibFunction setSize = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                checkTHObject(varargs.arg(1)).setSize(LuaValueToVec3(varargs.arg(2)));
+                return LuaValue.NIL;
+            }
+        };
+
+        protected static final LibFunction setVelocity = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                LuaValue velocity = varargs.arg(2);
+                boolean shouldSetRotation = varargs.arg(3).checkboolean();
+                checkTHObject(varargs.arg(1)).setVelocity(LuaValueToVec3(velocity), shouldSetRotation);
+                return LuaValue.NIL;
+            }
+        };
+
+        protected static final LibFunction setVelocityFromDirection = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                double speed = varargs.arg(2).checkdouble();
+                LuaValue direction = varargs.arg(3);
+                boolean shouldSetRotation = varargs.arg(4).checkboolean();
+                checkTHObject(varargs.arg(1)).setVelocityFromDirection(speed, LuaValueToVec3(direction), shouldSetRotation);
+                return LuaValue.NIL;
+            }
+        };
+
+        protected static final LibFunction setVelocityFromRotation = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                double speed = varargs.arg(2).checkdouble();
+                LuaValue rotation = varargs.arg(3);
+                boolean isDeg = varargs.arg(4).checkboolean();
+                boolean shouldSetRotation = varargs.arg(5).checkboolean();
+                checkTHObject(varargs.arg(1)).setVelocityFromRotation(speed, LuaValueToVec2(rotation), isDeg, shouldSetRotation);
+                return LuaValue.NIL;
+            }
+        };
+
+        protected static final LibFunction getParameterManager = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                return checkTHObject(luaValue0).getParameterManager().ofLuaValue();
+            }
+        };
+
+        protected static final LibFunction setAcceleration = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                LuaValue acc = varargs.arg(2);
+                checkTHObject(varargs.arg(1)).setAcceleration(LuaValueToVec3(acc));
+                return LuaValue.NIL;
+            }
+        };
+        protected static final LibFunction setAccelerationFromDirection = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                double acc = varargs.arg(2).checkdouble();
+                LuaValue direction = varargs.arg(3);
+                checkTHObject(varargs.arg(1)).setAccelerationFromDirection(acc, LuaValueToVec3(direction));
+                return LuaValue.NIL;
+            }
+        };
+
+        protected static final LibFunction setAccelerationFromRotation = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                double acc = varargs.arg(2).checkdouble();
+                LuaValue rotation = varargs.arg(3);
+                boolean isDeg = varargs.arg(4).checkboolean();
+                checkTHObject(varargs.arg(1)).setAccelerationFromRotation(acc, LuaValueToVec2(rotation), isDeg);
+                return LuaValue.NIL;
+            }
+        };
+
+        protected static final LibFunction setRotation = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                checkTHObject(varargs.arg(1)).setRotation(
+                        varargs.arg(2).tofloat(),
+                        varargs.arg(3).tofloat(),
+                        varargs.arg(4).tofloat()
+                );
+                return LuaValue.NIL;
+            }
+        };
+
+        protected static final LibFunction setRotationByDirectionalVector = new TwoArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
+                checkTHObject(luaValue0).setRotationByDirectionalVector(LuaValueToVec3(luaValue));
+                return LuaValue.NIL;
+            }
+        };
+        protected static final LibFunction setColor = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                checkTHObject(varargs.arg(1)).setColor(
+                        varargs.arg(2).checkint(),
+                        varargs.arg(3).checkint(),
+                        varargs.arg(4).checkint(),
+                        varargs.arg(5).checkint()
+                );
+                return LuaValue.NIL;
+            }
+        };
+        protected static final LibFunction setBlend = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                checkTHObject(varargs.arg(1)).setBlend(varargs.arg(2).checkjstring());
+                return LuaValue.NIL;
+            }
+        };
+        protected static final LibFunction setCollisionType = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                checkTHObject(varargs.arg(1)).setCollisionType(varargs.arg(2).checkjstring());
+                return LuaValue.NIL;
+            }
+        };
+        protected static final LibFunction getTimer = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                return LuaValue.valueOf(checkTHObject(luaValue0).getTimer());
+            }
+        };
+        protected static final LibFunction getContainer = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                return checkTHObject(luaValue0).getContainer().ofLuaValue();
+            }
+        };
+        protected static final LibFunction getPosition = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                THObject object = checkTHObject(luaValue0);
+                return Vec3ToLuaValue(object.positionX, object.positionY, object.positionZ);
+            }
+        };
+        protected static final LibFunction getPrePosition = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                return Vec3ToLuaValue(checkTHObject(luaValue0).getPrePosition());
+            }
+        };
+        protected static final LibFunction getSpeed = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                return LuaValue.valueOf(checkTHObject(luaValue0).getSpeed());
+            }
+        };
+        protected static final LibFunction getVelocity = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                return Vec3ToLuaValue(checkTHObject(luaValue0).getVelocity());
+            }
+        };
+        protected static final LibFunction getMotionDirection = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                return Vec3ToLuaValue(checkTHObject(luaValue0).getMotionDirection());
+            }
+        };
+        protected static final LibFunction getRotation = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                THObject object = checkTHObject(luaValue0);
+                return Vector3fToLuaValue(object.xRot, object.yRot, object.zRot);
+                //return Vector3fToLuaValue(checkTHObject(luaValue0).getRotation());
+            }
+        };
+        protected static final LibFunction getXRot = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                return LuaValue.valueOf(checkTHObject(luaValue0).getXRot());
+            }
+        };
+        protected static final LibFunction getYRot = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                return LuaValue.valueOf(checkTHObject(luaValue0).getYRot());
+            }
+        };
+        protected static final LibFunction getZRot = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                return LuaValue.valueOf(checkTHObject(luaValue0).getZRot());
+            }
+        };
+        protected static final LibFunction getAcceleration = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                return Vec3ToLuaValue(checkTHObject(luaValue0).getAcceleration());
+            }
+        };
+        protected static final LibFunction getScale = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                return Vector3fToLuaValue(checkTHObject(luaValue0).getScale());
+            }
+        };
+        protected static final LibFunction getSize = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                return Vec3ToLuaValue(checkTHObject(luaValue0).getSize());
+            }
+        };
+        protected static final LibFunction move = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                LuaValue arg1 = varargs.arg(2);
+                THObject object = checkTHObject(varargs.arg(1));
+                if (arg1.isuserdata() || arg1.istable()) {
+                    object.move(LuaValueToVec3(arg1));
+                } else {
+                    object.move(new Vec3(
+                            arg1.checkdouble(),
+                            varargs.arg(3).checkdouble(),
+                            varargs.arg(4).checkdouble()
+                    ));
+                }
+                return LuaValue.NIL;
+            }
+        };
+        protected static final LibFunction setDead = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                checkTHObject(luaValue0).setDead();
+                return LuaValue.NIL;
+            }
+        };
+        protected static final LibFunction setShouldSetDeadWhenCollision = new TwoArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
+                checkTHObject(luaValue0).setShouldSetDeadWhenCollision(luaValue.checkboolean());
+                return LuaValue.NIL;
+            }
+        };
+        protected static final LibFunction remove = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                checkTHObject(luaValue0).remove();
+                return LuaValue.NIL;
+            }
+        };
+        protected static final LibFunction spawn = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                checkTHObject(luaValue0).spawn();
+                return LuaValue.NIL;
+            }
+        };
+        protected static final LibFunction getIsSpawned = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                return LuaValue.valueOf(checkTHObject(luaValue0).isSpawned());
+            }
+        };
+        protected static final LibFunction setNavi = new TwoArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
+                checkTHObject(luaValue0).setNavi(luaValue.checkboolean());
+                return LuaValue.NIL;
+            }
+        };
+    }
 
     public void initLuaValue() {
         this.luaValueForm = this.ofLuaClass();
@@ -1394,15 +1406,14 @@ public class THObject implements IScript, ILuaValue {
 
     public static final LuaValue meta = LuaValue.tableOf();
     static {
-        LuaValue luaClassFunctions = luaClassFunctions();
-        meta.set("__index", luaClassFunctions);
+        meta.set("__index", functions());
     }
 
     public LuaValue getMeta(){
         return meta;
     }
 
-    public static LuaValue luaClassFunctions(){
+    public static LuaValue functions(){
         LuaValue library = LuaValue.tableOf();
         library.set("initPosition", initPosition);
         library.set("setPosition", setPosition);

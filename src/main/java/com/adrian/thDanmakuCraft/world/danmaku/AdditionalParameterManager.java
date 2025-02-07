@@ -2,9 +2,10 @@ package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.world.IDataStorage;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
-import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
-import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
-import com.adrian.thDanmakuCraft.world.danmaku.laser.THLaser;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet.THBullet;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THCurvedLaser;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THLaser;
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -547,7 +548,7 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
 
     private static final LuaValue meta = LuaValue.tableOf();
     static {
-        meta.set("__index", luaClassFunctions());
+        meta.set("__index", functions());
     }
 
     @Override
@@ -555,7 +556,7 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
         return meta;
     }
 
-    public static LuaValue luaClassFunctions(){
+    public static LuaValue functions(){
         LuaValue library = LuaValue.tableOf();
         library.set("define", register);
         library.set("set", setValue);

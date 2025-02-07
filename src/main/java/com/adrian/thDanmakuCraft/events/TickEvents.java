@@ -1,11 +1,9 @@
 package com.adrian.thDanmakuCraft.events;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
-import com.adrian.thDanmakuCraft.lua.LuaCore;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.luaj.vm2.LuaThread;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +40,7 @@ public class TickEvents {
     public static void serverTick(TickEvent.ServerTickEvent event){
     }
 
-    public static void registryTickTask(String name,TickEvent.Type type, Task task){
+    public static void addTickTask(String name, TickEvent.Type type, Task task){
         if (tasks.get(name) == null) {
             tasks.put(name, new TickTask(type,task));
         }else {

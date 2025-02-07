@@ -1,7 +1,7 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
 import com.adrian.thDanmakuCraft.util.Color;
-import com.adrian.thDanmakuCraft.world.danmaku.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -156,37 +156,42 @@ public class RenderUtil {
             deColor.a = (startColor.a - endColor.a)/ edge3;
         }
 
-        float currentX1 = -100.0f;
-        float currentZ1 = -100.0f;
+        //float currentX1 = -100.0f;
+        //float currentZ1 = -100.0f;
         for (int j = 0; j < edgeB; j++) {
+            /*
             if (currentX1 <= -100.0f) {
                 currentX1 = Mth.cos((angle2 * j));
                 currentZ1 = Mth.sin((angle2 * j));
             }
             float x1 = currentX1;
-            float z1 = currentZ1;
+            float z1 = currentZ1;*/
+
+            float x1 = Mth.cos((angle2 * j));
+            float z1 = Mth.sin((angle2 * j));
 
             float x2 = Mth.cos((angle2 * (j + 1)));
             float z2 = Mth.sin((angle2 * (j + 1)));
 
-            currentX1 = x2;
-            currentZ1 = z2;
+            //currentX1 = x2;
+            //currentZ1 = z2;
 
             startColor = color;
-            float currentSin01 = -100.0f;
-            float currentCos1  = -100.0f;
+            //float currentSin01 = -100.0f;
+            //float currentCos1  = -100.0f;
             for (int i = 0; i < edgeADiv2; i++) {
+                /*
                 if (currentSin01 <= -100.0f) {
                     currentSin01 = Mth.sin(i*angle1);
                     currentCos1  = Mth.cos(i*angle1);
-                }
-                float sin01 = currentSin01;
-                float cos1 = currentCos1;
+                }*/
+                float sin01 = Mth.sin(i*angle1);
+                float cos1 = Mth.cos(i*angle1);
                 float sin02 = Mth.sin((i+1)*angle1);
                 float cos2 = Mth.cos((i+1)*angle1);
 
-                currentSin01 = sin02;
-                currentCos1  = cos2;
+                //currentSin01 = sin02;
+                //currentCos1  = cos2;
 
                 float sin1,sin2;
                 if (pow == 1.0f){

@@ -1,12 +1,12 @@
 package com.adrian.thDanmakuCraft.init;
 
 import com.adrian.thDanmakuCraft.registries.THDanmakuCraftRegistries;
-import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
-import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet.THBullet;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THCurvedLaser;
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
-import com.adrian.thDanmakuCraft.world.danmaku.THObject;
-import com.adrian.thDanmakuCraft.world.danmaku.THObjectType;
-import com.adrian.thDanmakuCraft.world.danmaku.laser.THLaser;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THLaser;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 

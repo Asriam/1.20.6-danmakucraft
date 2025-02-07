@@ -3,7 +3,7 @@ local num = 3
 ---@type Class|THBullet
 local testBullet = core.defineClass()
 function testBullet:onInit(i)
-    self:setVelocity(util.vec3(0.2,0.0,0.0):yRot(math.pi*2/32*i),true)
+    self:setVelocity(util.vec3.new(0.2,0.0,0.0):yRot(math.pi*2/32*i),true)
     self:setNavi(true)
 end
 
@@ -31,6 +31,7 @@ function testLaser:onInit(i)
 end
 
 function testLaser:onAddTasks()
+    --[[
     self.taskManager:addTask({co = coroutine.create(function(target)
         for i = 1, 100 do
             --print("sad"..i)
@@ -38,7 +39,7 @@ function testLaser:onAddTasks()
             --task.wait()
             coroutine.yield()
         end
-    end)})
+    end)})]]
 end
 
 function testLaser:onTick()
@@ -57,12 +58,12 @@ function testLaser:onTick()
 end
 
 function testLaser:onRemove()
-    self.taskManager:clear()
+    --self.taskManager:clear()
 end
 
 
 ---@type Class|THObjectContainer
-local container = core.defineClass("testContainer")
+local container = core.defineClass("testContainer2")
 function container:onInit()
     local userRot = self:getUser():getRotation().y
     self.params.userRot = userRot
@@ -83,13 +84,21 @@ function testBullet3:onInit()
     self:setLifetime(10000)
 end
 
---[[
 ---@type Class|THObjectContainer
-local container2 = core.registerClass("testContainer3")
+local container2 = core.defineClass("testContainer")
 function container2:onInit()
-    local bullet = self:createTHBullet(testBullet3, {i}, self:getPosition(),"arrow_big",1)
-    bullet:setStyle("ball_big")
+    local position = self:getPosition()
+    local sample = 10
+    for i = 1,sample do
+        for j = 1,sample/2 do
+            --self:newTHObject()
+            local bullet = self:createTHBullet(testBullet3, {i}, {x=0,y=0,z=0},"arrow_big",1)
+            bullet:setPosition(position:add(util.vec3.new(2.0,0.0,0.0):yRot(math.pi*2/sample*i):xRot(math.pi*2/sample*j)))
+            bullet:setStyle("ball_small")
+
+        end
+    end
 end
 
 function container2:onTick()
-end]]
+end

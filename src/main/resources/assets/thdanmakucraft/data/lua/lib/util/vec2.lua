@@ -4,10 +4,16 @@
 --- DateTime: 2025/1/23 下午 09:01
 ---
 
+---@class abstractVec2
+---@field x number
+---@field y number
+local abstractVec2 = {}
+
 ---@field x number
 ---@field y number
 ---@class util.Vec2:abstractVec2
 local vec2 = {}
+core.setVec2Lib(vec2)
 
 ---@return util.Vec2
 function vec2.new(x, y)
@@ -19,7 +25,7 @@ function vec2.new(x, y)
     return v
 end
 
-util.vec2 = vec2.new
+util.vec2 = vec2
 
 ---@param _vec2 util.Vec2
 ---@return util.Vec2

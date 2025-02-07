@@ -7,12 +7,12 @@ import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRendererProvide
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRenderers;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.bullet.THBulletRenderers;
 import com.adrian.thDanmakuCraft.util.Color;
-import com.adrian.thDanmakuCraft.world.danmaku.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
-import com.adrian.thDanmakuCraft.world.danmaku.THObjectType;
-import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
-import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
-import com.adrian.thDanmakuCraft.world.danmaku.laser.THLaser;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet.THBullet;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THCurvedLaser;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THLaser;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -54,7 +54,9 @@ public class THObjectContainerRenderer {
             THObjectContainerRenderer.TEST_RENDER_TARGET.setClearColor(0.0f,0.0f,0.0f,0.0f);
             THObjectContainerRenderer.TEST_RENDER_TARGET.clear(true);
         });
-        RenderEvents.registerRenderLevelStageTask("test_effect_applier", RenderLevelStageEvent.Stage.AFTER_WEATHER, THObjectContainerRenderer::applyEffect);
+        RenderEvents.registerRenderLevelStageTask("test_effect_applier",
+                RenderLevelStageEvent.Stage.AFTER_WEATHER,
+                THObjectContainerRenderer::applyEffect);
     }
     public static void render(EntityRenderDispatcher entityRenderDispatcher, Frustum frustum, THObjectContainer container, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int combinedOverlay){
         if (entityRenderDispatcher.shouldRenderHitBoxes()) {
@@ -162,8 +164,11 @@ public class THObjectContainerRenderer {
         RenderType renderType;
         if(object instanceof THBullet bullet) {
             if(bullet.getStyle().is3D()){
+                /*
                 boolean shouldCull = THBulletRenderers.getRenderer(bullet.getStyle()).shouldCull;
                 renderType = THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(object.getBlend()), shouldCull));
+                 */
+                renderType = THBulletRenderers.getRenderer(bullet.getStyle()).getRenderType(bullet);
             }else {
                 renderType = THRenderType.RENDER_TYPE_2D_DANMAKU.apply(new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(
                         bullet.getImage().getTextureLocation(),

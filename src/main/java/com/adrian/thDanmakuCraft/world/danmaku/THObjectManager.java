@@ -2,6 +2,8 @@ package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.util.MultiMap;
 import com.adrian.thDanmakuCraft.world.IDataStorage;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -88,8 +90,9 @@ public class THObjectManager implements IDataStorage {
         int index = 0;
         for (THObject object: this.getTHObjects()){
             if (object != null && !object.removeFlag){
-                if(object.container == null){
-                    object.container = this.container;
+                if(object.getContainer() == null){
+                    //object.container = this.container;
+                    object.setContainer(this.container);
                 }
                 object.index = index;
                 object.onTick();
@@ -103,6 +106,25 @@ public class THObjectManager implements IDataStorage {
             object.onRemove();
             this.removeTHObject(object);
         }
+
+        /*
+        for(int i=0;i<this.getTHObjects().size();i++){
+            THObject object = this.getTHObjects().get(i);
+            if (object != null && !object.removeFlag){
+                if(object.getContainer() == null){
+                    //object.container = this.container;
+                    object.setContainer(this.container);
+                }
+                object.index = i;
+                object.onTick();
+            }else {
+                if (object != null){
+                    object.onRemove();
+                }
+                this.removeTHObject(i);
+                i = i-1;
+            }
+        }*/
     }
 
     public CompoundTag save(CompoundTag compoundTag) {

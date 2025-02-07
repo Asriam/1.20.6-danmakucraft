@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
-import com.adrian.thDanmakuCraft.world.danmaku.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.mojang.blaze3d.shaders.BlendMode;
 
 import java.util.EnumMap;

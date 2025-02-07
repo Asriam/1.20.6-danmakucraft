@@ -1,10 +1,10 @@
-package com.adrian.thDanmakuCraft.world.danmaku.laser;
+package com.adrian.thDanmakuCraft.world.danmaku.thobject.laser;
 
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.world.danmaku.ITHObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
-import com.adrian.thDanmakuCraft.world.danmaku.THObject;
-import com.adrian.thDanmakuCraft.world.danmaku.THObjectType;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
 
 public class THLaser extends THObject {
 

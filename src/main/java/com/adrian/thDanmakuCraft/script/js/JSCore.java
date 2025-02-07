@@ -1,9 +1,9 @@
 package com.adrian.thDanmakuCraft.script.js;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
-import com.adrian.thDanmakuCraft.world.danmaku.bullet.THBullet;
-import com.adrian.thDanmakuCraft.world.danmaku.THObject;
-import com.adrian.thDanmakuCraft.world.danmaku.laser.THCurvedLaser;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet.THBullet;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THCurvedLaser;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
