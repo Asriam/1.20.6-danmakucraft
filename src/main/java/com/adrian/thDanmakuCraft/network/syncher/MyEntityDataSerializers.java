@@ -28,13 +28,13 @@ public class MyEntityDataSerializers {
         public void encode(@NotNull ByteBuf byteBuf, @NotNull THObject object) {
             FriendlyByteBuf friendlyByteBuf = (FriendlyByteBuf) byteBuf;
             friendlyByteBuf.writeResourceLocation(object.getType().getKey());
-            object.writeData(friendlyByteBuf);
+            object.encode(friendlyByteBuf);
         }
         public @NotNull THObject decode(@NotNull ByteBuf byteBuf) {
             FriendlyByteBuf friendlyByteBuf = (FriendlyByteBuf) byteBuf;
             ResourceLocation key = friendlyByteBuf.readResourceLocation();
             THObject object = THObjectType.getValue(key).create(null);
-            object.readData(friendlyByteBuf);
+            object.decode(friendlyByteBuf);
             return object;
         };
     });

@@ -22,8 +22,6 @@ public class THBulletRenderers {
     public static void render2DBullet(THBulletRenderer renderer, THBullet bullet, PoseStack poseStack, VertexConsumer vertexConsumer, float partialTicks, int combinedOverlay) {
         poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
         PoseStack.Pose posestack_pose = poseStack.last();
-        //VertexConsumer vertexConsumer = bufferSource.getBuffer(THRenderType.BLEND_NONE.apply(bullet.getTexture()));
-        //int index = bullet.getBulletColor().getIndex();
         IImage.Image image = bullet.getImage();
         RenderUtil.renderTexture(vertexConsumer, posestack_pose, combinedOverlay, Vec3.ZERO, Vec2.ONE,
                 image.getUVStart(),
@@ -32,7 +30,8 @@ public class THBulletRenderers {
     }
 
     public static void render3DBullet(THBulletRenderer renderer, THBullet bullet, PoseStack poseStack, VertexConsumer vertexConsumer, THBulletRendererFactory factory, float partialTicks, int combinedOverlay) {
-        Color indexColor = bullet.getBulletColor().getColor();
+        //Color indexColor = bullet.getBulletIndexColor().getColor();
+        Color indexColor = bullet.getBulletColor();
         Color color = THObject.Color(
                 bullet.color.r * indexColor.r / 255,
                 bullet.color.g * indexColor.g / 255,
@@ -51,6 +50,23 @@ public class THBulletRenderers {
 
         public RenderType getRenderType(THBullet bullet){
             return THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(bullet.getBlend()), this.shouldCull));
+        }
+
+        public static class bullet_2d extends BulletRenderer{
+            bullet_2d(){
+                this.shouldCull = true;
+            }
+            @Override
+            public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, int combinedOverlay, float partialTicks, Color color, Color coreColor) {
+                render2DBullet(renderer, bullet, poseStack, vertexconsumer, partialTicks, combinedOverlay);
+            }
+
+            public RenderType getRenderType(THBullet bullet){
+                return THRenderType.RENDER_TYPE_2D_DANMAKU.apply(new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(
+                        bullet.getImage().getTextureLocation(),
+                        THBlendMode.getBlendMode(bullet.getBlend()))
+                );
+            }
         }
 
         public static class arrow_big extends BulletRenderer {
@@ -215,36 +231,22 @@ public class THBulletRenderers {
     }
 
     private static final EnumMap<THBullet.DefaultBulletStyle, BulletRenderer> DefaultBulletRenderers = new EnumMap<>(THBullet.DefaultBulletStyle.class);
-
+    private static final BulletRenderer Bullet2DRenderer = new THBulletRenderers.BulletRenderer.bullet_2d();
     public static void register(THBullet.DefaultBulletStyle bulletStyle, BulletRenderer renderer) {
         DefaultBulletRenderers.put(bulletStyle, renderer);
     }
 
     public static BulletRenderer getRenderer(THBullet.DefaultBulletStyle bulletStyle) {
-        return DefaultBulletRenderers.get(bulletStyle);
+        if(bulletStyle.isDefaultBulletStyle()) {
+            if (DefaultBulletRenderers.containsKey(bulletStyle)) {
+                return DefaultBulletRenderers.get(bulletStyle);
+            }
+        }
+        return Bullet2DRenderer;
     }
 
-    public static void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, int p_254296_, float partialTicks, Color color, Color coreColor) {
-        poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
-        Vec3 scale = new Vec3(0.25f, 0.5f, 0.25f);
-        Vec3 coreScale = scale.multiply(0.6f, 0.6f, 0.6f);
-        PoseStack.Pose posestack_pose = poseStack.last();
-        int edgeA = 4;
-        int edgeB = 4;
-        RenderUtil.renderSphere(vertexconsumer, posestack_pose, 2,
-                Vec3.ZERO,
-                coreScale,
-                edgeA, edgeB, false,
-                new Vec2(0.5f, 0.0f),
-                Vec2.ONE,
-                coreColor, coreColor.multiply(0.5f), coreColor.multiply(0.5f));
-        RenderUtil.renderSphere(vertexconsumer, posestack_pose, 2,
-                Vec3.ZERO,
-                scale,
-                edgeA, edgeB, false,
-                new Vec2(0.5f, 0.1f),
-                Vec2.ONE,
-                color, color.multiply(0.5f), coreColor.multiply(0.4f));
+    public static BulletRenderer getBullet2DRenderer(){
+        return Bullet2DRenderer;
     }
 
     static {

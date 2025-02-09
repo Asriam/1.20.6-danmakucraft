@@ -25,7 +25,7 @@ public class THRenderType extends RenderType{
     }
 
     public static final Function<RENDER_TYPE_2D_DANMAKU_CONTEXT, RenderType> RENDER_TYPE_2D_DANMAKU = Util.memoize((context) ->
-            RenderType.create("blend_none", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, false, false,
+            RenderType.create("render_type_2d_danmaku", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, false, false,
             CompositeState.builder()
                     .setShaderState(RenderStateShard.POSITION_COLOR_TEX_SHADER)
                     .setTextureState(new TextureStateShard(context.textureLocation, true, true))

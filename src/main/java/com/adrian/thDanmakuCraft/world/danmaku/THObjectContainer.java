@@ -15,12 +15,10 @@ import com.google.common.collect.Maps;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
@@ -99,7 +97,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         if(this.objectManager.isEmpty() && !flag) {
             for (int j = 0; j< THBullet.DefaultBulletStyle.class.getEnumConstants().length; j++) {
                 for (int i = 0; i < 16; i++) {
-                    THObject a = (THObject) new THBullet(this, THBullet.DefaultBulletStyle.getStyleByIndex(j),THBullet.BULLET_COLOR.getColorByIndex(i + 1))
+                    THObject a = (THObject) new THBullet(this, THBullet.DefaultBulletStyle.getStyleByIndex(j), THBullet.BULLET_INDEX_COLOR.getColorByIndex(i + 1))
                             .initPosition(this.position().add(i*2, 0.0d, j*2))
                             .shoot(
                                     0.0f,
@@ -111,49 +109,6 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
                     //a.blend = THObject.BlendMode.add;
                 }
             }
-        }
-
-        if(flag) {
-            Vec3 pos = this.position();
-            Vec3 rotation = Vec3.directionFromRotation(0.0f,0.0f);
-            Vec2 rotate = new Vec2(Mth.DEG_TO_RAD*((float) Math.pow(this.timer*0.1f,2)+360.0f/5),-Mth.DEG_TO_RAD*((float) Math.pow(this.timer*0.08f,2)+360.0f/5));
-
-            Vec3 angle = rotation.xRot(Mth.DEG_TO_RAD*90.0f).normalize().xRot(rotate.x).yRot(rotate.y);
-            THBullet.DefaultBulletStyle style = THBullet.DefaultBulletStyle.grain_a;
-            THObject danmaku = new THBullet(this,style, THBullet.BULLET_COLOR.COLOR_PURPLE).initPosition(pos).shoot(
-                    0.2f,
-                    angle
-            );
-
-            danmaku.setAccelerationFromDirection(0.02f,angle);
-            danmaku.setLifetime(120);
-
-            //danmaku.getScriptManager().enableScript();
-
-            int way = 8;
-            for(int i=1;i<=3;i++){
-                Vec3 angle2 = rotation.xRot(Mth.DEG_TO_RAD*90.0f-Mth.DEG_TO_RAD*60.0f*i).yRot(Mth.DEG_TO_RAD*(180.0f/way)*i);
-                for(int j=0;j<way;j++) {
-                    Vec3 angle3 = angle2.yRot(-Mth.DEG_TO_RAD * (360.0f/way)*j).normalize().xRot(rotate.x).yRot(rotate.y);
-                    THObject danmaku2 = (THObject) new THBullet(this,style,
-                            THBullet.BULLET_COLOR.COLOR_PURPLE).initPosition(pos).shoot(
-                            0.2f,
-                            angle3
-                    );
-                    danmaku2.setAccelerationFromDirection(0.02f, angle3);
-                    danmaku2.setLifetime(120);
-                    //danmaku2.setBlend(THObject.Blend.class.getEnumConstants()[(int) ((THObject.Blend.class.getEnumConstants().length)*random.nextFloat())]);
-                }
-            }
-
-            Vec3 angle3 = rotation.xRot(Mth.DEG_TO_RAD*90.0f- Mth.DEG_TO_RAD * 180.0f).normalize().xRot(rotate.x).yRot(rotate.y);
-            THBullet danmaku3 = (THBullet) new THBullet(this,style,
-                    THBullet.BULLET_COLOR.COLOR_PURPLE).initPosition(pos).shoot(
-                    0.2f,
-                    angle3
-            );
-            danmaku3.setAccelerationFromDirection(0.02f, angle3);
-            danmaku3.setLifetime(120);
         }
     }
 
@@ -304,11 +259,11 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     }
 
     public THBullet createTHBullet(Vec3 pos, String style, int color) {
-        return new THBullet(this, THBullet.DefaultBulletStyle.valueOf(style),THBullet.BULLET_COLOR.getColorByIndex(color));
+        return new THBullet(this, THBullet.DefaultBulletStyle.valueOf(style), THBullet.BULLET_INDEX_COLOR.getColorByIndex(color));
     }
 
     public THCurvedLaser createTHCurvedLaser(Vec3 pos, int color, int length, float width) {
-        return new THCurvedLaser(this,THBullet.BULLET_COLOR.getColorByIndex(color),length,width);
+        return new THCurvedLaser(this, THBullet.BULLET_INDEX_COLOR.getColorByIndex(color),length,width);
     }
 
     public void spawnTHObject(THObject object){

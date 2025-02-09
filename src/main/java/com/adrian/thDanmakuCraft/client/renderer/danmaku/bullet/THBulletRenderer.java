@@ -3,6 +3,7 @@ package com.adrian.thDanmakuCraft.client.renderer.danmaku.bullet;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRendererProvider;
+import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -45,14 +46,16 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
                 poseStack.pushPose();
                 poseStack.mulPose(this.getRenderDispatcher().cameraOrientation());
                 poseStack.mulPose(Axis.XP.rotationDegrees(-90.0F));
+
+                Color bulletColor = bullet.getBulletColor();
                 RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 1,
                         Vec3.ZERO,
                         new Vec3(scale, scale, scale),
                         6, 10, true,
                         new Vec2(0.4f, 2.0f),
                         new Vec2(0.0f, 2.0f),
-                        bullet.getBulletColor().getColor(),
-                        bullet.getBulletColor().getColor(),
+                        bulletColor,
+                        bulletColor,
                         bullet.getColor());
                 poseStack.popPose();
             }else {

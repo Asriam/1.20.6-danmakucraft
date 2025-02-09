@@ -8,6 +8,9 @@
 local m = {}
 Mth = m
 
+Mth.DEG_TO_RAD = math.pi/180
+Mth.RAD_TO_DEG = 180/math.pi
+
 ---@param number number
 ---@return number
 function m.sin(number) end

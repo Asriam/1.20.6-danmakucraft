@@ -15,7 +15,7 @@ local abstractVec3 = {}
 ---@field z number
 ---@class util.Vec3:abstractVec3
 local vec3 = {}
-core.setVec3Lib(vec3)
+core.setupVec3Lib(vec3)
 
 local metatable = {__index = vec3 }
 
@@ -55,9 +55,9 @@ end
 
 ---@param _vec3 util.Vec3
 ---@return util.Vec3
-function vec3:normalize(_vec3)
+function vec3:normalize()
     local length = self:length()
-    return vec3.new(_vec3.x / length, _vec3.y / length, _vec3.z / length)
+    return vec3.new(self.x / length, self.y / length, self.z / length)
 end
 
 ---@param _vec3 util.Vec3

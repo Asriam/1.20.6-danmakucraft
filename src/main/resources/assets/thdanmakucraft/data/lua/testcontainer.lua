@@ -87,6 +87,7 @@ end
 ---@type Class|THObjectContainer
 local container2 = core.defineClass("testContainer")
 function container2:onInit()
+    --[[
     local position = self:getPosition()
     local sample = 10
     for i = 1,sample do
@@ -97,8 +98,37 @@ function container2:onInit()
             bullet:setStyle("ball_small")
 
         end
-    end
+    end]]
 end
 
 function container2:onTick()
+    local timer = self:getTimer()
+
+    local bbb = function(_pos,_angle)
+        local bullet2 = self:createTHBullet(nil, {i}, _pos,"arrow_big",6)
+        bullet2:setVelocity(_angle:scale(0.2),true)
+        bullet2:setAccelerationFromDirection(0.02,_angle)
+        bullet2:setLifetime(120)
+    end
+
+    if timer < 300 then
+        local pos = self:getPosition()
+        local rotation = util.vec3.new(0.0,0.0,1.0)
+        local way = 6
+        local rotate = util.vec2.new(
+                Mth.DEG_TO_RAD*(math.pow(timer*0.1,2)+360/way),
+                -Mth.DEG_TO_RAD*(math.pow(timer*0.08,2)+360/way))
+
+        local angle = rotation:xRot(Mth.DEG_TO_RAD*90):xRot(rotate.x):yRot(rotate.y)
+        bbb(pos,angle)
+        for i=1,(1+3) do
+            local angle2 = rotation:xRot(Mth.DEG_TO_RAD*90-Mth.DEG_TO_RAD*60*i):yRot(Mth.DEG_TO_RAD*(180/way)*i)
+            for j=0,way do
+                local angle3 = angle2:yRot(-Mth.DEG_TO_RAD*(360/way)*j):normalize():xRot(rotate.x):yRot(rotate.y)
+                bbb(pos,angle3)
+            end
+        end
+        local angle3 = rotation:xRot(Mth.DEG_TO_RAD*90-Mth.DEG_TO_RAD*180):xRot(rotate.x):yRot(rotate.y)
+        bbb(pos,angle3)
+    end
 end

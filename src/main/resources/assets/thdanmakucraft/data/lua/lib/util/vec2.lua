@@ -13,7 +13,7 @@ local abstractVec2 = {}
 ---@field y number
 ---@class util.Vec2:abstractVec2
 local vec2 = {}
-core.setVec2Lib(vec2)
+core.setupVec2Lib(vec2)
 
 ---@return util.Vec2
 function vec2.new(x, y)

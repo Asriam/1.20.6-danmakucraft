@@ -142,7 +142,7 @@ public class THObjectManager implements IDataStorage {
         for (THObject object : this.getTHObjects()) {
             //buffer.writeRegistryId(THDanmakuCraftRegistries.THOBJECT_TYPE,object.getType());
             buffer.writeResourceLocation(object.getType().getKey());
-            object.writeData(buffer);
+            object.encode(buffer);
         }
     }
 
@@ -153,7 +153,7 @@ public class THObjectManager implements IDataStorage {
             //THObject object = buffer.readRegistryIdSafe(THObjectType.class).create(this.container);
             THObject object = THObjectType.getValue(buffer.readResourceLocation()).create(this.container);
             if(object != null) {
-                object.readData(buffer);
+                object.decode(buffer);
                 objects.add(object);
             }
         }

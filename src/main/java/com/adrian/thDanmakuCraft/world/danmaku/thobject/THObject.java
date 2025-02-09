@@ -725,7 +725,7 @@ public class THObject implements ILuaValue {
         return this.luaClassKey;
     }
 
-    public void writeData(FriendlyByteBuf buffer) {
+    public void encode(FriendlyByteBuf buffer) {
         buffer.writeUUID(this.uuid);
         buffer.writeDouble(this.positionX);
         buffer.writeDouble(this.positionY);
@@ -764,7 +764,7 @@ public class THObject implements ILuaValue {
         }
     }
 
-    public void readData(FriendlyByteBuf buffer) {
+    public void decode(FriendlyByteBuf buffer) {
         this.uuid = buffer.readUUID();
         this.positionX = buffer.readDouble();
         this.positionY = buffer.readDouble();

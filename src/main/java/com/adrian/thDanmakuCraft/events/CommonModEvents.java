@@ -3,9 +3,11 @@ package com.adrian.thDanmakuCraft.events;
 import com.adrian.thDanmakuCraft.network.PacketHandler;
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.registries.THDanmakuCraftRegistries;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.client.event.CustomizeGuiOverlayEvent;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.event.entity.SpawnPlacementRegisterEvent;
 import net.minecraftforge.event.level.LevelEvent;
@@ -41,4 +43,5 @@ public class CommonModEvents {
     public static void commonSetup(FMLCommonSetupEvent event){
         event.enqueueWork(PacketHandler::register);
     }
+
 }

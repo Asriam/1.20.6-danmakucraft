@@ -23,7 +23,7 @@ import java.util.function.Predicate;
 
 public class THCurvedLaser extends THObject {
 
-    public THBullet.BULLET_COLOR laserColor;
+    public THBullet.BULLET_INDEX_COLOR laserColor;
     public final NodeManager nodeManager;
     public int nodeMount;
     public float width;
@@ -38,7 +38,7 @@ public class THCurvedLaser extends THObject {
         this.shouldSetDeadWhenCollision = false;
     }
 
-    public THCurvedLaser(ITHObjectContainer container, THBullet.BULLET_COLOR laserColor, int nodeMount, float width){
+    public THCurvedLaser(ITHObjectContainer container, THBullet.BULLET_INDEX_COLOR laserColor, int nodeMount, float width){
         this(THObjectInit.TH_CURVED_LASER.get(),container);
         this.laserColor = laserColor;
         this.nodeMount = nodeMount;
@@ -49,8 +49,8 @@ public class THCurvedLaser extends THObject {
     }
 
     @Override
-    public void writeData(FriendlyByteBuf buffer) {
-        super.writeData(buffer);
+    public void encode(FriendlyByteBuf buffer) {
+        super.encode(buffer);
         buffer.writeFloat(this.width);
         buffer.writeEnum(this.laserColor);
         buffer.writeInt(this.renderCull);
@@ -58,10 +58,10 @@ public class THCurvedLaser extends THObject {
     }
 
     @Override
-    public void readData(FriendlyByteBuf buffer){
-        super.readData(buffer);
+    public void decode(FriendlyByteBuf buffer){
+        super.decode(buffer);
         this.width = buffer.readFloat();
-        this.laserColor = buffer.readEnum(THBullet.BULLET_COLOR.class);
+        this.laserColor = buffer.readEnum(THBullet.BULLET_INDEX_COLOR.class);
         this.renderCull = buffer.readInt();
         this.nodeManager.readData(buffer);
     }
@@ -80,7 +80,7 @@ public class THCurvedLaser extends THObject {
     public void load(CompoundTag tag){
         super.load(tag);
         this.width = tag.getFloat("Width");
-        this.laserColor = THBullet.BULLET_COLOR.class.getEnumConstants()[tag.getInt("LaserColor")];
+        this.laserColor = THBullet.BULLET_INDEX_COLOR.class.getEnumConstants()[tag.getInt("LaserColor")];
         this.renderCull = tag.getInt("RenderCull");
         this.nodeManager.load(tag);
     }

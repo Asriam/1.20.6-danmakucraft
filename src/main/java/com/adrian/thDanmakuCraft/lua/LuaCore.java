@@ -176,7 +176,7 @@ public class LuaCore {
             }
         });
 
-        library.set("setVec3Lib", new OneArgFunction() {
+        library.set("setupVec3Lib", new OneArgFunction() {
             @Override
             public LuaValue call(LuaValue luaValue) {
                 LuaCore.LuaUtilVec3 = luaValue;
@@ -187,7 +187,7 @@ public class LuaCore {
             }
         });
 
-        library.set("setVec2Lib", new OneArgFunction() {
+        library.set("setupVec2Lib", new OneArgFunction() {
             @Override
             public LuaValue call(LuaValue luaValue) {
                 LuaCore.LuaUtilVec2 = luaValue;

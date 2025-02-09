@@ -62,13 +62,13 @@ public class EntitySingleTHObject extends Entity implements IEntityAdditionalSpa
     @Override
     public void writeSpawnData(FriendlyByteBuf buffer) {
         buffer.writeResourceLocation(this.object.getType().getKey());
-        this.object.writeData(buffer);
+        this.object.encode(buffer);
     }
 
     @Override
     public void readSpawnData(FriendlyByteBuf buffer) {
         this.object = THObjectType.getValue(buffer.readResourceLocation()).create(this);
-        this.object.readData(buffer);
+        this.object.decode(buffer);
     }
 
     @Override

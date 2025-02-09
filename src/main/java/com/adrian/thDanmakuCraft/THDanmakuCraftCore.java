@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft;
 
+import com.adrian.thDanmakuCraft.events.GuiEvents;
 import com.adrian.thDanmakuCraft.init.*;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.lua.LuaLoader;
@@ -34,12 +35,17 @@ public class THDanmakuCraftCore
     public THDanmakuCraftCore(@NotNull FMLJavaModLoadingContext context) {
         IEventBus modEventBus = context.getModEventBus();
         modEventBus.addListener(this::commonSetup);
+        modEventBus.addListener(this::clientSetup);
         BlockInit.BLOCKS.register(modEventBus);
         ItemInit.ITEMS.register(modEventBus);
         EntityInit.ENTITIES.register(modEventBus);
         CreativeModeTabInit.CREATIVE_MODE_TABS.register(modEventBus);
         THObjectInit.TH_OBJECTS.register(modEventBus);
         MinecraftForge.EVENT_BUS.register(this);
+    }
+
+    private void clientSetup(final FMLCommonSetupEvent event) {
+        GuiEvents.register();
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {

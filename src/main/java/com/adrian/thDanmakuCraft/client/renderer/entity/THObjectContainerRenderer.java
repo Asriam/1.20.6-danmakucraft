@@ -81,7 +81,7 @@ public class THObjectContainerRenderer {
             mainRenderTarget.bindWrite(true);
         }
 
-        final boolean shouldApplyEffect = true;
+        final boolean shouldApplyEffect = false;
 
         if (shouldApplyEffect) {
             mainRenderTarget.unbindWrite();
@@ -89,7 +89,7 @@ public class THObjectContainerRenderer {
             THObjectContainerRenderer.TEST_RENDER_TARGET.bindWrite(true);
         }
 
-        final List<? extends THObject> objectList = container.getObjectManager().getTHObjectsForRender();
+        final List<THObject> objectList = container.getObjectManager().getTHObjectsForRender();
         RenderSystem.enableBlend();
         if (!objectList.isEmpty()) {
             if (entityRenderDispatcher.shouldRenderHitBoxes()) {
@@ -113,34 +113,57 @@ public class THObjectContainerRenderer {
             }
 
             Map<RenderType,List<THObject>> map = new HashMap<>();
-            for (THObject object:objectList) {
+            for (THObject object : objectList) {
                 RenderType renderType = THObjectContainerRenderer.getRenderType(object);
                 map.computeIfAbsent(renderType, (key) -> new ArrayList<>()).add(object);
             }
 
             map.forEach((renderType, list) -> {
-                List<THObject> sortedList = THObjectContainerRenderer.layerObjects(list,camX,camY,camZ);
-                BufferBuilder vertexConsumer = (BufferBuilder) bufferSource.getBuffer(renderType);
-                for (THObject object:sortedList) {
+                /*List<THObject> sortedList = THObjectContainerRenderer.layerObjects(list, camX, camY, camZ);
+                    BufferBuilder vertexConsumer = (BufferBuilder) bufferSource.getBuffer(renderType);
+                    for (THObject object : sortedList) {
+                        if (object != null && (object instanceof THCurvedLaser || THObjectContainerRenderer.shouldRenderTHObject(object, frustum, camX, camY, camZ))) {
+                            poseStack.pushPose();
+                            Vec3 objectPos = object.getOffsetPosition(partialTicks);
+                            poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
+                            //poseStack.translate(objectPos.x(), objectPos.y(), objectPos.z());
+                            THObjectContainerRenderer.getTHObjectRenderer(object).render(object, objectPos, partialTicks, poseStack, vertexConsumer, combinedOverlay);
+                            poseStack.popPose();
+                        }
+                    }
+                    renderType.setupRenderState();
+                    if (shouldApplyEffect) {
+                        THObjectContainerRenderer.TEST_RENDER_TARGET.bindWrite(true);
+                        BufferUploader.drawWithShader(vertexConsumer.end());
+                        THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
+                    } else {
+                        BufferUploader.drawWithShader(vertexConsumer.end());
+                    }
+                    renderType.clearRenderState();
+                    vertexConsumer.begin(renderType.mode(), renderType.format());*/
+                List<THObject> sortedList = layerObjects(list, camX, camY, camZ);
+                BufferBuilder builder = RenderSystem.renderThreadTesselator().getBuilder();
+                builder.begin(renderType.mode(), renderType.format());
+
+                for (THObject object : sortedList) {
                     if (object != null && (object instanceof THCurvedLaser || THObjectContainerRenderer.shouldRenderTHObject(object, frustum, camX, camY, camZ))) {
                         poseStack.pushPose();
                         Vec3 objectPos = object.getOffsetPosition(partialTicks);
                         poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
-                        //poseStack.translate(objectPos.x(), objectPos.y(), objectPos.z());
-                        THObjectContainerRenderer.getTHObjectRenderer(object).render(object, objectPos, partialTicks, poseStack, vertexConsumer, combinedOverlay);
+                        THObjectContainerRenderer.getTHObjectRenderer(object).render(object, objectPos, partialTicks, poseStack, builder, combinedOverlay);
                         poseStack.popPose();
                     }
                 }
+
                 renderType.setupRenderState();
-                if(shouldApplyEffect) {
+                if (shouldApplyEffect) {
                     THObjectContainerRenderer.TEST_RENDER_TARGET.bindWrite(true);
-                    BufferUploader.drawWithShader(vertexConsumer.end());
+                }
+                BufferUploader.drawWithShader(builder.end());
+                if (shouldApplyEffect) {
                     THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
-                }else {
-                    BufferUploader.drawWithShader(vertexConsumer.end());
                 }
                 renderType.clearRenderState();
-                vertexConsumer.begin(renderType.mode(),renderType.format());
             });
         }
 
@@ -164,16 +187,9 @@ public class THObjectContainerRenderer {
         RenderType renderType;
         if(object instanceof THBullet bullet) {
             if(bullet.getStyle().is3D()){
-                /*
-                boolean shouldCull = THBulletRenderers.getRenderer(bullet.getStyle()).shouldCull;
-                renderType = THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(object.getBlend()), shouldCull));
-                 */
                 renderType = THBulletRenderers.getRenderer(bullet.getStyle()).getRenderType(bullet);
             }else {
-                renderType = THRenderType.RENDER_TYPE_2D_DANMAKU.apply(new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(
-                        bullet.getImage().getTextureLocation(),
-                        THBlendMode.getBlendMode(bullet.getBlend()))
-                );
+                renderType = THBulletRenderers.getBullet2DRenderer().getRenderType(bullet);
             }
         }else if(object instanceof THCurvedLaser || object instanceof THLaser){
             renderType = THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(object.getBlend()), true));

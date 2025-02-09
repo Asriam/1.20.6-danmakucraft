@@ -9,6 +9,8 @@ import com.adrian.thDanmakuCraft.world.danmaku.*;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -19,35 +21,51 @@ import org.luaj.vm2.lib.OneArgFunction;
 import org.luaj.vm2.lib.TwoArgFunction;
 
 public class THBullet extends THObject {
-    protected DefaultBulletStyle style;
-    protected BULLET_COLOR bulletColor;
+    protected DefaultBulletStyle style = DefaultBulletStyle.arrow_big;
+    protected BULLET_INDEX_COLOR bulletIndexColor = BULLET_INDEX_COLOR.COLOR_DEEP_RED;
+    protected Color bulletColor = BULLET_INDEX_COLOR.COLOR_DEEP_RED.color;
 
     public THBullet(THObjectType<THBullet> type, ITHObjectContainer container) {
         super(type, container);
     }
 
-    public THBullet(THObjectContainer container, DefaultBulletStyle style, BULLET_COLOR bulletColor) {
+    public THBullet(THObjectContainer container, DefaultBulletStyle style, BULLET_INDEX_COLOR bulletColor) {
         this(THObjectInit.TH_BULLET.get(), container);
         this.style         = style;
         this.size          = style.size;
         this.collisionType = style.collisionType;
-        this.bulletColor   = bulletColor;
+        this.setBulletColorByIndex(bulletColor);
     }
 
-    public void setBulletColor(BULLET_COLOR bulletColor){
-        this.bulletColor = bulletColor;
+    public void setBulletColorByIndex(BULLET_INDEX_COLOR bulletIndexColor){
+        this.bulletIndexColor = bulletIndexColor;
+        this.setBulletColor(bulletIndexColor.getColor());
     }
 
-    public void setBulletColor(int color){
-        this.bulletColor = BULLET_COLOR.getColorByIndex(color);
+    public void setBulletColorByIndex(int index){
+        this.bulletIndexColor = BULLET_INDEX_COLOR.getColorByIndex(index);
+        this.setBulletColor(bulletIndexColor.getColor());
     }
 
-    public BULLET_COLOR getBulletColor() {
-        return bulletColor;
+
+    public void setBulletColor(Color color){
+        this.bulletColor = color;
+    }
+
+    public void setBulletColor(int r, int g, int b, int a){
+        this.setBulletColor(new Color(r,g,b,a));
+    }
+
+    public BULLET_INDEX_COLOR getBulletIndexColor() {
+        return bulletIndexColor;
+    }
+
+    public Color getBulletColor(){
+        return this.bulletColor;
     }
 
     public int getBulletIndex(){
-        return bulletColor.getIndex();
+        return bulletIndexColor.getIndex();
     }
 
     public void setStyle(DefaultBulletStyle style) {
@@ -68,40 +86,55 @@ public class THBullet extends THObject {
     }
 
     @Override
-    public void writeData(FriendlyByteBuf buffer) {
-        super.writeData(buffer);
-        buffer.writeEnum(this.bulletColor);
+    public void encode(FriendlyByteBuf buffer) {
+        super.encode(buffer);
+        buffer.writeEnum(this.bulletIndexColor);
         buffer.writeEnum(this.style);
+        Color c = this.bulletColor;
+        buffer.writeInt(c.r);
+        buffer.writeInt(c.g);
+        buffer.writeInt(c.b);
+        buffer.writeInt(c.a);
     }
 
     @Override
-    public void readData(FriendlyByteBuf buffer){
-        super.readData(buffer);
-        this.bulletColor = buffer.readEnum(BULLET_COLOR.class);
+    public void decode(FriendlyByteBuf buffer){
+        super.decode(buffer);
+        this.bulletIndexColor = buffer.readEnum(BULLET_INDEX_COLOR.class);
         this.style = buffer.readEnum(DefaultBulletStyle.class);
+        this.setBulletColor(
+                buffer.readInt(),
+                buffer.readInt(),
+                buffer.readInt(),
+                buffer.readInt()
+        );
     }
 
     @Override
     public CompoundTag save(CompoundTag tag) {
         CompoundTag nbt = super.save(tag);
-        nbt.putInt("BulletColor",this.bulletColor.ordinal());
+        nbt.putInt("BulletIndexColor",this.bulletIndexColor.ordinal());
         nbt.putInt("Style",this.style.ordinal());
+        Color c = this.bulletColor;
+        tag.put("BulletColor", newIntList(c.r, c.g, c.b, c.a));
         return nbt;
     }
 
     @Override
     public void load(CompoundTag tag){
         super.load(tag);
-        this.bulletColor = BULLET_COLOR.class.getEnumConstants()[tag.getInt("BulletColor")];
+        this.bulletIndexColor = BULLET_INDEX_COLOR.class.getEnumConstants()[tag.getInt("BulletIndexColor")];
         this.style       = DefaultBulletStyle.class.getEnumConstants()[tag.getInt("Style")];
+        ListTag colorTag = tag.getList("BulletColor", Tag.TAG_INT);
+        this.setBulletColor(colorTag.getInt(0),colorTag.getInt(1),colorTag.getInt(2),colorTag.getInt(3));
     }
 
     @Override
     public IImage.Image getImage() {
-        return this.style.getImage(this.bulletColor.index);
+        return this.style.getImage(this.bulletIndexColor.index);
     }
 
-    public enum BULLET_COLOR {
+    public enum BULLET_INDEX_COLOR {
         COLOR_DEEP_RED(0,       Color(200,20,20)),
         COLOR_RED(1,            Color(255,0,0)),
         COLOR_DEEP_PURPLE(2,    Color(190,0,255)),
@@ -121,7 +154,7 @@ public class THBullet extends THObject {
 
         private final int index;
         private final Color color;
-        BULLET_COLOR(int index, Color color){
+        BULLET_INDEX_COLOR(int index, Color color){
             this.index = index;
             this.color = color;
         }
@@ -134,8 +167,8 @@ public class THBullet extends THObject {
             return this.color;
         }
 
-        public static BULLET_COLOR getColorByIndex(int index){
-            return BULLET_COLOR.class.getEnumConstants()[Mth.clamp(index,1,16)-1];
+        public static BULLET_INDEX_COLOR getColorByIndex(int index){
+            return BULLET_INDEX_COLOR.class.getEnumConstants()[Mth.clamp(index,1,16)-1];
         }
     }
 
@@ -159,6 +192,7 @@ public class THBullet extends THObject {
         IBulletStyle readData(FriendlyByteBuf buffer);
         void save(CompoundTag tag);
         IBulletStyle load(CompoundTag tag);
+        boolean isDefaultBulletStyle();
     }
 
     public enum DefaultBulletStyle implements IBulletStyle{
@@ -168,7 +202,7 @@ public class THBullet extends THObject {
         gun_bullet,
         butterfly,
         square,
-        ball_small(IMAGE_ARROW_BIG,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.SPHERE, true),
+        ball_small(IMAGE_BALL_MID,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.SPHERE, false),
         ball_mid(IMAGE_BALL_MID,new Vec3(0.3f,0.3f,0.3f),false, CollisionType.SPHERE,true),
         ball_mid_c(IMAGE_BALL_MID),
         ball_big(IMAGE_BALL_MID,new Vec3(0.5f,0.5f,0.5f),false, CollisionType.SPHERE, true),
@@ -261,6 +295,11 @@ public class THBullet extends THObject {
         public static DefaultBulletStyle getStyleByIndex(int index){
             return DefaultBulletStyle.class.getEnumConstants()[index];
         }
+
+        @Override
+        public boolean isDefaultBulletStyle(){
+            return true;
+        }
     }
 
     public static class UserBulletStyle{
@@ -281,10 +320,10 @@ public class THBullet extends THObject {
         }
     };
 
-    private static final LibFunction setBulletColor = new TwoArgFunction() {
+    private static final LibFunction setBulletIndexColor = new TwoArgFunction() {
         @Override
         public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
-            checkTHBullet(luaValue0).setBulletColor(luaValue.checkint());
+            checkTHBullet(luaValue0).setBulletColorByIndex(luaValue.checkint());
             return LuaValue.NIL;
         }
     };
@@ -296,10 +335,10 @@ public class THBullet extends THObject {
         }
     };
 
-    private static final LibFunction getBulletColor = new OneArgFunction() {
+    private static final LibFunction getBulletIndex = new OneArgFunction() {
         @Override
         public LuaValue call(LuaValue luaValue0) {
-            return LuaValue.valueOf(checkTHBullet(luaValue0).getBulletColor().getIndex());
+            return LuaValue.valueOf(checkTHBullet(luaValue0).getBulletIndexColor().getIndex());
         }
     };
 
@@ -322,9 +361,9 @@ public class THBullet extends THObject {
     public static LuaValue functions(){
         LuaValue library = THObject.functions();
         library.set("setStyle",       setStyle);
-        library.set("setBulletColor", setBulletColor);
+        library.set("setBulletColor", setBulletIndexColor);
         library.set("getStyle",       getStyle);
-        library.set("getBulletColor", getBulletColor);
+        library.set("getBulletColor", getBulletIndex);
         return library;
     }
 }

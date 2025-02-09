@@ -1,10 +1,12 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku;
 
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
+import com.adrian.thDanmakuCraft.util.IImage;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -35,14 +37,20 @@ public class THObjectRenderer extends AbstractTHObjectRenderer<THObject> {
         Vector3f scale = object.getScale();
         poseStack.scale(scale.x, scale.y, scale.z);
         PoseStack.Pose posestack$pose = poseStack.last();
-        //VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.BLEND_NONE.apply(object.getTexture()));
 
+        IImage.Image image = object.getImage();
+        /*
         RenderUtil.renderTexture(vertexConsumer, posestack$pose, combinedOverlay,
                 new Vector3f(-0.5f, -0.5f, 0.0f), new Vector2f(0.0f, 1.0f),
                 new Vector3f(0.5f, -0.5f, 0.0f), new Vector2f(1.0f, 1.0f),
                 new Vector3f(0.5f, 0.5f, 0.0f), new Vector2f(1.0f, 0.0f),
                 new Vector3f(-0.5f, 0.5f, 0.0f), new Vector2f(0.0f, 0.0f),
-                object.color);
+                object.color);*/
+
+        RenderUtil.renderTexture(vertexConsumer, posestack$pose, combinedOverlay, Vec3.ZERO, Vec2.ONE,
+                image.getUVStart(),
+                image.getUVEnd(),
+                object.getColor());
         poseStack.popPose();
     }
 }
