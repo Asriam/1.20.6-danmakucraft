@@ -1,18 +1,30 @@
 package com.adrian.thDanmakuCraft.events;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
+import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraftforge.client.event.CustomizeGuiOverlayEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.checkerframework.checker.units.qual.C;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 @Mod.EventBusSubscriber(modid = THDanmakuCraftCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
-public class TickEvents {
-
+public class TickEvents{
     @SubscribeEvent
     public static void worldTick(TickEvent.LevelTickEvent event){
     }
@@ -26,9 +38,20 @@ public class TickEvents {
         }
     }
 
+    public static int BulletMount = 0;
     @SubscribeEvent
     public static void clientTick(TickEvent.ClientTickEvent event){
         //System.out.print(LuaThread.coroutine_count+"\n");
+        BulletMount = 0;
+        ClientLevel level = Minecraft.getInstance().level;
+        if(level != null) {
+            for (Entity entity:level.entitiesForRendering()) {
+                if (entity instanceof EntityTHObjectContainer container) {
+                    BulletMount += container.getContainer().getObjectManager().getTHObjects().size();
+                }
+            }
+        }
+        //System.out.print(level == null);
     }
 
     @SubscribeEvent

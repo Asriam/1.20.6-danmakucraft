@@ -61,7 +61,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         this.luaValueStorageHelper = new LuaValueStorageHelper(this);
         //this.scriptManager     = new LuaManager();
         this.entitiesInBound   = new ArrayList<>();
-        this.setMaxObjectAmount(2000);
+        this.setMaxObjectAmount(10000);
         //this.luaValueForm = this.ofLuaClass();
     }
 
@@ -545,10 +545,18 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         this.luaValueForm = this.ofLuaClass();
     }
 
+    /*
     public static final LuaValue meta = LuaValue.tableOf();
     static {
         meta.set("__index", functions());
+    }*/
+    public static LuaValue setMeta(LuaValue luaValue){
+        LuaValue meta = LuaValue.tableOf();
+        meta.set("__index", luaValue);
+        return meta;
     }
+
+    public static final LuaValue meta = setMeta(functions());
 
     @Override
     public LuaValue ofLuaClass(){

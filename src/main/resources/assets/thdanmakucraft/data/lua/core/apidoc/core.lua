@@ -5,6 +5,7 @@
 ---
 
 ---@class core
+---@field mod_id string
 local c = {}
 core = c
 

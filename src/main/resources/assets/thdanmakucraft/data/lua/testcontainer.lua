@@ -105,10 +105,11 @@ function container2:onTick()
     local timer = self:getTimer()
 
     local bbb = function(_pos,_angle)
-        local bullet2 = self:createTHBullet(nil, {i}, _pos,"arrow_big",6)
+        local bullet2 = self:createTHBullet(nil, {i}, _pos,"ball_small",6)
         bullet2:setVelocity(_angle:scale(0.2),true)
         bullet2:setAccelerationFromDirection(0.02,_angle)
         bullet2:setLifetime(120)
+        bullet2:setBlend("normal")
     end
 
     if timer < 300 then
@@ -121,9 +122,11 @@ function container2:onTick()
 
         local angle = rotation:xRot(Mth.DEG_TO_RAD*90):xRot(rotate.x):yRot(rotate.y)
         bbb(pos,angle)
-        for i=1,(1+3) do
-            local angle2 = rotation:xRot(Mth.DEG_TO_RAD*90-Mth.DEG_TO_RAD*60*i):yRot(Mth.DEG_TO_RAD*(180/way)*i)
-            for j=0,way do
+
+        local way2 = 3
+        for i=1,(way2-1) do
+            local angle2 = rotation:xRot(Mth.DEG_TO_RAD*90-Mth.DEG_TO_RAD*(180/way2)*i):yRot(Mth.DEG_TO_RAD*(180/way)*i)
+            for j=0,(way) do
                 local angle3 = angle2:yRot(-Mth.DEG_TO_RAD*(360/way)*j):normalize():xRot(rotate.x):yRot(rotate.y)
                 bbb(pos,angle3)
             end

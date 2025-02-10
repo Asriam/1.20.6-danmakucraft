@@ -133,10 +133,11 @@ public class LuaTaskManager implements IDataStorage, ILuaValue{
         return this.luaValueForm;
     }
 
-    private static final LuaValue meta = LuaValue.tableOf();
+    /*private static final LuaValue meta = LuaValue.tableOf();
     static {
-        meta.set("__index", luaClassFunctions());
-    }
+        meta.set("__index", functions());
+    }*/
+    public static final LuaValue meta = THObjectContainer.setMeta(functions());
 
     @Override
     public LuaValue getMeta() {
@@ -151,7 +152,7 @@ public class LuaTaskManager implements IDataStorage, ILuaValue{
         return library;
     }
 
-    public static LuaValue luaClassFunctions(){
+    public static LuaValue functions(){
         LuaValue library = LuaValue.tableOf();
         library.set("addTask",    addTask);
         library.set("removeTask", removeTask);

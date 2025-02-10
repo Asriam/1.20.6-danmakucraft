@@ -7,6 +7,7 @@
 ---@type Class|THObject
 THObjectBase = core.defineClass("THObject_Base")
 local o = THObjectBase
+o.thobject_type = "THObject_Base"
 
 function o:onInit(vec3)
     self:initPosition(vec3)

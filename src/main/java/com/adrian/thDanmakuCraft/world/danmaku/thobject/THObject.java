@@ -1404,10 +1404,12 @@ public class THObject implements ILuaValue {
         return library;
     }
 
-    public static final LuaValue meta = LuaValue.tableOf();
+    /*public static final LuaValue meta = LuaValue.tableOf();
     static {
         meta.set("__index", functions());
-    }
+    }*/
+
+    public static final LuaValue meta = THObjectContainer.setMeta(functions());
 
     public LuaValue getMeta(){
         return meta;

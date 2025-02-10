@@ -11,12 +11,18 @@ local bullet = {}
 function bullet:setStyle(style) end
 
 ---@param colorIndex number
-function bullet:setBulletColor(colorIndex) end
+function bullet:setBulletColorByIndex(colorIndex) end
+
+---@param r number
+---@param g number
+---@param b number
+---@param a number
+function bullet:setBulletColor(r,g,b,a) end
 
 ---@return string
 function bullet:getStyle() end
 
----@return number
+---@return table
 function bullet:getBulletColor() end
 
 THBullet = bullet

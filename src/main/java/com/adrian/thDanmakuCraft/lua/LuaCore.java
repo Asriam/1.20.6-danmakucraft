@@ -93,6 +93,7 @@ public class LuaCore {
 
     public LuaValue coreAPI(){
         LuaValue library = LuaValue.tableOf();
+        library.set("mod_id", THDanmakuCraftCore.MOD_ID);
         library.set( "doFile", new OneArgFunction(){
             @Override
             public LuaValue call(LuaValue luaValue) {

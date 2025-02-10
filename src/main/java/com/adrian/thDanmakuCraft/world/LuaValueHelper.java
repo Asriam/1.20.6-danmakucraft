@@ -1,6 +1,7 @@
 package com.adrian.thDanmakuCraft.world;
 
 import com.adrian.thDanmakuCraft.lua.LuaCore;
+import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec2;
@@ -119,6 +120,24 @@ public class LuaValueHelper {
                 luaValue.get("x").tofloat(),
                 luaValue.get("y").tofloat(),
                 luaValue.get("z").tofloat()
+        );
+    }
+
+    public static LuaValue ColorToLuaValue(Color color) {
+        LuaValue library = LuaValue.tableOf();
+        library.set(1, LuaValue.valueOf(color.r));
+        library.set(2, LuaValue.valueOf(color.g));
+        library.set(3, LuaValue.valueOf(color.b));
+        library.set(4, LuaValue.valueOf(color.a));
+        return library;
+    }
+
+    public static Color LuaValueToColor(LuaValue luaValue){
+        return new Color(
+                luaValue.get(1).checkint(),
+                luaValue.get(2).checkint(),
+                luaValue.get(3).checkint(),
+                luaValue.get(4).checkint()
         );
     }
 }

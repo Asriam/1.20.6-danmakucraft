@@ -58,6 +58,8 @@ public class THObjectContainerRenderer {
                 RenderLevelStageEvent.Stage.AFTER_WEATHER,
                 THObjectContainerRenderer::applyEffect);
     }
+
+
     public static void render(EntityRenderDispatcher entityRenderDispatcher, Frustum frustum, THObjectContainer container, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int combinedOverlay){
         if (entityRenderDispatcher.shouldRenderHitBoxes()) {
             THObjectContainerRenderer.renderContainerBound(container, poseStack, bufferSource.getBuffer(RenderType.lines()));
@@ -81,7 +83,7 @@ public class THObjectContainerRenderer {
             mainRenderTarget.bindWrite(true);
         }
 
-        final boolean shouldApplyEffect = false;
+        final boolean shouldApplyEffect = true;
 
         if (shouldApplyEffect) {
             mainRenderTarget.unbindWrite();
@@ -119,28 +121,6 @@ public class THObjectContainerRenderer {
             }
 
             map.forEach((renderType, list) -> {
-                /*List<THObject> sortedList = THObjectContainerRenderer.layerObjects(list, camX, camY, camZ);
-                    BufferBuilder vertexConsumer = (BufferBuilder) bufferSource.getBuffer(renderType);
-                    for (THObject object : sortedList) {
-                        if (object != null && (object instanceof THCurvedLaser || THObjectContainerRenderer.shouldRenderTHObject(object, frustum, camX, camY, camZ))) {
-                            poseStack.pushPose();
-                            Vec3 objectPos = object.getOffsetPosition(partialTicks);
-                            poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
-                            //poseStack.translate(objectPos.x(), objectPos.y(), objectPos.z());
-                            THObjectContainerRenderer.getTHObjectRenderer(object).render(object, objectPos, partialTicks, poseStack, vertexConsumer, combinedOverlay);
-                            poseStack.popPose();
-                        }
-                    }
-                    renderType.setupRenderState();
-                    if (shouldApplyEffect) {
-                        THObjectContainerRenderer.TEST_RENDER_TARGET.bindWrite(true);
-                        BufferUploader.drawWithShader(vertexConsumer.end());
-                        THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
-                    } else {
-                        BufferUploader.drawWithShader(vertexConsumer.end());
-                    }
-                    renderType.clearRenderState();
-                    vertexConsumer.begin(renderType.mode(), renderType.format());*/
                 List<THObject> sortedList = layerObjects(list, camX, camY, camZ);
                 BufferBuilder builder = RenderSystem.renderThreadTesselator().getBuilder();
                 builder.begin(renderType.mode(), renderType.format());
@@ -270,8 +250,8 @@ public class THObjectContainerRenderer {
                     return 0;
                 }
                 return Double.compare(
-                        o1.getPosition().distanceToSqr(camX,camY,camZ),
-                        o2.getPosition().distanceToSqr(camX,camY,camZ)
+                        o2.getPosition().distanceToSqr(camX,camY,camZ),
+                        o1.getPosition().distanceToSqr(camX,camY,camZ)
                 );
             });
         }catch (Exception e){
@@ -307,6 +287,8 @@ public class THObjectContainerRenderer {
             RenderTarget outTarget = MAIN_RENDER_TARGET;
             MAIN_RENDER_TARGET.unbindWrite();
 
+            inTarget.copyDepthFrom(MAIN_RENDER_TARGET);
+
             int[] inSize = {inTarget.width, inTarget.height};
             int[] outSize = {outTarget.width , outTarget.height};
 
@@ -327,12 +309,13 @@ public class THObjectContainerRenderer {
                     GlStateManager.SourceFactor.SRC_ALPHA,
                     GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
             );
-            //RenderSystem.depthFunc(519);
-            RenderSystem.depthFunc(515);
+            //RenderSystem.depthFunc(515);
+            //RenderSystem.depthMask(true);
+            //RenderSystem.enableDepthTest();
             drawOnScreen(outSize[0],outSize[1]);
 
             customShader.clear();
-            RenderSystem.depthFunc(515);
+            //RenderSystem.depthFunc(515);
             RenderSystem.disableBlend();
             RenderSystem.defaultBlendFunc();
             outTarget.unbindWrite();

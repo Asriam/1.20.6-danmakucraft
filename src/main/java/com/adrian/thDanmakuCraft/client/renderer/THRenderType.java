@@ -40,7 +40,7 @@ public class THRenderType extends RenderType{
                     .setCullState(CULL)
                     .setLightmapState(NO_LIGHTMAP)
                     .setOverlayState(NO_OVERLAY)
-                    .setWriteMaskState(COLOR_DEPTH_WRITE)
+                    .setWriteMaskState(COLOR_WRITE)
                     .setOutputState(TRANSLUCENT_TARGET)
                     //.setOutputState(ITEM_ENTITY_TARGET)
                     .createCompositeState(false)

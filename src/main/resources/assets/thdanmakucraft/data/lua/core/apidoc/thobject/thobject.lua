@@ -172,24 +172,6 @@ function object:isSpawned() end
 ---@param flag boolean
 function object:setNavi(flag) end
 
----@deprecated
---[[
----@deprecated
-function object:override() end
-
----@deprecated
----@return number
-function object:getX()  end
-
----@deprecated
----@return number
-function object:getY()  end
-
----@deprecated
----@return number
-function object:getZ()  end
-]]
-
 THObject = object
 
 ---@class LuaTaskManager

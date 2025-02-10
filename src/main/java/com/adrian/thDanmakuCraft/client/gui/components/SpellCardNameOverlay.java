@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.client.gui.components;
 
+import com.adrian.thDanmakuCraft.events.TickEvents;
 import com.adrian.thDanmakuCraft.world.entity.spellcard.EntityTHSpellCard;
 import com.mojang.blaze3d.platform.Window;
 import net.minecraft.client.Minecraft;
@@ -26,7 +27,7 @@ public class SpellCardNameOverlay implements IGuiOverlay{
 
     public void render(GuiGraphics graphics, Window window){
         //System.out.print("sadasdas");
-        graphics.drawString(Minecraft.getInstance().font, "THDanmakuCraft", 0, 0, 0xFFFFFF);
+        graphics.drawString(Minecraft.getInstance().font, "THDanmakuCraft" + TickEvents.BulletMount, 0, 0, 0xFFFFFF);
 
         for(EntityTHSpellCard spellCard : spellCards){
             Component component = Component.literal(spellCard.getSpellCardName());
