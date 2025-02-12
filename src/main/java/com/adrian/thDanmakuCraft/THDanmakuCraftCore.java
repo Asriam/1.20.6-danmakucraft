@@ -4,10 +4,12 @@ import com.adrian.thDanmakuCraft.events.GuiEvents;
 import com.adrian.thDanmakuCraft.init.*;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.lua.LuaLoader;
+import com.adrian.thDanmakuCraft.util.ResourceLoader;
 import com.mojang.logging.LogUtils;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -49,14 +51,16 @@ public class THDanmakuCraftCore
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
-        LuaLoader.init();
-        LuaCore.init();
+        //LuaLoader.init();
+        //LuaCore.init();
     }
 
     public static Map<String,Runnable> onServerStartingTask = new HashMap<>();
 
     @SubscribeEvent
-    public void onServerStarting(final @NotNull ServerStartingEvent event) {
+    public void onServerStartedEvent(final @NotNull ServerStartedEvent event) {
+        ResourceLoader.init(event.getServer().getResourceManager());
+
         LuaLoader.init();
         LuaCore.init();
 

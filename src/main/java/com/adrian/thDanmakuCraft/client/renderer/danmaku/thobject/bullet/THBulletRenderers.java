@@ -1,4 +1,4 @@
-package com.adrian.thDanmakuCraft.client.renderer.danmaku.bullet;
+package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.bullet;
 
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.THBlendMode;

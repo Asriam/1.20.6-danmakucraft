@@ -1,4 +1,4 @@
-package com.adrian.thDanmakuCraft.client.renderer.danmaku;
+package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject;
 
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.util.IImage;
@@ -11,7 +11,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.joml.Quaternionf;
-import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 @OnlyIn(value = Dist.CLIENT)

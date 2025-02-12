@@ -55,7 +55,7 @@ public class LuaCore2 {
 
     public void loadScript(String path){
         try {
-            String script = LuaLoader.instance.getResourceAsString(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"data/lua/"+path));
+            String script = LuaLoader.instance.getResourceAsString(new ResourceLocation(THDanmakuCraftCore.MOD_ID, "/data/lua/" +path));
             this.scriptEngine.eval(script);
         } catch (ScriptException e) {
             e.printStackTrace();

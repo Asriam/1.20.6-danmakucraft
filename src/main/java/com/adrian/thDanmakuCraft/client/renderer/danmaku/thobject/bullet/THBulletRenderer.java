@@ -1,8 +1,8 @@
-package com.adrian.thDanmakuCraft.client.renderer.danmaku.bullet;
+package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.bullet;
 
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
-import com.adrian.thDanmakuCraft.client.renderer.danmaku.AbstractTHObjectRenderer;
-import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRendererProvider;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
@@ -14,6 +14,7 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -29,12 +30,12 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
         if (bullet.color.a <= 0) {
             return;
         }
-        poseStack.pushPose();
-        this.renderTHBullet(bullet.getStyle(), bullet, partialTicks, poseStack, vertexConsumer, combinedOverlay);
-        poseStack.popPose();
+        //poseStack.pushPose();
+        this.renderTHBullet(bullet.getStyle(), bullet, bulletPos, partialTicks, poseStack, vertexConsumer, combinedOverlay);
+        //poseStack.popPose();
     }
 
-    public void renderTHBullet(THBullet.DefaultBulletStyle style, THBullet bullet, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer, int overlay) {
+    public void renderTHBullet(THBullet.DefaultBulletStyle style, THBullet bullet, Vec3 bulletPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer, int overlay) {
         poseStack.pushPose();
         THBulletRenderers.THBulletRendererFactory factory = THBulletRenderers.getRenderer(style);
         if (style.is3D() && factory != null) {
@@ -70,7 +71,9 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
             }
 
         } else {
-            poseStack.mulPose(this.getRenderDispatcher().cameraOrientation());
+            //poseStack.mulPose(this.getRenderDispatcher().cameraOrientation());
+            Vec2 rotation = THObject.VectorAngleToRadAngle(this.getRenderDispatcher().camera.getPosition().vectorTo(bulletPos));
+            poseStack.mulPose(new Quaternionf().rotateYXZ(rotation.y,-rotation.x,0.0f));
             poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
             THBulletRenderers.render2DBullet(this, bullet, poseStack, vertexConsumer, partialTicks, overlay);
         }

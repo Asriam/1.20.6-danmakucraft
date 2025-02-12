@@ -1,8 +1,8 @@
-package com.adrian.thDanmakuCraft.client.renderer.danmaku.laser;
+package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.laser;
 
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
-import com.adrian.thDanmakuCraft.client.renderer.danmaku.AbstractTHObjectRenderer;
-import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRendererProvider;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THCurvedLaser;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;

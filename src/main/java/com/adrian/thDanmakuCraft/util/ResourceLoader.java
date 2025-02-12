@@ -14,7 +14,11 @@ import java.util.stream.Collectors;
 
 public class ResourceLoader {
 
-    private static final ResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
+    private static ResourceManager resourceManager;
+
+    public static void init(ResourceManager rm){
+        resourceManager = rm;
+    }
 
     @Nullable
     public static String loadFileAsString(ResourceLocation resourceLocation) {
@@ -38,7 +42,7 @@ public class ResourceLoader {
         return resourceManager.listResources(folderPath.getPath(), path -> path.toString().endsWith(suffix));
     }
 
-    public static interface RunnableWithException{
+    public interface RunnableWithException{
 
         void run(Exception exception);
     }

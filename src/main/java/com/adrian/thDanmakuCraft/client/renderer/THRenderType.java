@@ -15,6 +15,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.function.Function;
 
+import static net.minecraft.client.renderer.RenderType.*;
 @OnlyIn(Dist.CLIENT)
 public class THRenderType extends RenderType{
     public THRenderType(String string, VertexFormat vertexFormat, VertexFormat.Mode mode, int i, boolean bl, boolean bl2, Runnable runnable, Runnable runnable2) {
@@ -40,7 +41,7 @@ public class THRenderType extends RenderType{
                     .setCullState(CULL)
                     .setLightmapState(NO_LIGHTMAP)
                     .setOverlayState(NO_OVERLAY)
-                    .setWriteMaskState(COLOR_WRITE)
+                    .setWriteMaskState(COLOR_DEPTH_WRITE)
                     .setOutputState(TRANSLUCENT_TARGET)
                     //.setOutputState(ITEM_ENTITY_TARGET)
                     .createCompositeState(false)

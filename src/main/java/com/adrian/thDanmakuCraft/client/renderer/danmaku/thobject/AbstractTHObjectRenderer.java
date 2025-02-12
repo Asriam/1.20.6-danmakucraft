@@ -1,4 +1,4 @@
-package com.adrian.thDanmakuCraft.client.renderer.danmaku;
+package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject;
 
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.mojang.blaze3d.vertex.PoseStack;

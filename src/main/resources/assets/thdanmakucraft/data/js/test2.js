@@ -1,2 +1,0 @@
-
-core.info("ffasdasfhjasb fsadbfnnasgnfyadisufg ")

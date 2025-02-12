@@ -1,11 +1,11 @@
-package com.adrian.thDanmakuCraft.client.renderer.entity;
+package com.adrian.thDanmakuCraft.client.renderer.danmaku;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.client.renderer.*;
-import com.adrian.thDanmakuCraft.client.renderer.danmaku.AbstractTHObjectRenderer;
-import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRendererProvider;
-import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRenderers;
-import com.adrian.thDanmakuCraft.client.renderer.danmaku.bullet.THBulletRenderers;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRendererProvider;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRenderers;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.bullet.THBulletRenderers;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
@@ -30,6 +30,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
+import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -59,8 +60,15 @@ public class THObjectContainerRenderer {
                 THObjectContainerRenderer::applyEffect);
     }
 
+    public static void render(EntityRenderDispatcher entityRenderDispatcher, Frustum frustum, THObjectContainer container, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int combinedOverlay) {
+        renderContainers(entityRenderDispatcher, frustum, List.of(new THObjectContainer[]{container}), partialTicks, poseStack, bufferSource, combinedOverlay);
+        //renderContainer(entityRenderDispatcher, frustum, container, partialTicks, poseStack, bufferSource, combinedOverlay);
+    }
 
-    public static void render(EntityRenderDispatcher entityRenderDispatcher, Frustum frustum, THObjectContainer container, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int combinedOverlay){
+    private static final boolean shouldApplyEffect = false;
+
+    /*
+    public static void renderContainer(EntityRenderDispatcher entityRenderDispatcher, Frustum frustum, THObjectContainer container, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int combinedOverlay){
         if (entityRenderDispatcher.shouldRenderHitBoxes()) {
             THObjectContainerRenderer.renderContainerBound(container, poseStack, bufferSource.getBuffer(RenderType.lines()));
         }
@@ -97,7 +105,7 @@ public class THObjectContainerRenderer {
             if (entityRenderDispatcher.shouldRenderHitBoxes()) {
                 BufferBuilder vertexConsumer = (BufferBuilder) bufferSource.getBuffer(RenderType.lines());
                 for (THObject object:objectList) {
-                    if (object != null && (object instanceof THCurvedLaser || THObjectContainerRenderer.shouldRenderTHObject(object, frustum, camX, camY, camZ))/*shouldRenderTHObject.test(object)*/) {
+                    if (object != null && (object instanceof THCurvedLaser || THObjectContainerRenderer.shouldRenderTHObject(object, frustum, camX, camY, camZ))) {
                         poseStack.pushPose();
                         Vec3 objectPos = object.getOffsetPosition(partialTicks);
                         poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
@@ -154,6 +162,113 @@ public class THObjectContainerRenderer {
         if(shouldApplyEffect) {
             THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
             mainRenderTarget.copyDepthFrom(THObjectContainerRenderer.TEST_RENDER_TARGET);
+            mainRenderTarget.bindWrite(true);
+        }
+
+        poseStack.popPose();
+        poseStack.pushPose();
+
+        poseStack.mulPose(poseStack1$$.pose());
+    }
+    */
+    public static void renderContainers(EntityRenderDispatcher entityRenderDispatcher, Frustum frustum, List<THObjectContainer> containers, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int combinedOverlay){
+        if (entityRenderDispatcher.shouldRenderHitBoxes()) {
+            for(THObjectContainer container:containers){
+            THObjectContainerRenderer.renderContainerBound(container, poseStack, bufferSource.getBuffer(RenderType.lines()));
+            }
+        }
+        PoseStack.Pose poseStack1$$ = poseStack.last();
+
+        poseStack.popPose();
+        poseStack.pushPose();
+
+        final Vec3 cameraPosition = entityRenderDispatcher.camera.getPosition();
+        final double camX = cameraPosition.x;
+        final double camY = cameraPosition.y;
+        final double camZ = cameraPosition.z;
+
+        final RenderTarget mainRenderTarget = THObjectContainerRenderer.MAIN_RENDER_TARGET;
+        final ShaderInstance shader = ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER;
+
+        if(shader != null) {
+            THObjectContainerRenderer.DEPTH_BUFFER.copyDepthFrom(mainRenderTarget);
+            shader.setSampler("DepthBuffer", THObjectContainerRenderer.DEPTH_BUFFER.getDepthTextureId());
+            mainRenderTarget.bindWrite(true);
+        }
+
+        if (shouldApplyEffect) {
+            mainRenderTarget.unbindWrite();
+            THObjectContainerRenderer.TEST_RENDER_TARGET.copyDepthFrom(mainRenderTarget);
+            THObjectContainerRenderer.TEST_RENDER_TARGET.bindWrite(true);
+        }
+
+        final List<THObject> objectList = Lists.newArrayList();
+        for (THObjectContainer container:containers) {
+            objectList.addAll(container.getObjectManager().getTHObjectsForRender());
+        }
+        RenderSystem.enableBlend();
+        if (!objectList.isEmpty()) {
+            if (entityRenderDispatcher.shouldRenderHitBoxes()) {
+                BufferBuilder vertexConsumer = (BufferBuilder) bufferSource.getBuffer(RenderType.lines());
+                for (THObject object:objectList) {
+                    if (object != null && (object instanceof THCurvedLaser || THObjectContainerRenderer.shouldRenderTHObject(object, frustum, camX, camY, camZ))) {
+                        poseStack.pushPose();
+                        Vec3 objectPos = object.getOffsetPosition(partialTicks);
+                        poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
+                        if (object.collision) {
+                            if (object instanceof THCurvedLaser laser) {
+                                THObjectContainerRenderer.renderTHCurvedLaserHitBoxes(laser, objectPos, poseStack, vertexConsumer, partialTicks, frustum);
+                            } else {
+                                THObjectContainerRenderer.renderTHObjectsHitBox(object, poseStack, vertexConsumer);
+                            }
+                        }
+                        poseStack.popPose();
+
+                    }
+                }
+            }
+
+            Map<RenderType,List<THObject>> map = new HashMap<>();
+            for (THObject object : objectList) {
+                RenderType renderType = THObjectContainerRenderer.getRenderType(object);
+                map.computeIfAbsent(renderType, (key) -> new ArrayList<>()).add(object);
+            }
+
+            map.forEach((renderType, list) -> {
+                List<THObject> sortedList = layerObjects(list, camX, camY, camZ);
+                BufferBuilder builder = RenderSystem.renderThreadTesselator().getBuilder();
+                builder.begin(renderType.mode(), renderType.format());
+
+                for (THObject object : sortedList) {
+                    if (object != null && (object instanceof THCurvedLaser || THObjectContainerRenderer.shouldRenderTHObject(object, frustum, camX, camY, camZ))) {
+                        poseStack.pushPose();
+                        Vec3 objectPos = object.getOffsetPosition(partialTicks);
+                        poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
+                        THObjectContainerRenderer.getTHObjectRenderer(object).render(object, objectPos, partialTicks, poseStack, builder, combinedOverlay);
+                        poseStack.popPose();
+                    }
+                }
+
+                renderType.setupRenderState();
+                if (shouldApplyEffect) {
+                    THObjectContainerRenderer.TEST_RENDER_TARGET.bindWrite(true);
+                }
+                BufferUploader.drawWithShader(builder.end());
+                if (shouldApplyEffect) {
+                    THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
+                }
+                renderType.clearRenderState();
+            });
+        }
+
+        RenderSystem.blendEquation(32774);
+        RenderSystem.disableBlend();
+        RenderSystem.defaultBlendFunc();
+
+        if(shouldApplyEffect) {
+            THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
+            mainRenderTarget.copyDepthFrom(THObjectContainerRenderer.TEST_RENDER_TARGET);
+            //mainRenderTarget.clear(true);
             mainRenderTarget.bindWrite(true);
         }
 

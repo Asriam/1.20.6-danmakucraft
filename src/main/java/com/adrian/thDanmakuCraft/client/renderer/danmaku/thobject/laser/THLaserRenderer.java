@@ -1,7 +1,7 @@
-package com.adrian.thDanmakuCraft.client.renderer.danmaku.laser;
+package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.laser;
 
-import com.adrian.thDanmakuCraft.client.renderer.danmaku.AbstractTHObjectRenderer;
-import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectRendererProvider;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THLaser;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;

@@ -109,7 +109,7 @@ function container2:onTick()
         bullet2:setVelocity(_angle:scale(0.2),true)
         bullet2:setAccelerationFromDirection(0.02,_angle)
         bullet2:setLifetime(120)
-        bullet2:setBlend("normal")
+        bullet2:setBlend("add")
     end
 
     if timer < 300 then

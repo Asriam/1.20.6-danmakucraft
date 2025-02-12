@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.client.renderer.entity;
 
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
