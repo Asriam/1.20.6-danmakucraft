@@ -21,11 +21,12 @@ public class ItemTestDanmaku extends Item {
     public InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(hand);
         EntityTHObjectContainer entityTHObjectContainer = new EntityTHObjectContainer(level, player.position());
+        level.addFreshEntity(entityTHObjectContainer);
+
         THObjectContainer container = entityTHObjectContainer.getContainer();
         container.setUser(player);
         container.setLuaClass("testContainer");
-        //container.scriptEvent("onInit",container.ofLuaValue());
-        level.addFreshEntity(entityTHObjectContainer);
+        container.scriptEvent("onInit",container.ofLuaValue());
         //player.getCooldowns().addCooldown(this, 200);
         return InteractionResultHolder.sidedSuccess(itemstack, level.isClientSide());
     }

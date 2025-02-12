@@ -58,7 +58,7 @@ public class THDanmakuCraftCore
     public static Map<String,Runnable> onServerStartingTask = new HashMap<>();
 
     @SubscribeEvent
-    public void onServerStartedEvent(final @NotNull ServerStartedEvent event) {
+    public void onServerStartingEvent(final @NotNull ServerStartingEvent event) {
         ResourceLoader.init(event.getServer().getResourceManager());
 
         LuaLoader.init();
