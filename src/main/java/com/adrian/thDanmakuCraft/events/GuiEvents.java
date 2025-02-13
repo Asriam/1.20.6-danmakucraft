@@ -20,7 +20,7 @@ public class GuiEvents {
     public static void renderGuiOverlays(CustomizeGuiOverlayEvent event){
         for(IGuiOverlay overlay : GUI_OVERLAYS.values()){
             if(overlay.shouldRender()){
-                overlay.render(event.getGuiGraphics(),event.getWindow());
+                overlay.render(event.getGuiGraphics(),event.getWindow(), event.getPartialTick());
             }
         }
     }

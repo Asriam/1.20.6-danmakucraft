@@ -14,6 +14,7 @@ import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -40,7 +41,9 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     //protected final THTasker.THTaskerManager taskerManager;
     protected final AdditionalParameterManager parameterManager;
     protected final RandomSource random = RandomSource.create();
-    private int timer = 0;
+    private String spellCardName = "";
+    protected int timer = 0;
+    protected int lifetime = 120;
     public AABB aabb = new AABB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
     public AABB bound = new AABB(-60.0D,-60.0D,-60.0D,60.0D,60.0D,60.0D);
     public boolean autoRemove = true;
@@ -91,6 +94,11 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         this.timer = timer;
     }
 
+    public void setLifetime(int timer){
+        this.lifetime = timer;
+    }
+
+    /*
     public void task(){
         boolean flag = false;
 
@@ -110,7 +118,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
                 }
             }
         }
-    }
+    }*/
 
     public LuaValue getLuaClass(){
         if (this.luaClass == null || this.luaClass.isnil()) {
@@ -176,7 +184,31 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
             }
         }
 
+        if (--this.lifetime < 0){
+            this.discard();
+        }
+
         this.timer++;
+    }
+
+    public void setSpellCardName(String name){
+        this.spellCardName = name;
+    }
+
+    public String getSpellCardName(){
+        return this.spellCardName;
+    }
+
+    public String getTranslatedSpellCardName(){
+        return Component.translatable(this.spellCardName).getString();
+    }
+
+    public boolean isNonSpellCard(){
+        return this.spellCardName.isEmpty();
+    }
+
+    public boolean isSpellCard(){
+        return !this.spellCardName.isEmpty();
     }
 
     public void clearObjects(){
@@ -307,8 +339,10 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     }
 
     public void encode(FriendlyByteBuf buffer) {
+        buffer.writeUtf(this.spellCardName);
         buffer.writeInt(this.maxObjectAmount);
         buffer.writeInt(this.timer);
+        buffer.writeInt(this.lifetime);
         buffer.writeUtf(this.luaClassKey);
         this.targetUserManager.encode(buffer);
         this.objectManager.encode(buffer);
@@ -324,8 +358,10 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
    }
 
     public void decode(FriendlyByteBuf buffer) {
+        this.spellCardName = buffer.readUtf();
         this.maxObjectAmount = buffer.readInt();
         this.timer = buffer.readInt();
+        this.lifetime = buffer.readInt();
         this.luaClassKey = buffer.readUtf();
         this.targetUserManager.decode(buffer);
         this.objectManager.decode(buffer);
@@ -337,7 +373,9 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     }
 
     public void save(CompoundTag tag) {
+        tag.putString("SpellCardName", this.spellCardName);
         tag.putInt("Timer",this.timer);
+        tag.putInt("Lifetime",this.lifetime);
         tag.putInt("MaxObjectAmount",this.maxObjectAmount);
         tag.putString("LuaClassKey", luaClassKey);
         tag.put("object_storage", this.objectManager.save(new CompoundTag()));
@@ -348,7 +386,9 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     }
 
     public void load(CompoundTag tag) {
+        this.spellCardName = tag.getString("SpellCardName");
         this.timer = tag.getInt("Timer");
+        this.lifetime = tag.getInt("Lifetime");
         this.maxObjectAmount = tag.getInt("MaxObjectAmount");
         this.luaClassKey = tag.getString("LuaClassKey");
         this.objectManager.load(tag.getCompound("object_storage"));
@@ -541,9 +581,24 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         }
     };
 
+    private static final LibFunction setSpellCardName = new VarArgFunction() {
+        @Override
+        public Varargs invoke(Varargs varargs) {
+            checkTHObjectContainer(varargs.arg(1)).setSpellCardName(varargs.arg(2).checkjstring());
+            return LuaValue.NIL;
+        }
+    };
     public void initLuaValue() {
         this.luaValueForm = this.ofLuaClass();
     }
+
+    protected static final LibFunction setLifetime = new TwoArgFunction() {
+        @Override
+        public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
+            checkTHObjectContainer(luaValue0).setLifetime(luaValue.checkint());
+            return LuaValue.NIL;
+        }
+    };
 
     /*
     public static final LuaValue meta = LuaValue.tableOf();
@@ -590,6 +645,8 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         library.set( "getParameterManager", getParameterManager);
         library.set( "discard", discard);
         library.set( "newTHObject", newTHObject);
+        library.set( "setSpellCardName", setSpellCardName);
+        library.set( "setLifetime", setLifetime);
         return library;
     }
 

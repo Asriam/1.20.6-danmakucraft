@@ -13,6 +13,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.Tags;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 
 public class EntityTHObjectContainer extends Entity implements IEntityAdditionalSpawnData {
@@ -21,8 +22,8 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     private final THObjectContainer container;
     public EntityTHObjectContainer(EntityType<?> type, Level level) {
         super(type, level);
-        this.fixupDimensions();
         this.container = new THObjectContainer(this);
+        this.setBoundingBox(this.getContainer().getContainerBound());
     }
 
     public EntityTHObjectContainer(Level level, Vec3 pos) {
@@ -60,14 +61,14 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     public void tick(){
         this.getContainer().tick();
         this.setBoundingBox(this.getContainer().getContainerBound());
-        this.fixupDimensions();
     }
 
+    /*
     @Override
     public final EntityDimensions getDimensions(Pose pose) {
-        return EntityDimensions.fixed(1000.0f,1000.0f).scale(1.0f);
-        //return super.getDimensions(pose);
-    }
+        //return EntityType.SLIME.getDimensions().scale(100.0f);
+        return super.getDimensions(pose);
+    }*/
 
     @Override
     protected void readAdditionalSaveData(CompoundTag tag) {

@@ -15,20 +15,20 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 
 @OnlyIn(Dist.CLIENT)
-public class EntityTHObjectContainerRenderer extends EntityRenderer<EntityTHObjectContainer> {
+public class EntityTHObjectContainerRenderer<T extends EntityTHObjectContainer> extends EntityRenderer<T> {
 
     public EntityTHObjectContainerRenderer(EntityRendererProvider.Context context) {
         super(context);
     }
 
     @Override
-    public void render(EntityTHObjectContainer entity, float rotationX, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int combinedOverlay) {
+    public void render(T entity, float rotationX, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int combinedOverlay) {
         //super.render(entity, rotationX, partialTicks, poseStack, bufferSource, combinedOverlay);
         THObjectContainerRenderer.render(this.getRenderDispatcher(), this.getFrustum(), entity.getContainer(), partialTicks, poseStack, bufferSource, combinedOverlay);
     }
 
     @Override
-    public boolean shouldRender(@NotNull EntityTHObjectContainer entity, @NotNull Frustum frustum, double camX, double camY, double camZ) {
+    public boolean shouldRender(@NotNull T entity, @NotNull Frustum frustum, double camX, double camY, double camZ) {
         //this.frustum = frustum;
         return true;
     }

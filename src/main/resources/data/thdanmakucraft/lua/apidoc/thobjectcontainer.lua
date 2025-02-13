@@ -68,4 +68,10 @@ function container:discard() end
 ---@return THObject
 function container:newTHObject(class, args) end
 
+---@param cardName string
+function container:setSpellCardName(cardName) end
+
+---@param lifetime number
+function container:setLifetime(lifetime) end
+
 THObjectContainer = container

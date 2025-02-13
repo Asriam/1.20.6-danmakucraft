@@ -7,5 +7,5 @@ public interface IGuiOverlay{
 
     boolean shouldRender();
 
-    void render(GuiGraphics graphics, Window window);
+    void render(GuiGraphics graphics, Window window, float partialTick);
 }

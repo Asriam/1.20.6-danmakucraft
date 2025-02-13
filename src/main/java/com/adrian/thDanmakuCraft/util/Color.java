@@ -75,6 +75,11 @@ public class Color {
         return this.divide(factor, factor, factor, factor);
     }
 
+    public int toInt(){
+        Color color = this.normalize();
+        return (color.a << 24) | (color.r << 16) | (color.g << 8) | color.b;
+    }
+
     public static float lerp(float start, float end, float amt) {
         return end + start * (amt - end);
     }

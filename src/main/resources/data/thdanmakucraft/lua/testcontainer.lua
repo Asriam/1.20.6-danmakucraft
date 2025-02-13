@@ -79,6 +79,7 @@ end
 function container:onTick()
 end
 
+---@type Class|THBullet
 local testBullet3 = core.defineClass()
 function testBullet3:onInit()
     self:setLifetime(10000)
@@ -87,6 +88,8 @@ end
 ---@type Class|THObjectContainer
 local container2 = core.defineClass("testContainer")
 function container2:onInit()
+    self:setSpellCardName("境符「波與粒的境界」")
+    self:setLifetime(1200)
     --[[
     local position = self:getPosition()
     local sample = 10
@@ -105,7 +108,7 @@ function container2:onTick()
     local timer = self:getTimer()
 
     local bbb = function(_pos,_angle)
-        local bullet2 = self:createTHBullet(nil, {i}, _pos,"arrow_big",6)
+        local bullet2 = self:createTHBullet(nil, {i}, _pos,"ball_small",6)
         bullet2:setVelocity(_angle:scale(0.2),true)
         bullet2:setAccelerationFromDirection(0.02,_angle)
         bullet2:setLifetime(120)

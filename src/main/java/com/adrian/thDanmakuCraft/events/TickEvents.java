@@ -1,8 +1,10 @@
 package com.adrian.thDanmakuCraft.events;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.client.gui.components.SpellCardNameOverlay;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
+import com.adrian.thDanmakuCraft.world.entity.spellcard.EntityTHSpellCard;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -17,9 +19,12 @@ import net.minecraftforge.client.event.CustomizeGuiOverlayEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.apache.commons.compress.utils.Lists;
 import org.checkerframework.checker.units.qual.C;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -45,12 +50,36 @@ public class TickEvents{
         BulletMount = 0;
         ClientLevel level = Minecraft.getInstance().level;
         if(level != null) {
+            //SpellCardNameOverlay.spellCards.clear();
             for (Entity entity:level.entitiesForRendering()) {
                 if (entity instanceof EntityTHObjectContainer container) {
                     BulletMount += container.getContainer().getObjectManager().getTHObjects().size();
                 }
+
+                if(entity instanceof EntityTHSpellCard spellCard){
+                    if(!SpellCardNameOverlay.spellCards.contains(spellCard)){
+                        SpellCardNameOverlay.spellCards.add(spellCard);
+                    }
+                }
             }
 
+            List<EntityTHSpellCard> removeList = new ArrayList<>();
+            List<Entity> entities = Lists.newArrayList(level.entitiesForRendering().iterator());
+
+            for(EntityTHSpellCard spellCard:SpellCardNameOverlay.spellCards){
+                if(!entities.contains(spellCard)){
+                    spellCard.lastDeathTimerForRenderSpellCardNameBar = spellCard.deathTimerForRenderSpellCardNameBar;
+                    spellCard.deathTimerForRenderSpellCardNameBar += 0.6f;
+
+                    if (spellCard.deathTimerForRenderSpellCardNameBar > 10.0f) {
+                        removeList.add(spellCard);
+                    }
+                }else {
+                    spellCard.timerForRenderSpellCardNameBar += 0.6f;
+                }
+            }
+
+            removeList.forEach(SpellCardNameOverlay.spellCards::remove);
         }
         //System.out.print(level == null);
     }
