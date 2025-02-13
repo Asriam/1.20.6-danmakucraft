@@ -50,6 +50,7 @@ public class TickEvents{
                     BulletMount += container.getContainer().getObjectManager().getTHObjects().size();
                 }
             }
+
         }
         //System.out.print(level == null);
     }

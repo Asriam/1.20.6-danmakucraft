@@ -105,7 +105,7 @@ function container2:onTick()
     local timer = self:getTimer()
 
     local bbb = function(_pos,_angle)
-        local bullet2 = self:createTHBullet(nil, {i}, _pos,"ball_small",6)
+        local bullet2 = self:createTHBullet(nil, {i}, _pos,"arrow_big",6)
         bullet2:setVelocity(_angle:scale(0.2),true)
         bullet2:setAccelerationFromDirection(0.02,_angle)
         bullet2:setLifetime(120)

@@ -31,7 +31,7 @@ public class ShaderLoader {
     }
 
     public static void registryShaders(ResourceProvider resourceProvider){
-        DANMAKU_DEPTH_OUTLINE_SHADER = registryShader(resourceProvider,new ResourceLocation(THDanmakuCraftCore.MOD_ID,"rendertype_danmaku_1"), THRenderType.TEST_FORMAT);
+        DANMAKU_DEPTH_OUTLINE_SHADER = registryShader(resourceProvider,new ResourceLocation(THDanmakuCraftCore.MOD_ID,"danmaku/rendertype_danmaku_1"), THRenderType.TEST_FORMAT);
         registryShader(resourceProvider,new ResourceLocation(THDanmakuCraftCore.MOD_ID,"box_blur"), DefaultVertexFormat.POSITION);
         registryShader(resourceProvider,new ResourceLocation(THDanmakuCraftCore.MOD_ID,"test_shader"), new VertexFormat(
                 ImmutableMap.<String, VertexFormatElement>builder()

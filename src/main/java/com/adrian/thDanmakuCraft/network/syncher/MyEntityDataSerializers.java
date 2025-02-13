@@ -13,28 +13,26 @@ import org.jetbrains.annotations.NotNull;
 
 public class MyEntityDataSerializers {
 
-    public static final EntityDataSerializer<THObjectContainer> THOBJECT_CONTAINER = EntityDataSerializer.forValueType(new StreamCodec<ByteBuf, THObjectContainer>() {
-        public void encode(@NotNull ByteBuf byteBuf, @NotNull THObjectContainer container) {
-            container.encode((FriendlyByteBuf) byteBuf);
+    public static final EntityDataSerializer<THObjectContainer> THOBJECT_CONTAINER = EntityDataSerializer.forValueType(new StreamCodec<FriendlyByteBuf, THObjectContainer>() {
+        public void encode(@NotNull FriendlyByteBuf byteBuf, @NotNull THObjectContainer container) {
+            container.encode(byteBuf);
         }
-        public @NotNull THObjectContainer decode(@NotNull ByteBuf byteBuf) {
+        public @NotNull THObjectContainer decode(@NotNull FriendlyByteBuf byteBuf) {
             THObjectContainer container = new THObjectContainer(null);
-            container.decode((FriendlyByteBuf) byteBuf);
+            container.decode(byteBuf);
             return container;
         }
     });
 
-    public static final EntityDataSerializer<THObject> THOBJECT = EntityDataSerializer.forValueType(new StreamCodec<ByteBuf, THObject>() {
-        public void encode(@NotNull ByteBuf byteBuf, @NotNull THObject object) {
-            FriendlyByteBuf friendlyByteBuf = (FriendlyByteBuf) byteBuf;
-            friendlyByteBuf.writeResourceLocation(object.getType().getKey());
-            object.encode(friendlyByteBuf);
+    public static final EntityDataSerializer<THObject> THOBJECT = EntityDataSerializer.forValueType(new StreamCodec<FriendlyByteBuf, THObject>() {
+        public void encode(@NotNull FriendlyByteBuf byteBuf, @NotNull THObject object) {
+            byteBuf.writeResourceLocation(object.getType().getKey());
+            object.encode(byteBuf);
         }
-        public @NotNull THObject decode(@NotNull ByteBuf byteBuf) {
-            FriendlyByteBuf friendlyByteBuf = (FriendlyByteBuf) byteBuf;
-            ResourceLocation key = friendlyByteBuf.readResourceLocation();
+        public @NotNull THObject decode(@NotNull FriendlyByteBuf byteBuf) {
+            ResourceLocation key = byteBuf.readResourceLocation();
             THObject object = THObjectType.getValue(key).create(null);
-            object.decode(friendlyByteBuf);
+            object.decode(byteBuf);
             return object;
         };
     });

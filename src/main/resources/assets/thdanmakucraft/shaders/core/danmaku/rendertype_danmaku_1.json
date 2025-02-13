@@ -4,8 +4,8 @@
         "srcrgb": "srcalpha",
         "dstrgb": "1-srcalpha"
     },
-    "vertex": "thdanmakucraft:rendertype_danmaku_1",
-    "fragment": "thdanmakucraft:rendertype_danmaku_1",
+    "vertex": "thdanmakucraft:danmaku/rendertype_danmaku_1",
+    "fragment": "thdanmakucraft:danmaku/rendertype_danmaku_1",
     "attributes": [ "Position" , "Normal"],
     "samplers": [
         { "name": "DepthBuffer" }

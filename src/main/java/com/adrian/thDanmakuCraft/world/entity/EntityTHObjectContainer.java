@@ -2,8 +2,10 @@ package com.adrian.thDanmakuCraft.world.entity;
 
 import com.adrian.thDanmakuCraft.init.EntityInit;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
+import net.minecraft.client.gui.font.providers.UnihexProvider;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
@@ -19,6 +21,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     private final THObjectContainer container;
     public EntityTHObjectContainer(EntityType<?> type, Level level) {
         super(type, level);
+        this.fixupDimensions();
         this.container = new THObjectContainer(this);
     }
 
@@ -43,31 +46,37 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     }
 
     @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> dataAccessor) {
+
+    }
+
+    @Override
     public void onAddedToWorld() {
         super.onAddedToWorld();
-        this.container.onAddToWorld();
+        this.getContainer().onAddToWorld();
     }
 
     @Override
     public void tick(){
-        this.container.tick();
-        this.setBoundingBox(this.container.getContainerBound());
-
+        this.getContainer().tick();
+        this.setBoundingBox(this.getContainer().getContainerBound());
+        this.fixupDimensions();
     }
 
-    public EntityDimensions getDimensions(Pose p_19975_) {
-        //return new EntityDimensions((float) this.container.aabb.getXsize(), (float) this.container.aabb.getYsize(), 0.0F, null, false);
-        return null;
+    @Override
+    public final EntityDimensions getDimensions(Pose pose) {
+        return EntityDimensions.fixed(1000.0f,1000.0f).scale(1.0f);
+        //return super.getDimensions(pose);
     }
 
     @Override
     protected void readAdditionalSaveData(CompoundTag tag) {
-        this.container.load(tag);
+        this.getContainer().load(tag);
     }
 
     @Override
     protected void addAdditionalSaveData(CompoundTag tag) {
-        this.container.save(tag);
+        this.getContainer().save(tag);
     }
 
     @Override
