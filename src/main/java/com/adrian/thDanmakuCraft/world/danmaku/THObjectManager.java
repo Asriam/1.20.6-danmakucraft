@@ -167,7 +167,8 @@ public class THObjectManager implements IDataStorage {
             if (object.shouldSave) {
                 CompoundTag tag2 = new CompoundTag();
                 tag2.putString("type", object.getType().getKey().toString());
-                tag.put("object_" + index, object.save(tag2));
+                object.save(tag2);
+                tag.put("object_" + index, tag2);
                 index++;
             }
         }

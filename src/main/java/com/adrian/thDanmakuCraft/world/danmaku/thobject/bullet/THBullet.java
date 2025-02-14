@@ -114,13 +114,13 @@ public class THBullet extends THObject {
     }
 
     @Override
-    public CompoundTag save(CompoundTag tag) {
-        CompoundTag nbt = super.save(tag);
+    public void save(CompoundTag tag) {
+        super.save(tag);
         //nbt.putInt("BulletIndexColor",this.bulletIndexColor.ordinal());
-        nbt.putInt("Style",this.style.ordinal());
+        tag.putInt("Style",this.style.ordinal());
         Color c = this.bulletColor;
         tag.put("BulletColor", newIntList(c.r, c.g, c.b, c.a));
-        return nbt;
+        //return tag;
     }
 
     @Override

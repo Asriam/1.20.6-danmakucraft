@@ -28,4 +28,5 @@ public class ClientModEvents {
     @SubscribeEvent
     public static void clientSetup(FMLClientSetupEvent event){
     }
+
 }

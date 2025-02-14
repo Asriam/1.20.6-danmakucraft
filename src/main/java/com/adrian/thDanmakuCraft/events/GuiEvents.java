@@ -6,6 +6,7 @@ import com.adrian.thDanmakuCraft.client.gui.components.SpellCardNameOverlay;
 import com.google.common.collect.Maps;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.CustomizeGuiOverlayEvent;
+import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.compress.utils.Lists;
@@ -17,10 +18,10 @@ import java.util.Map;
 public class GuiEvents {
     private static final Map<String, IGuiOverlay> GUI_OVERLAYS = Maps.newLinkedHashMap();
     @SubscribeEvent
-    public static void renderGuiOverlays(CustomizeGuiOverlayEvent event){
+    public static void renderGuiOverlays(CustomizeGuiOverlayEvent.Chat event){
         for(IGuiOverlay overlay : GUI_OVERLAYS.values()){
             if(overlay.shouldRender()){
-                overlay.render(event.getGuiGraphics(),event.getWindow(), event.getPartialTick());
+                overlay.render(event.getGuiGraphics(),Minecraft.getInstance().getWindow(), event.getPartialTick());
             }
         }
     }

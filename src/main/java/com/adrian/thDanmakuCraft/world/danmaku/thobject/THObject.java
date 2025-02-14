@@ -801,7 +801,7 @@ public class THObject implements ILuaValue {
         this.ofLuaValue().set("params", luaValueStorageHelper.readLuaTable(buffer));
     }
 
-    public CompoundTag save(CompoundTag tag) {
+    public void save(CompoundTag tag) {
         tag.put("Pos", newDoubleList(this.positionX, this.positionY, this.positionZ));
         tag.put("PrePos", newVec3(this.prePosition));
         tag.put("Rotation", newVector3f(this.getRotation()));
@@ -821,7 +821,7 @@ public class THObject implements ILuaValue {
         //this.scriptManager.save(tag);
         tag.put("parameters", this.parameterManager.save(new CompoundTag()));
         tag.put("params", luaValueStorageHelper.saveLuaTable(this.ofLuaValue().get("params")));
-        return tag;
+        //return tag;
     }
 
     public void load(CompoundTag tag) {
