@@ -12,10 +12,15 @@ out vec4 vertexColor;
 out vec4 vertexColor2;
 out vec2 texCoord0;
 
+out vec3 viewDir;
+
 void main() {
     gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
 
     vertexColor = Color;
     vertexColor2 = Color2;
     texCoord0 = UV0;
+
+    vec4 viewPos = ModelViewMat * vec4(Position, 1.0);
+    viewDir = -viewPos.xyz;
 }

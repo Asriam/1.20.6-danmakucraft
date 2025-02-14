@@ -1,14 +1,18 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.laser;
 
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
+import com.adrian.thDanmakuCraft.client.renderer.THBlendMode;
+import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THCurvedLaser;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THLaser;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
@@ -233,5 +237,10 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
     static float circle(float x, float width) {
         float num = (x / width * 2 - 1 / width);
         return Mth.sqrt(1 - num * num);
+    }
+
+    @Override
+    public RenderType getRenderType(THCurvedLaser laser){
+        return THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(laser.getBlend()), true));
     }
 }

@@ -9,6 +9,7 @@ import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -79,6 +80,15 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
             THBulletRenderers.render2DBullet(this, bullet, poseStack, vertexConsumer, partialTicks, overlay);
         }
         poseStack.popPose();
+    }
+
+    @Override
+    public RenderType getRenderType(THBullet bullet) {
+        if(bullet.getStyle().is3D()){
+            return THBulletRenderers.getRenderer(bullet.getStyle()).getRenderType(bullet);
+        }else {
+            return THBulletRenderers.getBullet2DRenderer().getRenderType(bullet);
+        }
     }
 
     @OnlyIn(Dist.CLIENT)

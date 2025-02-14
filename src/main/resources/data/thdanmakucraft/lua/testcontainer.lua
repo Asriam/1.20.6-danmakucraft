@@ -110,7 +110,7 @@ function container2:onTick()
     ---@param _pos util.Vec3
     ---@param _angle util.Vec3
     local bbb = function(_pos,_angle)
-        local bullet2 = self:createTHBullet(nil, {i}, _pos,"grain_a",3)
+        local bullet2 = self:createTHBullet(nil, {i}, _pos,"ball_small",3)
         bullet2:setPosition(_pos:add(_angle:scale(0.3)))
         bullet2:setVelocity(_angle:scale(0.2),true)
         bullet2:setAccelerationFromDirection(0.02,_angle)

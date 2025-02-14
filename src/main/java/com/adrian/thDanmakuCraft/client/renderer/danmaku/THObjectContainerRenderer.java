@@ -230,7 +230,8 @@ public class THObjectContainerRenderer {
 
             Map<RenderType,List<THObject>> map = new HashMap<>();
             for (THObject object : objectList) {
-                RenderType renderType = THObjectContainerRenderer.getRenderType(object);
+                //RenderType renderType = THObjectContainerRenderer.getRenderType(object);
+                RenderType renderType = THObjectContainerRenderer.getTHObjectRenderer(object).getRenderType(object);
                 map.computeIfAbsent(renderType, (key) -> new ArrayList<>()).add(object);
             }
 
@@ -289,7 +290,7 @@ public class THObjectContainerRenderer {
         }else if(object instanceof THCurvedLaser || object instanceof THLaser){
             renderType = THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(object.getBlend()), true));
         }else {
-            renderType = THRenderType.RENDER_TYPE_2D_DANMAKU.apply(new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(
+            renderType = THRenderType.RENDER_TYPE_THOBJECT.apply(new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(
                     object.getImage().getTextureLocation(),
                     THBlendMode.getBlendMode(object.getBlend()))
             );

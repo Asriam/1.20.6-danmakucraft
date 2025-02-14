@@ -4,10 +4,11 @@
         "srcrgb": "srcalpha",
         "dstrgb": "1-srcalpha"
     },
-    "vertex": "danmaku/rendertype_danmaku_texture",
-    "fragment": "danmaku/rendertype_danmaku_texture",
+    "vertex": "thdanmakucraft:danmaku/rendertype_danmaku_texture",
+    "fragment": "thdanmakucraft:danmaku/rendertype_danmaku_texture",
     "attributes": [
         "Position",
+        "Color",
         "Color",
         "UV0"
     ],

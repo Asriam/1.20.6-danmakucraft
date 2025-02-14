@@ -103,8 +103,8 @@ public class RenderUtil {
                 .color(color.r, color.g, color.b, color.a)
                 .color(0.5f,0.5f,0.5f,0.5f)
                 .uv(uv.x, uv.y)
-                .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(uv2)
-                .normal(pose, normal.x, normal.y, normal.z)
+                //.overlayCoords(OverlayTexture.NO_OVERLAY).uv2(uv2)
+                //.normal(pose, normal.x, normal.y, normal.z)
                 .endVertex();
     }
 

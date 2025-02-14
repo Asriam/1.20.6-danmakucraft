@@ -9,10 +9,14 @@ import com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.joml.Matrix4f;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
 
 import java.util.EnumMap;
 
@@ -21,13 +25,39 @@ public class THBulletRenderers {
 
     public static void render2DBullet(THBulletRenderer renderer, THBullet bullet, PoseStack poseStack, VertexConsumer vertexConsumer, float partialTicks, int combinedOverlay) {
         poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
-        PoseStack.Pose posestack_pose = poseStack.last();
+        PoseStack.Pose pose = poseStack.last();
         IImage.Image image = bullet.getImage();
 
-        RenderUtil.renderTexture(vertexConsumer, posestack_pose, combinedOverlay, Vec3.ZERO.toVector3f(), Vec2.ONE,
-                image.getUVStart(),
-                image.getUVEnd(),
-                bullet.getColor());
+        Color color = bullet.getColor();
+        Color bulletColor = bullet.getBulletColor();
+        Vec2 uvStart = image.getUVStart();
+        Vec2 uvEnd =   image.getUVEnd();
+        Vec2 scale = Vec2.ONE.scale(0.5f);
+
+        vertexConsumer
+                .vertex(pose,-scale.x, -scale.y, 0.0f)
+                .color(color.r, color.g, color.b, color.a)
+                .color(bulletColor.r, bulletColor.g, bulletColor.b, bulletColor.a)
+                .uv(uvStart.x, uvEnd.y)
+                .endVertex();
+        vertexConsumer
+                .vertex(pose, scale.x, -scale.y, 0.0f)
+                .color(color.r, color.g, color.b, color.a)
+                .color(bulletColor.r, bulletColor.g, bulletColor.b, bulletColor.a)
+                .uv(uvStart.x, uvStart.y)
+                .endVertex();
+        vertexConsumer
+                .vertex(pose, scale.x, scale.y, 0.0f)
+                .color(color.r, color.g, color.b, color.a)
+                .color(bulletColor.r, bulletColor.g, bulletColor.b, bulletColor.a)
+                .uv(uvEnd.x, uvStart.y)
+                .endVertex();
+        vertexConsumer
+                .vertex(pose, -scale.x, scale.y, 0.0f)
+                .color(color.r, color.g, color.b, color.a)
+                .color(bulletColor.r, bulletColor.g, bulletColor.b, bulletColor.a)
+                .uv(uvEnd.x, uvEnd.y)
+                .endVertex();
     }
 
     public static void render3DBullet(THBulletRenderer renderer, THBullet bullet, PoseStack poseStack, VertexConsumer vertexConsumer, THBulletRendererFactory factory, float partialTicks, int combinedOverlay) {
@@ -63,7 +93,8 @@ public class THBulletRenderers {
             }
 
             public RenderType getRenderType(THBullet bullet){
-                return THRenderType.RENDER_TYPE_2D_DANMAKU.apply(new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(
+                return THRenderType.RENDER_TYPE_2D_DANMAKU.apply(
+                        new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(
                         bullet.getImage().getTextureLocation(),
                         THBlendMode.getBlendMode(bullet.getBlend()))
                 );
