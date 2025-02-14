@@ -24,7 +24,7 @@ public class THBulletRenderers {
         PoseStack.Pose posestack_pose = poseStack.last();
         IImage.Image image = bullet.getImage();
 
-        RenderUtil.renderTexture(vertexConsumer, posestack_pose, combinedOverlay, Vec3.ZERO, Vec2.ONE,
+        RenderUtil.renderTexture(vertexConsumer, posestack_pose, combinedOverlay, Vec3.ZERO.toVector3f(), Vec2.ONE,
                 image.getUVStart(),
                 image.getUVEnd(),
                 bullet.getColor());
