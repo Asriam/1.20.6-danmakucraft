@@ -26,12 +26,14 @@ public class ShaderLoader {
     private static final Map<ResourceLocation,MyShaderInstance> shaderMap = new HashMap<>();
 
     public static MyShaderInstance DANMAKU_DEPTH_OUTLINE_SHADER;
+    public static MyShaderInstance DANMAKU_TEXTURE_SHADER;
 
     public ShaderLoader() {
     }
 
     public static void registryShaders(ResourceProvider resourceProvider){
         DANMAKU_DEPTH_OUTLINE_SHADER = registryShader(resourceProvider,new ResourceLocation(THDanmakuCraftCore.MOD_ID,"danmaku/rendertype_danmaku_1"), THRenderType.TEST_FORMAT);
+        DANMAKU_TEXTURE_SHADER = registryShader(resourceProvider,new ResourceLocation(THDanmakuCraftCore.MOD_ID,"danmaku/rendertype_danmaku_texture"), THRenderType.POSITION_COLOR_COLOR_TEX);
         registryShader(resourceProvider,new ResourceLocation(THDanmakuCraftCore.MOD_ID,"box_blur"), DefaultVertexFormat.POSITION);
         registryShader(resourceProvider,new ResourceLocation(THDanmakuCraftCore.MOD_ID,"test_shader"), new VertexFormat(
                 ImmutableMap.<String, VertexFormatElement>builder()

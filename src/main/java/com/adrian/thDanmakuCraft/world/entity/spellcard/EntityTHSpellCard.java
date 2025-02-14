@@ -22,6 +22,8 @@ public class EntityTHSpellCard extends EntityTHObjectContainer {
     public float deathTimerForRenderSpellCardNameBar = 0;
     @OnlyIn(Dist.CLIENT)
     public float lastDeathTimerForRenderSpellCardNameBar = 0;
+    @OnlyIn(Dist.CLIENT)
+    public boolean flagForRenderSpellCardNameBar = true;
 
     public EntityTHSpellCard(EntityType<EntityTHSpellCard> type, Level level) {
         super(type, level);

@@ -98,6 +98,14 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         this.lifetime = timer;
     }
 
+    public int getLifetime(){
+        return this.lifetime;
+    }
+
+    public boolean isInLifeTime(){
+        return this.timer < this.lifetime;
+    }
+
     /*
     public void task(){
         boolean flag = false;
@@ -132,7 +140,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         return this.luaClass;
     }
 
-    private final Map<String,LuaValue> scriptEventCache = Maps.newHashMap();
+    //private final Map<String,LuaValue> scriptEventCache = Maps.newHashMap();
     public void scriptEvent(String eventName,LuaValue... args){
         if(this.luaClass == null || this.luaClass.isnil()) {
             LuaValue luaClass1 = LuaCore.getInstance().getLuaClass(this.getLuaClassKey());
@@ -141,14 +149,17 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
             }
             this.luaClass = luaClass1;
         }
-        LuaValue event;
+
+        /*LuaValue event;
         if(scriptEventCache.containsKey(eventName)){
             event = scriptEventCache.get(eventName);
         }else {
             event = this.luaClass.get(eventName);
             scriptEventCache.put(eventName,event);
-        }
-        //LuaValue event = this.luaClass.get(eventName);
+        }*/
+
+        LuaValue event = this.luaClass.get(eventName);
+
         if(!event.isnil() && event.isfunction()){
             try {
                 event.checkfunction().invoke(args);
@@ -174,7 +185,18 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         //this.task();
         this.entitiesInBound = this.level().getEntities(this.hostEntity,this.getContainerBound()).stream().filter((entity -> !(entity.equals(this.hostEntity)) && !(entity instanceof EntityTHObjectContainer))).toList();
 
-        this.scriptEvent("onTick",this.ofLuaValue());
+        if (this.timer > this.lifetime){
+            if(this.timer > this.lifetime+20){
+                for (THObject object : this.objectManager.getTHObjects()) {
+                    object.setDead();
+                }
+            }
+            if(this.timer > this.lifetime+40 || this.objectManager.isEmpty()){
+                this.discard();
+            }
+        }else {
+            this.scriptEvent("onTick", this.ofLuaValue());
+        }
 
         this.objectManager.tickTHObjects();
 
@@ -184,9 +206,6 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
             }
         }
 
-        if (--this.lifetime < 0){
-            this.discard();
-        }
 
         this.timer++;
     }
@@ -634,7 +653,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         LuaValue library = LuaValue.tableOf();
         library.set( "getMaxObjectAmount", getMaxObjectAmount);
         library.set( "getPosition", getPosition);
-        library.set( "setTimer", setTimer);
+        //library.set( "setTimer", setTimer);
         library.set( "getTimer", getTimer);
         library.set( "getUser", getUser);
         library.set( "getTarget", getTarget);

@@ -28,9 +28,8 @@ public class ItemTestDanmaku extends Item {
         THObjectContainer container = entityTHObjectContainer.getContainer();
         container.setUser(player);
         container.setLuaClass("testContainer");
-        container.setSpellCardName("測試彈幕");
         container.scriptEvent("onInit",container.ofLuaValue());
-        //player.getCooldowns().addCooldown(this, 200);
+        player.getCooldowns().addCooldown(this, container.getLifetime());
         return InteractionResultHolder.sidedSuccess(itemstack, level.isClientSide());
     }
 }

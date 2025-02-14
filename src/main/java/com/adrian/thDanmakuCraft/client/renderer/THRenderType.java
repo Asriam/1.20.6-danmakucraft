@@ -25,8 +25,17 @@ public class THRenderType extends RenderType{
     public record RENDER_TYPE_2D_DANMAKU_CONTEXT(ResourceLocation textureLocation,BlendMode blendMode) {
     }
 
-    public static final Function<RENDER_TYPE_2D_DANMAKU_CONTEXT, RenderType> RENDER_TYPE_2D_DANMAKU = Util.memoize((context) ->
-            RenderType.create("render_type_2d_danmaku", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, false, false,
+    public static final VertexFormat POSITION_COLOR_COLOR_TEX = new VertexFormat(
+            ImmutableMap.<String, VertexFormatElement>builder()
+                    .put("Position", DefaultVertexFormat.ELEMENT_POSITION)
+                    .put("Color", DefaultVertexFormat.ELEMENT_COLOR)
+                    .put("Color2", DefaultVertexFormat.ELEMENT_COLOR)
+                    .put("UV0", DefaultVertexFormat.ELEMENT_UV0)
+                    .build()
+    );
+
+    public static final Function<RENDER_TYPE_2D_DANMAKU_CONTEXT, RenderType> RENDER_TYPE_THOBJECT = Util.memoize((context) ->
+            RenderType.create("render_type_thobject", DefaultVertexFormat.POSITION_COLOR_TEX, VertexFormat.Mode.QUADS, 256, false, false,
             CompositeState.builder()
                     .setShaderState(RenderStateShard.POSITION_COLOR_TEX_SHADER)
                     .setTextureState(new TextureStateShard(context.textureLocation, true, true))
@@ -46,6 +55,28 @@ public class THRenderType extends RenderType{
                     //.setOutputState(ITEM_ENTITY_TARGET)
                     .createCompositeState(false)
     ));
+
+    public static final Function<RENDER_TYPE_2D_DANMAKU_CONTEXT, RenderType> RENDER_TYPE_2D_DANMAKU = Util.memoize((context) ->
+            RenderType.create("render_type_2d_danmaku", POSITION_COLOR_COLOR_TEX, VertexFormat.Mode.QUADS, 256, false, false,
+                    CompositeState.builder()
+                            .setShaderState(new ShaderStateShard(() -> ShaderLoader.DANMAKU_TEXTURE_SHADER))
+                            .setTextureState(new TextureStateShard(context.textureLocation, true, true))
+                            .setTransparencyState(/*TRANSLUCENT_TRANSPARENCY*/
+                                    new TransparencyStateShard("custom_transparency", () -> {
+                                        RenderSystem.enableBlend();
+                                        context.blendMode.apply();
+                                    }, () -> {
+                                        RenderSystem.disableBlend();
+                                        RenderSystem.defaultBlendFunc();
+                                    }))
+                            .setCullState(CULL)
+                            .setLightmapState(NO_LIGHTMAP)
+                            .setOverlayState(NO_OVERLAY)
+                            .setWriteMaskState(COLOR_DEPTH_WRITE)
+                            .setOutputState(TRANSLUCENT_TARGET)
+                            //.setOutputState(ITEM_ENTITY_TARGET)
+                            .createCompositeState(false)
+            ));
 
     /*
     public static final Function<ResourceLocation, RenderType> BLEND_LIGHTEN = Util.memoize((texture) -> {

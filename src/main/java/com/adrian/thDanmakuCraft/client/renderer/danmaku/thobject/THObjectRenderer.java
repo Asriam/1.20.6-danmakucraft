@@ -38,15 +38,8 @@ public class THObjectRenderer extends AbstractTHObjectRenderer<THObject> {
         PoseStack.Pose posestack$pose = poseStack.last();
 
         IImage.Image image = object.getImage();
-        /*
-        RenderUtil.renderTexture(vertexConsumer, posestack$pose, combinedOverlay,
-                new Vector3f(-0.5f, -0.5f, 0.0f), new Vector2f(0.0f, 1.0f),
-                new Vector3f(0.5f, -0.5f, 0.0f), new Vector2f(1.0f, 1.0f),
-                new Vector3f(0.5f, 0.5f, 0.0f), new Vector2f(1.0f, 0.0f),
-                new Vector3f(-0.5f, 0.5f, 0.0f), new Vector2f(0.0f, 0.0f),
-                object.color);*/
 
-        RenderUtil.renderTexture(vertexConsumer, posestack$pose, combinedOverlay, Vec3.ZERO, Vec2.ONE,
+        RenderUtil.renderTexture(vertexConsumer, posestack$pose, combinedOverlay, Vec3.ZERO.toVector3f(), Vec2.ONE,
                 image.getUVStart(),
                 image.getUVEnd(),
                 object.getColor());

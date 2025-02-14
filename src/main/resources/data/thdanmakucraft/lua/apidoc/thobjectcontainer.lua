@@ -18,8 +18,10 @@ function container:getMaxObjectAmount() end
 ---@return util.Vec3
 function container:getPosition() end
 
+--[[
 ---@param time number
 function container:setTimer(time) end
+]]
 
 ---@return number
 function container:getTimer() end

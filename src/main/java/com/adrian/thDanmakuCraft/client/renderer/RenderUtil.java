@@ -75,8 +75,7 @@ public class RenderUtil {
     }
 
     public static void renderTexture(VertexConsumer consumer, PoseStack.Pose pose, int combinedOverlay,
-                                     Vec3 offSetPos, Vec2 scale, Vec2 uvStart, Vec2 uvEnd, Color color){
-        Vector3f pos = offSetPos.toVector3f();
+                                     Vector3f pos, Vec2 scale, Vec2 uvStart, Vec2 uvEnd, Color color){
         renderTexture(consumer, pose, combinedOverlay,
                 new Vector3f(-0.5f*scale.x+pos.x, -0.5f*scale.y+pos.y, pos.z),   new Vector2f(uvStart.x, uvStart.y),color,
                 new Vector3f(0.5f*scale.x+pos.x, -0.5f*scale.y+pos.y, pos.z),    new Vector2f(uvEnd.x, uvStart.y),  color,

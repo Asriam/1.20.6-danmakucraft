@@ -561,7 +561,7 @@ public class THObject implements ILuaValue {
             this.setRotation(VectorAngleToRadAngle(this.getMotionDirection()));
         }
 
-        if (--this.lifetime < 0 || (!this.getContainer().getContainerBound().contains(this.getPosition()))) {
+        if (this.timer > this.lifetime || (!this.getContainer().getContainerBound().contains(this.getPosition()))) {
             this.setDead();
         }
 
@@ -655,6 +655,7 @@ public class THObject implements ILuaValue {
     }
 
     public void onHit(HitResult result) {
+        this.setVelocity(Vec3.ZERO, false);
         this.invokeScriptEvent("onHit", this.ofLuaValue());
         if (this.shouldSetDeadWhenCollision) {
             this.setDead();
@@ -683,7 +684,7 @@ public class THObject implements ILuaValue {
 
     public void onDead() {
         this.collision = false;
-        this.setVelocity(Vec3.ZERO, false);
+        //this.setVelocity(Vec3.ZERO, false);
         if (this.deathAnimation) {
             this.deathLastingTime--;
             if (this.deathLastingTime <= 0) {

@@ -15,6 +15,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.client.event.CustomizeGuiOverlayEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -66,17 +67,25 @@ public class TickEvents{
             List<EntityTHSpellCard> removeList = new ArrayList<>();
             List<Entity> entities = Lists.newArrayList(level.entitiesForRendering().iterator());
 
+            AABB playerBoundingBox = Minecraft.getInstance().player.getBoundingBox();
             for(EntityTHSpellCard spellCard:SpellCardNameOverlay.spellCards){
-                if(!entities.contains(spellCard)){
+                boolean flag = entities.contains(spellCard) && spellCard.getContainer().isInLifeTime() && spellCard.getContainer().getContainerBound().intersects(playerBoundingBox);
+                spellCard.flagForRenderSpellCardNameBar = flag;
+                if (flag/*entities.contains(spellCard)*/) {
+                    spellCard.deathTimerForRenderSpellCardNameBar = Math.min(spellCard.deathTimerForRenderSpellCardNameBar,10.0f);
+                    spellCard.lastDeathTimerForRenderSpellCardNameBar = spellCard.deathTimerForRenderSpellCardNameBar;
+                    spellCard.deathTimerForRenderSpellCardNameBar = Math.max(spellCard.deathTimerForRenderSpellCardNameBar-0.6f,0.0f);
+                } else {
                     spellCard.lastDeathTimerForRenderSpellCardNameBar = spellCard.deathTimerForRenderSpellCardNameBar;
                     spellCard.deathTimerForRenderSpellCardNameBar += 0.6f;
+                    //System.out.print(spellCard.deathTimerForRenderSpellCardNameBar);
 
-                    if (spellCard.deathTimerForRenderSpellCardNameBar > 10.0f) {
+                    if (spellCard.deathTimerForRenderSpellCardNameBar > 100.0f) {
                         removeList.add(spellCard);
                     }
-                }else {
-                    spellCard.timerForRenderSpellCardNameBar += 0.6f;
                 }
+
+                spellCard.timerForRenderSpellCardNameBar += 0.6f;
             }
 
             removeList.forEach(SpellCardNameOverlay.spellCards::remove);

@@ -23,6 +23,7 @@ public class THBulletRenderers {
         poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
         PoseStack.Pose posestack_pose = poseStack.last();
         IImage.Image image = bullet.getImage();
+
         RenderUtil.renderTexture(vertexConsumer, posestack_pose, combinedOverlay, Vec3.ZERO, Vec2.ONE,
                 image.getUVStart(),
                 image.getUVEnd(),

@@ -55,29 +55,18 @@ public class THDanmakuCraftCore
         //LuaCore.init();
     }
 
-    public static Map<String,Runnable> onServerStartingTask = new HashMap<>();
+    //public static Map<String,Runnable> onServerStartingTask = new HashMap<>();
 
     @SubscribeEvent
-    public void onServerStartingEvent(final @NotNull ServerStartingEvent event) {
+    public void onServerStartingEvent(final ServerStartingEvent event) {
         ResourceLoader.init(event.getServer().getResourceManager());
 
         LuaLoader.init();
         LuaCore.init();
 
+        /*
         for(Runnable task:onServerStartingTask.values()){
             task.run();
-        }
-    }
-
-    @Nullable
-    @Deprecated
-    public static ResourceManager getServerResourceManager() {
-        // Get the Minecraft server instance
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-        if (server != null) {
-            // Access the resource manager
-            return server.getResourceManager();
-        }
-        return null; // Server might not be initialized yet
+        }*/
     }
 }

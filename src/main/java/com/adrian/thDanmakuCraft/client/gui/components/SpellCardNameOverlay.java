@@ -52,11 +52,13 @@ public class SpellCardNameOverlay implements IGuiOverlay{
         int barWidth = width;
         int barHeight = height*36/256;
 
+        float y3 = 0;
+
         List<EntityTHSpellCard> removeList = Lists.newArrayList();
-        poseStack.pushPose();
+        //poseStack.pushPose();
         for(EntityTHSpellCard spellCard : spellCards) {
-            if(spellCard != null) {
-                boolean flag = spellCard.isAddedToWorld();
+            boolean flag = spellCard.flagForRenderSpellCardNameBar;
+            if(spellCard.deathTimerForRenderSpellCardNameBar < 20.0f) {
 
                 float timer = spellCard.timerForRenderSpellCardNameBar + partialTick;
                 float timer2 = Mth.lerp(partialTick, spellCard.lastDeathTimerForRenderSpellCardNameBar, spellCard.deathTimerForRenderSpellCardNameBar);
@@ -68,10 +70,13 @@ public class SpellCardNameOverlay implements IGuiOverlay{
                 float finalX = window.getGuiScaledWidth() - barWidth * scale;
                 float finalY = barHeight * scale * i;
 
-                float x2 = flag ? 0.0f : barWidth * scale * Mth.clamp(timer2 / 10.0f, 0.0f, 1.0f);
-                float y2 = flag ? 0.0f : barHeight * scale * Mth.clamp(timer2 / 10.0f, 0.0f, 1.0f);
+                float num = scale * Mth.clamp(timer2 / 10.0f, 0.0f, 1.0f);
 
-                poseStack.translate(0.0f, -y2, 0.0f);
+                float x2 = timer2<=0.0f ? 0.0f : barWidth * num;
+                float y2 = timer2<=0.0f ? 0.0f : barHeight * num;
+                y3 += y2;
+
+                //poseStack.translate(0.0f, -y2, 0.0f);
 
                 poseStack.pushPose();
                 float pow = (float) Math.pow(Math.min(1.0f, timer / 20), 0.6f);
@@ -79,8 +84,8 @@ public class SpellCardNameOverlay implements IGuiOverlay{
                         timer < 20.0f ? Mth.lerp(pow, window.getGuiScaledWidth() * 0.2f, finalX) : finalX + x2,
                         -(timer < 20.0f ? Mth.lerp(pow, window.getGuiScaledHeight() * 0.3f, 0) : 0) +
                                 Mth.lerp(Mth.clamp(Math.pow(-Mth.cos(Mth.clamp((timer - 20) / 14, 0.0f, 1.0f) * Mth.PI) / 2 + 0.5f, 1.8f), 0.0f, 1.0f),
-                                        window.getGuiScaledHeight() - barHeight * scale, finalY)
-                                + y2,
+                                        window.getGuiScaledHeight() - barHeight * scale, finalY  - y3) + y2
+                                ,
                         0);
                 poseStack.scale(scale, scale, 1.0f);
                 drawBar(SPELL_CARD_UI_TEXTURE, poseStack.last().pose(), 0, width, 0, barHeight, 0, 0, 1.0f, 0, 1.0f * 36 / 256, color);
@@ -95,7 +100,7 @@ public class SpellCardNameOverlay implements IGuiOverlay{
                 }
             }
         }
-        poseStack.popPose();
+        //poseStack.popPose();
         removeList.forEach(spellCards::remove);
     }
     static void drawBar(ResourceLocation textureLocation, Matrix4f pose, float x0, float x1, float y0, float y1, float z, float u0, float u1, float v0, float v1, Color color
