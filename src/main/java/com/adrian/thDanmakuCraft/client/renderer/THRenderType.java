@@ -17,12 +17,13 @@ import java.util.function.Function;
 
 import static net.minecraft.client.renderer.RenderType.*;
 @OnlyIn(Dist.CLIENT)
-public class THRenderType extends RenderType{
-    public THRenderType(String string, VertexFormat vertexFormat, VertexFormat.Mode mode, int i, boolean bl, boolean bl2, Runnable runnable, Runnable runnable2) {
-        super(string, vertexFormat, mode, i, bl, bl2, runnable, runnable2);
+public class THRenderType extends RenderStateShard{
+
+    public THRenderType(String p_110161_, Runnable p_110162_, Runnable p_110163_) {
+        super(p_110161_, p_110162_, p_110163_);
     }
 
-    public record RENDER_TYPE_2D_DANMAKU_CONTEXT(ResourceLocation textureLocation,BlendMode blendMode) {
+    public record RENDER_TYPE_2D_DANMAKU_CONTEXT(ResourceLocation textureLocation, BlendMode blendMode) {
     }
 
     public static final VertexFormat POSITION_COLOR_COLOR_TEX = new VertexFormat(
@@ -33,13 +34,31 @@ public class THRenderType extends RenderType{
                     .put("UV0", DefaultVertexFormat.ELEMENT_UV0)
                     .build()
     );
+    public static final ShaderStateShard DANMAKU_DEPTH_OUTLINE_SHADER = new ShaderStateShard(() -> {
+        //MyShaderInstance shader = ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER;
+        //shader.safeGetUniform("Near").set(GameRenderer.PROJECTION_Z_NEAR);
+        //shader.safeGetUniform("Far").set(Minecraft.getInstance().gameRenderer.getDepthFar());
+        //THDanmakuCraftCore.LOGGER.info(""+Minecraft.getInstance().gameRenderer.getDepthFar());
+        return ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER;
+    });
+    public static final VertexFormat TEST_FORMAT = new VertexFormat(
+            ImmutableMap.<String, VertexFormatElement>builder()
+                    .put("Position", DefaultVertexFormat.ELEMENT_POSITION)
+                    .put("Color"   , DefaultVertexFormat.ELEMENT_COLOR)
+                    .put("Color2"  , DefaultVertexFormat.ELEMENT_COLOR)
+                    //.put("UV"      , DefaultVertexFormat.ELEMENT_UV)
+                    .put("UV2"     , DefaultVertexFormat.ELEMENT_UV)
+                    .put("UV3"     , DefaultVertexFormat.ELEMENT_UV)
+                    .put("Normal"  , DefaultVertexFormat.ELEMENT_NORMAL)
+                    .build()
+    );
 
     public static final Function<RENDER_TYPE_2D_DANMAKU_CONTEXT, RenderType> RENDER_TYPE_THOBJECT = Util.memoize((context) ->
             RenderType.create("render_type_thobject", DefaultVertexFormat.POSITION_COLOR_TEX, VertexFormat.Mode.QUADS, 256, false, false,
             CompositeState.builder()
-                    .setShaderState(RenderStateShard.POSITION_COLOR_TEX_SHADER)
+                    .setShaderState(POSITION_COLOR_TEX_SHADER)
                     .setTextureState(new TextureStateShard(context.textureLocation, true, true))
-                    .setTransparencyState(/*TRANSLUCENT_TRANSPARENCY*/
+                    .setTransparencyState(
                             new TransparencyStateShard("custom_transparency", () -> {
                                 RenderSystem.enableBlend();
                                 context.blendMode.apply();
@@ -124,25 +143,7 @@ public class THRenderType extends RenderType{
     );*/
 
     //private static final RenderTarget DEPTH_BUFFER = new TextureTarget(1000,1000,true,true);
-    public static final ShaderStateShard DANMAKU_DEPTH_OUTLINE_SHADER = new ShaderStateShard(() -> {
-        //MyShaderInstance shader = ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER;
-        //shader.safeGetUniform("Near").set(GameRenderer.PROJECTION_Z_NEAR);
-        //shader.safeGetUniform("Far").set(Minecraft.getInstance().gameRenderer.getDepthFar());
-        //THDanmakuCraftCore.LOGGER.info(""+Minecraft.getInstance().gameRenderer.getDepthFar());
-        return ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER;
-    });
 
-     public static final VertexFormat TEST_FORMAT = new VertexFormat(
-            ImmutableMap.<String, VertexFormatElement>builder()
-                    .put("Position", DefaultVertexFormat.ELEMENT_POSITION)
-                    .put("Color"   , DefaultVertexFormat.ELEMENT_COLOR)
-                    .put("Color2"  , DefaultVertexFormat.ELEMENT_COLOR)
-                    //.put("UV"      , DefaultVertexFormat.ELEMENT_UV)
-                    .put("UV2"     , DefaultVertexFormat.ELEMENT_UV)
-                    .put("UV3"     , DefaultVertexFormat.ELEMENT_UV)
-                    .put("Normal"  , DefaultVertexFormat.ELEMENT_NORMAL)
-                    .build()
-    );
 
     public static final RenderType TEST_RENDER_TYPE = RenderType.create("lightning_3", TEST_FORMAT, VertexFormat.Mode.QUADS, 786432, false, true,
             RenderType.CompositeState.builder()

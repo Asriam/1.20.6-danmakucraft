@@ -74,7 +74,6 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
         } else {
             //poseStack.mulPose(this.getRenderDispatcher().cameraOrientation());
             Vec2 rotation = THObject.VectorAngleToRadAngle(this.getRenderDispatcher().camera.getPosition().vectorTo(bulletPos));
-            //poseStack.mulPose(new Quaternionf().rotateYXZ(rotation.y,-rotation.x,0.0f));
             poseStack.mulPose(new Quaternionf().rotateY(rotation.y).rotateX(-rotation.x));
             poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
             THBulletRenderers.render2DBullet(this, bullet, poseStack, vertexConsumer, partialTicks, overlay);
