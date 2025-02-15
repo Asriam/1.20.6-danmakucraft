@@ -71,6 +71,11 @@ public class THBullet extends THObject {
         return bulletIndexColor.getIndex();
     }*/
 
+    @Override
+    public float getDamage(){
+        return this.style.damage * super.getDamage();
+    }
+
     public void setStyle(DefaultBulletStyle style) {
         this.style = style;
         this.size = style.getSize();
@@ -197,25 +202,25 @@ public class THBullet extends THObject {
     }
 
     public enum DefaultBulletStyle implements IBulletStyle{
-        arrow_big(IMAGE_ARROW_BIG,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.SPHERE, true),
+        arrow_big(IMAGE_ARROW_BIG,1.0f,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.SPHERE, true),
         arrow_mid,
         arrow_small,
         gun_bullet,
         butterfly,
         square,
-        ball_small(IMAGE_BALL_MID,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.SPHERE, false),
-        ball_mid(IMAGE_BALL_MID,new Vec3(0.3f,0.3f,0.3f),false, CollisionType.SPHERE,true),
+        ball_small(IMAGE_BALL_MID,1.0f,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.SPHERE, false),
+        ball_mid(IMAGE_BALL_MID,1.4f,new Vec3(0.3f,0.3f,0.3f),false, CollisionType.SPHERE,true),
         ball_mid_c(IMAGE_BALL_MID),
-        ball_big(IMAGE_BALL_MID,new Vec3(0.5f,0.5f,0.5f),false, CollisionType.SPHERE, true),
+        ball_big(IMAGE_BALL_MID,2.0f,new Vec3(0.5f,0.5f,0.5f),false, CollisionType.SPHERE, true),
         ball_huge,
         ball_light,
         star_small,
         star_big,
-        grain_a(IMAGE_WHITE,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.AABB, true),
-        grain_b(IMAGE_WHITE,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.AABB, true),
+        grain_a(IMAGE_WHITE,1.0f,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.AABB, true),
+        grain_b(IMAGE_WHITE,1.0f,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.AABB, true),
         grain_c, kite, knife, knife_b,
         water_drop, mildew,
-        ellipse(IMAGE_WHITE,new Vec3(0.4f,0.4f,0.5f),false, CollisionType.ELLIPSOID, true),
+        ellipse(IMAGE_WHITE,1.6f,new Vec3(0.4f,0.4f,0.5f),false, CollisionType.ELLIPSOID, true),
         heart, money, music, silence,
         water_drop_dark, ball_huge_dark, ball_light_dark;
 
@@ -224,13 +229,15 @@ public class THBullet extends THObject {
         private final boolean faceCam;
         private final boolean is3D;
         private final CollisionType collisionType;
+        private final float damage;
 
-        DefaultBulletStyle(IImage image, Vec3 size, boolean faceCam, CollisionType collisionType, boolean is3D){
+        DefaultBulletStyle(IImage image,float damage, Vec3 size, boolean faceCam, CollisionType collisionType, boolean is3D){
             this.image = image;
             this.size = size;
             this.faceCam = faceCam;
             this.collisionType = collisionType;
             this.is3D = is3D;
+            this.damage = damage;
         }
 
         DefaultBulletStyle(IImage image, Vec3 size, CollisionType collisionType){
@@ -239,6 +246,7 @@ public class THBullet extends THObject {
             this.faceCam = false;
             this.collisionType = collisionType;
             this.is3D = false;
+            this.damage = 1.0f;
         }
 
         DefaultBulletStyle(){

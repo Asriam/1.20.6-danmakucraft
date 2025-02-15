@@ -89,19 +89,8 @@ end
 local container2 = core.defineClass("testContainer")
 function container2:onInit()
     self:setSpellCardName("境符「波與粒的境界」")
+    self:getMaxObjectAmount(10)
     self:setLifetime(300)
-    --[[
-    local position = self:getPosition()
-    local sample = 10
-    for i = 1,sample do
-        for j = 1,sample/2 do
-            --self:newTHObject()
-            local bullet = self:createTHBullet(testBullet3, {i}, {x=0,y=0,z=0},"arrow_big",1)
-            bullet:setPosition(position:add(util.vec3.new(2.0,0.0,0.0):yRot(math.pi*2/sample*i):xRot(math.pi*2/sample*j)))
-            bullet:setStyle("ball_small")
-
-        end
-    end]]
 end
 
 function container2:onTick()
@@ -110,8 +99,8 @@ function container2:onTick()
     ---@param _pos util.Vec3
     ---@param _angle util.Vec3
     local bbb = function(_pos,_angle)
-        local bullet2 = self:createTHBullet(nil, {i}, _pos,"ball_small",3)
-        bullet2:setPosition(_pos:add(_angle:scale(0.3)))
+        local bullet2 = self:createTHBullet(nil, {i}, _pos,"grain_a",3)
+        bullet2:setPosition(_pos:add(_angle:scale(2.0)))
         bullet2:setVelocity(_angle:scale(0.2),true)
         bullet2:setAccelerationFromDirection(0.02,_angle)
         bullet2:setLifetime(120)

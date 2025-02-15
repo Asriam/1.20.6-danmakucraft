@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.world.danmaku;
 
+import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.util.MultiMap;
 import com.adrian.thDanmakuCraft.world.IDataStorage;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
@@ -89,6 +90,7 @@ public class THObjectManager implements IDataStorage {
         List<THObject> removeList = Lists.newArrayList();
         int index = 0;
         for (THObject object: this.getTHObjects()){
+            //THDanmakuCraftCore.LOGGER.warn("tickTHObject"+this.getTHObjects().size()+object.removeFlag);
             if (object != null && !object.removeFlag){
                 if(object.getContainer() == null){
                     //object.container = this.container;

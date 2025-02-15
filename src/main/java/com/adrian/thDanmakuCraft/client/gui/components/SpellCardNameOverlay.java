@@ -40,10 +40,10 @@ public class SpellCardNameOverlay implements IGuiOverlay{
 
     public void render(GuiGraphics graphics, Window window, float partialTick){
         //System.out.print("sadasdas");
-        graphics.drawString(Minecraft.getInstance().font, "bullet count:" + TickEvents.BulletMount, 0, 0, 0xFFFFFF);
+        Font font = minecraft.font;
+        graphics.drawString(font, "bullet count:" + TickEvents.BulletMount, 0, 0, 0xFFFFFF);
         PoseStack poseStack = graphics.pose();
 
-        Font font = minecraft.font;
         int i = 0;
 
         int width  = 100;
@@ -77,7 +77,8 @@ public class SpellCardNameOverlay implements IGuiOverlay{
                 y3 += y2;
 
                 //poseStack.translate(0.0f, -y2, 0.0f);
-
+                Component component = Component.literal(spellCard.getSpellCardName());
+                int fontWidth = font.width(component);
                 poseStack.pushPose();
                 float pow = (float) Math.pow(Math.min(1.0f, timer / 20), 0.6f);
                 poseStack.translate(
@@ -88,9 +89,9 @@ public class SpellCardNameOverlay implements IGuiOverlay{
                                 ,
                         0);
                 poseStack.scale(scale, scale, 1.0f);
-                drawBar(SPELL_CARD_UI_TEXTURE, poseStack.last().pose(), 0, width, 0, barHeight, 0, 0, 1.0f, 0, 1.0f * 36 / 256, color);
-                Component component = Component.literal(spellCard.getSpellCardName());
-                graphics.drawString(font, component, -font.width(component) + barWidth, 2, color.toInt());
+                drawBar(SPELL_CARD_UI_TEXTURE, poseStack.last().pose(),
+                         -Math.max(fontWidth-width,0.0f), width, 0, barHeight, 0, 0, 1.0f, 0, 1.0f * 36 / 256, color);
+                graphics.drawString(font, component, -fontWidth + barWidth, 2, color.toInt());
 
                 poseStack.popPose();
                 i++;

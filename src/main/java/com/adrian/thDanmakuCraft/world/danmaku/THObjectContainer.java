@@ -33,6 +33,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     public static final List<THObjectContainer> allContainers = new ArrayList<>();
 
     private Entity hostEntity;
+    private static final int MAX_OBJECT_AMOUNT_LIMIT = 10000;
     private int maxObjectAmount = 2000;
     protected final TargetUserManager targetUserManager;
     protected final THObjectManager objectManager;
@@ -46,7 +47,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     public AABB aabb = new AABB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
     public AABB bound = new AABB(-60.0D,-60.0D,-60.0D,60.0D,60.0D,60.0D);
     public boolean autoRemove = true;
-    public int autoRemoveLife = 60;
+    public int autoRemoveLife = 120;
     private List<Entity> entitiesInBound;
     private LuaValue luaValueForm;
     private LuaValue luaClass;
@@ -86,7 +87,10 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     }
 
     public void setMaxObjectAmount(int maxObjectAmount) {
-        this.maxObjectAmount = maxObjectAmount;
+        if(maxObjectAmount > MAX_OBJECT_AMOUNT_LIMIT){
+            THDanmakuCraftCore.LOGGER.warn("Max object amount is too large, it will be set to {}", MAX_OBJECT_AMOUNT_LIMIT);
+        }
+        this.maxObjectAmount = Math.min(maxObjectAmount, MAX_OBJECT_AMOUNT_LIMIT);
     }
 
     public int getTimer() {
@@ -193,7 +197,6 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
             this.scriptInit();
         }
         this.setBound(this.position(),this.bound);
-        //this.task();
         this.entitiesInBound = this.level().getEntities(this.hostEntity,this.getContainerBound()).stream().filter((entity -> !(entity.equals(this.hostEntity)) && !(entity instanceof EntityTHObjectContainer))).toList();
 
         if (this.timer > this.lifetime){
@@ -213,7 +216,8 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
 
         if(this.autoRemove) {
             if (this.objectManager.isEmpty() && --this.autoRemoveLife < 0) {
-                this.getHostEntity().remove(Entity.RemovalReason.DISCARDED);
+                this.discard();
+                //this.getHostEntity().remove(Entity.RemovalReason.DISCARDED);
             }
         }
 
@@ -369,12 +373,12 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     }
 
     public void encode(FriendlyByteBuf buffer) {
-        buffer.writeBoolean(this.isInited);
+        buffer.writeUtf(this.luaClassKey);
         buffer.writeUtf(this.spellCardName);
         buffer.writeInt(this.maxObjectAmount);
         buffer.writeInt(this.timer);
         buffer.writeInt(this.lifetime);
-        buffer.writeUtf(this.luaClassKey);
+        buffer.writeBoolean(this.isInited);
         this.targetUserManager.encode(buffer);
         this.objectManager.encode(buffer);
         //this.scriptManager.encode(buffer);
@@ -389,12 +393,12 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
    }
 
     public void decode(FriendlyByteBuf buffer) {
-        this.isInited = buffer.readBoolean();
+        this.luaClassKey = buffer.readUtf();
         this.spellCardName = buffer.readUtf();
         this.maxObjectAmount = buffer.readInt();
         this.timer = buffer.readInt();
         this.lifetime = buffer.readInt();
-        this.luaClassKey = buffer.readUtf();
+        this.isInited = buffer.readBoolean();
         this.targetUserManager.decode(buffer);
         this.objectManager.decode(buffer);
         //this.scriptManager.decode(buffer);
@@ -421,9 +425,9 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     public void load(CompoundTag tag) {
         this.isInited = tag.getBoolean("Inited");
         this.spellCardName = tag.getString("SpellCardName");
-        this.timer = tag.getInt("Timer");
-        this.lifetime = tag.getInt("Lifetime");
-        this.maxObjectAmount = tag.getInt("MaxObjectAmount");
+        this.timer = tag.contains("MaxObjectAmount") ? tag.getInt("Timer") : this.timer;
+        this.lifetime = tag.contains("MaxObjectAmount") ? tag.getInt("Lifetime") : this.lifetime;
+        this.maxObjectAmount = tag.contains("MaxObjectAmount") ? tag.getInt("MaxObjectAmount") : this.maxObjectAmount;
         this.luaClassKey = tag.getString("LuaClassKey");
         this.objectManager.load(tag.getCompound("object_storage"));
         //this.scriptManager.load(tag.getCompound("script"));

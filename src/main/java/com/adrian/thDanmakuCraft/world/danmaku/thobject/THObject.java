@@ -172,6 +172,9 @@ public class THObject implements ILuaValue {
         this.zRot = object.zRot;
     }
 
+    public float getDamage(){
+        return this.damage * (1.0f + this.level().getDifficulty().getId() * 0.11f);
+    }
     public void setDead() {
         this.isDead = true;
         //this.onDead();
@@ -536,7 +539,7 @@ public class THObject implements ILuaValue {
 
     public void onTick() {
         this.lastPosition = new Vec3(this.positionX, this.positionY, this.positionZ);
-
+        //THDanmakuCraftCore.LOGGER.warn("tickTHObject");
         if (!this.shouldTick) {
             return;
         }
@@ -581,23 +584,6 @@ public class THObject implements ILuaValue {
         if (entitiesInBound.isEmpty()) {
             return;
         }
-
-        /*
-        entitiesInBound.forEach(entity -> {
-            if (!this.canHitUser && entity.equals(this.getContainer().getUser())) {
-                return;
-            }
-            if (this.collisionType == CollisionType.AABB) {
-                AABB aabb = this.getBoundingBox();
-                if (entity.getBoundingBox().intersects(aabb)) {
-                    var result = new EntityHitResult(entity, this.getPosition());
-                    this.onHit(result);
-                }
-            } else if (this.collisionType.collisionEntity(this, entity)) {
-                var result = new EntityHitResult(entity, this.getPosition());
-                this.onHit(result);
-            }
-        });*/
 
         for (Entity entity : entitiesInBound) {
             if (!this.canHitUser && entity.equals(this.getContainer().getUser())) {
@@ -671,11 +657,11 @@ public class THObject implements ILuaValue {
     }
 
     public void onHitEntity(EntityHitResult result) {
-        Entity entity = result.getEntity();
         if (this.damage <= 0.0f) {
             return;
         }
-        entity.hurt(this.level().damageSources().magic(), this.damage);
+        Entity entity = result.getEntity();
+        entity.hurt(this.level().damageSources().magic(), this.getDamage());
     }
 
     public void onHitBlock(BlockHitResult result) {

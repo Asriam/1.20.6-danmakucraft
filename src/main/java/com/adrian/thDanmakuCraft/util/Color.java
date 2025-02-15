@@ -92,7 +92,6 @@ public class Color {
                 (int) (endColor.a + startColor.a * (amt - endColor.a))
         );
     }
-
     public int[] getAll() {
         return new int[]{r, g, b, a};
     }

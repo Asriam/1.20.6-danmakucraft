@@ -10,8 +10,8 @@ import net.minecraft.network.FriendlyByteBuf;
 
 public class THLaser extends THObject {
 
-    public float width;
-    public float length;
+    private float width;
+    private float length;
 
     public THLaser(THObjectType<THLaser> type, ITHObjectContainer container) {
         super(type, container);
@@ -39,7 +39,13 @@ public class THLaser extends THObject {
         this.length = length;
     }
 
+    public float getWidth(){
+        return this.width;
+    }
 
+    public float getLength(){
+        return this.length;
+    }
 
     @Override
     public void encode(FriendlyByteBuf buffer) {

@@ -55,22 +55,25 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         float rotate = (timer)/10.0f;
         float time = 30.0f;
         float open = timer > time ? 1.0f : (float) Math.pow(Math.min(timer / time,1.0f),0.8f);
-        float close = timer < container.getLifetime()-time ? 1.0f : 1.0f - (float) Math.pow(Math.clamp((timer-(container.getLifetime())) / time,0.0f,1.0f),0.4f);
+        float close = timer < container.getLifetime()-time ? 1.0f : 1.0f - (float) Math.pow(Math.clamp((timer-(container.getLifetime())) / time,0.0f,1.0f),2.0f);
         float timeLeft = 1.0f-(float) container.getTimer()/container.getLifetime();
         Vec2 faceCamRotation = THObject.VectorAngleToRadAngle(this.getRenderDispatcher().camera.getPosition().vectorTo(pos));
-        Vec2 scale = Vec2.ONE/*.scale((1.0f-(float) container.getTimer()/container.getLifetime()))*/.scale(10.0f + 0.8f*Mth.cos(timer/8.0f))
+        Vec2 scale = Vec2.ONE/*.scale((1.0f-(float) container.getTimer()/container.getLifetime()))*/
+                .scale(8.0f + 0.8f*Mth.cos(timer/8.0f))
                 .scale(open*close);
         BufferBuilder builder = RenderSystem.renderThreadTesselator().getBuilder();
         if(container.shouldRenderMagicAura) {
             builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
-            //poseStack.pushPose();
             {
                 poseStack.pushPose();
                 PoseStack.Pose pose = poseStack.last();
+                poseStack.mulPose(this.getRenderDispatcher().cameraOrientation()
+                        .rotateZ(rotate));
+                /*
                 poseStack.mulPose(new Quaternionf()
                         .rotateY(faceCamRotation.y + Mth.cos(timer/60.0f) * 0.8f)
                         .rotateX(-faceCamRotation.x + Mth.sin(-timer/40.0f) * 0.8f)
-                        .rotateZ(rotate));
+                        .rotateZ(rotate));*/
                 poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
                 builder.vertex(pose, -scale.x, -scale.y, 0.0f)
                         .color(color.r, color.g, color.b, color.a)
@@ -100,7 +103,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
             return;
         }
 
-        color = new Color(255,255,255,100);
+        color = new Color(180,180,255,160);
         builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
         {
             int sample = 24;
@@ -111,12 +114,13 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
             float width = 1.6f * timeLeft;
             float width2 = width*3.0f;
             float num = 4.0f;
-            float radius = (20.0f + 8.0f) * open*close * timeLeft;
+            float radius = (20.0f + 10.0f) * open*close * timeLeft;
             uvStart = new Vec2(1.0f / 8.0f * (5), 0.0f);
             uvEnd = new Vec2(1.0f / 8.0f * (5+1), 1.0f);
 
             poseStack.pushPose();
                 PoseStack.Pose pose2 = poseStack.last();
+                //poseStack.mulPose(this.getRenderDispatcher().cameraOrientation().rotateZ(-rotate*2.0f));
                 poseStack.mulPose(new Quaternionf().rotateY(faceCamRotation.y).rotateX(-faceCamRotation.x).rotateZ(-rotate*2.0f));
                 poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
                 for (int i = 0; i < sample; i++) {
@@ -157,8 +161,8 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
                 poseStack.pushPose();
                 PoseStack.Pose pose = poseStack.last();
                 poseStack.mulPose(new Quaternionf()
-                        .rotateY(Math.min(g,1)*Mth.PI/2.0f)
-                        .rotateX(Math.max(g-1,0)*Mth.PI/2.0f)
+                        .rotateY(Math.min(g,1)*Mth.PI/2.0f + (float) Math.pow(-1,(g+1))*timer/30.0f)
+                        .rotateX(Math.max(g-1,0)*Mth.PI/2.0f  + (float) Math.pow(-1,(g+2))*timer/30.0f)
                         .rotateZ(rotate*2));
                 for (int i = 0; i < sample; i++) {
                     Vec3 vec3 = new Vec3(0.0f, radius, 0.0f);

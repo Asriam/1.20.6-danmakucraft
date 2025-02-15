@@ -27,7 +27,7 @@ public class ItemTestDanmaku extends Item {
 
         THObjectContainer container = entityTHObjectContainer.getContainer();
         container.setUser(player);
-        container.setLuaClass("testContainer");
+        container.setLuaClass("yukari_spellcard_1");
         container.scriptInit();
         //container.scriptEvent("onInit",container.ofLuaValue());
 

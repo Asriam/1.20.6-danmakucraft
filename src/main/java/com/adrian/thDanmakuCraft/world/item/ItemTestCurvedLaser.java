@@ -2,6 +2,7 @@ package com.adrian.thDanmakuCraft.world.item;
 
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
+import com.adrian.thDanmakuCraft.world.entity.spellcard.EntityTHSpellCard;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
@@ -34,7 +35,7 @@ public class ItemTestCurvedLaser extends Item {
         }
 
         if(entityTHObjectContainer == null){
-            entityTHObjectContainer = new EntityTHObjectContainer(level, player.position());
+            entityTHObjectContainer = new EntityTHSpellCard(player, level, "");
             entityTHObjectContainer.startRiding(player);
             level.addFreshEntity(entityTHObjectContainer);
         }

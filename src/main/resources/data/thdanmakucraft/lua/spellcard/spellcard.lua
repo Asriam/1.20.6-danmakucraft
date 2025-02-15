@@ -4,6 +4,7 @@
 --- DateTime: 2025/1/27 下午 08:19
 ---
 
+core.doFile("spellcard/yukari/yukari_spellcards.lua")
 
 
 function onRegisterItemSpellCard()

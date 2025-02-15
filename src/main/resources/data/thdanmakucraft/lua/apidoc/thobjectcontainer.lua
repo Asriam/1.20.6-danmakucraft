@@ -76,4 +76,7 @@ function container:setSpellCardName(cardName) end
 ---@param lifetime number
 function container:setLifetime(lifetime) end
 
+---@param amount number
+function container:getMaxObjectAmount(amount) end
+
 THObjectContainer = container

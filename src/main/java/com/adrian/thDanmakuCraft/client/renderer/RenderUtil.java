@@ -136,12 +136,19 @@ public class RenderUtil {
 
         angle2 = Mth.DEG_TO_RAD * (360.0f/edgeB);
         int edge3 = edgeADiv2-1;
+
         /*
         deColor.r = (startColor.r - endColor.r)/ edge3;
         deColor.g = (startColor.g - endColor.g)/ edge3;
         deColor.b = (startColor.b - endColor.b)/ edge3;
         deColor.a = (startColor.a - endColor.a)/ edge3;*/
+        deColor = Color.of(
+                (startColor.r - endColor.r)/ edge3,
+                (startColor.g - endColor.g)/ edge3,
+                (startColor.b - endColor.b)/ edge3,
+                (startColor.a - endColor.a)/ edge3);
 
+        /*
         if (startColor.r != endColor.r){
             deColor.r = (startColor.r - endColor.r)/ edge3;
         }
@@ -153,7 +160,7 @@ public class RenderUtil {
         }
         if (startColor.a != endColor.a){
             deColor.a = (startColor.a - endColor.a)/ edge3;
-        }
+        }*/
 
         //float currentX1 = -100.0f;
         //float currentZ1 = -100.0f;

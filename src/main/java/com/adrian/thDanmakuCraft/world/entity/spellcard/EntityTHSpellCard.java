@@ -16,13 +16,13 @@ import javax.annotation.Nullable;
 
 public class EntityTHSpellCard extends EntityTHObjectContainer {
 
-    @OnlyIn(Dist.CLIENT)
+    //@OnlyIn(Dist.CLIENT)
     public float timerForRenderSpellCardNameBar = 0;
-    @OnlyIn(Dist.CLIENT)
+    //@OnlyIn(Dist.CLIENT)
     public float deathTimerForRenderSpellCardNameBar = 0;
-    @OnlyIn(Dist.CLIENT)
+    //@OnlyIn(Dist.CLIENT)
     public float lastDeathTimerForRenderSpellCardNameBar = 0;
-    @OnlyIn(Dist.CLIENT)
+    //@OnlyIn(Dist.CLIENT)
     public boolean flagForRenderSpellCardNameBar = true;
 
     public EntityTHSpellCard(EntityType<EntityTHSpellCard> type, Level level) {

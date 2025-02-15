@@ -40,6 +40,7 @@ function c.vec3(x, y, z) end
 ---@overload fun(className:string, superClass:string)
 ---@overload fun()
 ---@overload fun(superClass:Class)
+---@overload fun(className:string)
 function c.defineClass(className, superClass) end
 
 ---@param className self
