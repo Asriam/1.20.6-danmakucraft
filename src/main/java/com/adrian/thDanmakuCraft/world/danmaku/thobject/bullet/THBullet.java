@@ -202,25 +202,25 @@ public class THBullet extends THObject {
     }
 
     public enum DefaultBulletStyle implements IBulletStyle{
-        arrow_big(IMAGE_ARROW_BIG,1.0f,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.SPHERE, true),
+        arrow_big(IMAGE_ARROW_BIG,2.0f,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.SPHERE, true),
         arrow_mid,
         arrow_small,
         gun_bullet,
         butterfly,
         square,
-        ball_small(IMAGE_BALL_MID,1.0f,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.SPHERE, false),
-        ball_mid(IMAGE_BALL_MID,1.4f,new Vec3(0.3f,0.3f,0.3f),false, CollisionType.SPHERE,true),
+        ball_small(IMAGE_BALL_MID,2.0f,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.SPHERE, false),
+        ball_mid(IMAGE_BALL_MID,2.6f,new Vec3(0.3f,0.3f,0.3f),false, CollisionType.SPHERE,true),
         ball_mid_c(IMAGE_BALL_MID),
-        ball_big(IMAGE_BALL_MID,2.0f,new Vec3(0.5f,0.5f,0.5f),false, CollisionType.SPHERE, true),
+        ball_big(IMAGE_BALL_MID,3.0f,new Vec3(0.5f,0.5f,0.5f),false, CollisionType.SPHERE, true),
         ball_huge,
         ball_light,
         star_small,
         star_big,
-        grain_a(IMAGE_WHITE,1.0f,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.AABB, true),
-        grain_b(IMAGE_WHITE,1.0f,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.AABB, true),
+        grain_a(IMAGE_WHITE,2.0f,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.AABB, true),
+        grain_b(IMAGE_WHITE,2.0f,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.AABB, true),
         grain_c, kite, knife, knife_b,
         water_drop, mildew,
-        ellipse(IMAGE_WHITE,1.6f,new Vec3(0.4f,0.4f,0.5f),false, CollisionType.ELLIPSOID, true),
+        ellipse(IMAGE_WHITE,2.6f,new Vec3(0.4f,0.4f,0.5f),false, CollisionType.ELLIPSOID, true),
         heart, money, music, silence,
         water_drop_dark, ball_huge_dark, ball_light_dark;
 
