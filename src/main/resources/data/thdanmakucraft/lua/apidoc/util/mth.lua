@@ -10,6 +10,7 @@ Mth = m
 
 Mth.DEG_TO_RAD = math.pi/180
 Mth.RAD_TO_DEG = 180/math.pi
+Mth.PI = 3.1415926
 
 ---@param number number
 ---@return number

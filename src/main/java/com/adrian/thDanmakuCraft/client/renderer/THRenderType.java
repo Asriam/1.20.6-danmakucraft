@@ -70,10 +70,32 @@ public class THRenderType extends RenderStateShard{
                     .setLightmapState(NO_LIGHTMAP)
                     .setOverlayState(NO_OVERLAY)
                     .setWriteMaskState(COLOR_DEPTH_WRITE)
-                    .setOutputState(TRANSLUCENT_TARGET)
-                    //.setOutputState(ITEM_ENTITY_TARGET)
-                    .createCompositeState(false)
+                    //.setOutputState(TRANSLUCENT_TARGET)
+                    .setOutputState(ITEM_ENTITY_TARGET)
+                    .createCompositeState(true)
     ));
+
+    public static final Function<RENDER_TYPE_2D_DANMAKU_CONTEXT, RenderType> RENDER_TYPE_SPELLCARD_AURA = Util.memoize((context) ->
+            RenderType.create("render_type_thobject", DefaultVertexFormat.POSITION_COLOR_TEX, VertexFormat.Mode.QUADS, 256, false, false,
+                    CompositeState.builder()
+                            .setShaderState(POSITION_COLOR_TEX_SHADER)
+                            .setTextureState(new TextureStateShard(context.textureLocation, true, true))
+                            .setTransparencyState(
+                                    new TransparencyStateShard("custom_transparency", () -> {
+                                        RenderSystem.enableBlend();
+                                        context.blendMode.apply();
+                                    }, () -> {
+                                        RenderSystem.disableBlend();
+                                        RenderSystem.defaultBlendFunc();
+                                    }))
+                            .setCullState(CULL)
+                            .setLightmapState(NO_LIGHTMAP)
+                            .setOverlayState(NO_OVERLAY)
+                            .setWriteMaskState(COLOR_DEPTH_WRITE)
+                            //.setOutputState(TRANSLUCENT_TARGET)
+                            .setOutputState(ITEM_ENTITY_TARGET)
+                            .createCompositeState(true)
+            ));
 
     public static final Function<RENDER_TYPE_2D_DANMAKU_CONTEXT, RenderType> RENDER_TYPE_2D_DANMAKU = Util.memoize((context) ->
             RenderType.create("render_type_2d_danmaku", POSITION_COLOR_COLOR_TEX, VertexFormat.Mode.QUADS, 256, false, false,
@@ -92,9 +114,9 @@ public class THRenderType extends RenderStateShard{
                             .setLightmapState(NO_LIGHTMAP)
                             .setOverlayState(NO_OVERLAY)
                             .setWriteMaskState(COLOR_DEPTH_WRITE)
-                            .setOutputState(TRANSLUCENT_TARGET)
+                            .setOutputState(ITEM_ENTITY_TARGET)
                             //.setOutputState(ITEM_ENTITY_TARGET)
-                            .createCompositeState(false)
+                            .createCompositeState(true)
             ));
 
     /*
@@ -183,12 +205,14 @@ public class THRenderType extends RenderStateShard{
                     .setCullState(new RenderStateShard.CullStateShard(context.shouldCull))
                     .setLightmapState(NO_LIGHTMAP)
                     .setOverlayState(NO_OVERLAY)
-                    .setWriteMaskState(COLOR_WRITE)
+                    .setWriteMaskState(COLOR_DEPTH_WRITE)
+                    //.setWriteMaskState(COLOR_WRITE)
                     .setLayeringState(VIEW_OFFSET_Z_LAYERING)
                     //.setWriteMaskState(COLOR_DEPTH_WRITE)
                     //.setDepthTestState(NO_DEPTH_TEST)
-                    .setOutputState(TRANSLUCENT_TARGET)
-                    .createCompositeState(false)
+                    .setOutputState(ITEM_ENTITY_TARGET)
+                    //.setOutputState(TRANSLUCENT_TARGET)
+                    .createCompositeState(true)
             )
     );
     /*

@@ -11,6 +11,7 @@ import com.adrian.thDanmakuCraft.world.entity.spellcard.EntityTHSpellCard;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -22,6 +23,8 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+
+import java.util.Objects;
 
 public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<EntityTHSpellCard>{
     public EntityTHSpellCardRenderer(EntityRendererProvider.Context context) {
@@ -44,7 +47,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
             ResourceLocation.fromNamespaceAndPath(THDanmakuCraftCore.MOD_ID,"textures/spellcard/eff_magicsquare.png"), 0.0f, 0.0f, 1.0f, 1.0f);
     public void renderSpellCardAura(THObjectContainer container, PoseStack poseStack, Vec3 pos, float partialTicks){
         IImage.Image image = SPELLCARD_MAGIC_SQUAR;
-        RenderType renderType = THRenderType.RENDER_TYPE_THOBJECT.apply(
+        RenderType renderType = THRenderType.RENDER_TYPE_SPELLCARD_AURA.apply(
                 new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(image.getTextureLocation(), THBlendMode.getBlendMode(THObject.Blend.add))
         );
 
@@ -95,6 +98,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
             }
             renderType.setupRenderState();
             RenderSystem.disableCull();
+            //RenderSystem.disableBlend();
             BufferUploader.drawWithShader(builder.end());
             renderType.clearRenderState();
         }

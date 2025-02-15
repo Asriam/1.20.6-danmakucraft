@@ -59,6 +59,8 @@ public class SpellCardNameOverlay implements IGuiOverlay{
         for(EntityTHSpellCard spellCard : spellCards) {
             boolean flag = spellCard.flagForRenderSpellCardNameBar;
             if(spellCard.deathTimerForRenderSpellCardNameBar < 20.0f) {
+                Component component = Component.literal(spellCard.getSpellCardName());
+                int fontWidth = font.width(component);
 
                 float timer = spellCard.timerForRenderSpellCardNameBar + partialTick;
                 float timer2 = Mth.lerp(partialTick, spellCard.lastDeathTimerForRenderSpellCardNameBar, spellCard.deathTimerForRenderSpellCardNameBar);
@@ -72,13 +74,11 @@ public class SpellCardNameOverlay implements IGuiOverlay{
 
                 float num = scale * Mth.clamp(timer2 / 10.0f, 0.0f, 1.0f);
 
-                float x2 = timer2<=0.0f ? 0.0f : barWidth * num;
+                float x2 = timer2<=0.0f ? 0.0f : Math.max(fontWidth+3+barWidth,0.0f) * num;
                 float y2 = timer2<=0.0f ? 0.0f : barHeight * num;
                 y3 += y2;
 
                 //poseStack.translate(0.0f, -y2, 0.0f);
-                Component component = Component.literal(spellCard.getSpellCardName());
-                int fontWidth = font.width(component);
                 poseStack.pushPose();
                 float pow = (float) Math.pow(Math.min(1.0f, timer / 20), 0.6f);
                 poseStack.translate(
@@ -90,7 +90,7 @@ public class SpellCardNameOverlay implements IGuiOverlay{
                         0);
                 poseStack.scale(scale, scale, 1.0f);
                 drawBar(SPELL_CARD_UI_TEXTURE, poseStack.last().pose(),
-                         -Math.max(fontWidth-width,0.0f), width, 0, barHeight, 0, 0, 1.0f, 0, 1.0f * 36 / 256, color);
+                         -Math.max(fontWidth+3-barWidth,0.0f), barWidth, 0, barHeight, 0, 0, 1.0f, 0, 1.0f * 36 / 256, color);
                 graphics.drawString(font, component, -fontWidth + barWidth, 2, color.toInt());
 
                 poseStack.popPose();

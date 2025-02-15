@@ -18,8 +18,8 @@ function yukari_spellcrad_1:onTick()
     ---@param _pos util.Vec3
     ---@param _angle util.Vec3
     local bbb = function(_pos,_angle)
-        local bullet2 = self:createTHBullet(nil, {i}, _pos,"grain_a",3)
-        bullet2:setPosition(_pos:add(_angle:scale(1.0)))
+        local bullet2 = self:createTHBullet(nil, {i}, _pos,"arrow_big",3)
+        bullet2:setPosition(_pos:add(_angle:scale(math.min(timer/120,1)^0.4*1.6)))
         bullet2:setVelocity(_angle:scale(0.2),true)
         bullet2:setAccelerationFromDirection(0.02,_angle)
         bullet2:setLifetime(120)

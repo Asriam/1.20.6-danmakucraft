@@ -44,7 +44,8 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
             float offSetTimer = bullet.getTimer() + partialTicks;
             boolean flag = bullet.spawnAnimation && offSetTimer < time-time*0.2f;
             if(flag){
-                float scale = bullet.getScale().x * 1.6f * (float) Math.pow((double) (time - offSetTimer) / time,1.2f);
+                Vec3 size = bullet.getSize();
+                float scale = (float) (Math.max(Math.max(size.x,size.z),size.y) * 4.0f * (float) Math.pow((double) (time - offSetTimer) / time,1.2f));
                 poseStack.pushPose();
                 poseStack.mulPose(this.getRenderDispatcher().cameraOrientation());
                 poseStack.mulPose(Axis.XP.rotationDegrees(-90.0F));

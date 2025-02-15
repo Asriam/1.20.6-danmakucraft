@@ -5,9 +5,13 @@ import com.adrian.thDanmakuCraft.init.*;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.lua.LuaLoader;
 import com.adrian.thDanmakuCraft.util.ResourceLoader;
+import com.adrian.thDanmakuCraft.world.item.ItemTestDanmaku;
 import com.mojang.logging.LogUtils;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
@@ -55,18 +59,11 @@ public class THDanmakuCraftCore
         //LuaCore.init();
     }
 
-    //public static Map<String,Runnable> onServerStartingTask = new HashMap<>();
-
     @SubscribeEvent
     public void onServerStartingEvent(final ServerStartingEvent event) {
         ResourceLoader.init(event.getServer().getResourceManager());
 
         LuaLoader.init();
         LuaCore.init();
-
-        /*
-        for(Runnable task:onServerStartingTask.values()){
-            task.run();
-        }*/
     }
 }

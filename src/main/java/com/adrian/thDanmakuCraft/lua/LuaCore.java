@@ -244,6 +244,7 @@ public class LuaCore {
         });
         library.set("DEG_TO_RAD",Mth.DEG_TO_RAD);
         library.set("RAD_TO_DEG",Mth.RAD_TO_DEG);
+        library.set("PI",Mth.PI);
         return library;
     }
     public static LuaValue checkLuaClass(LuaValue value){

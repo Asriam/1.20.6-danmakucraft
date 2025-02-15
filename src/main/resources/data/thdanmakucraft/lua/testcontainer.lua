@@ -3,7 +3,7 @@ local num = 3
 ---@type Class|THBullet
 local testBullet = core.defineClass()
 function testBullet:onInit(i)
-    self:setVelocity(util.vec3.new(0.2,0.0,0.0):yRot(math.pi*2/32*i),true)
+    self:setVelocity(util.vec3.new(0.2,0.0,0.0):yRot(Mth.PI*2/32*i),true)
     self:setNavi(true)
 end
 
