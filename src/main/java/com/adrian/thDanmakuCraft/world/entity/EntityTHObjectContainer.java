@@ -31,12 +31,6 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
         this.setPos(pos);
     }
 
-    public EntityTHObjectContainer(String luaClass, Level level, Vec3 pos) {
-        super(EntityInit.ENTITY_THOBJECT_CONTAINER.get(),level);
-        this.container = new THObjectContainer(this,luaClass);
-        this.setPos(pos);
-    }
-
     public THObjectContainer getContainer() {
         return this.container;
     }

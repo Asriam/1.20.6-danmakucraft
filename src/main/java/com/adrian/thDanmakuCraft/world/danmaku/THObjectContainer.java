@@ -11,7 +11,6 @@ import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THCurvedLaser;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
-import com.google.common.collect.Maps;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -52,7 +51,11 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     private LuaValue luaValueForm;
     private LuaValue luaClass;
     private String luaClassKey = "";
+    private boolean isInited = false;
     private final LuaValueStorageHelper luaValueStorageHelper;
+
+    public boolean shouldRenderMagicAura = true;
+    public boolean shouldRenderLineAura = true;
 
     public THObjectContainer(Entity hostEntity) {
         allContainers.add(this);
@@ -71,7 +74,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     public THObjectContainer(Entity hostEntity, String luaClassKey){
         this(hostEntity);
         this.luaClassKey = luaClassKey;
-        this.scriptEvent("onInit",this.ofLuaValue());
+        this.scriptInit();
     }
 
     public void onAddToWorld(){
@@ -140,6 +143,14 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         return this.luaClass;
     }
 
+
+    public void scriptInit(){
+        if(!this.isInited) {
+            this.scriptEvent("onInit", this.ofLuaValue());
+            this.isInited = true;
+        }
+    }
+
     //private final Map<String,LuaValue> scriptEventCache = Maps.newHashMap();
     public void scriptEvent(String eventName,LuaValue... args){
         if(this.luaClass == null || this.luaClass.isnil()) {
@@ -179,7 +190,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         this.targetUserManager.loadUserAndTarget(level());
 
         if (timer == 0){
-            this.scriptEvent("onInit",this.ofLuaValue());
+            this.scriptInit();
         }
         this.setBound(this.position(),this.bound);
         //this.task();
@@ -358,6 +369,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     }
 
     public void encode(FriendlyByteBuf buffer) {
+        buffer.writeBoolean(this.isInited);
         buffer.writeUtf(this.spellCardName);
         buffer.writeInt(this.maxObjectAmount);
         buffer.writeInt(this.timer);
@@ -377,6 +389,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
    }
 
     public void decode(FriendlyByteBuf buffer) {
+        this.isInited = buffer.readBoolean();
         this.spellCardName = buffer.readUtf();
         this.maxObjectAmount = buffer.readInt();
         this.timer = buffer.readInt();
@@ -392,6 +405,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     }
 
     public void save(CompoundTag tag) {
+        tag.putBoolean("Inited",this.isInited);
         tag.putString("SpellCardName", this.spellCardName);
         tag.putInt("Timer",this.timer);
         tag.putInt("Lifetime",this.lifetime);
@@ -405,6 +419,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     }
 
     public void load(CompoundTag tag) {
+        this.isInited = tag.getBoolean("Inited");
         this.spellCardName = tag.getString("SpellCardName");
         this.timer = tag.getInt("Timer");
         this.lifetime = tag.getInt("Lifetime");

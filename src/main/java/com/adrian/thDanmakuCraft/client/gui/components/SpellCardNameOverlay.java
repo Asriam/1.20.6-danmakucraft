@@ -40,7 +40,7 @@ public class SpellCardNameOverlay implements IGuiOverlay{
 
     public void render(GuiGraphics graphics, Window window, float partialTick){
         //System.out.print("sadasdas");
-        graphics.drawString(Minecraft.getInstance().font, "THDanmakuCraft" + TickEvents.BulletMount, 0, 0, 0xFFFFFF);
+        graphics.drawString(Minecraft.getInstance().font, "bullet count:" + TickEvents.BulletMount, 0, 0, 0xFFFFFF);
         PoseStack poseStack = graphics.pose();
 
         Font font = minecraft.font;

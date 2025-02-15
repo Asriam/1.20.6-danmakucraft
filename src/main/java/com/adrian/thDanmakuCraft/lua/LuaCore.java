@@ -86,7 +86,8 @@ public class LuaCore {
             String script = luaLoader.getResourceAsString(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"lua/"+path));
             return this.GLOBALS.load(script,path).call();
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            THDanmakuCraftCore.LOGGER.error("Failed doing lua file!",e);
         }
         return NIL;
     }

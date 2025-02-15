@@ -58,7 +58,7 @@ public class TickEvents{
                 }
 
                 if(entity instanceof EntityTHSpellCard spellCard){
-                    if(!SpellCardNameOverlay.spellCards.contains(spellCard)){
+                    if(spellCard.getContainer().isSpellCard() && !SpellCardNameOverlay.spellCards.contains(spellCard)){
                         SpellCardNameOverlay.spellCards.add(spellCard);
                     }
                 }
