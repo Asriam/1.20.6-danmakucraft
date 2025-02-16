@@ -184,7 +184,6 @@ public class THObjectContainerRenderer {
         }*/
 
         /*PoseStack.Pose poseStack1$$ = poseStack.last();
-
         poseStack.popPose();
         poseStack.pushPose();*/
 
@@ -192,8 +191,6 @@ public class THObjectContainerRenderer {
         final double camX = cameraPosition.x;
         final double camY = cameraPosition.y;
         final double camZ = cameraPosition.z;
-
-        //poseStack.translate(-camX,-camY,-camZ);
 
         final RenderTarget mainRenderTarget = THObjectContainerRenderer.MAIN_RENDER_TARGET;
         final ShaderInstance shader = ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER;
@@ -385,7 +382,7 @@ public class THObjectContainerRenderer {
         return list;
     }
 
-    static void renderContainerBound(THObjectContainer container, PoseStack poseStack, VertexConsumer vertexConsumer) {
+    public static void renderContainerBound(THObjectContainer container, PoseStack poseStack, VertexConsumer vertexConsumer) {
         AABB aabb = container.getContainerBound().move(container.getPosition().reverse());
         LevelRenderer.renderLineBox(poseStack, vertexConsumer, aabb, 0.0F, 0.0F, 1.0F, 1.0F);
     }

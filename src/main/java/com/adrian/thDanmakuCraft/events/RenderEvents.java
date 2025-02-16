@@ -3,6 +3,7 @@ package com.adrian.thDanmakuCraft.events;
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
+import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
@@ -14,8 +15,11 @@ import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.joml.Matrix4f;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Mod.EventBusSubscriber(modid = THDanmakuCraftCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
@@ -24,10 +28,12 @@ public class RenderEvents {
 
     public static int renderTickCount = 0;
 
+    private static Minecraft minecraft = Minecraft.getInstance();
     @SubscribeEvent
     public static void renderLevelStage(RenderLevelStageEvent event) {
+        Matrix4f pose = event.getPoseStack();
         PoseStack poseStack = new PoseStack();
-        poseStack.mulPose(event.getPoseStack());
+        //poseStack.mulPose(pose);
         float partialTick = event.getPartialTick();
 
         for (RenderLevelStageTask renderHelper: renderLevelStageTasks.values()){
@@ -37,25 +43,23 @@ public class RenderEvents {
         }
 
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES){
-            for(Entity entity : Minecraft.getInstance().level.entitiesForRendering()){
+            List<THObjectContainer> containers = new ArrayList<>();
+            for(Entity entity : minecraft.level.entitiesForRendering()){
                 if (entity instanceof EntityTHObjectContainer container){
-                    poseStack.pushPose();
-                    final Vec3 cameraPosition = Minecraft.getInstance().getEntityRenderDispatcher().camera.getPosition();
-                    final double camX = cameraPosition.x;
-                    final double camY = cameraPosition.y;
-                    final double camZ = cameraPosition.z;
-                    //poseStack.translate(camX,camY,camZ);
-                    THObjectContainerRenderer.render(
-                            Minecraft.getInstance().getEntityRenderDispatcher(),
-                            Minecraft.getInstance().levelRenderer.getFrustum(),
-                            container.getContainer(),
-                            partialTick,
-                            poseStack,
-                            Minecraft.getInstance().renderBuffers().bufferSource(),
-                            1);
-                    poseStack.popPose();
+                    containers.add(container.getContainer());
                 }
-            };
+            }
+
+            poseStack.pushPose();
+            THObjectContainerRenderer.renderContainers(
+                    minecraft.getEntityRenderDispatcher(),
+                    minecraft.levelRenderer.getFrustum(),
+                    containers,
+                    minecraft.level.tickRateManager().isFrozen() ? 1.0f : partialTick,
+                    poseStack,
+                    minecraft.renderBuffers().bufferSource(),
+                    1);
+            poseStack.popPose();
         }
     }
 
