@@ -652,15 +652,16 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     public static final LuaValue meta = setMeta(functions());
 
     @Override
-    public LuaValue ofLuaClass(){
+    public LuaValue ofLuaClass() {
         LuaValue library = LuaValue.tableOf();
         library.setmetatable(this.getMeta());
         //fields
-        library.set( "class", this.getLuaClass());
-        library.set( "type", "thobject_container");
-        library.set( "source", LuaValue.userdataOf(this));
-        library.set( "parameterManager", this.getParameterManager().ofLuaValue());
-        library.set( "params", LuaValue.tableOf());
+        library.set("isTHObjectContainer", LuaValue.TRUE);
+        library.set("class", this.getLuaClass());
+        library.set("type", "thobject_container");
+        library.set("source", LuaValue.userdataOf(this));
+        library.set("parameterManager", this.getParameterManager().ofLuaValue());
+        library.set("params", LuaValue.tableOf());
         return library;
     }
 
@@ -668,23 +669,23 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         return meta;
     }
 
-    private static LuaValue functions(){
+    private static LuaValue functions() {
         LuaValue library = LuaValue.tableOf();
-        library.set( "getMaxObjectAmount", getMaxObjectAmount);
-        library.set( "getPosition", getPosition);
+        library.set("getMaxObjectAmount", getMaxObjectAmount);
+        library.set("getPosition", getPosition);
         //library.set( "setTimer", setTimer);
-        library.set( "getTimer", getTimer);
-        library.set( "getUser", getUser);
-        library.set( "getTarget", getTarget);
-        library.set( "clearObjects", clearObjects);
-        library.set( "createTHObject", createTHObject);
-        library.set( "createTHBullet", createTHBullet);
-        library.set( "createTHCurvedLaser", createTHCurvedLaser);
-        library.set( "getParameterManager", getParameterManager);
-        library.set( "discard", discard);
-        library.set( "newTHObject", newTHObject);
-        library.set( "setSpellCardName", setSpellCardName);
-        library.set( "setLifetime", setLifetime);
+        library.set("getTimer", getTimer);
+        library.set("getUser", getUser);
+        library.set("getTarget", getTarget);
+        library.set("clearObjects", clearObjects);
+        library.set("createTHObject", createTHObject);
+        library.set("createTHBullet", createTHBullet);
+        library.set("createTHCurvedLaser", createTHCurvedLaser);
+        library.set("getParameterManager", getParameterManager);
+        library.set("discard", discard);
+        library.set("newTHObject", newTHObject);
+        library.set("setSpellCardName", setSpellCardName);
+        library.set("setLifetime", setLifetime);
         return library;
     }
 

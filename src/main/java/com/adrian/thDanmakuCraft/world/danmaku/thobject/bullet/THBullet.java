@@ -311,6 +311,14 @@ public class THBullet extends THObject {
         }
     }
 
+    public static void printAllBulletStyles(){
+        String bulletStyles = "";
+        for(THBullet.DefaultBulletStyle style : THBullet.DefaultBulletStyle.values()){
+            bulletStyles += style.getName() + "=\""+ style.getName() +"\",\n";
+        }
+        System.out.print(bulletStyles);
+    }
+
     public static class UserBulletStyle{
     }
 

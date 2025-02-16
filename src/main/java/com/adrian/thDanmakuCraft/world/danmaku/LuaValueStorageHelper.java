@@ -9,30 +9,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class LuaValueStorageHelper {
-    private static final Map<Integer,LuaValue> userDataMap = new HashMap<>();
+    //private static final Map<Integer,LuaValue> userDataMap = new HashMap<>();
 
     private final ITHObjectContainer container;
     public LuaValueStorageHelper(ITHObjectContainer container){
         this.container = container;
     }
     public void writeLuaTable(FriendlyByteBuf byteBuf, LuaTable table) {
-        /*
-        LuaValue table_type = table.get("type");
-        if(table_type.isstring()){
-            String table_type_name = table_type.checkjstring();
-            byteBuf.writeUtf(table_type_name);
-            switch (table_type_name){
-                case "thobject" -> byteBuf.writeUUID(UUID.fromString(table.get("uuid").checkjstring()));
-                case "thobject_container" -> {}
-            }
-            return;
-        }
-
-        byteBuf.writeUtf("table");*/
         if(!table.istable()){
             byteBuf.writeShort(0);
             return;
         }
+
+
+
         LuaValue[] keys = table.checktable().keys();
         byteBuf.writeShort(keys.length);
         for (LuaValue key : keys) {
@@ -62,13 +52,13 @@ public class LuaValueStorageHelper {
             case LuaValue.TNUMBER -> byteBuf.writeDouble(luaValue.checkdouble());
             case LuaValue.TSTRING -> byteBuf.writeUtf(luaValue.checkjstring());
             case LuaValue.TTABLE -> writeLuaTable(byteBuf, luaValue.checktable());
-            case LuaValue.TUSERDATA -> {
+            /*case LuaValue.TUSERDATA -> {
                 int hashCode = luaValue.hashCode();
                 userDataMap.put(hashCode, luaValue);
                 byteBuf.writeInt(hashCode);
                 //byteBuf.writeUtf(luaValue.typename());
                 //byteBuf.writeUtf(luaValue.checkjstring());
-            }
+            }*/
         }
     }
 
@@ -80,10 +70,10 @@ public class LuaValueStorageHelper {
             case LuaValue.TNUMBER -> LuaValue.valueOf(byteBuf.readDouble());
             case LuaValue.TSTRING -> LuaValue.valueOf(byteBuf.readUtf());
             case LuaValue.TTABLE -> readLuaTable(byteBuf);
-            case LuaValue.TUSERDATA -> {
+            /*case LuaValue.TUSERDATA -> {
                 int hashCode = byteBuf.readInt();
                 yield userDataMap.get(hashCode);
-            }
+            }*/
             default -> LuaValue.NIL;
         };
     }
@@ -134,6 +124,12 @@ public class LuaValueStorageHelper {
             case LuaValue.TTABLE -> loadLuaTable(tag.getCompound("value"));
             default -> LuaValue.NIL;
         };
+    }
+
+    private enum type{
+        TABLE,
+        THOBJECT,
+        THOBJECT_CONTAINER
     }
 
     /*

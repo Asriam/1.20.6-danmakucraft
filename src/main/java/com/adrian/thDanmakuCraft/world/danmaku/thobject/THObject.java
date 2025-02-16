@@ -1379,15 +1379,15 @@ public class THObject implements ILuaValue {
         //functions
         library.setmetatable(this.getMeta());
         //fields
+        library.set("isTHObject", LuaValue.TRUE);
         library.set("class", this.getLuaClass());
-        library.set("type", "thobject");
         library.set("source", LuaValue.userdataOf(this));
         library.set("type", this.getType().getKey().toString());
         library.set("uuid", this.getUUIDasString());
         library.set("container", this.getContainer().ofLuaValue());
         library.set("parameterManager", this.getParameterManager().ofLuaValue());
         //library.set("taskManager", this.luaTaskManager.ofLuaValue());
-        library.set( "params", LuaValue.tableOf());
+        library.set("params", LuaValue.tableOf());
         return library;
     }
 
