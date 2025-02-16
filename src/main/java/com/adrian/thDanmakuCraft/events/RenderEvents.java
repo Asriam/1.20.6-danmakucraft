@@ -37,13 +37,7 @@ public class RenderEvents {
         PoseStack poseStack = new PoseStack();
         float partialTick = event.getPartialTick();
 
-        for (RenderLevelStageTask renderHelper: renderLevelStageTasks.values()){
-            if (event.getStage() == renderHelper.stage){
-                renderHelper.render(poseStack,partialTick);
-            }
-        }
-
-        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS){
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES){
             List<THObject> objects = Lists.newArrayList();
             for(Entity entity : minecraft.level.entitiesForRendering()){
                 if (entity instanceof EntityTHObjectContainer container){
@@ -51,7 +45,7 @@ public class RenderEvents {
                 }
             }
 
-            poseStack.mulPose(pose);
+            //poseStack.mulPose(pose);
             poseStack.pushPose();
             THObjectContainerRenderer.renderTHObjects(
                     minecraft.getEntityRenderDispatcher(),
@@ -62,6 +56,12 @@ public class RenderEvents {
                     minecraft.renderBuffers().bufferSource(),
                     1);
             poseStack.popPose();
+        }
+
+        for (RenderLevelStageTask renderHelper: renderLevelStageTasks.values()){
+            if (event.getStage() == renderHelper.stage){
+                renderHelper.render(poseStack,partialTick);
+            }
         }
     }
 
