@@ -4,6 +4,7 @@ import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.util.Color;
+import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -15,7 +16,6 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -52,8 +52,8 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
 
                 Color bulletColor = bullet.getBulletColor();
                 RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 1,
-                        Vec3.ZERO,
-                        new Vec3(scale, scale, scale),
+                        ConstantUtil.VECTOR3F_ZERO,
+                        new Vector3f(scale, scale, scale),
                         6, 10, true,
                         new Vec2(0.4f, 2.0f),
                         new Vec2(0.0f, 2.0f),

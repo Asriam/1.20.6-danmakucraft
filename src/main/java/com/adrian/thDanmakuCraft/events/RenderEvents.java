@@ -1,8 +1,13 @@
-package com.adrian.thDanmakuCraft.client.renderer;
+package com.adrian.thDanmakuCraft.events;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
+import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
@@ -27,8 +32,30 @@ public class RenderEvents {
 
         for (RenderLevelStageTask renderHelper: renderLevelStageTasks.values()){
             if (event.getStage() == renderHelper.stage){
-                renderHelper.renderTask.render(poseStack,partialTick);
+                renderHelper.render(poseStack,partialTick);
             }
+        }
+
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES){
+            for(Entity entity : Minecraft.getInstance().level.entitiesForRendering()){
+                if (entity instanceof EntityTHObjectContainer container){
+                    poseStack.pushPose();
+                    final Vec3 cameraPosition = Minecraft.getInstance().getEntityRenderDispatcher().camera.getPosition();
+                    final double camX = cameraPosition.x;
+                    final double camY = cameraPosition.y;
+                    final double camZ = cameraPosition.z;
+                    //poseStack.translate(camX,camY,camZ);
+                    THObjectContainerRenderer.render(
+                            Minecraft.getInstance().getEntityRenderDispatcher(),
+                            Minecraft.getInstance().levelRenderer.getFrustum(),
+                            container.getContainer(),
+                            partialTick,
+                            poseStack,
+                            Minecraft.getInstance().renderBuffers().bufferSource(),
+                            1);
+                    poseStack.popPose();
+                }
+            };
         }
     }
 
@@ -52,6 +79,10 @@ public class RenderEvents {
         RenderLevelStageTask(RenderLevelStageEvent.Stage stage, RenderTask renderHelper){
             this.stage = stage;
             this.renderTask = renderHelper;
+        }
+
+        public void render(PoseStack poseStack,float partialTick){
+            renderTask.render(poseStack,partialTick);
         }
     }
 

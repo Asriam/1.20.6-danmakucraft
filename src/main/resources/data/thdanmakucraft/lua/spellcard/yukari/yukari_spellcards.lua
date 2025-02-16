@@ -18,7 +18,7 @@ function yukari_spellcrad_1:onTick()
     ---@param _pos util.Vec3
     ---@param _angle util.Vec3
     local bbb = function(_pos,_angle)
-        local bullet2 = self:createTHBullet(nil, {i}, _pos,"grain_a",3)
+        local bullet2 = self:createTHBullet(nil, {i}, _pos,"ball_small",3)
         bullet2:setPosition(_pos:add(_angle:scale(math.min(timer/120,1)^0.4*1.6)))
         bullet2:setVelocity(_angle:scale(0.2),true)
         bullet2:setAccelerationFromDirection(0.02,_angle)
@@ -40,7 +40,7 @@ function yukari_spellcrad_1:onTick()
         local way2 = 4
         for i=1,(way2-1) do
             local angle2 = rotation:xRot(Mth.DEG_TO_RAD*90-Mth.DEG_TO_RAD*(180/way2)*i):yRot(Mth.DEG_TO_RAD*(180/way)*i)
-            for j=0,(way) do
+            for j=0,(way-1) do
                 local angle3 = angle2:yRot(-Mth.DEG_TO_RAD*(360/way)*j):normalize():xRot(rotate.x):yRot(rotate.y)
                 bbb(pos,angle3)
             end

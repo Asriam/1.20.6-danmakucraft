@@ -6,7 +6,9 @@ import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObje
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRenderers;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.bullet.THBulletRenderers;
+import com.adrian.thDanmakuCraft.events.RenderEvents;
 import com.adrian.thDanmakuCraft.util.Color;
+import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
@@ -171,21 +173,27 @@ public class THObjectContainerRenderer {
         poseStack.mulPose(poseStack1$$.pose());
     }
     */
+
+    public static Frustum frustum = Minecraft.getInstance().levelRenderer.getFrustum();
     public static void renderContainers(EntityRenderDispatcher entityRenderDispatcher, Frustum frustum, List<THObjectContainer> containers, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int combinedOverlay){
+        /*
         if (entityRenderDispatcher.shouldRenderHitBoxes()) {
             for(THObjectContainer container:containers){
             THObjectContainerRenderer.renderContainerBound(container, poseStack, bufferSource.getBuffer(RenderType.lines()));
             }
-        }
-        PoseStack.Pose poseStack1$$ = poseStack.last();
+        }*/
+
+        /*PoseStack.Pose poseStack1$$ = poseStack.last();
 
         poseStack.popPose();
-        poseStack.pushPose();
+        poseStack.pushPose();*/
 
         final Vec3 cameraPosition = entityRenderDispatcher.camera.getPosition();
         final double camX = cameraPosition.x;
         final double camY = cameraPosition.y;
         final double camZ = cameraPosition.z;
+
+        //poseStack.translate(-camX,-camY,-camZ);
 
         final RenderTarget mainRenderTarget = THObjectContainerRenderer.MAIN_RENDER_TARGET;
         final ShaderInstance shader = ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER;
@@ -273,10 +281,10 @@ public class THObjectContainerRenderer {
             mainRenderTarget.bindWrite(true);
         }
 
-        poseStack.popPose();
+        /*poseStack.popPose();
         poseStack.pushPose();
 
-        poseStack.mulPose(poseStack1$$.pose());
+        poseStack.mulPose(poseStack1$$.pose())*/;
     }
 
     public static RenderType getRenderType(THObject object) {
@@ -304,9 +312,10 @@ public class THObjectContainerRenderer {
             LevelRenderer.renderLineBox(poseStack, vertexConsumer, aabb, 0.0F, 1.0F, 1.0F, 1.0F);
         }else if(object.getCollisionType() == THObject.CollisionType.SPHERE){
             Color color = THObject.Color(0,255,255,255);
+            float size = (float) object.getSize().x;
             RenderUtil.renderSphere(vertexConsumer,poseStack.last(),1,
-                    Vec3.ZERO,
-                    new Vec3(object.getSize().x,object.getSize().x,object.getSize().x),
+                    ConstantUtil.VECTOR3F_ZERO,
+                    new Vector3f(size,size,size),
                     6,6,false,
                     Vec2.ZERO,
                     Vec2.ONE,
@@ -317,8 +326,8 @@ public class THObjectContainerRenderer {
             poseStack.mulPose(new Quaternionf().rotationYXZ(rotation.y,-rotation.x,rotation.z));
             Color color = THObject.Color(0,255,255,255);
             RenderUtil.renderSphere(vertexConsumer,poseStack.last(),1,
-                    Vec3.ZERO,
-                    object.getSize(),
+                    ConstantUtil.VECTOR3F_ZERO,
+                    object.getSize().toVector3f(),
                     6,6,false,
                     Vec2.ZERO,
                     Vec2.ONE,

@@ -24,7 +24,16 @@ public class EntityTHObjectContainerRenderer<T extends EntityTHObjectContainer> 
     @Override
     public void render(T entity, float rotationX, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int combinedOverlay) {
         //super.render(entity, rotationX, partialTicks, poseStack, bufferSource, combinedOverlay);
-        THObjectContainerRenderer.render(this.getRenderDispatcher(), this.getFrustum(), entity.getContainer(), partialTicks, poseStack, bufferSource, combinedOverlay);
+
+        PoseStack.Pose poseStack1$$ = poseStack.last();
+
+        poseStack.popPose();
+        poseStack.pushPose();
+        //THObjectContainerRenderer.render(this.getRenderDispatcher(), this.getFrustum(), entity.getContainer(), partialTicks, poseStack, bufferSource, combinedOverlay);
+        poseStack.popPose();
+        poseStack.pushPose();
+
+        poseStack.mulPose(poseStack1$$.pose());
     }
 
     @Override

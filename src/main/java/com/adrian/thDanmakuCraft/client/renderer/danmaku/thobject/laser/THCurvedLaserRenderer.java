@@ -6,9 +6,9 @@ import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.util.Color;
+import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THCurvedLaser;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
-import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THLaser;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -22,6 +22,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.apache.commons.compress.utils.Lists;
 import org.joml.Vector2f;
+import org.joml.Vector3f;
 
 import java.util.List;
 
@@ -61,8 +62,8 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
                 poseStack.mulPose(this.getRenderDispatcher().cameraOrientation());
                 poseStack.mulPose(Axis.XP.rotationDegrees(-90.0F));
                 RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 1,
-                        Vec3.ZERO,
-                        new Vec3(width2, width2, width2),
+                        ConstantUtil.VECTOR3F_ZERO,
+                        new Vector3f(width2, width2, width2),
                         6, 10, true,
                         new Vec2(0.4f, 2.0f),
                         new Vec2(0.0f, 2.0f),

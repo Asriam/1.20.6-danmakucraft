@@ -121,6 +121,7 @@ public class SpellCardNameOverlay implements IGuiOverlay{
         bufferbuilder.vertex(pose, x1, y1, z).uv(u1, v1).color(color.r,color.g,color.b,color.a).endVertex();
         bufferbuilder.vertex(pose, x1, y0, z).uv(u1, v0).color(color.r,color.g,color.b,color.a).endVertex();
         BufferUploader.drawWithShader(bufferbuilder.end());
+
         float alpha = (float) color.a /255;
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);

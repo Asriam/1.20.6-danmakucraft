@@ -119,11 +119,9 @@ public class RenderUtil {
                 .endVertex();
     }
 
-    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, float pow, Vec3 offsetPosition, Vec3 scale, final int edgeA, final int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, Color color, Color endColor, Color coreColor, boolean inverse) {
-        //THDanmakuCraftCore.LOGGER.info(THObjectRenderHelper.class.getName());
-
+    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, float pow, Vector3f offsetPosition, Vector3f scale, final int edgeA, final int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, Color color, Color endColor, Color coreColor, boolean inverse) {
         Color startColor = color;
-        Color deColor = Color.VOID();
+        //Color deColor = Color.VOID();
         int edgeADiv2 = Mth.floor(edgeA / 2.0f);
         float angle1;
         float angle2;
@@ -137,12 +135,7 @@ public class RenderUtil {
         angle2 = Mth.DEG_TO_RAD * (360.0f/edgeB);
         int edge3 = edgeADiv2-1;
 
-        /*
-        deColor.r = (startColor.r - endColor.r)/ edge3;
-        deColor.g = (startColor.g - endColor.g)/ edge3;
-        deColor.b = (startColor.b - endColor.b)/ edge3;
-        deColor.a = (startColor.a - endColor.a)/ edge3;*/
-        deColor = Color.of(
+        Color deColor = Color.of(
                 (startColor.r - endColor.r)/ edge3,
                 (startColor.g - endColor.g)/ edge3,
                 (startColor.b - endColor.b)/ edge3,
@@ -162,42 +155,19 @@ public class RenderUtil {
             deColor.a = (startColor.a - endColor.a)/ edge3;
         }*/
 
-        //float currentX1 = -100.0f;
-        //float currentZ1 = -100.0f;
         for (int j = 0; j < edgeB; j++) {
-            /*
-            if (currentX1 <= -100.0f) {
-                currentX1 = Mth.cos((angle2 * j));
-                currentZ1 = Mth.sin((angle2 * j));
-            }
-            float x1 = currentX1;
-            float z1 = currentZ1;*/
-
             float x1 = Mth.cos((angle2 * j));
             float z1 = Mth.sin((angle2 * j));
 
             float x2 = Mth.cos((angle2 * (j + 1)));
             float z2 = Mth.sin((angle2 * (j + 1)));
 
-            //currentX1 = x2;
-            //currentZ1 = z2;
-
             startColor = color;
-            //float currentSin01 = -100.0f;
-            //float currentCos1  = -100.0f;
             for (int i = 0; i < edgeADiv2; i++) {
-                /*
-                if (currentSin01 <= -100.0f) {
-                    currentSin01 = Mth.sin(i*angle1);
-                    currentCos1  = Mth.cos(i*angle1);
-                }*/
                 float sin01 = Mth.sin(i*angle1);
                 float cos1 = Mth.cos(i*angle1);
                 float sin02 = Mth.sin((i+1)*angle1);
                 float cos2 = Mth.cos((i+1)*angle1);
-
-                //currentSin01 = sin02;
-                //currentCos1  = cos2;
 
                 float sin1,sin2;
                 if (pow == 1.0f){
@@ -210,8 +180,8 @@ public class RenderUtil {
 
                 Color finalColor = color.subtract(deColor.multiply(i));
 
-                Vector3f scaleF          = scale.toVector3f();
-                Vector3f offsetPositionF = offsetPosition.toVector3f();
+                Vector3f scaleF          = scale;
+                Vector3f offsetPositionF = offsetPosition;
 
                 Vector3f[] vertex = new Vector3f[] {
                         new Vector3f(x1*sin1,cos1,z1*sin1).mul(scaleF).add(offsetPositionF),
@@ -220,15 +190,9 @@ public class RenderUtil {
                         new Vector3f(x1*sin2,cos2,z1*sin2).mul(scaleF).add(offsetPositionF),
                 };
                 Vector3f[] normal = vertex;
-                /*
-                Matrix3f normalMat = pose.normal().invert().transpose();
-                Vector3f normal0 = calculateNormal(normal[0],normal[1],normal[2],normal[3]);
-                Vector3f normal1 = pose.transformNormal(normal0.x, normal0.y, normal0.z, new Vector3f());
-                Vector3f normal2 = multiply(normalMat,normal1);*/
-
                 Matrix4f pose$ = pose.pose();
 
-                boolean flag = true;//normal2.z > Mth.cos(RenderEvents.renderTickCount/30.0f);
+                boolean flag = true;
 
                 if (flag) {
                     quadList.add(new Quad(
@@ -325,10 +289,10 @@ public class RenderUtil {
         return new Vector3f(x, y, z);
     }
 
-    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, float pow, Vec3 offsetPosition, Vec3 scale, final int edgeA, final int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, Color color, Color endColor, Color coreColor) {
+    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, float pow, Vector3f offsetPosition, Vector3f scale, final int edgeA, final int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, Color color, Color endColor, Color coreColor) {
         renderSphere(consumer, pose, pow, offsetPosition, scale, edgeA, edgeB, isHalf, uvStart, uvEnd, color, endColor, coreColor,false);
     }
-    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, float pow, Vec3 offsetPosition, Vec3 scale, int edgeA, int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, Color color, int alpha, Color coreColor) {
+    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, float pow, Vector3f offsetPosition, Vector3f scale, int edgeA, int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, Color color, int alpha, Color coreColor) {
         renderSphere(consumer,pose,pow,offsetPosition,scale,edgeA,edgeB,isHalf,uvStart,uvEnd,color,THObject.Color(color.r,color.g,color.b,alpha),coreColor);
     }
 
