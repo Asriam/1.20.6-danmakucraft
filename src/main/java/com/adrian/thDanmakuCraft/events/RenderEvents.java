@@ -4,6 +4,7 @@ import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
@@ -15,6 +16,7 @@ import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.apache.commons.compress.utils.Lists;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
@@ -33,7 +35,6 @@ public class RenderEvents {
     public static void renderLevelStage(RenderLevelStageEvent event) {
         Matrix4f pose = event.getPoseStack();
         PoseStack poseStack = new PoseStack();
-        //poseStack.mulPose(pose);
         float partialTick = event.getPartialTick();
 
         for (RenderLevelStageTask renderHelper: renderLevelStageTasks.values()){
@@ -42,19 +43,20 @@ public class RenderEvents {
             }
         }
 
-        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES){
-            List<THObjectContainer> containers = new ArrayList<>();
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS){
+            List<THObject> objects = Lists.newArrayList();
             for(Entity entity : minecraft.level.entitiesForRendering()){
                 if (entity instanceof EntityTHObjectContainer container){
-                    containers.add(container.getContainer());
+                    objects.addAll(container.getContainer().getObjectManager().getTHObjects());
                 }
             }
 
+            poseStack.mulPose(pose);
             poseStack.pushPose();
-            THObjectContainerRenderer.renderContainers(
+            THObjectContainerRenderer.renderTHObjects(
                     minecraft.getEntityRenderDispatcher(),
                     minecraft.levelRenderer.getFrustum(),
-                    containers,
+                    objects,
                     minecraft.level.tickRateManager().isFrozen() ? 1.0f : partialTick,
                     poseStack,
                     minecraft.renderBuffers().bufferSource(),
