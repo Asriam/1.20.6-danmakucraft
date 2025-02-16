@@ -5,9 +5,6 @@ import net.minecraft.network.FriendlyByteBuf;
 import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class LuaValueStorageHelper {
     //private static final Map<Integer,LuaValue> userDataMap = new HashMap<>();
 
@@ -16,13 +13,12 @@ public class LuaValueStorageHelper {
         this.container = container;
     }
     public void writeLuaTable(FriendlyByteBuf byteBuf, LuaTable table) {
+        byteBuf.writeEnum(TableType.TABLE);
+
         if(!table.istable()){
             byteBuf.writeShort(0);
             return;
         }
-
-
-
         LuaValue[] keys = table.checktable().keys();
         byteBuf.writeShort(keys.length);
         for (LuaValue key : keys) {
@@ -32,15 +28,18 @@ public class LuaValueStorageHelper {
         }
     }
     public LuaTable readLuaTable(FriendlyByteBuf byteBuf) {
-
-        LuaTable table = LuaValue.tableOf();
-        int length = byteBuf.readShort();
-        for (int i = 0; i < length; i++) {
-            String keyName = byteBuf.readUtf();
-            LuaValue value = readLuaValue(byteBuf);
-            table.set(keyName, value);
+        TableType type = byteBuf.readEnum(TableType.class);
+        if (type == TableType.TABLE) {
+            LuaTable table = LuaValue.tableOf();
+            int length = byteBuf.readShort();
+            for (int i = 0; i < length; i++) {
+                String keyName = byteBuf.readUtf();
+                LuaValue value = readLuaValue(byteBuf);
+                table.set(keyName, value);
+            }
+            return table;
         }
-        return table;
+        return LuaValue.tableOf();
     }
 
     public void writeLuaValue(FriendlyByteBuf byteBuf, LuaValue luaValue) {
@@ -52,13 +51,6 @@ public class LuaValueStorageHelper {
             case LuaValue.TNUMBER -> byteBuf.writeDouble(luaValue.checkdouble());
             case LuaValue.TSTRING -> byteBuf.writeUtf(luaValue.checkjstring());
             case LuaValue.TTABLE -> writeLuaTable(byteBuf, luaValue.checktable());
-            /*case LuaValue.TUSERDATA -> {
-                int hashCode = luaValue.hashCode();
-                userDataMap.put(hashCode, luaValue);
-                byteBuf.writeInt(hashCode);
-                //byteBuf.writeUtf(luaValue.typename());
-                //byteBuf.writeUtf(luaValue.checkjstring());
-            }*/
         }
     }
 
@@ -126,7 +118,7 @@ public class LuaValueStorageHelper {
         };
     }
 
-    private enum type{
+    private enum TableType {
         TABLE,
         THOBJECT,
         THOBJECT_CONTAINER

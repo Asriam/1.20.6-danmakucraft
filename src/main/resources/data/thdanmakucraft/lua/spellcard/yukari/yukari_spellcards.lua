@@ -3,8 +3,21 @@
 --- Created by Administrator.
 --- DateTime: 2025/2/16 上午 12:31
 ---
+--------------------------------------------------------------------------------------------------
+---@type Class|THBullet
+local yukari_spellcrad_1_bullet_1 = core.defineClass()
+function yukari_spellcrad_1_bullet_1:onInit(_pos,_angle)
+    self:setStyle(bullet_styles.ball_small)
+    self:setPosition(_pos)
+    self:setVelocity(_angle:scale(0.2),true)
+    self:setAccelerationFromDirection(0.03,_angle)
+    self:setLifetime(120)
+    self:setBlend("add")
+end
 
-
+function yukari_spellcrad_1_bullet_1:onTick()
+end
+--------------------------------------------------------------------------------------------------
 ---@type Class|THObjectContainer
 local yukari_spellcrad_1 = core.defineClass("yukari_spellcard_1")
 function yukari_spellcrad_1:onInit()
@@ -18,12 +31,15 @@ function yukari_spellcrad_1:onTick()
     ---@param _pos util.Vec3
     ---@param _angle util.Vec3
     local bbb = function(_pos,_angle)
-        local bullet2 = self:createTHBullet(nil, {i}, _pos,bullet_styles.grain_a,3)
+        --[[local bullet2 = self:createTHBullet(nil, {i}, _pos,bullet_styles.ball_small,3)
         bullet2:setPosition(_pos:add(_angle:scale(math.min(timer/120,1)^0.4*1.6)))
         bullet2:setVelocity(_angle:scale(0.2),true)
         bullet2:setAccelerationFromDirection(0.02,_angle)
         bullet2:setLifetime(120)
-        bullet2:setBlend("add")
+        bullet2:setBlend("add")]]
+        local bullet2 = self:createTHBullet(yukari_spellcrad_1_bullet_1,
+                {_pos:add(_angle:scale(math.min(timer/120,1)^0.4*1.6)),_angle},
+                _pos,bullet_styles.grain_a,3)
     end
 
     if timer < 300 then
@@ -49,3 +65,4 @@ function yukari_spellcrad_1:onTick()
         bbb(pos,angle3)
     end
 end
+--------------------------------------------------------------------------------------------------
