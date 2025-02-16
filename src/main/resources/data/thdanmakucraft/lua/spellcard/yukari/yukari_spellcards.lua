@@ -27,17 +27,10 @@ end
 
 function yukari_spellcrad_1:onTick()
     local timer = self:getTimer()
-
     ---@param _pos util.Vec3
     ---@param _angle util.Vec3
     local bbb = function(_pos,_angle)
-        --[[local bullet2 = self:createTHBullet(nil, {i}, _pos,bullet_styles.ball_small,3)
-        bullet2:setPosition(_pos:add(_angle:scale(math.min(timer/120,1)^0.4*1.6)))
-        bullet2:setVelocity(_angle:scale(0.2),true)
-        bullet2:setAccelerationFromDirection(0.02,_angle)
-        bullet2:setLifetime(120)
-        bullet2:setBlend("add")]]
-        local bullet2 = self:createTHBullet(yukari_spellcrad_1_bullet_1,
+        self:createTHBullet(yukari_spellcrad_1_bullet_1,
                 {_pos:add(_angle:scale(math.min(timer/120,1)^0.4*1.6)),_angle},
                 _pos,bullet_styles.grain_a,3)
     end

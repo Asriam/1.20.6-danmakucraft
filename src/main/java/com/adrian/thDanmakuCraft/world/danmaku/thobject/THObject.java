@@ -1066,6 +1066,14 @@ public class THObject implements ILuaValue {
         throw new NullPointerException();
     }
 
+    public static boolean isTHObject(LuaValue luaValue){
+        LuaValue source = luaValue.get("source");
+        if(source.isnil()){
+            return false;
+        }
+        return source.checkuserdata() instanceof THObject;
+    }
+
     public static class api {
         protected static final LibFunction setPosition = new VarArgFunction() {
             @Override

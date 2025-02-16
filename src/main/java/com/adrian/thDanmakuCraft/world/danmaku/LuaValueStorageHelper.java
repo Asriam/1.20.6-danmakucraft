@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.world.danmaku;
 
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import org.luaj.vm2.LuaTable;
@@ -12,9 +13,17 @@ public class LuaValueStorageHelper {
     public LuaValueStorageHelper(ITHObjectContainer container){
         this.container = container;
     }
-    public void writeLuaTable(FriendlyByteBuf byteBuf, LuaTable table) {
-        byteBuf.writeEnum(TableType.TABLE);
 
+    public void writeTHObject(FriendlyByteBuf byteBuf, THObject object){
+        byteBuf.writeUUID(object.getUUID());
+    }
+
+    public LuaTable readTHObject(FriendlyByteBuf byteBuf){
+        THObject object = this.container.getObjectFromUUID(byteBuf.readUUID());
+        return object == null ? LuaValue.tableOf() : object.ofLuaValue().checktable();
+    }
+
+    public void writeLuaTable(FriendlyByteBuf byteBuf, LuaTable table) {
         if(!table.istable()){
             byteBuf.writeShort(0);
             return;
@@ -28,18 +37,14 @@ public class LuaValueStorageHelper {
         }
     }
     public LuaTable readLuaTable(FriendlyByteBuf byteBuf) {
-        TableType type = byteBuf.readEnum(TableType.class);
-        if (type == TableType.TABLE) {
-            LuaTable table = LuaValue.tableOf();
-            int length = byteBuf.readShort();
-            for (int i = 0; i < length; i++) {
-                String keyName = byteBuf.readUtf();
-                LuaValue value = readLuaValue(byteBuf);
-                table.set(keyName, value);
-            }
-            return table;
+        LuaTable table = LuaValue.tableOf();
+        int length = byteBuf.readShort();
+        for (int i = 0; i < length; i++) {
+            String keyName = byteBuf.readUtf();
+            LuaValue value = readLuaValue(byteBuf);
+            table.set(keyName, value);
         }
-        return LuaValue.tableOf();
+        return table;
     }
 
     public void writeLuaValue(FriendlyByteBuf byteBuf, LuaValue luaValue) {
@@ -50,7 +55,15 @@ public class LuaValueStorageHelper {
             case LuaValue.TINT -> byteBuf.writeInt(luaValue.checkint());
             case LuaValue.TNUMBER -> byteBuf.writeDouble(luaValue.checkdouble());
             case LuaValue.TSTRING -> byteBuf.writeUtf(luaValue.checkjstring());
-            case LuaValue.TTABLE -> writeLuaTable(byteBuf, luaValue.checktable());
+            case LuaValue.TTABLE -> {
+                if (THObject.isTHObject(luaValue)) {
+                    byteBuf.writeEnum(TableType.THOBJECT);
+                    writeTHObject(byteBuf, THObject.checkTHObject(luaValue));
+                }else {
+                    byteBuf.writeEnum(TableType.TABLE);
+                    writeLuaTable(byteBuf, luaValue.checktable());
+                }
+            }
         }
     }
 
@@ -61,21 +74,34 @@ public class LuaValueStorageHelper {
             case LuaValue.TINT -> LuaValue.valueOf(byteBuf.readInt());
             case LuaValue.TNUMBER -> LuaValue.valueOf(byteBuf.readDouble());
             case LuaValue.TSTRING -> LuaValue.valueOf(byteBuf.readUtf());
-            case LuaValue.TTABLE -> readLuaTable(byteBuf);
-            /*case LuaValue.TUSERDATA -> {
-                int hashCode = byteBuf.readInt();
-                yield userDataMap.get(hashCode);
-            }*/
+            case LuaValue.TTABLE -> {
+                TableType tableType = byteBuf.readEnum(TableType.class);
+                if (tableType == TableType.THOBJECT) {
+                    yield readTHObject(byteBuf);
+                }else if (tableType == TableType.TABLE) {
+                    yield readLuaTable(byteBuf);
+                }
+                yield LuaValue.NIL;
+            }
             default -> LuaValue.NIL;
         };
     }
 
-    public CompoundTag saveLuaTable(LuaValue table) {
-        if(!table.istable()){
-            return new CompoundTag();
-        }
-
+    public CompoundTag saveTHObject(THObject object){
         CompoundTag tag = new CompoundTag();
+        tag.putUUID("uuid",object.getUUID());
+        return tag;
+    }
+
+    public LuaTable loadTHObject(CompoundTag tag){
+        THObject object = this.container.getObjectFromUUID(tag.getUUID("uuid"));
+        return object == null ? LuaValue.tableOf() : object.ofLuaValue().checktable();
+    }
+    public CompoundTag saveLuaTable(LuaValue table) {
+        CompoundTag tag = new CompoundTag();
+        if(!table.istable()){
+            return tag;
+        }
         LuaValue[] keys = table.checktable().keys();
         for (LuaValue key : keys) {
             String keyName = key.checkjstring();
@@ -101,7 +127,14 @@ public class LuaValueStorageHelper {
             case LuaValue.TINT -> valueTag.putInt("value", luaValue.checkint());
             case LuaValue.TNUMBER -> valueTag.putDouble("value", luaValue.checkdouble());
             case LuaValue.TSTRING -> valueTag.putString("value", luaValue.checkjstring());
-            case LuaValue.TTABLE -> valueTag.put("value", saveLuaTable(luaValue.checktable()));
+            case LuaValue.TTABLE -> {
+                if (THObject.isTHObject(luaValue)) {
+                    valueTag.putInt("table_type", TableType.THOBJECT.ordinal());
+                    valueTag.put("value",saveTHObject(THObject.checkTHObject(luaValue)));
+                }else {
+                    valueTag.put("value", saveLuaTable(luaValue.checktable()));
+                }
+            }
         }
         return valueTag;
     }
@@ -113,7 +146,15 @@ public class LuaValueStorageHelper {
             case LuaValue.TINT -> LuaValue.valueOf(tag.getInt("value"));
             case LuaValue.TNUMBER -> LuaValue.valueOf(tag.getDouble("value"));
             case LuaValue.TSTRING -> LuaValue.valueOf(tag.getString("value"));
-            case LuaValue.TTABLE -> loadLuaTable(tag.getCompound("value"));
+            case LuaValue.TTABLE -> {
+                TableType tableType = TableType.values()[tag.getInt("table_type")];
+                if (tableType == TableType.THOBJECT){
+                    yield loadTHObject(tag.getCompound("value"));
+                }else if (tableType == TableType.TABLE) {
+                    yield loadLuaTable(tag.getCompound("value"));
+                }
+                yield LuaValue.NIL;
+            }
             default -> LuaValue.NIL;
         };
     }

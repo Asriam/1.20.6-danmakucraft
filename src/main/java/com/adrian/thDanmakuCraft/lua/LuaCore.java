@@ -104,7 +104,7 @@ public class LuaCore {
         library.set( "isValid", new OneArgFunction(){
             @Override
             public LuaValue call(LuaValue luaValue) {
-                return LuaValue.valueOf(!luaValue.isnil() || (luaValue.isuserdata() && core.isValid(luaValue.checkuserdata())));
+                return LuaValue.valueOf(!luaValue.isnil() && (luaValue.isuserdata() && core.isValid(luaValue.checkuserdata())));
             }
         });
         library.set( "info", new OneArgFunction(){
