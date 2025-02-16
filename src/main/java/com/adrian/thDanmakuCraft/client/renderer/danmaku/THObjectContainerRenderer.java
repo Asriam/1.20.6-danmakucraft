@@ -21,10 +21,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.resources.ResourceLocation;
@@ -42,28 +39,51 @@ import java.util.*;
 
 public class THObjectContainerRenderer {
 
-    public static final RenderTarget TEST_RENDER_TARGET = new TextureTarget(1000,1000,true,true);
-    public static final RenderTarget MAIN_RENDER_TARGET = Minecraft.getInstance().getMainRenderTarget();
-    public static final RenderTarget DEPTH_BUFFER = new TextureTarget(800,800,true,true);
+    private static final RenderTarget MAIN_RENDER_TARGET = Minecraft.getInstance().getMainRenderTarget();
+    private static final RenderTarget TEST_RENDER_TARGET = new TextureTarget(1000,1000,true,true);
+    private static final RenderTarget DEPTH_BUFFER = new TextureTarget(1000,1000,true,true);
     //private static final RenderTarget DEPTH_BUFFER = new TextureTarget(MAIN_RENDER_TARGET.width,MAIN_RENDER_TARGET.height,true,true);
     private static final Map<THObjectType<?>, AbstractTHObjectRenderer<?>> THOBJECT_RENDERERS = THObjectRenderers.createEntityRenderers(new THObjectRendererProvider.Context());
 
+    private static PostChain blendChain;
+    private static void initBlend(){
+
+    }
+
     static {
         RenderEvents.registerRenderLevelStageTask("test_effect_clear", RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS, (poseStack, partialTick) -> {
-            THObjectContainerRenderer.TEST_RENDER_TARGET.resize(THObjectContainerRenderer.MAIN_RENDER_TARGET.width , THObjectContainerRenderer.MAIN_RENDER_TARGET.height, false);
-            THObjectContainerRenderer.TEST_RENDER_TARGET.setClearColor(0.0f,0.0f,0.0f,0.0f);
-            THObjectContainerRenderer.TEST_RENDER_TARGET.clear(true);
+            //TEST_RENDER_TARGET.resize(THObjectContainerRenderer.MAIN_RENDER_TARGET.width , THObjectContainerRenderer.MAIN_RENDER_TARGET.height, false);
+            if(shouldApplyEffect()){
+            TEST_RENDER_TARGET.setClearColor(0.0f,0.0f,0.0f,0.0f);
+            TEST_RENDER_TARGET.clear(Minecraft.ON_OSX);
+            TEST_RENDER_TARGET.copyDepthFrom(MAIN_RENDER_TARGET);
+            MAIN_RENDER_TARGET.bindWrite(false);
+            }
         });
         RenderEvents.registerRenderLevelStageTask("test_effect_applier",
                 RenderLevelStageEvent.Stage.AFTER_ENTITIES,
-                THObjectContainerRenderer::applyEffect);
+                (poseStack, partialTick) -> {
+                    if (shouldApplyEffect()) {
+                        THObjectContainerRenderer.applyEffect(poseStack, partialTick);
+                    }
+                });
+    }
+
+    public static RenderTarget getRenderTarget(){
+        return TEST_RENDER_TARGET;
     }
 
     public static void render(EntityRenderDispatcher entityRenderDispatcher, Frustum frustum, THObjectContainer container, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int combinedOverlay) {
         renderTHObjects(entityRenderDispatcher, frustum, container.getObjectManager().getTHObjectsForRender(), partialTicks, poseStack, bufferSource, combinedOverlay);
     }
 
-    private static final boolean shouldApplyEffect = true;
+    private static boolean useShaderTransparency(){
+        return Minecraft.useShaderTransparency();
+    }
+
+    private static boolean shouldApplyEffect(){
+        return false;
+    };
 
     public static Frustum frustum = Minecraft.getInstance().levelRenderer.getFrustum();
     public static void renderTHObjects(EntityRenderDispatcher entityRenderDispatcher, Frustum frustum, List<THObject> objectList, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int combinedOverlay){
@@ -81,7 +101,7 @@ public class THObjectContainerRenderer {
             mainRenderTarget.bindWrite(true);
         }
 
-        if (shouldApplyEffect) {
+        if (shouldApplyEffect()) {
             mainRenderTarget.unbindWrite();
             THObjectContainerRenderer.TEST_RENDER_TARGET.copyDepthFrom(mainRenderTarget);
             THObjectContainerRenderer.TEST_RENDER_TARGET.bindWrite(true);
@@ -132,11 +152,11 @@ public class THObjectContainerRenderer {
                 }
 
                 renderType.setupRenderState();
-                if (shouldApplyEffect) {
+                if (shouldApplyEffect()) {
                     THObjectContainerRenderer.TEST_RENDER_TARGET.bindWrite(true);
                 }
                 BufferUploader.drawWithShader(builder.end());
-                if (shouldApplyEffect) {
+                if (shouldApplyEffect()) {
                     THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
                 }
                 renderType.clearRenderState();
@@ -147,7 +167,7 @@ public class THObjectContainerRenderer {
         RenderSystem.disableBlend();
         RenderSystem.defaultBlendFunc();
 
-        if(shouldApplyEffect) {
+        if(shouldApplyEffect()) {
             THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
             mainRenderTarget.copyDepthFrom(THObjectContainerRenderer.TEST_RENDER_TARGET);
             mainRenderTarget.bindWrite(true);
@@ -277,9 +297,7 @@ public class THObjectContainerRenderer {
         if (customShader != null) {
             RenderTarget inTarget = TEST_RENDER_TARGET;
             RenderTarget outTarget = MAIN_RENDER_TARGET;
-            MAIN_RENDER_TARGET.unbindWrite();
-
-            inTarget.copyDepthFrom(MAIN_RENDER_TARGET);
+            outTarget.copyDepthFrom(inTarget);
 
             int[] inSize = {inTarget.width, inTarget.height};
             int[] outSize = {outTarget.width , outTarget.height};
@@ -290,9 +308,6 @@ public class THObjectContainerRenderer {
             customShader.safeGetUniform("ProjMat").set(projMat);
             customShader.safeGetUniform("InSize").set((float) inSize[0], (float) inSize[1]);
             customShader.safeGetUniform("OutSize").set((float) outSize[0], (float) outSize[1]);
-            //customShader.safeGetUniform("BlurDir").set(1.0f,1.0f);
-            //customShader.safeGetUniform("Radius").set(0.0f);
-            //customShader.safeGetUniform("RadiusMultiplier").set(1.0f);
             customShader.apply();
             RenderSystem.enableBlend();
             RenderSystem.blendFuncSeparate(
@@ -301,18 +316,13 @@ public class THObjectContainerRenderer {
                     GlStateManager.SourceFactor.SRC_ALPHA,
                     GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
             );
-            //RenderSystem.depthFunc(515);
-            //RenderSystem.depthMask(true);
-            //RenderSystem.enableDepthTest();
             drawOnScreen(outSize[0],outSize[1]);
-
             customShader.clear();
-            //RenderSystem.depthFunc(515);
             RenderSystem.disableBlend();
             RenderSystem.defaultBlendFunc();
             outTarget.unbindWrite();
 
-            MAIN_RENDER_TARGET.bindWrite(true);
+            MAIN_RENDER_TARGET.bindWrite(false);
 
         }
     }

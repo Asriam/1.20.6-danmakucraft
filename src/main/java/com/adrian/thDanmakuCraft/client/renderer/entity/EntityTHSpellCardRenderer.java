@@ -12,6 +12,7 @@ import com.adrian.thDanmakuCraft.world.entity.spellcard.EntityTHSpellCard;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -22,6 +23,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL11;
 
 public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<EntityTHSpellCard>{
     public EntityTHSpellCardRenderer(EntityRendererProvider.Context context) {
@@ -78,8 +80,9 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
                 poseStack.popPose();
             }
             renderType.setupRenderState();
-            RenderSystem.disableCull();
+            RenderSystem.enableCull();
             BufferUploader.drawWithShader(builder.end());
+            RenderSystem.disableCull();
             renderType.clearRenderState();
         }
 
@@ -131,8 +134,6 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
             int aaa = 4;
 
             float rotateOffset = Mth.PI/4.0f + timer / 6.0f;
-
-            //width *= 1.5f;
             for (int g=0;g<=2;g++) {
                 radius = (20.0f+g*2.0f) * open*close * timeLeft;
                 poseStack.pushPose();
@@ -249,9 +250,12 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
             poseStack.popPose();
         }
         renderType.setupRenderState();
-        //RenderSystem.enableCull();
+        //RenderSystem.depthMask(false);
         RenderSystem.setShaderTexture(0, spellCardAura.getTextureLocation());
+        RenderSystem.enableCull();
         BufferUploader.drawWithShader(builder.end());
+        //RenderSystem.disableCull();
+        //RenderSystem.depthMask(true);
         renderType.clearRenderState();
     }
 }

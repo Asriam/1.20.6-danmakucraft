@@ -7,7 +7,10 @@ import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
@@ -37,14 +40,13 @@ public class RenderEvents {
         PoseStack poseStack = new PoseStack();
         float partialTick = event.getPartialTick();
 
-        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES){
+        /*if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES){
             List<THObject> objects = Lists.newArrayList();
             for(Entity entity : minecraft.level.entitiesForRendering()){
                 if (entity instanceof EntityTHObjectContainer container){
                     objects.addAll(container.getContainer().getObjectManager().getTHObjects());
                 }
             }
-
             //poseStack.mulPose(pose);
             poseStack.pushPose();
             THObjectContainerRenderer.renderTHObjects(
@@ -56,7 +58,7 @@ public class RenderEvents {
                     minecraft.renderBuffers().bufferSource(),
                     1);
             poseStack.popPose();
-        }
+        }*/
 
         for (RenderLevelStageTask renderHelper: renderLevelStageTasks.values()){
             if (event.getStage() == renderHelper.stage){
@@ -65,8 +67,27 @@ public class RenderEvents {
         }
     }
 
+    public static void beforeRenderingEntities(LevelRenderer levelRenderer, float partialTick, Camera camera){
+        PoseStack poseStack = new PoseStack();
+        List<THObject> objects = Lists.newArrayList();
+        for(Entity entity : minecraft.level.entitiesForRendering()){
+            if (entity instanceof EntityTHObjectContainer container){
+                objects.addAll(container.getContainer().getObjectManager().getTHObjects());
+            }
+        }
+        poseStack.pushPose();
+        THObjectContainerRenderer.renderTHObjects(
+                minecraft.getEntityRenderDispatcher(),
+                levelRenderer.getFrustum(),
+                objects,
+                minecraft.level.tickRateManager().isFrozen() ? 1.0f : partialTick,
+                poseStack,
+                minecraft.renderBuffers().bufferSource(),
+                1);
+        poseStack.popPose();
+    }
+
     public static void registerRenderLevelStageTask(String name, RenderLevelStageEvent.Stage stage, RenderTask renderHelper){
-        //if(renderLevelStageTasks.get(name) == null) renderLevelStageTasks.put(name, new RenderLevelStageTask(stage, renderHelper));
         renderLevelStageTasks.computeIfAbsent(name, k -> new RenderLevelStageTask(stage, renderHelper));
     }
 
