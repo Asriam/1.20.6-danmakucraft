@@ -3,6 +3,8 @@ package com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet;
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.util.Color;
+import com.adrian.thDanmakuCraft.util.CompoundTagUtil;
+import com.adrian.thDanmakuCraft.util.FriendlyByteBufUtil;
 import com.adrian.thDanmakuCraft.util.IImage;
 import com.adrian.thDanmakuCraft.world.LuaValueHelper;
 import com.adrian.thDanmakuCraft.world.danmaku.ITHObjectContainer;
@@ -98,11 +100,12 @@ public class THBullet extends THObject {
         super.encode(buffer);
         //buffer.writeEnum(this.bulletIndexColor);
         buffer.writeEnum(this.style);
-        Color c = this.bulletColor;
+        /*Color c = this.bulletColor;
         buffer.writeInt(c.r);
         buffer.writeInt(c.g);
         buffer.writeInt(c.b);
-        buffer.writeInt(c.a);
+        buffer.writeInt(c.a);*/
+        FriendlyByteBufUtil.writeColor(buffer,this.bulletColor);
     }
 
     @Override
@@ -110,12 +113,13 @@ public class THBullet extends THObject {
         super.decode(buffer);
         //this.bulletIndexColor = buffer.readEnum(BULLET_INDEX_COLOR.class);
         this.style = buffer.readEnum(DefaultBulletStyle.class);
-        this.setBulletColor(
+        /*this.setBulletColor(
                 buffer.readInt(),
                 buffer.readInt(),
                 buffer.readInt(),
                 buffer.readInt()
-        );
+        );*/
+        this.bulletColor = FriendlyByteBufUtil.readColor(buffer);
     }
 
     @Override
@@ -124,7 +128,7 @@ public class THBullet extends THObject {
         //nbt.putInt("BulletIndexColor",this.bulletIndexColor.ordinal());
         tag.putInt("Style",this.style.ordinal());
         Color c = this.bulletColor;
-        tag.put("BulletColor", newIntList(c.r, c.g, c.b, c.a));
+        tag.put("BulletColor", CompoundTagUtil.newIntList(c.r, c.g, c.b, c.a));
         //return tag;
     }
 

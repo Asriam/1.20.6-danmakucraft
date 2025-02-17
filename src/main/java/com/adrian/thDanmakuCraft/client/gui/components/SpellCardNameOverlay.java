@@ -17,7 +17,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import org.apache.commons.compress.utils.Lists;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 
 import java.util.List;
 
@@ -57,13 +56,13 @@ public class SpellCardNameOverlay implements IGuiOverlay{
         List<EntityTHSpellCard> removeList = Lists.newArrayList();
         //poseStack.pushPose();
         for(EntityTHSpellCard spellCard : spellCards) {
-            boolean flag = spellCard.flagForRenderSpellCardNameBar;
-            if(spellCard.deathTimerForRenderSpellCardNameBar < 20.0f) {
+            boolean flag = spellCard.paramsForRender.flag1;
+            if(spellCard.paramsForRender.deathTimer < 20.0f) {
                 Component component = Component.literal(spellCard.getSpellCardName());
                 int fontWidth = font.width(component);
 
-                float timer = spellCard.timerForRenderSpellCardNameBar + partialTick;
-                float timer2 = Mth.lerp(partialTick, spellCard.lastDeathTimerForRenderSpellCardNameBar, spellCard.deathTimerForRenderSpellCardNameBar);
+                float timer = spellCard.paramsForRender.timer1 + partialTick;
+                float timer2 = Mth.lerp(partialTick, spellCard.paramsForRender.lastDeathTimer, spellCard.paramsForRender.deathTimer);
 
                 Color color = Color.of(255, 255, 255, (int) (Math.min((timer + 0.1f)/ 20.0f, 1.0f)*255.0f));
 

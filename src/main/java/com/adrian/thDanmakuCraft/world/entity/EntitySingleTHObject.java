@@ -23,7 +23,7 @@ import java.util.UUID;
 
 public class EntitySingleTHObject extends Entity implements IEntityAdditionalSpawnData, ITHObjectContainer {
 
-    private static final EntityDataAccessor<THObject> DATA_THOBJECT_CONTAINER = SynchedEntityData.defineId(EntitySingleTHObject.class, MyEntityDataSerializers.THOBJECT);
+    //private static final EntityDataAccessor<THObject> DATA_THOBJECT_CONTAINER = SynchedEntityData.defineId(EntitySingleTHObject.class, MyEntityDataSerializers.getTHObjectContainerSerializer());
     protected THObject object;
 
     public EntitySingleTHObject(EntityType<?> type, Level level) {

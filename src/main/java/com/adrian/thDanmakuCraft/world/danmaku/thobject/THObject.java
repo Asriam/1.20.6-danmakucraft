@@ -3,9 +3,7 @@ package com.adrian.thDanmakuCraft.world.danmaku.thobject;
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
-import com.adrian.thDanmakuCraft.util.CollisionHelper;
-import com.adrian.thDanmakuCraft.util.Color;
-import com.adrian.thDanmakuCraft.util.IImage;
+import com.adrian.thDanmakuCraft.util.*;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
 import com.adrian.thDanmakuCraft.world.danmaku.*;
 import com.google.common.collect.Maps;
@@ -726,11 +724,7 @@ public class THObject implements ILuaValue {
         buffer.writeVec3(this.acceleration);
         buffer.writeVector3f(this.scale);
         buffer.writeVec3(this.size);
-        Color c = this.color;
-        buffer.writeInt(c.r);
-        buffer.writeInt(c.g);
-        buffer.writeInt(c.b);
-        buffer.writeInt(c.a);
+        FriendlyByteBufUtil.writeColor(buffer, this.color);
         buffer.writeInt(this.timer);
         buffer.writeInt(this.lifetime);
         buffer.writeInt(this.deathLastingTime);
@@ -765,12 +759,7 @@ public class THObject implements ILuaValue {
         this.acceleration = buffer.readVec3();
         this.scale = buffer.readVector3f();
         this.size = buffer.readVec3();
-        int r, g, b, a;
-        r = buffer.readInt();
-        g = buffer.readInt();
-        b = buffer.readInt();
-        a = buffer.readInt();
-        this.color = Color(r, g, b, a);
+        this.color = FriendlyByteBufUtil.readColor(buffer);
         this.timer = buffer.readInt();
         this.lifetime = buffer.readInt();
         this.deathLastingTime = buffer.readInt();
@@ -788,16 +777,16 @@ public class THObject implements ILuaValue {
     }
 
     public void save(CompoundTag tag) {
-        tag.put("Pos", newDoubleList(this.positionX, this.positionY, this.positionZ));
-        tag.put("PrePos", newVec3(this.prePosition));
-        tag.put("Rotation", newVector3f(this.getRotation()));
-        tag.put("Velocity", newVec3(this.velocity));
-        tag.put("Acceleration", newVec3(this.acceleration));
-        tag.put("Scale", newVector3f(this.scale));
-        tag.put("Size", newVec3(this.size));
+        tag.put("Pos", CompoundTagUtil.newDoubleList(this.positionX, this.positionY, this.positionZ));
+        tag.put("PrePos", CompoundTagUtil.newVec3(this.prePosition));
+        tag.put("Rotation", CompoundTagUtil.newVector3f(this.getRotation()));
+        tag.put("Velocity", CompoundTagUtil.newVec3(this.velocity));
+        tag.put("Acceleration", CompoundTagUtil.newVec3(this.acceleration));
+        tag.put("Scale", CompoundTagUtil.newVector3f(this.scale));
+        tag.put("Size", CompoundTagUtil.newVec3(this.size));
         Color c = this.color;
-        tag.put("Color", newIntList(c.r, c.g, c.b, c.a));
-        tag.put("Timers", newIntList(this.timer, this.lifetime, this.deathLastingTime));
+        tag.put("Color", CompoundTagUtil.newIntList(c.r, c.g, c.b, c.a));
+        tag.put("Timers", CompoundTagUtil.newIntList(this.timer, this.lifetime, this.deathLastingTime));
         tag.putInt("Blend", this.blend.ordinal());
         tag.putBoolean("IsDead", this.isDead);
         tag.putBoolean("Collision", this.collision);
@@ -870,56 +859,6 @@ public class THObject implements ILuaValue {
 
     public IImage.Image getImage() {
         return this.image;
-    }
-
-    protected static ListTag newDoubleList(double... value) {
-        ListTag listtag = new ListTag();
-
-        for (double d0 : value) {
-            listtag.add(DoubleTag.valueOf(d0));
-        }
-
-        return listtag;
-    }
-
-    protected static ListTag newFloatList(float... value) {
-        ListTag listtag = new ListTag();
-
-        for (float f : value) {
-            listtag.add(FloatTag.valueOf(f));
-        }
-
-        return listtag;
-    }
-
-    protected static ListTag newIntList(int... value) {
-        ListTag listtag = new ListTag();
-
-        for (int i : value) {
-            listtag.add(IntTag.valueOf(i));
-        }
-
-        return listtag;
-    }
-
-    protected static ListTag newStringList(String... value) {
-        ListTag listtag = new ListTag();
-        for (String i : value) {
-            listtag.add(StringTag.valueOf(i));
-        }
-        return listtag;
-    }
-
-    protected static ListTag newVec2(Vec2 vec2) {
-        return newFloatList(vec2.x, vec2.y);
-    }
-
-    protected static ListTag newVec3(Vec3 vec3) {
-        return newDoubleList(vec3.x, vec3.y, vec3.z);
-    }
-
-    protected static ListTag newVector3f(Vector3f vec3) {
-        return newFloatList(vec3.x, vec3.y, vec3.z);
     }
 
     public static boolean IsValid(THObject object) {

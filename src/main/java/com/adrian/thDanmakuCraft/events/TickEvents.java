@@ -2,32 +2,22 @@ package com.adrian.thDanmakuCraft.events;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.client.gui.components.SpellCardNameOverlay;
-import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.adrian.thDanmakuCraft.world.entity.spellcard.EntityTHSpellCard;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.client.event.CustomizeGuiOverlayEvent;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.compress.utils.Lists;
-import org.checkerframework.checker.units.qual.C;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 @Mod.EventBusSubscriber(modid = THDanmakuCraftCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class TickEvents{
@@ -69,23 +59,28 @@ public class TickEvents{
 
             AABB playerBoundingBox = Minecraft.getInstance().player.getBoundingBox();
             for(EntityTHSpellCard spellCard:SpellCardNameOverlay.spellCards){
+                spellCard.paramsForRender.lastMagicSquareRotation = spellCard.paramsForRender.magicSquareRotation;
+                Vec3 rotation = spellCard.position().vectorTo(Minecraft.getInstance().getEntityRenderDispatcher().camera.getPosition());
+                spellCard.paramsForRender.magicSquareRotation =
+                        spellCard.paramsForRender.magicSquareRotation.lerp(
+                                rotation,
+                                0.03f);
                 boolean flag = entities.contains(spellCard) && spellCard.getContainer().isInLifeTime() && spellCard.getContainer().getContainerBound().intersects(playerBoundingBox);
-                spellCard.flagForRenderSpellCardNameBar = flag;
+                spellCard.paramsForRender.flag1 = flag;
                 if (flag/*entities.contains(spellCard)*/) {
-                    spellCard.deathTimerForRenderSpellCardNameBar = Math.min(spellCard.deathTimerForRenderSpellCardNameBar,10.0f);
-                    spellCard.lastDeathTimerForRenderSpellCardNameBar = spellCard.deathTimerForRenderSpellCardNameBar;
-                    spellCard.deathTimerForRenderSpellCardNameBar = Math.max(spellCard.deathTimerForRenderSpellCardNameBar-0.6f,0.0f);
+                    spellCard.paramsForRender.deathTimer = Math.min(spellCard.paramsForRender.deathTimer,10.0f);
+                    spellCard.paramsForRender.lastDeathTimer = spellCard.paramsForRender.deathTimer;
+                    spellCard.paramsForRender.deathTimer = Math.max(spellCard.paramsForRender.deathTimer -0.6f,0.0f);
                 } else {
-                    spellCard.lastDeathTimerForRenderSpellCardNameBar = spellCard.deathTimerForRenderSpellCardNameBar;
-                    spellCard.deathTimerForRenderSpellCardNameBar += 0.6f;
+                    spellCard.paramsForRender.lastDeathTimer = spellCard.paramsForRender.deathTimer;
+                    spellCard.paramsForRender.deathTimer += 0.6f;
                     //System.out.print(spellCard.deathTimerForRenderSpellCardNameBar);
-
-                    if (spellCard.deathTimerForRenderSpellCardNameBar > 100.0f) {
+                    if (spellCard.paramsForRender.deathTimer > 100.0f) {
                         removeList.add(spellCard);
                     }
                 }
 
-                spellCard.timerForRenderSpellCardNameBar += 0.6f;
+                spellCard.paramsForRender.timer1 += 0.6f;
             }
 
             removeList.forEach(SpellCardNameOverlay.spellCards::remove);

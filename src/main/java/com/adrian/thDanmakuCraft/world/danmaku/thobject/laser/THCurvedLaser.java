@@ -1,6 +1,7 @@
 package com.adrian.thDanmakuCraft.world.danmaku.thobject.laser;
 
 import com.adrian.thDanmakuCraft.init.THObjectInit;
+import com.adrian.thDanmakuCraft.util.CompoundTagUtil;
 import com.adrian.thDanmakuCraft.world.danmaku.ITHObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
@@ -368,8 +369,8 @@ public class THCurvedLaser extends THObject {
         }
 
         public CompoundTag save(CompoundTag tag){
-            tag.put("Pos",newDoubleList(this.position.x,this.position.y,this.position.z));
-            tag.put("LastPos",newDoubleList(this.lastPosition.x,this.lastPosition.y,this.lastPosition.z));
+            tag.put("Pos", CompoundTagUtil.newDoubleList(this.position.x,this.position.y,this.position.z));
+            tag.put("LastPos", CompoundTagUtil.newDoubleList(this.lastPosition.x,this.lastPosition.y,this.lastPosition.z));
             return tag;
         }
 

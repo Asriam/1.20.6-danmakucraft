@@ -35,7 +35,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         super.render(entity, rotationX, partialTicks, poseStack, bufferSource, combinedOverlay);
         THObjectContainer container = entity.getContainer();
         if(container.isSpellCard() && (container.shouldRenderMagicAura || container.shouldRenderLineAura)) {
-            renderSpellCardAura(entity.getContainer(), poseStack, entity.getPosition(partialTicks), partialTicks);
+            renderSpellCardAura(entity,entity.getContainer(), poseStack, entity.getPosition(partialTicks), partialTicks);
         }
     }
 
@@ -44,7 +44,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
 
     private IImage.Image SPELLCARD_MAGIC_SQUAR = new IImage.Image(
             ResourceLocation.fromNamespaceAndPath(THDanmakuCraftCore.MOD_ID,"textures/spellcard/eff_magicsquare.png"), 0.0f, 0.0f, 1.0f, 1.0f);
-    public void renderSpellCardAura(THObjectContainer container, PoseStack poseStack, Vec3 pos, float partialTicks){
+    public void renderSpellCardAura(EntityTHSpellCard spellCard, THObjectContainer container, PoseStack poseStack, Vec3 pos, float partialTicks){
         IImage.Image image = SPELLCARD_MAGIC_SQUAR;
         RenderType renderType = THRenderType.RENDER_TYPE_SPELLCARD_AURA.apply(
                 new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(image.getTextureLocation(), THBlendMode.getBlendMode(THObject.Blend.add))
@@ -60,6 +60,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         float close = timer < container.getLifetime()-time ? 1.0f : 1.0f - (float) Math.pow(Math.clamp((timer-(container.getLifetime())) / time,0.0f,1.0f),2.0f);
         float timeLeft = 1.0f-(float) container.getTimer()/container.getLifetime();
         Vec2 faceCamRotation = THObject.VectorAngleToRadAngle(this.getRenderDispatcher().camera.getPosition().vectorTo(pos));
+        //Vec2 faceCamRotation = THObject.VectorAngleToRadAngle(spellCard.paramsForRender.magicSquareRotation);
         Vec2 scale = Vec2.ONE/*.scale((1.0f-(float) container.getTimer()/container.getLifetime()))*/
                 .scale(8.0f + 0.8f*Mth.cos(timer/8.0f))
                 .scale(open*close);
@@ -69,9 +70,14 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
             {
                 poseStack.pushPose();
                 PoseStack.Pose pose = poseStack.last();
-                poseStack.mulPose(this.getRenderDispatcher().cameraOrientation()
+                Vec2 rot = THObject.VectorAngleToRadAngle(spellCard.paramsForRender.lastMagicSquareRotation.lerp(spellCard.paramsForRender.magicSquareRotation,Minecraft.getInstance().getPartialTick()));
+                /*poseStack.mulPose(this.getRenderDispatcher().cameraOrientation()
+                        .rotateZ(rotate));*/
+                poseStack.mulPose(new Quaternionf()
+                        .rotateY(rot.y - Mth.cos(timer/60.0f)  * (0.8f + 0.2f* Mth.sin(timer/80.0f)))
+                        .rotateX(-rot.x + Mth.sin(timer/40.0f) * 0.5f)
                         .rotateZ(rotate));
-                poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
+                //poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
                 VertexBuilder vertexBuilder = new VertexBuilder(builder);
                 vertexBuilder.vertexPositionColorUV(pose.pose(), -scale.x, -scale.y, 0.0f, color, uvStart.x, uvEnd.y);
                 vertexBuilder.vertexPositionColorUV(pose.pose(), scale.x, -scale.y, 0.0f, color, uvStart.x, uvStart.y);
@@ -80,9 +86,9 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
                 poseStack.popPose();
             }
             renderType.setupRenderState();
-            RenderSystem.enableCull();
-            BufferUploader.drawWithShader(builder.end());
             RenderSystem.disableCull();
+            BufferUploader.drawWithShader(builder.end());
+            //RenderSystem.disableCull();
             renderType.clearRenderState();
         }
 

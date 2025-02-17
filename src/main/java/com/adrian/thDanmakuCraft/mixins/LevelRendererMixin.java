@@ -1,27 +1,16 @@
-package com.adrian.thDanmakuCraft.mixin;
+package com.adrian.thDanmakuCraft.mixins;
 
-import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.events.RenderEvents;
-import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
-import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.world.entity.Entity;
-import org.apache.commons.compress.utils.Lists;
-import org.apache.logging.log4j.core.filter.LevelRangeFilter;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.util.List;
 
 @Mixin(LevelRenderer.class)
 public class LevelRendererMixin {
