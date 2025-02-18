@@ -6,6 +6,7 @@
 
 #if (flag == 1)
 uniform sampler2D DepthBuffer;
+//uniform sampler2D ScreenBuffer;
 #endif
 
 uniform vec2 ScreenSize;
@@ -42,14 +43,9 @@ void main() {
     if (vertexDistance > FogEnd){
         discard;
     }
-    //float coreSize = vertCoord.x;
-    //float feather  = vertCoord.y;
-
-    //gl_Position.y += 1.0f;
-
     vec3 viewAngle = normalize(-viewDir);
-
     vec2 texCoord = gl_FragCoord.xy/ScreenSize;
+    //vec4 screenColor = texture(ScreenBuffer, texCoord);
     // The more orthogonal the camera is to the fragment, the stronger the rim light.
     // abs() so that the back faces get treated the same as the front, giving a rim effect.
     float rimStrength = 1 - max(dot(viewAngle, normal),0.0f); // The more orthogonal, the stronger
@@ -86,4 +82,5 @@ void main() {
     }
 
     fragColor =  linear_fog(outColor, vertexDistance, FogStart, FogEnd, FogColor);
+
 }

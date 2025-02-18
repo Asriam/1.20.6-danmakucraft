@@ -1,7 +1,9 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject;
 
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
+import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.IImage;
+import com.adrian.thDanmakuCraft.util.VertexBuilder;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -39,10 +41,16 @@ public class THObjectRenderer extends AbstractTHObjectRenderer<THObject> {
 
         IImage.Image image = object.getImage();
 
-        RenderUtil.renderTexture(vertexConsumer, posestack$pose, combinedOverlay, Vec3.ZERO.toVector3f(), Vec2.ONE,
-                image.getUVStart(),
-                image.getUVEnd(),
-                object.getColor());
+        Color color = object.getColor();
+        Vec2 uvStart = image.getUVStart();
+        Vec2 uvEnd =   image.getUVEnd();
+        Vec2 _scale = Vec2.ONE.scale(0.5f);
+
+        VertexBuilder builder = new VertexBuilder(vertexConsumer);
+        builder.positionColorUV(posestack$pose.pose(), -_scale.x, -_scale.y, 0.0f, color, uvStart.x, uvEnd.y);
+        builder.positionColorUV(posestack$pose.pose(), _scale.x, -_scale.y, 0.0f, color, uvStart.x, uvStart.y);
+        builder.positionColorUV(posestack$pose.pose(), _scale.x, _scale.y, 0.0f, color, uvEnd.x, uvStart.y);
+        builder.positionColorUV(posestack$pose.pose(), -_scale.x, _scale.y, 0.0f, color, uvEnd.x, uvEnd.y);
         poseStack.popPose();
     }
 }

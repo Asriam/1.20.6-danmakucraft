@@ -102,7 +102,7 @@ public class THCurvedLaser extends THObject {
     }
 
     public int getRenderCull(){
-        return this.renderCull;
+        return 2;
     }
 
     public int getNodeMount(){

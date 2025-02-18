@@ -34,13 +34,7 @@ public class THRenderType extends RenderStateShard{
                     .put("UV0", DefaultVertexFormat.ELEMENT_UV0)
                     .build()
     );
-    public static final ShaderStateShard DANMAKU_DEPTH_OUTLINE_SHADER = new ShaderStateShard(() -> {
-        //MyShaderInstance shader = ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER;
-        //shader.safeGetUniform("Near").set(GameRenderer.PROJECTION_Z_NEAR);
-        //shader.safeGetUniform("Far").set(Minecraft.getInstance().gameRenderer.getDepthFar());
-        //THDanmakuCraftCore.LOGGER.info(""+Minecraft.getInstance().gameRenderer.getDepthFar());
-        return ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER;
-    });
+    public static final ShaderStateShard DANMAKU_DEPTH_OUTLINE_SHADER = new ShaderStateShard(() -> ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER);
     public static final VertexFormat TEST_FORMAT = new VertexFormat(
             ImmutableMap.<String, VertexFormatElement>builder()
                     .put("Position", DefaultVertexFormat.ELEMENT_POSITION)

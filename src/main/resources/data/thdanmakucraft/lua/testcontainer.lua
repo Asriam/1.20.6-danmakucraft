@@ -57,7 +57,7 @@ function container:onInit()
     end
 
     for i = 1,32 do
-        self:createTHBullet(testBullet2, {i}, self:getPosition(),"ball_mid",1)
+        self:createTHBullet(testBullet2, {i}, self:getPosition(),bullet_styles.ball_big,1)
     end
 end
 

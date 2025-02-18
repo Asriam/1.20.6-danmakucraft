@@ -99,6 +99,7 @@ public class THObjectContainerRenderer {
         if(shader != null) {
             THObjectContainerRenderer.DEPTH_BUFFER.copyDepthFrom(mainRenderTarget);
             shader.setSampler("DepthBuffer", THObjectContainerRenderer.DEPTH_BUFFER.getDepthTextureId());
+            //shader.setSampler("ScreenBuffer", mainRenderTarget.getColorTextureId());
             mainRenderTarget.bindWrite(true);
         }
 

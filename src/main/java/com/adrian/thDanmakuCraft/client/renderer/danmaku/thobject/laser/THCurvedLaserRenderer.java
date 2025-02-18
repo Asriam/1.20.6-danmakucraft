@@ -87,7 +87,7 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
         }
         piecewisedNodeList.add(nodeList);
         for (List<THCurvedLaser.LaserNode> NodeList : piecewisedNodeList) {
-            renderCurvedLaser(laserPos, vertexConsumer, poseStack, NodeList, laser.width, laser.width * 0.5f, edge, 1, laserColor, coreColor, partialTicks, combinedOverlay, 1.0f, 0.95f);
+            renderCurvedLaser(laserPos, vertexConsumer, poseStack, NodeList, laser.width, laser.width * 0.5f, edge, laser.getRenderCull(), laserColor, coreColor, partialTicks, combinedOverlay, 1.0f, 0.95f);
         }
         //this.renderCurvedLaser(renderer,laserPos,bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE),poseStack,this.nodeManager.getNodes(),this.width,this.width*0.5f,edge, 1, color, coreColor,partialTicks,combinedOverlay,1.0f,0.95f);
         poseStack.popPose();
@@ -186,6 +186,7 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
                                 builder.positionColorColorUvUvNormal(pose.pose(),calculatedPos4_1.toVector3f(), coreColor,GRAY, 0.5f,2.0f, 0.0f,2.0f, pose.normal(),normal4_1.toVector3f());
                                 builder.positionColorColorUvUvNormal(pose.pose(),calculatedPos4_2.toVector3f(), coreColor,GRAY, 0.5f,2.0f, 0.0f,2.0f, pose.normal(),normal4_2.toVector3f());
                                 builder.positionColorColorUvUvNormal(pose.pose(),calculatedPos3_2.toVector3f(), coreColor,GRAY, 0.5f,2.0f, 0.0f,2.0f, pose.normal(),normal3_2.toVector3f());
+
                             }
 
                             if (renderExternal) {
@@ -208,15 +209,12 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
                                 lastNormal_1[i] = normal2_1;
                                 lastNormal_2[i] = normal2_2;
 
-                                /*RenderUtil.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos1_1.toVector3f(), normal1_1.toVector3f(), new Vector2f(0.4f, -0.1f), laserColor, coreColor2);
-                                RenderUtil.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos2_1.toVector3f(), normal2_1.toVector3f(), new Vector2f(0.4f, -0.1f), laserColor, coreColor2);
-                                RenderUtil.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos2_2.toVector3f(), normal2_2.toVector3f(), new Vector2f(0.4f, -0.1f), laserColor, coreColor2);
-                                RenderUtil.vertex(vertexConsumer, pose, combinedOverlay, calculatedPos1_2.toVector3f(), normal1_2.toVector3f(), new Vector2f(0.4f, -0.1f), laserColor, coreColor2);*/
                                 VertexBuilder builder = new VertexBuilder(vertexConsumer);
                                 builder.positionColorColorUvUvNormal(pose.pose(),calculatedPos1_1.toVector3f(), laserColor,coreColor2, 0.4f,2.0f, -0.1f,2.0f, pose.normal(),normal1_1.toVector3f());
                                 builder.positionColorColorUvUvNormal(pose.pose(),calculatedPos2_1.toVector3f(), laserColor,coreColor2, 0.4f,2.0f, -0.1f,2.0f, pose.normal(),normal2_1.toVector3f());
                                 builder.positionColorColorUvUvNormal(pose.pose(),calculatedPos2_2.toVector3f(), laserColor,coreColor2, 0.4f,2.0f, -0.1f,2.0f, pose.normal(),normal2_2.toVector3f());
                                 builder.positionColorColorUvUvNormal(pose.pose(),calculatedPos1_2.toVector3f(), laserColor,coreColor2, 0.4f,2.0f, -0.1f,2.0f, pose.normal(),normal1_2.toVector3f());
+
                             }
                         }
                     }

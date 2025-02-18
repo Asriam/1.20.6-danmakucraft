@@ -125,6 +125,6 @@ public class VertexBuilder {
     }
 
     public static Vector3f transformNormal(Matrix3f pose_normal, Vector3f normal) {
-        return pose_normal.transform(normal);
+        return pose_normal.transform(normal, new Vector3f());
     }
 }
