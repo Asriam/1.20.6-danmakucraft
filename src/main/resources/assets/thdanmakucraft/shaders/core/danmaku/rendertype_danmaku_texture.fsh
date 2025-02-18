@@ -1,15 +1,19 @@
 #version 150
 
 #moj_import <thdanmakucraft:rgb_to_hsv.glsl>
+#moj_import <fog.glsl>
 
 uniform sampler2D Sampler0;
 
-uniform vec4 ColorModulator;
-uniform vec2 ScreenSize;
+//uniform vec4 ColorModulator;
+uniform float FogStart;
+uniform float FogEnd;
+uniform vec4 FogColor;
 
 in vec4 vertexColor;
 in vec4 vertexColor2;
 in vec2 texCoord0;
+in float vertexDistance;
 
 //in vec3 viewDir;
 
@@ -29,5 +33,7 @@ void main() {
 
     vec3 finalColor = HSVtoRGB(hsv);
 
-    fragColor = vec4(finalColor, color.a) * vertexColor;
+    vec4 outColor = vec4(finalColor, color.a) * vertexColor;
+
+    fragColor = linear_fog(outColor, vertexDistance, FogStart, FogEnd, FogColor);
 }

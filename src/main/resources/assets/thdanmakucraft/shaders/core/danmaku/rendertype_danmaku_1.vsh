@@ -1,5 +1,7 @@
 #version 150
 
+#moj_import <fog.glsl>
+
 in vec3 Position;
 in vec4 Color;
 in vec4 Color2;
@@ -10,8 +12,7 @@ in vec3 Normal;
 
 uniform mat4 ProjMat;
 uniform mat4 ModelViewMat;
-
-uniform vec2 BlurDir;
+uniform int FogShape;
 
 out vec3 normal;
 out vec3 viewDir;
@@ -19,6 +20,7 @@ out vec4 vertexColor;
 out vec4 coreColor;
 out vec2 vertCoord;
 out vec4 params;
+out float vertexDistance;
 
 void main() {
     mat3 normalMat = mat3(transpose(inverse(ModelViewMat)));
@@ -35,4 +37,6 @@ void main() {
     //vertCoord = UV;
     vertCoord = vec2(0.0f,0.0f);
     params = vec4(UV2,UV3);
+
+    vertexDistance = fog_distance(Position, FogShape);
 }

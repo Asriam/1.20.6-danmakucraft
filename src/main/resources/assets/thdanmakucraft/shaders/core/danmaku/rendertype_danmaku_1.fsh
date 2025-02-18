@@ -1,5 +1,7 @@
 #version 150
 
+#moj_import <fog.glsl>
+
 #define flag 1
 
 #if (flag == 1)
@@ -7,6 +9,9 @@ uniform sampler2D DepthBuffer;
 #endif
 
 uniform vec2 ScreenSize;
+uniform float FogStart;
+uniform float FogEnd;
+uniform vec4 FogColor;
 
 in vec3 normal;
 in vec3 viewDir;
@@ -14,12 +19,9 @@ in vec4 vertexColor;
 in vec4 coreColor;
 in vec2 vertCoord;
 in vec4 params;
+in float vertexDistance;
 
 out vec4 fragColor;
-/*
-float near = Near;
-float far = Far;
-*/
 
 float near = -1.0f;
 float far = 1000.0f;
@@ -37,6 +39,9 @@ vec4 Overlay(vec4 targetColor, vec4 overlayColor){
 }*/
 
 void main() {
+    if (vertexDistance > FogEnd){
+        discard;
+    }
     //float coreSize = vertCoord.x;
     //float feather  = vertCoord.y;
 
@@ -74,8 +79,11 @@ void main() {
 
     vec4 bubbleBase = vertexColor;
     //fragColor = max(vec4(vec3(1.0-(clamp(rim,0.0f,1.0f)+max(intersection,0.0f))),1.0f),0.0f)*1.6f*bubbleBase + max(vec4(1.0-(rim2+clamp(intersection,0.0f,1.0f))),0.0f)*1.6f*(coreColor*2.0f-1.0f);
-    fragColor = max(vec4(1.0-(clamp(rim,0.0f,1.0f)+max(intersection,0.0f))),0.0f)*1.6f*bubbleBase + max(vec4(1.0-(rim2+clamp(intersection,0.0f,1.0f))),0.0f)*1.6f*(coreColor*2.0f-1.0f);
-    //fragColor = vec4(normal,fragColor.a);
-    //fragColor = vec4(vec3(sceneDepth),1.0f);
-    //fragColor = texture(DepthBuffer, texCoord)*2.0f;
+    vec4 outColor = max(vec4(1.0-(clamp(rim,0.0f,1.0f)+max(intersection,0.0f))),0.0f)*1.6f*bubbleBase + max(vec4(1.0-(rim2+clamp(intersection,0.0f,1.0f))),0.0f)*1.6f*(coreColor*2.0f-1.0f);
+
+    if(outColor.a < 0.05f){
+        discard;
+    }
+
+    fragColor =  linear_fog(outColor, vertexDistance, FogStart, FogEnd, FogColor);
 }
