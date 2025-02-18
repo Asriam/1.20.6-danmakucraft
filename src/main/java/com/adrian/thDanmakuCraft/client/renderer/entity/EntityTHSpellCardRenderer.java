@@ -3,7 +3,7 @@ package com.adrian.thDanmakuCraft.client.renderer.entity;
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.client.renderer.THBlendMode;
 import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
-import com.adrian.thDanmakuCraft.client.renderer.VertexBuilder;
+import com.adrian.thDanmakuCraft.util.VertexBuilder;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.IImage;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
@@ -23,7 +23,6 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.lwjgl.opengl.GL11;
 
 public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<EntityTHSpellCard>{
     public EntityTHSpellCardRenderer(EntityRendererProvider.Context context) {
@@ -79,10 +78,10 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
                         .rotateZ(rotate));
                 //poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
                 VertexBuilder vertexBuilder = new VertexBuilder(builder);
-                vertexBuilder.vertexPositionColorUV(pose.pose(), -scale.x, -scale.y, 0.0f, color, uvStart.x, uvEnd.y);
-                vertexBuilder.vertexPositionColorUV(pose.pose(), scale.x, -scale.y, 0.0f, color, uvStart.x, uvStart.y);
-                vertexBuilder.vertexPositionColorUV(pose.pose(), scale.x, scale.y, 0.0f, color, uvEnd.x, uvStart.y);
-                vertexBuilder.vertexPositionColorUV(pose.pose(), -scale.x, scale.y, 0.0f, color, uvEnd.x, uvEnd.y);
+                vertexBuilder.positionColorUV(pose.pose(), -scale.x, -scale.y, 0.0f, color, uvStart.x, uvEnd.y);
+                vertexBuilder.positionColorUV(pose.pose(), scale.x, -scale.y, 0.0f, color, uvStart.x, uvStart.y);
+                vertexBuilder.positionColorUV(pose.pose(), scale.x, scale.y, 0.0f, color, uvEnd.x, uvStart.y);
+                vertexBuilder.positionColorUV(pose.pose(), -scale.x, scale.y, 0.0f, color, uvEnd.x, uvEnd.y);
                 poseStack.popPose();
             }
             renderType.setupRenderState();
@@ -124,10 +123,10 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
                     float v1 = i / (sample / num);
                     float v2 = (i + 1) / (sample / num);
                     VertexBuilder vertexBuilder = new VertexBuilder(builder);
-                    vertexBuilder.vertexPositionColorUV(pose2.pose(), rotation, color, uvStart.x, v1);
-                    vertexBuilder.vertexPositionColorUV(pose2.pose(), rotation2, color, uvStart.x, v2);
-                    vertexBuilder.vertexPositionColorUV(pose2.pose(), rotation3, color, uvEnd.x, v2);
-                    vertexBuilder.vertexPositionColorUV(pose2.pose(), rotation4, color, uvEnd.x, v1);
+                    vertexBuilder.positionColorUV(pose2.pose(), rotation, color, uvStart.x, v1);
+                    vertexBuilder.positionColorUV(pose2.pose(), rotation2, color, uvStart.x, v2);
+                    vertexBuilder.positionColorUV(pose2.pose(), rotation3, color, uvEnd.x, v2);
+                    vertexBuilder.positionColorUV(pose2.pose(), rotation4, color, uvEnd.x, v1);
                 }
             poseStack.popPose();
 
@@ -169,10 +168,10 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
                         Vector3f pos2 = add1.rotateZ(rot2, new Vector3f());
                         Vector3f pos3 = add2.rotateZ(rot2, new Vector3f());
                         Vector3f pos4 = add2.rotateZ(rot1, new Vector3f());
-                        vertexBuilder.vertexPositionColorUV(pose.pose(), pos1,  color, uvStart.x, v1);
-                        vertexBuilder.vertexPositionColorUV(pose.pose(), pos2, color, uvStart.x, v2);
-                        vertexBuilder.vertexPositionColorUV(pose.pose(), pos3, color, uvEnd.x, v2);
-                        vertexBuilder.vertexPositionColorUV(pose.pose(), pos4, color, uvEnd.x, v1);
+                        vertexBuilder.positionColorUV(pose.pose(), pos1,  color, uvStart.x, v1);
+                        vertexBuilder.positionColorUV(pose.pose(), pos2, color, uvStart.x, v2);
+                        vertexBuilder.positionColorUV(pose.pose(), pos3, color, uvEnd.x, v2);
+                        vertexBuilder.positionColorUV(pose.pose(), pos4, color, uvEnd.x, v1);
                     }
 
                     /*Vec3 vec3 = new Vec3(0.0f, radius, 0.0f);

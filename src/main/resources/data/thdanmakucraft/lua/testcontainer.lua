@@ -25,54 +25,39 @@ end
 local testLaser = core.defineClass()
 function testLaser:onInit(i)
     self:setLifetime(600)
-    --self.parameterManager:define("Double","angle",360/num*i + 0.001)
     self.params.angle = 360/num*i + 0.001
-    --local userRot = self:getContainer().parameterManager:getDouble("userAngle")
 end
 
 function testLaser:onAddTasks()
-    --[[
-    self.taskManager:addTask({co = coroutine.create(function(target)
-        for i = 1, 100 do
-            --print("sad"..i)
-            self:move(0, -0.2, 0)
-            --task.wait()
-            coroutine.yield()
-        end
-    end)})]]
 end
 
 function testLaser:onTick()
-    --self.taskManager:doTasks()
-    --local userRot = self:getContainer().parameterManager:get("userAngle")
     local userRot = self.container.params.userRot
     local angle = self.params.angle
-    --local angle = self.angle
     self:setVelocityFromRotation(0.2,
-            util.vec2(
+            util.vec2.new(
                     0.0,
-            angle + 60 * Mth.sin(self:getTimer() * 0.1) + userRot
+                    angle + 60 * Mth.sin(self:getTimer() * 0.1) + userRot
             ),
             true,
             true);
 end
 
 function testLaser:onRemove()
-    --self.taskManager:clear()
 end
 
 
 ---@type Class|THObjectContainer
-local container = core.defineClass("testContainer2")
+local container = core.defineClass("testContainer")
 function container:onInit()
     local userRot = self:getUser():getRotation().y
     self.params.userRot = userRot
     for i = 1,num  do
-        self:createTHCurvedLaser(testLaser, {i}, self:getPosition(),1,12,0.5)
+        self:createTHCurvedLaser(testLaser, {i}, self:getPosition(),1,120,0.5)
     end
 
     for i = 1,32 do
-        self:createTHBullet(testBullet2, {i}, self:getPosition(),"arrow_big",1)
+        self:createTHBullet(testBullet2, {i}, self:getPosition(),"ball_mid",1)
     end
 end
 
@@ -86,7 +71,7 @@ function testBullet3:onInit()
 end
 
 ---@type Class|THObjectContainer
-local container2 = core.defineClass("testContainer")
+local container2 = core.defineClass("testContainer2")
 function container2:onInit()
     self:setSpellCardName("境符「波與粒的境界」")
     self:getMaxObjectAmount(10)

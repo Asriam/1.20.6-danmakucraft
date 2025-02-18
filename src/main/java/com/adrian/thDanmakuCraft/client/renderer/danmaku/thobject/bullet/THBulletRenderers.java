@@ -3,7 +3,7 @@ package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.bullet;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.THBlendMode;
 import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
-import com.adrian.thDanmakuCraft.client.renderer.VertexBuilder;
+import com.adrian.thDanmakuCraft.util.VertexBuilder;
 import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.util.IImage;
 import com.adrian.thDanmakuCraft.util.Color;
@@ -34,10 +34,10 @@ public class THBulletRenderers {
         Vec2 scale = Vec2.ONE.scale(0.5f);
 
         VertexBuilder builder = new VertexBuilder(vertexConsumer);
-        builder.vertexPositionColorColorUV(pose.pose(), -scale.x, -scale.y, 0.0f, color, bulletColor, uvStart.x, uvEnd.y);
-        builder.vertexPositionColorColorUV(pose.pose(), scale.x, -scale.y, 0.0f, color, bulletColor, uvStart.x, uvStart.y);
-        builder.vertexPositionColorColorUV(pose.pose(), scale.x, scale.y, 0.0f, color, bulletColor, uvEnd.x, uvStart.y);
-        builder.vertexPositionColorColorUV(pose.pose(), -scale.x, scale.y, 0.0f, color, bulletColor, uvEnd.x, uvEnd.y);
+        builder.positionColorColorUV(pose.pose(), -scale.x, -scale.y, 0.0f, color, bulletColor, uvStart.x, uvEnd.y);
+        builder.positionColorColorUV(pose.pose(), scale.x, -scale.y, 0.0f, color, bulletColor, uvStart.x, uvStart.y);
+        builder.positionColorColorUV(pose.pose(), scale.x, scale.y, 0.0f, color, bulletColor, uvEnd.x, uvStart.y);
+        builder.positionColorColorUV(pose.pose(), -scale.x, scale.y, 0.0f, color, bulletColor, uvEnd.x, uvEnd.y);
     }
 
     public static void render3DBullet(THBulletRenderer renderer, THBullet bullet, PoseStack poseStack, VertexConsumer vertexConsumer, THBulletRendererFactory factory, float partialTicks, int combinedOverlay) {
@@ -83,7 +83,7 @@ public class THBulletRenderers {
 
         public static class arrow_big extends BulletRenderer {
             arrow_big() {
-                this.shouldCull = false;
+                this.shouldCull = true;
             }
 
             public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, int combinedOverlay, float partialTicks, Color color, Color coreColor) {
@@ -98,7 +98,7 @@ public class THBulletRenderers {
                 int edgeB = cull.edgeBNum;
                 Vector3f offset = new Vector3f(0.0f, -0.45f, 0.0f);
                 RenderUtil.renderSphere(vertexconsumer, posestack_pose, 2,
-                        offset.add(0.0f, 0.4f, 0.0f),
+                        offset.add(0.0f, 0.4f, 0.0f, new Vector3f()),
                         coreScale,
                         edgeA, edgeB, false,
                         new Vec2(0.5f, 2.0f),

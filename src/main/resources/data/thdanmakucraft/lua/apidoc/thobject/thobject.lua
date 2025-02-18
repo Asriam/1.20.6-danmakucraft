@@ -14,7 +14,6 @@
 ---@field uuid string
 ---@field class Class
 ---@field container THObjectContainer
----@field parameterManager AdditionalParameterManager
 ---@field taskManager LuaTaskManager
 ---@field params table auto save parameters
 local object = {}
@@ -148,8 +147,10 @@ function object:getSize() end
 ---@return string
 function object:getBlendName() end
 
+--[[
+---@deprecated
 ---@return AdditionalParameterManager
-function object:getParameterManager() end
+function object:getParameterManager() end]]
 
 ---@param x number
 ---@param y number

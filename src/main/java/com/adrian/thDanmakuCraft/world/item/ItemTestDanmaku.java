@@ -21,17 +21,17 @@ public class ItemTestDanmaku extends Item {
     @NotNull
     public InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(hand);
-        EntityTHObjectContainer entityTHObjectContainer = new EntityTHSpellCard(player, level, "測試彈幕");
+        EntityTHObjectContainer entityTHObjectContainer = new EntityTHSpellCard(player, level, "");
         entityTHObjectContainer.setPos(player.position());
         level.addFreshEntity(entityTHObjectContainer);
 
         THObjectContainer container = entityTHObjectContainer.getContainer();
         container.setUser(player);
-        container.setLuaClass("yukari_spellcard_1");
+        container.setLuaClass("testContainer");
         container.scriptInit();
         //container.scriptEvent("onInit",container.ofLuaValue());
 
-        player.getCooldowns().addCooldown(this, container.getLifetime());
+        //player.getCooldowns().addCooldown(this, container.getLifetime());
         return InteractionResultHolder.sidedSuccess(itemstack, level.isClientSide());
     }
 }

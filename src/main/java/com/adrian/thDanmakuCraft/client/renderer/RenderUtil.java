@@ -115,7 +115,7 @@ public class RenderUtil {
                 .uv(uv.x, 2.0f)
                 .uv(uv.y, 2.0f)
                 .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(uv2)
-                .normal(pose, normal.x, normal.y, normal.z)
+                .normal(normal.x, normal.y, normal.z)
                 .endVertex();
     }
 

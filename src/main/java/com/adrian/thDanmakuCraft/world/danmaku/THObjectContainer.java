@@ -40,7 +40,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     protected final THObjectManager objectManager;
     //protected final LuaManager scriptManager;
     //protected final THTasker.THTaskerManager taskerManager;
-    protected final AdditionalParameterManager parameterManager;
+    //protected final AdditionalParameterManager parameterManager;
     protected final RandomSource random = RandomSource.create();
     private String spellCardName = "";
     protected int timer = 0;
@@ -62,7 +62,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     public THObjectContainer(Entity hostEntity) {
         allContainers.add(this);
         this.hostEntity = hostEntity;
-        this.parameterManager  = new AdditionalParameterManager(this);
+        //this.parameterManager  = new AdditionalParameterManager(this);
         this.targetUserManager = new TargetUserManager(this);
         this.objectManager     = new THObjectManager(this);
         //this.taskerManager     = new THTasker.THTaskerManager(this);
@@ -381,16 +381,17 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         buffer.writeInt(this.lifetime);
         buffer.writeBoolean(this.isInited);
         this.targetUserManager.encode(buffer);
+        luaValueStorageHelper.writeLuaTable(buffer, this.ofLuaValue().get("params").checktable());
         this.objectManager.encode(buffer);
         //this.scriptManager.encode(buffer);
-        this.parameterManager.encode(buffer);
+        //this.parameterManager.encode(buffer);
         //this.taskerManager.writeData(buffer);
-        LuaValue params = this.ofLuaValue().get("params");
+        /*LuaValue params = this.ofLuaValue().get("params");
         if(params.istable()) {
             luaValueStorageHelper.writeLuaTable(buffer, params.checktable());
         }else {
             buffer.writeShort(0);
-        }
+        }*/
    }
 
     public void decode(FriendlyByteBuf buffer) {
@@ -401,12 +402,12 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         this.lifetime = buffer.readInt();
         this.isInited = buffer.readBoolean();
         this.targetUserManager.decode(buffer);
+        this.ofLuaValue().set("params", luaValueStorageHelper.readLuaTable(buffer));
         this.objectManager.decode(buffer);
         //this.scriptManager.decode(buffer);
-        this.parameterManager.decode(buffer);
+        //this.parameterManager.decode(buffer);
         //this.taskerManager.readData(additionalData);
         this.setBound(this.position(),this.bound);
-        this.ofLuaValue().set("params", luaValueStorageHelper.readLuaTable(buffer));
     }
 
     public void save(CompoundTag tag) {
@@ -419,7 +420,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         tag.put("object_storage", this.objectManager.save(new CompoundTag()));
         //tag.put("script",this.scriptManager.save(new CompoundTag()));
         tag.put("user_target", this.targetUserManager.save(new CompoundTag()));
-        tag.put("parameters", this.parameterManager.save(new CompoundTag()));
+        //tag.put("parameters", this.parameterManager.save(new CompoundTag()));
         tag.put("params", luaValueStorageHelper.saveLuaTable(this.ofLuaValue().get("params")));
     }
 
@@ -433,7 +434,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         this.objectManager.load(tag.getCompound("object_storage"));
         //this.scriptManager.load(tag.getCompound("script"));
         this.targetUserManager.load(tag.getCompound("user_target"));
-        this.parameterManager.load(tag.getCompound("parameters"));
+        //this.parameterManager.load(tag.getCompound("parameters"));
         this.ofLuaValue().set("params", luaValueStorageHelper.loadLuaTable(tag.getCompound("params")));
     }
 
@@ -455,8 +456,10 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         return this.position();
     }
 
+    @Deprecated
     public AdditionalParameterManager getParameterManager() {
-        return this.parameterManager;
+        //return this.parameterManager;
+        return null;
     }
 
     public static THObjectContainer checkTHObjectContainer(LuaValue luaValue) {
@@ -577,13 +580,13 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         }
     };
 
-    private static final LibFunction getParameterManager = new OneArgFunction(){
+    /*private static final LibFunction getParameterManager = new OneArgFunction(){
         @Override
         public LuaValue call(LuaValue luaValue) {
             THObjectContainer container = checkTHObjectContainer(luaValue);
             return container.getParameterManager().ofLuaValue();
         }
-    };
+    };*/
 
     private static final LibFunction discard = new OneArgFunction(){
         @Override
@@ -661,7 +664,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         library.set("class", this.getLuaClass());
         library.set("type", "thobject_container");
         library.set("source", LuaValue.userdataOf(this));
-        library.set("parameterManager", this.getParameterManager().ofLuaValue());
+        //library.set("parameterManager", this.getParameterManager().ofLuaValue());
         library.set("params", LuaValue.tableOf());
         return library;
     }
@@ -682,7 +685,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         library.set("createTHObject", createTHObject);
         library.set("createTHBullet", createTHBullet);
         library.set("createTHCurvedLaser", createTHCurvedLaser);
-        library.set("getParameterManager", getParameterManager);
+        //library.set("getParameterManager", getParameterManager);
         library.set("discard", discard);
         library.set("newTHObject", newTHObject);
         library.set("setSpellCardName", setSpellCardName);
