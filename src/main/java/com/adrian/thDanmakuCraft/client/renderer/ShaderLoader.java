@@ -1,6 +1,7 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -32,10 +33,10 @@ public class ShaderLoader {
     }
 
     public static void registryShaders(ResourceProvider resourceProvider){
-        DANMAKU_DEPTH_OUTLINE_SHADER = registryShader(resourceProvider,new ResourceLocation(THDanmakuCraftCore.MOD_ID,"danmaku/rendertype_danmaku_1"), THRenderType.TEST_FORMAT);
-        DANMAKU_TEXTURE_SHADER = registryShader(resourceProvider,new ResourceLocation(THDanmakuCraftCore.MOD_ID,"danmaku/rendertype_danmaku_texture"), THRenderType.POSITION_COLOR_COLOR_TEX);
-        registryShader(resourceProvider,new ResourceLocation(THDanmakuCraftCore.MOD_ID,"box_blur"), DefaultVertexFormat.POSITION);
-        registryShader(resourceProvider,new ResourceLocation(THDanmakuCraftCore.MOD_ID,"test_shader"), new VertexFormat(
+        DANMAKU_DEPTH_OUTLINE_SHADER = registryShader(resourceProvider, ResourceLocationUtil.mod("danmaku/rendertype_danmaku_1"), THRenderType.TEST_FORMAT);
+        DANMAKU_TEXTURE_SHADER = registryShader(resourceProvider,ResourceLocationUtil.mod("danmaku/rendertype_danmaku_texture"), THRenderType.POSITION_COLOR_COLOR_TEX);
+        registryShader(resourceProvider,ResourceLocationUtil.mod("box_blur"), DefaultVertexFormat.POSITION);
+        registryShader(resourceProvider,ResourceLocationUtil.mod("test_shader"), new VertexFormat(
                 ImmutableMap.<String, VertexFormatElement>builder()
                         .put("Position", DefaultVertexFormat.ELEMENT_POSITION)
                         .put("Color"   , DefaultVertexFormat.ELEMENT_COLOR)

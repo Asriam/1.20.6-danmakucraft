@@ -5,6 +5,7 @@ import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.script.IScript;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.lua.LuaManager;
+import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
@@ -598,7 +599,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         }
 
         if (luaValue.isstring()){
-            return THObjectType.getValue(new ResourceLocation(luaValue.checkjstring()));
+            return THObjectType.getValue(ResourceLocationUtil.mod(luaValue.checkjstring()));
         }
 
         return null;

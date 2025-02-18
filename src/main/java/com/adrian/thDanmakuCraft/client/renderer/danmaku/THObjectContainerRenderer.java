@@ -9,6 +9,7 @@ import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.bullet.THBulle
 import com.adrian.thDanmakuCraft.events.RenderEvents;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.ConstantUtil;
+import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
@@ -293,7 +294,7 @@ public class THObjectContainerRenderer {
     }
 
     public static void applyEffect(PoseStack poseStack, float partialTick){
-        ShaderInstance customShader = ShaderLoader.getShader(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"box_blur"));
+        ShaderInstance customShader = ShaderLoader.getShader(ResourceLocationUtil.mod("box_blur"));
         if (customShader != null) {
             RenderTarget inTarget = TEST_RENDER_TARGET;
             RenderTarget outTarget = MAIN_RENDER_TARGET;

@@ -2,6 +2,7 @@ package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.util.MultiMap;
+import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.world.IDataStorage;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
@@ -182,7 +183,7 @@ public class THObjectManager implements IDataStorage {
         List<THObject> objectList = Lists.newArrayList();
         for (int i = 0; i < list_size; i++) {
             CompoundTag objectTag = tag.getCompound("object_" + i);
-            ResourceLocation object_type = new ResourceLocation(objectTag.getString("type"));
+            ResourceLocation object_type = ResourceLocationUtil.of(objectTag.getString("type"));
             THObjectType<? extends THObject> type = THObjectType.getValue(object_type);
             if (type != null) {
                 THObject object = type.create(container);

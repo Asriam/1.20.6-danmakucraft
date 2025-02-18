@@ -3,14 +3,11 @@ package com.adrian.thDanmakuCraft.events;
 import com.adrian.thDanmakuCraft.network.PacketHandler;
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.registries.THDanmakuCraftRegistries;
-import net.minecraft.client.Minecraft;
+import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.client.event.CustomizeGuiOverlayEvent;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.event.entity.SpawnPlacementRegisterEvent;
-import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -36,7 +33,7 @@ public class CommonModEvents {
 
     private static <T> RegistryBuilder<T> makeRegistry(ResourceKey<? extends Registry<T>> key, String _default)
     {
-        return new RegistryBuilder<T>().setName(key.location()).setMaxID(Integer.MAX_VALUE - 1).hasTags().setDefaultKey(new ResourceLocation(_default));
+        return new RegistryBuilder<T>().setName(key.location()).setMaxID(Integer.MAX_VALUE - 1).hasTags().setDefaultKey(ResourceLocationUtil.of(_default));
     }
 
     @SubscribeEvent

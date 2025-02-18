@@ -1,6 +1,7 @@
 package com.adrian.thDanmakuCraft.network;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.ChannelBuilder;
@@ -10,7 +11,7 @@ import net.minecraftforge.network.SimpleChannel;
 public class PacketHandler {
     private static final int PROTOCOL_VERSION = 1;
     public static final SimpleChannel INSTANCE = ChannelBuilder.named(
-            new ResourceLocation(THDanmakuCraftCore.MOD_ID, "main"))
+            ResourceLocationUtil.mod("main"))
             .serverAcceptedVersions((status, version) -> true)
             .clientAcceptedVersions((status, version) -> true)
             .networkProtocolVersion(PROTOCOL_VERSION)

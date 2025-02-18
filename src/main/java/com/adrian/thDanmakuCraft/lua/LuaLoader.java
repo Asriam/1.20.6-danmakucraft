@@ -2,6 +2,7 @@ package com.adrian.thDanmakuCraft.lua;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.util.ResourceLoader;
+import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 
@@ -17,7 +18,7 @@ public class LuaLoader {
     private final Map<ResourceLocation,String>   resourceMap2 = new HashMap<>();
 
     public LuaLoader(){
-        this.resourceMap = ResourceLoader.loadAllResourcesInFolder(new ResourceLocation(THDanmakuCraftCore.MOD_ID, "lua"),"lua");
+        this.resourceMap = ResourceLoader.loadAllResourcesInFolder(ResourceLocationUtil.mod("lua"),"lua");
         this.resourceMap.forEach(((resourceLocation, resource) -> {
             try {
                 THDanmakuCraftCore.LOGGER.info("Loading resource {}",resourceLocation);

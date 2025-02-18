@@ -2,10 +2,7 @@ package com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
-import com.adrian.thDanmakuCraft.util.Color;
-import com.adrian.thDanmakuCraft.util.CompoundTagUtil;
-import com.adrian.thDanmakuCraft.util.FriendlyByteBufUtil;
-import com.adrian.thDanmakuCraft.util.IImage;
+import com.adrian.thDanmakuCraft.util.*;
 import com.adrian.thDanmakuCraft.world.LuaValueHelper;
 import com.adrian.thDanmakuCraft.world.danmaku.ITHObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.*;
@@ -185,9 +182,9 @@ public class THBullet extends THObject {
     }
 
     public static final IImage.Image IMAGE_WHITE = new IImage.Image(TEXTURE_WHITE,0.0f,0.0f,1.0f,1.0f);
-    public static final IImage.Image.ImageGroup IMAGE_BALL_MID = new IImage.Image.ImageGroup(new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/danmaku/ball_mid.png"),
+    public static final IImage.Image.ImageGroup IMAGE_BALL_MID = new IImage.Image.ImageGroup(ResourceLocationUtil.mod("textures/danmaku/ball_mid.png"),
             0.0f,0.0f,1.0f,1.0f/16,1,16);
-    public static final IImage.Image.ImageGroup IMAGE_ARROW_BIG = new IImage.Image.ImageGroup(new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/danmaku/arrow_big.png"),
+    public static final IImage.Image.ImageGroup IMAGE_ARROW_BIG = new IImage.Image.ImageGroup(ResourceLocationUtil.mod("textures/danmaku/arrow_big.png"),
             0.0f,0.0f,1.0f,1.0f/16,1,16);
     private static final Vec3 DEFAULT_SIZE = new Vec3(0.5f,0.5f,0.5f);
     public interface IBulletStyle{

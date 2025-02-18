@@ -4,6 +4,7 @@ import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.client.gui.components.SpellCardNameOverlay;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.adrian.thDanmakuCraft.world.entity.spellcard.EntityTHSpellCard;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.entity.Entity;
@@ -60,7 +61,8 @@ public class TickEvents{
             AABB playerBoundingBox = Minecraft.getInstance().player.getBoundingBox();
             for(EntityTHSpellCard spellCard:SpellCardNameOverlay.spellCards){
                 spellCard.paramsForRender.lastMagicSquareRotation = spellCard.paramsForRender.magicSquareRotation;
-                Vec3 rotation = spellCard.position().vectorTo(Minecraft.getInstance().getEntityRenderDispatcher().camera.getPosition());
+                Camera camera = Minecraft.getInstance().getEntityRenderDispatcher().camera;
+                Vec3 rotation = spellCard.position().vectorTo(camera != null ? camera.getPosition() : Vec3.ZERO);
                 spellCard.paramsForRender.magicSquareRotation =
                         spellCard.paramsForRender.magicSquareRotation.lerp(
                                 rotation,

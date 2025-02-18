@@ -39,7 +39,7 @@ public class THObject implements ILuaValue {
     //private final Level level;
     protected final RandomSource random = RandomSource.create();
     protected ITHObjectContainer container;
-    protected static final ResourceLocation TEXTURE_WHITE = new ResourceLocation(THDanmakuCraftCore.MOD_ID, "textures/white.png");
+    protected static final ResourceLocation TEXTURE_WHITE = ResourceLocationUtil.mod("textures/white.png");
     protected IImage.Image image = new IImage.Image(TEXTURE_WHITE, 0.0f, 0.0f, 1.0f, 1.0f);
     protected static final AABB INITIAL_AABB = new AABB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
     protected AABB bb = INITIAL_AABB;

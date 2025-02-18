@@ -1,6 +1,7 @@
 package com.adrian.thDanmakuCraft.lua;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
@@ -43,7 +44,7 @@ public class LuaCore {
     public static void init(){
         LUA = new LuaCore();
         String path = "main.lua";
-        String script = LUA.luaLoader.getResourceAsString(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"lua/"+path));
+        String script = LUA.luaLoader.getResourceAsString(ResourceLocationUtil.mod("lua/"+path));
         LuaCore luaCore = LuaCore.getInstance();
         luaCore.GLOBALS.load(script,path).call();
     }
@@ -83,7 +84,7 @@ public class LuaCore {
 
     public LuaValue doFile(String path){
         try {
-            String script = luaLoader.getResourceAsString(new ResourceLocation(THDanmakuCraftCore.MOD_ID,"lua/"+path));
+            String script = luaLoader.getResourceAsString(ResourceLocationUtil.mod("lua/"+path));
             return this.GLOBALS.load(script,path).call();
         } catch (Exception e) {
             //e.printStackTrace();

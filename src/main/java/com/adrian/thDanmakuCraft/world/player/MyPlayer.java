@@ -1,6 +1,7 @@
 package com.adrian.thDanmakuCraft.world.player;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.world.THObjectContainerProvider;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import io.netty.buffer.Unpooled;
@@ -19,7 +20,7 @@ public class MyPlayer {
 
     public static void onAttachCapabilities(AttachCapabilitiesEvent<Entity> event){
         if(!event.getObject().getCapability(THObjectContainerProvider.PLAYER_THOBJECT_CONTAINER_CAPABILITY).isPresent()){
-            event.addCapability(new ResourceLocation(THDanmakuCraftCore.MOD_ID, "thobject_container"), new THObjectContainerProvider());
+            event.addCapability(ResourceLocationUtil.mod("thobject_container"), new THObjectContainerProvider());
         }
     }
     public static void onPreTick(TickEvent.PlayerTickEvent.Pre event){

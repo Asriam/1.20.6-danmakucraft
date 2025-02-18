@@ -1,6 +1,7 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import net.minecraft.client.Minecraft;
@@ -23,7 +24,7 @@ public class RenderTargetManager {
     }
 
     public static RenderTarget createRenderTarget(String name, int width, int height){
-        return createRenderTarget(new ResourceLocation(THDanmakuCraftCore.MOD_ID, name),width,height);
+        return createRenderTarget(ResourceLocationUtil.mod(name),width,height);
     }
 
     public static RenderTarget getRenderTarget(ResourceLocation name){
@@ -31,7 +32,7 @@ public class RenderTargetManager {
     }
 
     public static RenderTarget getRenderTarget(String name){
-        return getRenderTarget(new ResourceLocation(THDanmakuCraftCore.MOD_ID,name));
+        return getRenderTarget(ResourceLocationUtil.mod(name));
     }
 
     public static void releaseRenderTarget(ResourceLocation name){

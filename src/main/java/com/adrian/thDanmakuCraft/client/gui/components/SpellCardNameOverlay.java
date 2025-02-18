@@ -3,6 +3,7 @@ package com.adrian.thDanmakuCraft.client.gui.components;
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.events.TickEvents;
 import com.adrian.thDanmakuCraft.util.Color;
+import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.world.entity.spellcard.EntityTHSpellCard;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Window;
@@ -35,7 +36,7 @@ public class SpellCardNameOverlay implements IGuiOverlay{
         return !spellCards.isEmpty();
     }
 
-    private static final ResourceLocation SPELL_CARD_UI_TEXTURE = new ResourceLocation(THDanmakuCraftCore.MOD_ID,"textures/gui/spellcard/boss_ui.png");
+    private static final ResourceLocation SPELL_CARD_UI_TEXTURE = ResourceLocationUtil.mod("textures/gui/spellcard/boss_ui.png");
 
     public void render(GuiGraphics graphics, Window window, float partialTick){
         //System.out.print("sadasdas");

@@ -3,6 +3,7 @@ package com.adrian.thDanmakuCraft.client.renderer.entity;
 import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.client.renderer.THBlendMode;
 import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
+import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.world.entity.EntityExample;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -19,8 +20,8 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
 public class EntityExampleRenderer extends EntityRenderer<EntityExample> {
-    private static final ResourceLocation TEXTURE_LOCATION = new ResourceLocation(THDanmakuCraftCore.MOD_ID,"textures/danmaku/ball_mid.png");
-    private static final ResourceLocation TEXTURE_LOCATION2 = new ResourceLocation(THDanmakuCraftCore.MOD_ID,"textures/danmaku/arrow_big.png");
+    private static final ResourceLocation TEXTURE_LOCATION = ResourceLocationUtil.mod("textures/danmaku/ball_mid.png");
+    private static final ResourceLocation TEXTURE_LOCATION2 = ResourceLocationUtil.mod("textures/danmaku/arrow_big.png");
     //private static final ResourceLocation TEXTURE_LOCATION = new ResourceLocation("textures/entity/fishing_hook.png");
     private static final RenderType RENDER_TYPE = RenderType.entityCutout(TEXTURE_LOCATION);
 
