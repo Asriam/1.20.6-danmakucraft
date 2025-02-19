@@ -13,12 +13,23 @@ end
 
 ---@type Class|THBullet
 local testBullet2 = core.defineClass(testBullet)
+function testBullet2:onRegisterTasks()
+    self.taskManager:registerTask("test", 100, function(target, timer)
+        print("sad"..timer)
+    end)
+    print("onRegisterTasks")
+end
+
 function testBullet2:onInit(i)
     self.class.super.onInit(self,i)
+    print("testBullet2")
 end
 
 function testBullet2:onTick()
     self.class.super.onTick(self)
+    if(self:getTimer() == 2) then
+        self.taskManager:startTask("test")
+    end
 end
 
 ---@type Class|THCurvedLaser
@@ -76,6 +87,8 @@ function container2:onInit()
     self:setSpellCardName("境符「波與粒的境界」")
     self:getMaxObjectAmount(10)
     self:setLifetime(300)
+    self.taskManager:startTask("test")
+    print("sad")
 end
 
 function container2:onTick()

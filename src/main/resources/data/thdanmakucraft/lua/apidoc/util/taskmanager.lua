@@ -7,15 +7,15 @@
 ---@class TaskManager
 local TaskManager = {}
 
----@param task_name string
----@param task_life number
----@param task_runnable fun(target:any,timer:number)
-function TaskManager:registerTask(task_name, task_life, task_runnable) end
+---@param name string
+---@param lifetime number
+---@param runnable fun(target:any,timer:number)
+function TaskManager:registerTask(name, lifetime, runnable) end
 
----@param task_name string
-function TaskManager:startTask(task_name) end
+---@param name string
+function TaskManager:startTask(name) end
 
----@param task_name string
-function TaskManager:removeTask(task_name) end
+---@param name string
+function TaskManager:removeTask(name) end
 
 function TaskManager:clearTasks() end

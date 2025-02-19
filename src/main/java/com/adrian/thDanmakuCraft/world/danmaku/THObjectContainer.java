@@ -206,8 +206,8 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
             }
         }else {
             this.invokeScriptEvent("onTick", this.ofLuaValue());
+            this.taskManager.tickTasks();
         }
-        this.taskManager.tickTasks();
 
         this.objectManager.tickTHObjects();
 
