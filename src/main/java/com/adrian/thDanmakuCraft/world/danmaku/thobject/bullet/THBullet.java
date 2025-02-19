@@ -2,6 +2,7 @@ package com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet;
 
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.util.*;
+import com.adrian.thDanmakuCraft.world.ILuaValue;
 import com.adrian.thDanmakuCraft.world.LuaValueHelper;
 import com.adrian.thDanmakuCraft.world.danmaku.ITHObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.*;
@@ -379,7 +380,7 @@ public class THBullet extends THObject {
         }
     };
 
-    public static final LuaValue meta = THObjectContainer.setMeta(functions());
+    public static final LuaValue meta = ILuaValue.setMeta(functions());
     @Override
     public LuaValue ofLuaClass(){
         LuaValue library = super.ofLuaClass();
@@ -397,7 +398,7 @@ public class THBullet extends THObject {
     }*/
     
     public static LuaValue functions(){
-        LuaValue library = THObject.functions();
+        LuaValue library = THObject.LuaAPI.functions();
         library.set("setStyle",       setStyle);
         library.set("setBulletColorByIndex", setBulletColorByIndex);
         library.set("setBulletColor", setBulletColor);

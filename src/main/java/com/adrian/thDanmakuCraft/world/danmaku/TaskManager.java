@@ -278,6 +278,6 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
             library.set("clearTasks", clearTasks);
             return library;
         }
-        public static final LuaValue meta = THObjectContainer.setMeta(functions());
+        public static final LuaValue meta = ILuaValue.setMeta(functions());
     }
 }

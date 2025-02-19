@@ -549,7 +549,7 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
     static {
         meta.set("__index", functions());
     }*/
-    public static final LuaValue meta = THObjectContainer.setMeta(functions());
+    public static final LuaValue meta = ILuaValue.setMeta(functions());
 
     @Override
     public LuaValue getMeta() {

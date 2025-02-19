@@ -1326,6 +1326,49 @@ public class THObject implements ILuaValue, IGetContainer {
                 return LuaValue.NIL;
             }
         };
+
+        public static LuaValue functions(){
+            LuaValue library = LuaValue.tableOf();
+            library.set("initPosition", initPosition);
+            library.set("setPosition", setPosition);
+            library.set("setLifetime", setLifetime);
+            library.set("setScale", setScale);
+            library.set("setSize", setSize);
+            library.set("setVelocity", setVelocity);
+            library.set("setVelocityFromDirection", setVelocityFromDirection);
+            library.set("setVelocityFromRotation", setVelocityFromRotation);
+            //library.set("getParameterManager", getParameterManager);
+            library.set("setAcceleration", setAcceleration);
+            library.set("setAccelerationFromDirection", setAccelerationFromDirection);
+            library.set("setAccelerationFromRotation", setAccelerationFromRotation);
+            library.set("setRotation", setRotation);
+            library.set("setRotationByDirectionalVector", setRotationByDirectionalVector);
+            library.set("setColor", setColor);
+            library.set("setBlend", setBlend);
+            library.set("setCollisionType", setCollisionType);
+            library.set("getTimer", getTimer);
+            library.set("getContainer", getContainer);
+            library.set("getPosition", getPosition);
+            library.set("getPrePosition", getPrePosition);
+            library.set("getSpeed", getSpeed);
+            library.set("getVelocity", getVelocity);
+            library.set("getMotionDirection", getMotionDirection);
+            library.set("getRotation", getRotation);
+            library.set("getXRot", getXRot);
+            library.set("getYRot", getYRot);
+            library.set("getZRot", getZRot);
+            library.set("getAcceleration", getAcceleration);
+            library.set("getScale", getScale);
+            library.set("getSize", getSize);
+            library.set("move", move);
+            library.set("setDead", setDead);
+            library.set("setShouldSetDeadWhenCollision", setShouldSetDeadWhenCollision);
+            library.set("remove", remove);
+            library.set("spawn", spawn);
+            library.set("isSpawned", getIsSpawned);
+            library.set("setNavi", setNavi);
+            return library;
+        }
     }
 
     public void initLuaValue() {
@@ -1354,58 +1397,10 @@ public class THObject implements ILuaValue, IGetContainer {
         return library;
     }
 
-    /*public static final LuaValue meta = LuaValue.tableOf();
-    static {
-        meta.set("__index", functions());
-    }*/
-
-    public static final LuaValue meta = THObjectContainer.setMeta(functions());
+    public static final LuaValue meta = ILuaValue.setMeta(functions());
 
     public LuaValue getMeta(){
         return meta;
-    }
-
-    public static LuaValue functions(){
-        LuaValue library = LuaValue.tableOf();
-        library.set("initPosition", initPosition);
-        library.set("setPosition", setPosition);
-        library.set("setLifetime", setLifetime);
-        library.set("setScale", setScale);
-        library.set("setSize", setSize);
-        library.set("setVelocity", setVelocity);
-        library.set("setVelocityFromDirection", setVelocityFromDirection);
-        library.set("setVelocityFromRotation", setVelocityFromRotation);
-        //library.set("getParameterManager", getParameterManager);
-        library.set("setAcceleration", setAcceleration);
-        library.set("setAccelerationFromDirection", setAccelerationFromDirection);
-        library.set("setAccelerationFromRotation", setAccelerationFromRotation);
-        library.set("setRotation", setRotation);
-        library.set("setRotationByDirectionalVector", setRotationByDirectionalVector);
-        library.set("setColor", setColor);
-        library.set("setBlend", setBlend);
-        library.set("setCollisionType", setCollisionType);
-        library.set("getTimer", getTimer);
-        library.set("getContainer", getContainer);
-        library.set("getPosition", getPosition);
-        library.set("getPrePosition", getPrePosition);
-        library.set("getSpeed", getSpeed);
-        library.set("getVelocity", getVelocity);
-        library.set("getMotionDirection", getMotionDirection);
-        library.set("getRotation", getRotation);
-        library.set("getXRot", getXRot);
-        library.set("getYRot", getYRot);
-        library.set("getZRot", getZRot);
-        library.set("getAcceleration", getAcceleration);
-        library.set("getScale", getScale);
-        library.set("getSize", getSize);
-        library.set("move", move);
-        library.set("setDead", setDead);
-        library.set("setShouldSetDeadWhenCollision", setShouldSetDeadWhenCollision);
-        library.set("remove", remove);
-        library.set("spawn", spawn);
-        library.set("isSpawned", getIsSpawned);
-        library.set("setNavi", setNavi);
-        return library;
     }
 
     public void addTasks(){
