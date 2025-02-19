@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.client.renderer.*;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRendererProvider;
@@ -25,12 +25,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
-import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -269,7 +267,7 @@ public class THObjectContainerRenderer {
                 );
             });
         }catch (Exception e){
-            THDanmakuCraftCore.LOGGER.error(e.toString());
+            THDanmakuCraftMod.LOGGER.error(e.toString());
         }
         return list;
     }

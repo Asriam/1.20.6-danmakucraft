@@ -1,7 +1,7 @@
 package com.adrian.thDanmakuCraft.events;
 
 import com.adrian.thDanmakuCraft.network.PacketHandler;
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.registries.THDanmakuCraftRegistries;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import net.minecraft.core.Registry;
@@ -14,7 +14,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.registries.NewRegistryEvent;
 import net.minecraftforge.registries.RegistryBuilder;
 
-@Mod.EventBusSubscriber(modid = THDanmakuCraftCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@Mod.EventBusSubscriber(modid = THDanmakuCraftMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class CommonModEvents {
     @SubscribeEvent
     public static void entityAttributes(EntityAttributeCreationEvent event){

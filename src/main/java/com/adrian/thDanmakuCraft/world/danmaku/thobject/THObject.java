@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.world.danmaku.thobject;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.util.*;
@@ -519,7 +519,7 @@ public class THObject implements ILuaValue {
             try {
                 event.checkfunction().invoke(args);
             } catch (Exception e) {
-                THDanmakuCraftCore.LOGGER.error("Failed invoke script!", e);
+                THDanmakuCraftMod.LOGGER.error("Failed invoke script!", e);
                 this.remove();
             }
         }

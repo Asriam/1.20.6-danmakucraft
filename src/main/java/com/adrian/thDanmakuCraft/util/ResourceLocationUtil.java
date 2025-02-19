@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.util;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import net.minecraft.resources.ResourceLocation;
 
 public class ResourceLocationUtil {
@@ -9,7 +9,7 @@ public class ResourceLocationUtil {
         return new ResourceLocation(path);
     }
     public static ResourceLocation mod(String path) {
-        return new ResourceLocation(THDanmakuCraftCore.MOD_ID, path);
+        return new ResourceLocation(THDanmakuCraftMod.MOD_ID, path);
     }
 
     public static ResourceLocation location(String namespace, String path) {

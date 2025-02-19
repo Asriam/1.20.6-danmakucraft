@@ -1,21 +1,18 @@
 package com.adrian.thDanmakuCraft.events;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.client.renderer.entity.EntityExampleRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.entity.EntityTHObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.entity.EntityTHSpellCardRenderer;
 import com.adrian.thDanmakuCraft.init.EntityInit;
-import com.adrian.thDanmakuCraft.world.entity.spellcard.EntityTHSpellCard;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.CustomizeGuiOverlayEvent;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
-@Mod.EventBusSubscriber(modid = THDanmakuCraftCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = THDanmakuCraftMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientModEvents {
     @SubscribeEvent
     public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event){

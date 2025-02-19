@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.lua;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.util.ResourceLoader;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import net.minecraft.resources.ResourceLocation;
@@ -21,10 +21,10 @@ public class LuaLoader {
         this.resourceMap = ResourceLoader.loadAllResourcesInFolder(ResourceLocationUtil.mod("lua"),"lua");
         this.resourceMap.forEach(((resourceLocation, resource) -> {
             try {
-                THDanmakuCraftCore.LOGGER.info("Loading resource {}",resourceLocation);
+                THDanmakuCraftMod.LOGGER.info("Loading resource {}",resourceLocation);
                 resourceMap2.put(resourceLocation,ResourceLoader.readResource(resource));
             } catch (Exception e) {
-                THDanmakuCraftCore.LOGGER.warn("Failed to load resource {}",resourceLocation,e);
+                THDanmakuCraftMod.LOGGER.warn("Failed to load resource {}",resourceLocation,e);
             }
         }));
     }

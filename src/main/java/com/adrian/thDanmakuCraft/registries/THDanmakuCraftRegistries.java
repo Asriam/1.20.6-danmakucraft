@@ -1,11 +1,9 @@
 package com.adrian.thDanmakuCraft.registries;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.*;
 
 public class THDanmakuCraftRegistries {

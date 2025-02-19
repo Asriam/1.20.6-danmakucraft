@@ -5,31 +5,21 @@ import com.adrian.thDanmakuCraft.init.*;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.lua.LuaLoader;
 import com.adrian.thDanmakuCraft.util.ResourceLoader;
-import com.adrian.thDanmakuCraft.world.item.ItemTestDanmaku;
 import com.mojang.logging.LogUtils;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.server.ServerLifecycleHooks;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
-import java.util.*;
-
 // The value here should match an entry in the META-INF/mods.toml file
-@Mod(THDanmakuCraftCore.MOD_ID)
-public class THDanmakuCraftCore
+@Mod(THDanmakuCraftMod.MOD_ID)
+public class THDanmakuCraftMod
 {
     // Define mod id in a common place for everything to reference
     public static final String MOD_ID = "thdanmakucraft";
@@ -38,7 +28,7 @@ public class THDanmakuCraftCore
     //public static JSLoader JSLOADER;
     public static ResourceManager RESOURCE_MANAGER;
 
-    public THDanmakuCraftCore(@NotNull FMLJavaModLoadingContext context) {
+    public THDanmakuCraftMod(@NotNull FMLJavaModLoadingContext context) {
         IEventBus modEventBus = context.getModEventBus();
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::clientSetup);

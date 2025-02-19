@@ -1,6 +1,5 @@
 package com.adrian.thDanmakuCraft.client.gui.components;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.events.TickEvents;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;

@@ -1,6 +1,5 @@
 package com.adrian.thDanmakuCraft.world.danmaku;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.util.MultiMap;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.world.IDataStorage;
@@ -41,7 +40,9 @@ public class THObjectManager implements IDataStorage {
         this.storage.remove(object);
     }
 
-
+    public void removeTHObjects(List<THObject> objects){
+        this.storage.removeAll(objects);
+    }
     public void sortTHObjects(Comparator<THObject> comparator) {
         this.storage.sort(comparator);
     }
@@ -104,30 +105,11 @@ public class THObjectManager implements IDataStorage {
             }
             index++;
         }
-
         for(THObject object:removeList){
             object.onRemove();
             this.removeTHObject(object);
         }
-
-        /*
-        for(int i=0;i<this.getTHObjects().size();i++){
-            THObject object = this.getTHObjects().get(i);
-            if (object != null && !object.removeFlag){
-                if(object.getContainer() == null){
-                    //object.container = this.container;
-                    object.setContainer(this.container);
-                }
-                object.index = i;
-                object.onTick();
-            }else {
-                if (object != null){
-                    object.onRemove();
-                }
-                this.removeTHObject(i);
-                i = i-1;
-            }
-        }*/
+        removeList.clear();
     }
 
     public CompoundTag save(CompoundTag compoundTag) {

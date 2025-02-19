@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.world.danmaku;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.script.IScript;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
@@ -88,7 +88,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
 
     public void setMaxObjectAmount(int maxObjectAmount) {
         if(maxObjectAmount > MAX_OBJECT_AMOUNT_LIMIT){
-            THDanmakuCraftCore.LOGGER.warn("Max object amount is too large, it will be set to {}", MAX_OBJECT_AMOUNT_LIMIT);
+            THDanmakuCraftMod.LOGGER.warn("Max object amount is too large, it will be set to {}", MAX_OBJECT_AMOUNT_LIMIT);
         }
         this.maxObjectAmount = Math.min(maxObjectAmount, MAX_OBJECT_AMOUNT_LIMIT);
     }
@@ -170,7 +170,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
             try {
                 event.checkfunction().invoke(args);
             }catch (Exception e){
-                THDanmakuCraftCore.LOGGER.error("Failed invoke script!", e);
+                THDanmakuCraftMod.LOGGER.error("Failed invoke script!", e);
                 this.discard();
             }
         }
@@ -178,7 +178,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
 
     public void tick() {
         if(this.hostEntity == null){
-            THDanmakuCraftCore.LOGGER.warn("Host Entity is null!");
+            THDanmakuCraftMod.LOGGER.warn("Host Entity is null!");
             return;
         }
 

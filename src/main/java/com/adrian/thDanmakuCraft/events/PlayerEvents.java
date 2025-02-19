@@ -1,7 +1,6 @@
 package com.adrian.thDanmakuCraft.events;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
-import com.adrian.thDanmakuCraft.world.player.MyPlayer;
+import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
@@ -11,7 +10,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-@Mod.EventBusSubscriber(modid = THDanmakuCraftCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@Mod.EventBusSubscriber(modid = THDanmakuCraftMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class PlayerEvents {
     @SubscribeEvent
     public static void onAttachCapabilities(AttachCapabilitiesEvent<Entity> event) {

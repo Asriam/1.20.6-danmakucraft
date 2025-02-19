@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
@@ -16,7 +16,7 @@ public class RenderTargetManager {
     public static RenderTarget createRenderTarget(ResourceLocation name, int width, int height){
         RenderTarget renderTarget = renderTargetMap.get(name);
         if (renderTarget!= null) {
-            THDanmakuCraftCore.LOGGER.warn("Render Target {} already exits!",name);
+            THDanmakuCraftMod.LOGGER.warn("Render Target {} already exits!",name);
             return renderTarget;
         }
         renderTargetMap.put(name,new TextureTarget(width,height,true, Minecraft.ON_OSX));

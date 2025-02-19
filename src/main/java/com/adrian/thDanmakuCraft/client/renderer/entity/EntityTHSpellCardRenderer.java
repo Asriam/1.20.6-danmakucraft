@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.client.renderer.entity;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.client.renderer.THBlendMode;
 import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
 import com.adrian.thDanmakuCraft.util.VertexBuilder;
@@ -39,10 +39,10 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
     }
 
     private IImage.Image spellCardAura = new IImage.Image(
-            ResourceLocation.fromNamespaceAndPath(THDanmakuCraftCore.MOD_ID,"textures/spellcard/eff_line.png"), 0.0f, 0.0f, 1.0f, 1.0f);
+            ResourceLocation.fromNamespaceAndPath(THDanmakuCraftMod.MOD_ID,"textures/spellcard/eff_line.png"), 0.0f, 0.0f, 1.0f, 1.0f);
 
     private IImage.Image SPELLCARD_MAGIC_SQUAR = new IImage.Image(
-            ResourceLocation.fromNamespaceAndPath(THDanmakuCraftCore.MOD_ID,"textures/spellcard/eff_magicsquare.png"), 0.0f, 0.0f, 1.0f, 1.0f);
+            ResourceLocation.fromNamespaceAndPath(THDanmakuCraftMod.MOD_ID,"textures/spellcard/eff_magicsquare.png"), 0.0f, 0.0f, 1.0f, 1.0f);
     public void renderSpellCardAura(EntityTHSpellCard spellCard, THObjectContainer container, PoseStack poseStack, Vec3 pos, float partialTicks){
         IImage.Image image = SPELLCARD_MAGIC_SQUAR;
         RenderType renderType = THRenderType.RENDER_TYPE_SPELLCARD_AURA.apply(

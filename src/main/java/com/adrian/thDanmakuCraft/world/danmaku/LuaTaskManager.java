@@ -13,6 +13,7 @@ import org.luaj.vm2.lib.TwoArgFunction;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class LuaTaskManager implements IDataStorage, ILuaValue{
 
     private final List<LuaValue> tasks = new ArrayList<>();

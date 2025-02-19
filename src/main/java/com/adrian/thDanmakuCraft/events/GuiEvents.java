@@ -1,20 +1,17 @@
 package com.adrian.thDanmakuCraft.events;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.client.gui.components.IGuiOverlay;
 import com.adrian.thDanmakuCraft.client.gui.components.SpellCardNameOverlay;
 import com.google.common.collect.Maps;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.CustomizeGuiOverlayEvent;
-import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.apache.commons.compress.utils.Lists;
 
-import java.util.List;
 import java.util.Map;
 
-@Mod.EventBusSubscriber(modid = THDanmakuCraftCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@Mod.EventBusSubscriber(modid = THDanmakuCraftMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class GuiEvents {
     private static final Map<String, IGuiOverlay> GUI_OVERLAYS = Maps.newLinkedHashMap();
     @SubscribeEvent

@@ -1,10 +1,9 @@
 package com.adrian.thDanmakuCraft.lua;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -88,14 +87,14 @@ public class LuaCore {
             return this.GLOBALS.load(script,path).call();
         } catch (Exception e) {
             //e.printStackTrace();
-            THDanmakuCraftCore.LOGGER.error("Failed doing lua file!",e);
+            THDanmakuCraftMod.LOGGER.error("Failed doing lua file!",e);
         }
         return NIL;
     }
 
     public LuaValue coreAPI(){
         LuaValue library = LuaValue.tableOf();
-        library.set("mod_id", THDanmakuCraftCore.MOD_ID);
+        library.set("mod_id", THDanmakuCraftMod.MOD_ID);
         library.set( "doFile", new OneArgFunction(){
             @Override
             public LuaValue call(LuaValue luaValue) {

@@ -1,15 +1,13 @@
 package com.adrian.thDanmakuCraft.network.syncher;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.syncher.EntityDataSerializer;
-import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -68,7 +66,7 @@ public class MyEntityDataSerializers {
         EntityDataSerializers.registerSerializer(THOBJECT);
     }*/
 
-    public static final DeferredRegister<EntityDataSerializer<?>> ENTITY_DATA_SERIALIZERS = DeferredRegister.create(ForgeRegistries.Keys.ENTITY_DATA_SERIALIZERS, THDanmakuCraftCore.MOD_ID);
+    public static final DeferredRegister<EntityDataSerializer<?>> ENTITY_DATA_SERIALIZERS = DeferredRegister.create(ForgeRegistries.Keys.ENTITY_DATA_SERIALIZERS, THDanmakuCraftMod.MOD_ID);
 
     // Register the serializer
     public static final RegistryObject<EntityDataSerializer<THObjectContainer>> THOBJECT_CONTAINER_SERIALIZER = ENTITY_DATA_SERIALIZERS.register("thobject_container_serializer", () -> THOBJECT_CONTAINER);

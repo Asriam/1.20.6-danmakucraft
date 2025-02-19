@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.events;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.client.gui.components.SpellCardNameOverlay;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.adrian.thDanmakuCraft.world.entity.spellcard.EntityTHSpellCard;
@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Mod.EventBusSubscriber(modid = THDanmakuCraftCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@Mod.EventBusSubscriber(modid = THDanmakuCraftMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class TickEvents{
     @SubscribeEvent
     public static void worldTick(TickEvent.LevelTickEvent event){

@@ -1,15 +1,12 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterShadersEvent;
@@ -20,7 +17,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-@Mod.EventBusSubscriber(modid = THDanmakuCraftCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = THDanmakuCraftMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ShaderLoader {
 
     //private static final ResourceManager RESOURCE_MANAGER = Minecraft.getInstance().getResourceManager();
@@ -51,7 +48,7 @@ public class ShaderLoader {
     @SubscribeEvent
     public static void onRegisterShaders(RegisterShadersEvent event) {
         registryShaders(event.getResourceProvider());
-        THDanmakuCraftCore.LOGGER.info("Shaders loaded successfully!");
+        THDanmakuCraftMod.LOGGER.info("Shaders loaded successfully!");
     }
 
     public static MyShaderInstance registryShader(ResourceProvider resourceProvider, ResourceLocation resourceLocation, VertexFormat vertexFormat){
@@ -67,7 +64,7 @@ public class ShaderLoader {
         try {
             return new MyShaderInstance(resourceProvider,resourceLocation,vertexFormat);
         } catch (IOException e) {
-            THDanmakuCraftCore.LOGGER.info("Failed load shader {}",resourceLocation,e);
+            THDanmakuCraftMod.LOGGER.info("Failed load shader {}",resourceLocation,e);
         }
         return null;
     }

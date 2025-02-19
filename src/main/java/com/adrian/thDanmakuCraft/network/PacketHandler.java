@@ -1,8 +1,6 @@
 package com.adrian.thDanmakuCraft.network;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.ChannelBuilder;
 import net.minecraftforge.network.PacketDistributor;

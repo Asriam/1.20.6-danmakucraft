@@ -1,18 +1,15 @@
 package com.adrian.thDanmakuCraft.events;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
+import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
-import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
@@ -22,12 +19,11 @@ import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.compress.utils.Lists;
 import org.joml.Matrix4f;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Mod.EventBusSubscriber(modid = THDanmakuCraftCore.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = THDanmakuCraftMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class RenderEvents {
     private static final Map<String, RenderLevelStageTask> renderLevelStageTasks = new HashMap<>();
 

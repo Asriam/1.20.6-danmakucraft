@@ -1,6 +1,5 @@
 package com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.util.*;
 import com.adrian.thDanmakuCraft.world.LuaValueHelper;
@@ -12,7 +11,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.luaj.vm2.LuaValue;

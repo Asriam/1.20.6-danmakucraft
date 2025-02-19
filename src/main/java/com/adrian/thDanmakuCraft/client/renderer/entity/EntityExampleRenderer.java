@@ -1,6 +1,5 @@
 package com.adrian.thDanmakuCraft.client.renderer.entity;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
 import com.adrian.thDanmakuCraft.client.renderer.THBlendMode;
 import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;

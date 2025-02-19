@@ -1,7 +1,6 @@
 package com.adrian.thDanmakuCraft.util;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftCore;
-import net.minecraft.client.Minecraft;
+import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -25,7 +24,7 @@ public class ResourceLoader {
         try {
             return readResource(loadResource(resourceLocation));
         } catch (IOException e) {
-            THDanmakuCraftCore.LOGGER.warn("Failed to load resource: {}", resourceLocation, e);
+            THDanmakuCraftMod.LOGGER.warn("Failed to load resource: {}", resourceLocation, e);
         }
         return null;
     }
