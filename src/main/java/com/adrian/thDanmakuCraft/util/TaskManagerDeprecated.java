@@ -4,7 +4,8 @@ import com.adrian.thDanmakuCraft.world.IDataStorage;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 
-public class TaskManager implements IDataStorage {
+@Deprecated
+public class TaskManagerDeprecated implements IDataStorage {
     private int taskTick = 0;
     private int taskDuration = 120;
 

@@ -17,6 +17,11 @@ function object:onInit(vec3)
     self:initPosition(vec3)
 end
 
+----此函數會在註冊Tasks時被調用
+function object:onRegisterTasks()
+
+end
+
 ---此函數會在THObject每次tick時調用
 function object:onTick()
 end

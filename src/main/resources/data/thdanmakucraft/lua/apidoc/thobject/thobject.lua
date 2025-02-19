@@ -14,7 +14,7 @@
 ---@field uuid string
 ---@field class Class
 ---@field container THObjectContainer
----@field taskManager LuaTaskManager
+---@field taskManager TaskManager
 ---@field params table auto save parameters
 local object = {}
 
@@ -175,6 +175,7 @@ function object:setNavi(flag) end
 
 THObject = object
 
+--[[
 ---@class LuaTaskManager
 local taskManager = {}
 
@@ -187,4 +188,4 @@ function taskManager:removeTask(task) end
 
 function taskManager:clear() end
 
-function taskManager:doTasks() end
+function taskManager:doTasks() end]]

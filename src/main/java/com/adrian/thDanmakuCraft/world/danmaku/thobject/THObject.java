@@ -29,13 +29,15 @@ import java.util.Map;
 import java.util.UUID;
 
 import static com.adrian.thDanmakuCraft.world.LuaValueHelper.*;
-import static com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject.api.*;
+import static com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject.LuaAPI.*;
 
-public class THObject implements ILuaValue {
+public class THObject implements ILuaValue, IGetContainer {
     //private static final Logger log = LoggerFactory.getLogger(THObject.class);
     private final THObjectType<? extends THObject> type;
-    private final AdditionalParameterManager parameterManager;
+    //private final AdditionalParameterManager parameterManager;
     //private final LuaTaskManager luaTaskManager;
+    private final LuaValueStorageHelper luaValueStorageHelper = new LuaValueStorageHelper(this);
+    private final TaskManager<THObject> taskManager = new TaskManager<>(this);
     //private final Level level;
     protected final RandomSource random = RandomSource.create();
     protected ITHObjectContainer container;
@@ -77,26 +79,20 @@ public class THObject implements ILuaValue {
     private UUID uuid;
     public boolean isSpawned = false;
     private LuaValue luaClass;
-    private String luaClassKey = "";
+    private String luaClassName = "";
     public int index = 0;
 
     public Color color = Color(255, 255, 255, 255);
     protected Blend blend = Blend.add;
     protected CollisionType collisionType = CollisionType.AABB;
     protected LuaValue luaValueForm;
-    private final LuaValueStorageHelper luaValueStorageHelper;
 
     public THObject(THObjectType<? extends THObject> type, ITHObjectContainer container) {
         this.type = type;
         this.container = container;
-        //this.level = container.level();
-        this.parameterManager = new AdditionalParameterManager(this.container);
-        //this.luaTaskManager = new LuaTaskManager(this);
-        this.luaValueStorageHelper = new LuaValueStorageHelper(this.container);
         this.uuid = Mth.createInsecureUUID(this.random);
         this.initPosition(container.getPosition());
-        //this.initLuaValue();
-        //this.addTasks();
+        this.registerTasks();
     }
 
     public THObject(THObjectContainer container, Vec3 position) {
@@ -109,8 +105,15 @@ public class THObject implements ILuaValue {
         this.init(luaClassKey,LuaValue.NIL);
     }
 
+    public void registerTasks(){
+
+    }
+    public void registerLuaTasks(){
+        this.invokeScriptEvent("onRegisterTasks", this.ofLuaValue());
+    }
+
     public void init(String luaClassKey, Varargs args) {
-        this.setLuaClassKey(luaClassKey);
+        this.setLuaClass(luaClassKey);
         this.initLuaValue();
         LuaValue luaObject = this.ofLuaValue();
         if(args == LuaValue.NIL){
@@ -490,7 +493,7 @@ public class THObject implements ILuaValue {
 
     public LuaValue getLuaClass(){
         if (this.luaClass == null || this.luaClass.isnil()) {
-            LuaValue luaClass1 = LuaCore.getInstance().getLuaClass(this.getLuaClassKey());
+            LuaValue luaClass1 = LuaCore.getInstance().getLuaClass(this.getLuaClassName());
             if (luaClass1 != null && !luaClass1.isnil()) {
                 this.luaClass = luaClass1;
             }else {
@@ -701,12 +704,19 @@ public class THObject implements ILuaValue {
         return this.type;
     }
 
-    public void setLuaClassKey(String className) {
-        this.luaClassKey = className;
+    @Deprecated
+    public void setLuaClassName(String className) {
+        this.luaClassName = className;
     }
 
-    public String getLuaClassKey() {
-        return this.luaClassKey;
+    public void setLuaClass(String className){
+        this.luaClassName = className;
+        LuaValue luaClass1 = LuaCore.getInstance().getLuaClass(className);
+        this.luaClass = luaClass1 == null ? LuaValue.NIL : luaClass1;
+    }
+
+    public String getLuaClassName() {
+        return this.luaClassName;
     }
 
     public void encode(FriendlyByteBuf buffer) {
@@ -732,16 +742,17 @@ public class THObject implements ILuaValue {
         buffer.writeBoolean(this.collision);
         buffer.writeEnum(this.collisionType);
         buffer.writeBoolean(this.shouldSave);
-        buffer.writeUtf(this.luaClassKey);
+        buffer.writeUtf(this.luaClassName);
         //this.scriptManager.writeData(buffer);
-        this.parameterManager.encode(buffer);
+        //this.parameterManager.encode(buffer);
         //this.luaTaskManager.encode(buffer);
-        LuaValue params = this.ofLuaValue().get("params");
+        this.luaValueStorageHelper.writeLuaTable(buffer, this.ofLuaValue().get("params").checktable());
+        /*LuaValue params = this.ofLuaValue().get("params");
         if(params.istable()) {
             luaValueStorageHelper.writeLuaTable(buffer, params.checktable());
         }else {
             buffer.writeShort(0);
-        }
+        }*/
     }
 
     public void decode(FriendlyByteBuf buffer) {
@@ -767,9 +778,9 @@ public class THObject implements ILuaValue {
         this.collision = buffer.readBoolean();
         this.collisionType = buffer.readEnum(CollisionType.class);
         this.shouldSave = buffer.readBoolean();
-        this.luaClassKey = buffer.readUtf();
+        this.luaClassName = buffer.readUtf();
         //this.scriptManager.readData(buffer);
-        this.parameterManager.decode(buffer);
+        //this.parameterManager.decode(buffer);
         //this.luaTaskManager.decode(buffer);
         this.setBoundingBox(this.getPosition(), this.size);
         this.ofLuaValue().set("params", luaValueStorageHelper.readLuaTable(buffer));
@@ -791,9 +802,9 @@ public class THObject implements ILuaValue {
         tag.putBoolean("Collision", this.collision);
         tag.putInt("CollisionType", this.collisionType.ordinal());
         tag.putUUID("UUID", this.uuid);
-        tag.putString("LuaClassKey", luaClassKey);
+        tag.putString("LuaClassName", luaClassName);
         //this.scriptManager.save(tag);
-        tag.put("parameters", this.parameterManager.save(new CompoundTag()));
+        //tag.put("parameters", this.parameterManager.save(new CompoundTag()));
         tag.put("params", luaValueStorageHelper.saveLuaTable(this.ofLuaValue().get("params")));
         //return tag;
     }
@@ -823,15 +834,17 @@ public class THObject implements ILuaValue {
         this.isDead = tag.getBoolean("IsDead");
         this.collision = tag.getBoolean("Collision");
         this.collisionType = CollisionType.class.getEnumConstants()[tag.getInt("CollisionType")];
-        this.luaClassKey = tag.getString("LuaClassKey");
+        this.luaClassName = tag.getString("LuaClassName");
         //this.scriptManager.load(tag);
-        this.parameterManager.load(tag.getCompound("parameters"));
+        //this.parameterManager.load(tag.getCompound("parameters"));
         this.uuid = tag.getUUID("UUID");
         this.ofLuaValue().set("params", luaValueStorageHelper.loadLuaTable(tag.getCompound("params")));
     }
 
+    @Deprecated
     public AdditionalParameterManager getParameterManager() {
-        return this.parameterManager;
+        //return this.parameterManager;
+        return null;
     }
 
     public boolean shouldRender(double camX, double camY, double camZ) {
@@ -996,23 +1009,23 @@ public class THObject implements ILuaValue {
         }
     }
 
-    public static THObject checkTHObject(LuaValue luaValue) {
-        if (luaValue.get("source").checkuserdata() instanceof THObject object) {
-            return object;
+    public static class LuaAPI {
+        public static THObject checkTHObject(LuaValue luaValue) {
+            if (luaValue.get("source").checkuserdata() instanceof THObject object) {
+                return object;
+            }
+
+            throw new NullPointerException();
         }
 
-        throw new NullPointerException();
-    }
-
-    public static boolean isTHObject(LuaValue luaValue){
-        LuaValue source = luaValue.get("source");
-        if(source.isnil()){
-            return false;
+        public static boolean isTHObject(LuaValue luaValue){
+            LuaValue source = luaValue.get("source");
+            if(source.isnil()){
+                return false;
+            }
+            return source.checkuserdata() instanceof THObject;
         }
-        return source.checkuserdata() instanceof THObject;
-    }
 
-    public static class api {
         protected static final LibFunction setPosition = new VarArgFunction() {
             @Override
             public Varargs invoke(Varargs varargs) {
@@ -1086,12 +1099,12 @@ public class THObject implements ILuaValue {
             }
         };
 
-        protected static final LibFunction getParameterManager = new OneArgFunction() {
+        /*protected static final LibFunction getParameterManager = new OneArgFunction() {
             @Override
             public LuaValue call(LuaValue luaValue0) {
                 return checkTHObject(luaValue0).getParameterManager().ofLuaValue();
             }
-        };
+        };*/
 
         protected static final LibFunction setAcceleration = new VarArgFunction() {
             @Override
@@ -1317,6 +1330,7 @@ public class THObject implements ILuaValue {
     public void initLuaValue() {
         this.luaValueForm = this.ofLuaClass();
         this.invokeScriptEvent("onConstruct", this.luaValueForm);
+        this.registerLuaTasks();
         //this.addTasks();
     }
 
@@ -1332,8 +1346,9 @@ public class THObject implements ILuaValue {
         library.set("type", this.getType().getKey().toString());
         library.set("uuid", this.getUUIDasString());
         library.set("container", this.getContainer().ofLuaValue());
-        library.set("parameterManager", this.getParameterManager().ofLuaValue());
+        //library.set("parameterManager", this.getParameterManager().ofLuaValue());
         //library.set("taskManager", this.luaTaskManager.ofLuaValue());
+        library.set("taskManager", this.taskManager.ofLuaValue());
         library.set("params", LuaValue.tableOf());
         return library;
     }
@@ -1359,7 +1374,7 @@ public class THObject implements ILuaValue {
         library.set("setVelocity", setVelocity);
         library.set("setVelocityFromDirection", setVelocityFromDirection);
         library.set("setVelocityFromRotation", setVelocityFromRotation);
-        library.set("getParameterManager", getParameterManager);
+        //library.set("getParameterManager", getParameterManager);
         library.set("setAcceleration", setAcceleration);
         library.set("setAccelerationFromDirection", setAccelerationFromDirection);
         library.set("setAccelerationFromRotation", setAccelerationFromRotation);

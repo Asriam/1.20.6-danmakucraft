@@ -9,8 +9,8 @@ import org.luaj.vm2.LuaValue;
 public class LuaValueStorageHelper {
     //private static final Map<Integer,LuaValue> userDataMap = new HashMap<>();
 
-    private final ITHObjectContainer container;
-    public LuaValueStorageHelper(ITHObjectContainer container){
+    private final IGetContainer container;
+    public LuaValueStorageHelper(IGetContainer container){
         this.container = container;
     }
 
@@ -19,7 +19,7 @@ public class LuaValueStorageHelper {
     }
 
     public LuaTable readTHObject(FriendlyByteBuf byteBuf){
-        THObject object = this.container.getObjectFromUUID(byteBuf.readUUID());
+        THObject object = this.container.getContainer().getObjectFromUUID(byteBuf.readUUID());
         return object == null ? LuaValue.tableOf() : object.ofLuaValue().checktable();
     }
 
@@ -56,9 +56,9 @@ public class LuaValueStorageHelper {
             case LuaValue.TNUMBER -> byteBuf.writeDouble(luaValue.checkdouble());
             case LuaValue.TSTRING -> byteBuf.writeUtf(luaValue.checkjstring());
             case LuaValue.TTABLE -> {
-                if (THObject.isTHObject(luaValue)) {
+                if (THObject.LuaAPI.isTHObject(luaValue)) {
                     byteBuf.writeEnum(TableType.THOBJECT);
-                    writeTHObject(byteBuf, THObject.checkTHObject(luaValue));
+                    writeTHObject(byteBuf, THObject.LuaAPI.checkTHObject(luaValue));
                 }else {
                     byteBuf.writeEnum(TableType.TABLE);
                     writeLuaTable(byteBuf, luaValue.checktable());
@@ -94,7 +94,7 @@ public class LuaValueStorageHelper {
     }
 
     public LuaTable loadTHObject(CompoundTag tag){
-        THObject object = this.container.getObjectFromUUID(tag.getUUID("uuid"));
+        THObject object = this.container.getContainer().getObjectFromUUID(tag.getUUID("uuid"));
         return object == null ? LuaValue.tableOf() : object.ofLuaValue().checktable();
     }
     public CompoundTag saveLuaTable(LuaValue table) {
@@ -128,9 +128,9 @@ public class LuaValueStorageHelper {
             case LuaValue.TNUMBER -> valueTag.putDouble("value", luaValue.checkdouble());
             case LuaValue.TSTRING -> valueTag.putString("value", luaValue.checkjstring());
             case LuaValue.TTABLE -> {
-                if (THObject.isTHObject(luaValue)) {
+                if (THObject.LuaAPI.isTHObject(luaValue)) {
                     valueTag.putInt("table_type", TableType.THOBJECT.ordinal());
-                    valueTag.put("value",saveTHObject(THObject.checkTHObject(luaValue)));
+                    valueTag.put("value",saveTHObject(THObject.LuaAPI.checkTHObject(luaValue)));
                 }else {
                     valueTag.put("value", saveLuaTable(luaValue.checktable()));
                 }

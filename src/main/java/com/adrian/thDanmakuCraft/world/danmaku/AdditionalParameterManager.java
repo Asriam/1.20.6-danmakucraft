@@ -541,7 +541,6 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
     public LuaValue ofLuaClass() {
         LuaValue library = LuaValue.tableOf();
         library.setmetatable(this.getMeta());
-        //Params
         library.set("source", LuaValue.userdataOf(this));
         return library;
     }

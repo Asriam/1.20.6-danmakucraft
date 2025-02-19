@@ -11,6 +11,11 @@ local container = THObjectContainerBase
 function container:onConstruct()
 end
 
+----此函數會在註冊Tasks時被調用
+function container:onRegisterTasks()
+
+end
+
 ---此函數會在THObjectContainer第一次添加到world時調用
 function container:onInit()
 end

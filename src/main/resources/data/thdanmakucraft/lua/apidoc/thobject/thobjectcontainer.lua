@@ -3,7 +3,7 @@
 ---@class THObjectContainer
 ---@field onInit fun(self)
 ---@field onTick fun(self)
----@field source userdata
+---@field taskManager TaskManager
 ---@field params table auto savable parameters
 local container = {}
 

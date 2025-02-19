@@ -3,6 +3,7 @@ package com.adrian.thDanmakuCraft.world.danmaku;
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.world.IDataStorage;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
+import com.google.common.collect.Maps;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -10,18 +11,27 @@ import net.minecraft.network.FriendlyByteBuf;
 import org.apache.commons.compress.utils.Lists;
 import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaValue;
+import org.luaj.vm2.Varargs;
+import org.luaj.vm2.lib.LibFunction;
+import org.luaj.vm2.lib.VarArgFunction;
 
 import java.util.List;
 import java.util.Map;
 
-public class TaskManager<T> implements IDataStorage {
+public class TaskManager<T> implements IDataStorage, ILuaValue{
     /// 註冊好的Task
-    private final Map<String, AbstractTask<T>> registryTasks = Map.of();
+    private final Map<String, AbstractTask<T>> registryTasks = Maps.newHashMap();
     /// 正在ticking的Task
     private final List<AbstractTask<T>> tickingTasks = Lists.newArrayList();
+    /// 任務的目標對象
+    private final T target;
+
+    public TaskManager(T target){
+        this.target = target;
+    }
 
     /// tick添加的Task
-    public void tick(){
+    public void tickTasks(){
         if(this.tickingTasks.isEmpty()){
             return;
         }
@@ -29,7 +39,7 @@ public class TaskManager<T> implements IDataStorage {
         List<AbstractTask<T>> removeList = Lists.newArrayList();
         for(AbstractTask<T> task : tickingTasks){
             if(!task.shouldRemove()) {
-                task.tick();
+                task.tick(target);
             }else {
                 removeList.add(task);
             }
@@ -58,7 +68,7 @@ public class TaskManager<T> implements IDataStorage {
     }
 
 
-    public void loadTask(String taskName, int timer){
+    private void loadTask(String taskName, int timer){
         AbstractTask<T> task = this.getRegisteredTask(taskName);
         task.timer = timer;
         tickingTasks.add(task);
@@ -127,15 +137,15 @@ public class TaskManager<T> implements IDataStorage {
     public static abstract class AbstractTask<T> {
         public int timer = 0;
         public final int lifetime;
-        public final T target;
+        //public final T target;
         public String taskName;
 
-        public AbstractTask(T target, int lifetime){
-            this.target = target;
+        public AbstractTask(int lifetime){
+            //this.target = target;
             this.lifetime = lifetime;
         }
 
-        abstract void tick();
+        abstract void tick(T target);
         boolean shouldRemove(){
             return this.timer > this.lifetime;
         }
@@ -148,18 +158,20 @@ public class TaskManager<T> implements IDataStorage {
 
         public TaskRunnable<T> runnable;
 
-        public Task(T target, int lifetime, TaskRunnable<T> runnable){
-            super(target,lifetime);
+        public Task(int lifetime, TaskRunnable<T> runnable){
+            super(lifetime);
             this.runnable = runnable;
         }
 
-        void tick(){
+        void tick(T target){
             runnable.run(target, this.timer);
             this.timer++;
         }
 
         Task<T> copy(){
-            return new Task<>(this.target, this.lifetime, this.runnable);
+            Task<T> task = new Task<>(this.lifetime, this.runnable);
+            task.taskName = this.taskName;
+            return task;
         }
 
         public interface TaskRunnable<T> {
@@ -173,16 +185,16 @@ public class TaskManager<T> implements IDataStorage {
         public final LuaFunction runnable;
         public boolean canInvoke = true;
 
-        public LuaTask(T target, int lifetime, LuaValue runnable) {
-            super(target, lifetime);
+        public LuaTask(int lifetime, LuaValue runnable) {
+            super(lifetime);
             this.canInvoke = runnable.isfunction();
             this.runnable = runnable.checkfunction();
         }
 
         @Override
-        void tick() {
+        void tick(T target) {
             try {
-                this.runnable.invoke(this.target.ofLuaValue(), LuaValue.valueOf(this.timer));
+                this.runnable.invoke(target.ofLuaValue(), LuaValue.valueOf(this.timer));
             }catch (Exception e){
                 this.canInvoke = false;
             }
@@ -196,7 +208,76 @@ public class TaskManager<T> implements IDataStorage {
 
         @Override
         LuaTask<T> copy() {
-            return new LuaTask<T>(this.target, this.lifetime, this.runnable);
+            LuaTask<T> task = new LuaTask<>(this.lifetime, this.runnable);
+            task.taskName = this.taskName;
+            return task;
         }
+    }
+
+    @Override
+    public LuaValue ofLuaValue() {
+        LuaValue library = LuaValue.tableOf();
+        library.setmetatable(this.getMeta());
+        library.set("source", LuaValue.userdataOf(this));
+        return library;
+    }
+
+    @Override
+    public LuaValue getMeta() {
+        return LuaAPI.meta;
+    }
+
+    public static class LuaAPI {
+        private static TaskManager<ILuaValue> checkTaskManager(LuaValue luaValue) {
+            if (luaValue.get("source").checkuserdata() instanceof TaskManager<?> taskManager){
+                return (TaskManager<ILuaValue>) taskManager;
+            }
+            throw new NullPointerException();
+        }
+
+        private static final LibFunction registerTask = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                TaskManager<ILuaValue> taskManager = checkTaskManager(varargs.arg(1));
+                taskManager.registerTask(varargs.checkjstring(2), new TaskManager.LuaTask<>(varargs.checkint(3), varargs.checkfunction(4)));
+                return LuaValue.NIL;
+            }
+        };
+
+        private static final LibFunction startTask = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                TaskManager<ILuaValue> taskManager = checkTaskManager(varargs.arg(1));
+                taskManager.startTask(varargs.checkjstring(2));
+                return LuaValue.NIL;
+            }
+        };
+
+        private static final LibFunction removeTask = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                TaskManager<ILuaValue> taskManager = checkTaskManager(varargs.arg(1));
+                taskManager.removeTask(varargs.checkjstring(2));
+                return LuaValue.NIL;
+            }
+        };
+
+        private static final LibFunction clearTasks = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                checkTaskManager(varargs.arg(1)).clearTasks();
+                return LuaValue.NIL;
+            }
+        };
+
+        public static LuaValue functions() {
+            LuaValue library = LuaValue.tableOf();
+            library.set("registerTask", registerTask);
+            library.set("startTask", startTask);
+            library.set("removeTask", removeTask);
+            library.set("clearTasks", clearTasks);
+            return library;
+        }
+        public static final LuaValue meta = THObjectContainer.setMeta(functions());
     }
 }
