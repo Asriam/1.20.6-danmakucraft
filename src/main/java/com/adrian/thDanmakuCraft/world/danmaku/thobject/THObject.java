@@ -502,7 +502,6 @@ public class THObject implements ILuaValue {
 
     public void invokeScriptEvent(String eventName, Varargs args) {
         LuaValue luaClass = this.getLuaClass();
-        //luaClass = this.ofLuaValue().get("class");
 
         if(luaClass == null || luaClass.isnil()) {
             return;
@@ -1317,7 +1316,8 @@ public class THObject implements ILuaValue {
 
     public void initLuaValue() {
         this.luaValueForm = this.ofLuaClass();
-        this.addTasks();
+        this.invokeScriptEvent("onConstruct", this.luaValueForm);
+        //this.addTasks();
     }
 
     @Override

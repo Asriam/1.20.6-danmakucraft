@@ -6,24 +6,29 @@
 
 ---@type Class|THObject
 THObjectBase = core.defineClass("THObject_Base")
-local o = THObjectBase
-o.thobject_type = "THObject_Base"
+local object = THObjectBase
+object.thobject_type = "THObject_Base"
+---此函數會在THObject創建時調用
+function object:onConstruct()
+end
 
-function o:onInit(vec3)
+---此函數會在THObject第一次添加到THObjectContainer時調用
+function object:onInit(vec3)
     self:initPosition(vec3)
 end
 
-function o:onAddTasks()
+---此函數會在THObject每次tick時調用
+function object:onTick()
 end
 
-function o:onTick()
+---此函數會在THObject撞擊物體時調用
+function object:onHit()
 end
 
-function o:onHit()
+---此函數會在THObject死亡時調用
+function object:onDead()
 end
 
-function o:onDead()
-end
-
-function o:onRemove()
+---此函數會在THObject移除時調用
+function object:onRemove()
 end

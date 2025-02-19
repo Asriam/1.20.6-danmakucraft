@@ -43,7 +43,7 @@ public class ItemTestCurvedLaser extends Item {
         THObjectContainer container = entityTHObjectContainer.getContainer();
         container.setUser(player);
         container.setLuaClass("yukari_spellcard_1");
-        container.scriptEvent("onInit",container.ofLuaValue());
+        container.invokeScriptEvent("onInit",container.ofLuaValue());
         //player.getCooldowns().addCooldown(this, 20);
         return InteractionResultHolder.sidedSuccess(itemstack, level.isClientSide());
     }

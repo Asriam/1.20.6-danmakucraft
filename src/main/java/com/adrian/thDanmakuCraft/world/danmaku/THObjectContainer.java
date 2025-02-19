@@ -15,7 +15,6 @@ import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -151,13 +150,13 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
 
     public void scriptInit(){
         if(!this.isInited) {
-            this.scriptEvent("onInit", this.ofLuaValue());
+            this.invokeScriptEvent("onInit", this.ofLuaValue());
             this.isInited = true;
         }
     }
 
     //private final Map<String,LuaValue> scriptEventCache = Maps.newHashMap();
-    public void scriptEvent(String eventName,LuaValue... args){
+    public void invokeScriptEvent(String eventName, LuaValue... args){
         if(this.luaClass == null || this.luaClass.isnil()) {
             LuaValue luaClass1 = LuaCore.getInstance().getLuaClass(this.getLuaClassKey());
             if (luaClass1 == null) {
@@ -165,15 +164,6 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
             }
             this.luaClass = luaClass1;
         }
-
-        /*LuaValue event;
-        if(scriptEventCache.containsKey(eventName)){
-            event = scriptEventCache.get(eventName);
-        }else {
-            event = this.luaClass.get(eventName);
-            scriptEventCache.put(eventName,event);
-        }*/
-
         LuaValue event = this.luaClass.get(eventName);
 
         if(!event.isnil() && event.isfunction()){
@@ -210,7 +200,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
                 this.discard();
             }
         }else {
-            this.scriptEvent("onTick", this.ofLuaValue());
+            this.invokeScriptEvent("onTick", this.ofLuaValue());
         }
 
         this.objectManager.tickTHObjects();
@@ -386,12 +376,6 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         //this.scriptManager.encode(buffer);
         //this.parameterManager.encode(buffer);
         //this.taskerManager.writeData(buffer);
-        /*LuaValue params = this.ofLuaValue().get("params");
-        if(params.istable()) {
-            luaValueStorageHelper.writeLuaTable(buffer, params.checktable());
-        }else {
-            buffer.writeShort(0);
-        }*/
    }
 
     public void decode(FriendlyByteBuf buffer) {
@@ -632,6 +616,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     };
     public void initLuaValue() {
         this.luaValueForm = this.ofLuaClass();
+        this.invokeScriptEvent("onConstruct", this.luaValueForm);
     }
 
     protected static final LibFunction setLifetime = new TwoArgFunction() {

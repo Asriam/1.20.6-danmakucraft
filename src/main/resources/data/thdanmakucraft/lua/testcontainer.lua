@@ -25,7 +25,7 @@ end
 local testLaser = core.defineClass()
 function testLaser:onInit(i)
     self:setLifetime(600)
-    self.params.angle = 360/num*i + 0.001
+    self.params.angle = 360/num*i
 end
 
 function testLaser:onAddTasks()
