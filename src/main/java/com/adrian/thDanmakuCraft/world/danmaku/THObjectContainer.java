@@ -20,6 +20,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.compress.utils.Lists;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.*;
@@ -30,16 +31,18 @@ import java.util.*;
 import static com.adrian.thDanmakuCraft.world.LuaValueHelper.*;
 
 public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue {
-    public static final List<THObjectContainer> allContainers = new ArrayList<>();
-
     private Entity hostEntity;
     private static final int MAX_OBJECT_AMOUNT_LIMIT = 10000;
     private int maxObjectAmount = 2000;
-    protected final TargetUserManager targetUserManager;
-    protected final THObjectManager objectManager;
+    //this.parameterManager  = new AdditionalParameterManager(this);
+    protected final TargetUserManager targetUserManager = new TargetUserManager(this);
+    protected final THObjectManager objectManager = new THObjectManager(this);
     //protected final LuaManager scriptManager;
     //protected final THTasker.THTaskerManager taskerManager;
     //protected final AdditionalParameterManager parameterManager;
+    //this.scriptManager     = new LuaManager();
+    protected final TaskManager<THObjectContainer> taskManager = new TaskManager<>();
+    private final LuaValueStorageHelper luaValueStorageHelper = new LuaValueStorageHelper(this);
     protected final RandomSource random = RandomSource.create();
     private String spellCardName = "";
     protected int timer = 0;
@@ -48,34 +51,30 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     public AABB bound = new AABB(-60.0D,-60.0D,-60.0D,60.0D,60.0D,60.0D);
     public boolean autoRemove = true;
     public int autoRemoveLife = 120;
-    private List<Entity> entitiesInBound;
+    private List<Entity> entitiesInBound = Lists.newArrayList();
     private LuaValue luaValueForm;
     private LuaValue luaClass;
     private String luaClassKey = "";
     private boolean isInited = false;
-    private final LuaValueStorageHelper luaValueStorageHelper;
 
     public boolean shouldRenderMagicAura = true;
     public boolean shouldRenderLineAura = true;
 
     public THObjectContainer(Entity hostEntity) {
-        allContainers.add(this);
         this.hostEntity = hostEntity;
-        //this.parameterManager  = new AdditionalParameterManager(this);
-        this.targetUserManager = new TargetUserManager(this);
-        this.objectManager     = new THObjectManager(this);
-        //this.taskerManager     = new THTasker.THTaskerManager(this);
-        this.luaValueStorageHelper = new LuaValueStorageHelper(this);
-        //this.scriptManager     = new LuaManager();
-        this.entitiesInBound   = new ArrayList<>();
         this.setMaxObjectAmount(10000);
+        this.onRegisterTasks();
         //this.luaValueForm = this.ofLuaClass();
     }
 
     public THObjectContainer(Entity hostEntity, String luaClassKey){
         this(hostEntity);
-        this.luaClassKey = luaClassKey;
+        this.setLuaClass(luaClassKey);
         this.scriptInit();
+    }
+
+    public void onRegisterTasks(){
+
     }
 
     public void onAddToWorld(){
@@ -348,10 +347,10 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         return this.getObjectFromUUID(UUID.fromString(uuid));
     }
 
-    @Deprecated
+    /*Deprecated
     public void setLuaClassKey(String className) {
         this.luaClassKey = className;
-    }
+    }*/
 
     public void setLuaClass(String className){
         this.luaClassKey = className;
