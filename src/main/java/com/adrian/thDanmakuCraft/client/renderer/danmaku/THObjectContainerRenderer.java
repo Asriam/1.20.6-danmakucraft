@@ -120,6 +120,21 @@ public class THObjectContainerRenderer {
                         if (object.collision) {
                             if (object instanceof THCurvedLaser laser) {
                                 THObjectContainerRenderer.renderTHCurvedLaserHitBoxes(laser, objectPos, poseStack, vertexConsumer, partialTicks, frustum);
+                            }else if(object instanceof THLaser laser){
+                                poseStack.pushPose();
+                                Vector3f rotation = object.getRotation();
+                                Vec3 pos = laser.getLaserCenter();
+                                poseStack.translate(pos.x,pos.y,pos.z);
+                                poseStack.mulPose(new Quaternionf().rotationYXZ(-rotation.y,rotation.x,rotation.z));
+                                Color color = THObject.Color(0,255,255,255);
+                                RenderUtil.renderSphere(vertexConsumer,poseStack.last(),1,
+                                        ConstantUtil.VECTOR3F_ZERO,
+                                        new Vector3f(laser.getWidth(),laser.getWidth(),laser.getLength()),
+                                        6,6,false,
+                                        Vec2.ZERO,
+                                        Vec2.ONE,
+                                        color,color,color);
+                                poseStack.popPose();
                             } else {
                                 THObjectContainerRenderer.renderTHObjectsHitBox(object, poseStack, vertexConsumer);
                             }
@@ -143,12 +158,16 @@ public class THObjectContainerRenderer {
                 BufferBuilder builder = RenderSystem.renderThreadTesselator().getBuilder();
                 builder.begin(renderType.mode(), renderType.format());
                 for (THObject object : sortedList) {
-                    if (object != null && (object instanceof THCurvedLaser || THObjectContainerRenderer.shouldRenderTHObject(object, frustum, camX, camY, camZ))) {
-                        poseStack.pushPose();
-                        Vec3 objectPos = object.getOffsetPosition(partialTicks);
-                        poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
-                        THObjectContainerRenderer.getTHObjectRenderer(object).render(object, objectPos, partialTicks, poseStack, builder, combinedOverlay);
-                        poseStack.popPose();
+                    if (object != null) {
+                        AbstractTHObjectRenderer<THObject> renderer = THObjectContainerRenderer.getTHObjectRenderer(object);
+                        if (renderer.shouldRender(object, frustum, camX, camY, camZ)) {
+                            poseStack.pushPose();
+                            Vec3 objectPos = object.getOffsetPosition(partialTicks);
+                            poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
+                            //THObjectContainerRenderer.getTHObjectRenderer(object).render(object, objectPos, partialTicks, poseStack, builder, combinedOverlay);
+                            renderer.render(object, objectPos, partialTicks, poseStack, builder, combinedOverlay);
+                            poseStack.popPose();
+                        }
                     }
                 }
 

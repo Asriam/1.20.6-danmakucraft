@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -30,6 +31,21 @@ public abstract class AbstractTHObjectRenderer<T extends THObject>{
                 object.getImage().getTextureLocation(),
                 THBlendMode.getBlendMode(object.getBlend()))
         );
+    }
+
+    public boolean shouldRender(T object, Frustum frustum, double camX, double camY, double camZ) {
+        if (!object.shouldRender(camX,camY,camZ)) {
+            return false;
+        } else if (object.noCulling) {
+            return true;
+        } else {
+            AABB aabb = object.getBoundingBoxForCulling().inflate(0.5D);
+            if (aabb.hasNaN() || aabb.getSize() == 0.0D) {
+                aabb = new AABB(object.getX() - 2.0D, object.getY() - 2.0D, object.getZ() - 2.0D, object.getX() + 2.0D, object.getY() + 2.0D, object.getZ() + 2.0D);
+            }
+
+            return frustum.isVisible(aabb);
+        }
     }
 
     public EntityRenderDispatcher getRenderDispatcher(){

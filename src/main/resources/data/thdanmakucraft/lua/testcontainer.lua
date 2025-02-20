@@ -13,9 +13,10 @@ end
 
 ---@type Class|THBullet
 local testBullet2 = core.defineClass(testBullet)
+---@param taskManager TaskManager
 function testBullet2:onRegisterTasks(taskManager)
     ---@param target THBullet
-    taskManager:registerTask("test", 100, function(target, timer)
+    taskManager:registerTask("test", 100, function(target, timer, lifetime)
         target:move(util.vec3.new(0.0,-0.1,0.0))
     end)
     --print("onRegisterTasks")
@@ -28,7 +29,7 @@ function testBullet2:onInit(i)
 end
 
 function testBullet2:onTick()
-    self.class.super.onTick(self)
+    --self.class.super.onTick(self)
 end
 
 ---@type Class|THCurvedLaser

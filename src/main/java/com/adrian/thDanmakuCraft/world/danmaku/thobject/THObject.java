@@ -56,9 +56,10 @@ public class THObject implements ILuaValue, IGetContainer {
     protected Vec3 size = new Vec3(0.5f, 0.5f, 0.5f);                  //Hitbox size
     protected Vector3f scale = new Vector3f(1.0f, 1.0f, 1.0f);                             //Render scale
     //public Vector3f rotation = new Vector3f(0.0f,0.0f,0.0f);                                   //Euler Angles
-    protected float xRot = 0.0f;
-    protected float yRot = 0.0f;
-    protected float zRot = 0.0f;
+    private float xRot = 0.0f;
+    private float yRot = 0.0f;
+    private float zRot = 0.0f;
+    public Vector3f lastRotation = ConstantUtil.VECTOR3F_ZERO;
     protected float damage = 1.0f;
     protected int timer = 0;
     protected int lifetime = 120;
@@ -164,7 +165,7 @@ public class THObject implements ILuaValue, IGetContainer {
         return this.isSpawned;
     }
 
-    public void copy(THObject object){
+    /*public void copyFrom(THObject object){
         this.positionX = object.positionX;
         this.positionY = object.positionY;
         this.positionZ = object.positionZ;
@@ -173,7 +174,7 @@ public class THObject implements ILuaValue, IGetContainer {
         this.xRot = object.xRot;
         this.yRot = object.yRot;
         this.zRot = object.zRot;
-    }
+    }*/
 
     public float getDamage(){
         return this.damage * (1.0f + this.level().getDifficulty().getId() * 0.11f);
@@ -260,13 +261,18 @@ public class THObject implements ILuaValue, IGetContainer {
         this.zRot = zRot;
     }
 
+    public void setRotation(float xRot, float yRot) {
+        this.xRot = xRot;
+        this.yRot = yRot;
+    }
+
     public void setRotation(Vector3f rotation) {
         this.setRotation(rotation.x, rotation.y, rotation.z);
     }
 
-    public void setRotation(Vec3 vec3) {
+    /*public void setRotation(Vec3 vec3) {
         this.setRotation(vec3.toVector3f());
-    }
+    }*/
 
     public void setRotation(Vec2 rotation) {
         this.xRot = rotation.x;
@@ -362,6 +368,13 @@ public class THObject implements ILuaValue, IGetContainer {
 
     public Vector3f getRotation() {
         return new Vector3f(this.xRot, this.yRot, this.zRot);
+    }
+
+    public Vector3f getOffsetRotation(float partialTicks) {
+        float x = Mth.lerp(partialTicks, this.lastRotation.x, this.xRot);
+        float y = Mth.lerp(partialTicks, this.lastRotation.y, this.yRot);
+        float z = Mth.lerp(partialTicks, this.lastRotation.z, this.zRot);
+        return new Vector3f(x, y, z);
     }
 
     public final float getXRot() {
@@ -541,6 +554,7 @@ public class THObject implements ILuaValue, IGetContainer {
 
     public void onTick() {
         this.lastPosition = new Vec3(this.positionX, this.positionY, this.positionZ);
+        this.lastRotation = new Vector3f(this.xRot, this.yRot, this.zRot);
         //THDanmakuCraftCore.LOGGER.warn("tickTHObject");
         if (!this.shouldTick) {
             return;

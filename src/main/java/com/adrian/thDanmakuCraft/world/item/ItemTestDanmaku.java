@@ -4,6 +4,7 @@ import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THLaser;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.adrian.thDanmakuCraft.world.entity.spellcard.EntityTHSpellCard;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
@@ -31,8 +32,10 @@ public class ItemTestDanmaku extends Item {
         //container.setLuaClass("testContainer");
         //container.scriptInit();
         THLaser laser = new THLaser(container);
-        laser.setWidth(1.0f);
-        laser.setLength(6.0f);
+        laser.setRotation(player.getXRot()* Mth.DEG_TO_RAD,player.getYRot()*Mth.DEG_TO_RAD);
+        laser.setLength(0.0f);
+        laser.setWidth(0.5f);
+        laser.growLength(12.0f);
         laser.spawn();
         //container.scriptEvent("onInit",container.ofLuaValue());
 

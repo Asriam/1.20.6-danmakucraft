@@ -10,6 +10,7 @@ import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.util.VertexBuilder;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THCurvedLaser;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THLaser;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -229,7 +230,6 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
         }
     }
 
-    @OnlyIn(Dist.CLIENT)
     public static boolean shouldRenderNode(THCurvedLaser.LaserNode node1, THCurvedLaser.LaserNode node2, Frustum frustum) {
         AABB aabb1 = node1.getBoundingBoxForCulling().inflate(0.5D);
         AABB aabb2 = node2.getBoundingBoxForCulling().inflate(0.5D);
@@ -253,5 +253,10 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
     @Override
     public RenderType getRenderType(THCurvedLaser laser){
         return THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(laser.getBlend()), true));
+    }
+
+    @Override
+    public boolean shouldRender(THCurvedLaser object, Frustum frustum, double camX, double camY, double camZ) {
+        return true;
     }
 }

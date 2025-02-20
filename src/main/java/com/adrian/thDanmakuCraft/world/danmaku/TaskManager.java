@@ -69,7 +69,11 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         }
     }
     public void startTask(String taskName){
-        tickingTasks.add(getRegisteredTask(taskName));
+        if (registryTasks.containsKey(taskName)){
+            tickingTasks.add(getRegisteredTask(taskName));
+        }else {
+            THDanmakuCraftMod.LOGGER.warn("Attempted to start a unregistered task! task name:{}",taskName);
+        }
     }
 
     public void loadTask(String taskName, int timer){
@@ -195,7 +199,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         }
 
         void tick(T target){
-            runnable.run(target, this.timer);
+            runnable.run(target, this.timer, this.lifetime);
             this.timer++;
         }
 
@@ -206,7 +210,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         }
 
         public interface TaskRunnable<T> {
-            void run(T target, int timer);
+            void run(T target, int timer, int lifetime);
         }
     }
 
@@ -225,7 +229,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         @Override
         void tick(T target) {
             try {
-                this.runnable.invoke(target.ofLuaValue(), LuaValue.valueOf(this.timer));
+                this.runnable.invoke(target.ofLuaValue(), LuaValue.valueOf(this.timer), LuaValue.valueOf(this.lifetime));
             }catch (Exception e){
                 this.canInvoke = false;
             }

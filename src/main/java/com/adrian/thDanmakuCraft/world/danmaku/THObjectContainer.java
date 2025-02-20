@@ -408,8 +408,8 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         tag.putInt("MaxObjectAmount",this.maxObjectAmount);
         tag.putString("LuaClassName", luaClassName);
         tag.put("object_storage", this.objectManager.save(new CompoundTag()));
-        //tag.put("script",this.scriptManager.save(new CompoundTag()));
         tag.put("user_target", this.targetUserManager.save(new CompoundTag()));
+        //tag.put("script",this.scriptManager.save(new CompoundTag()));
         //tag.put("parameters", this.parameterManager.save(new CompoundTag()));
         //tag.put("params", luaValueStorageHelper.saveLuaTable(this.ofLuaValue().get("params")));
         this.luaValueAutoSaveDataManager.save(tag);
@@ -424,8 +424,8 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         this.maxObjectAmount = tag.contains("MaxObjectAmount") ? tag.getInt("MaxObjectAmount") : this.maxObjectAmount;
         this.luaClassName = tag.getString("LuaClassName");
         this.objectManager.load(tag.getCompound("object_storage"));
-        //this.scriptManager.load(tag.getCompound("script"));
         this.targetUserManager.load(tag.getCompound("user_target"));
+        //this.scriptManager.load(tag.getCompound("script"));
         //this.parameterManager.load(tag.getCompound("parameters"));
         //this.ofLuaValue().set("params", luaValueStorageHelper.loadLuaTable(tag.getCompound("params")));
         this.luaValueAutoSaveDataManager.load(tag);
