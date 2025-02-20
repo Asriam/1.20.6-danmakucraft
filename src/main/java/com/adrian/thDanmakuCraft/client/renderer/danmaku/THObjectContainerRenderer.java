@@ -113,13 +113,13 @@ public class THObjectContainerRenderer {
             if (entityRenderDispatcher.shouldRenderHitBoxes()) {
                 BufferBuilder vertexConsumer = (BufferBuilder) bufferSource.getBuffer(RenderType.lines());
                 for (THObject object:objectList) {
-                    if (object != null && (object instanceof THCurvedLaser || THObjectContainerRenderer.shouldRenderTHObject(object, frustum, camX, camY, camZ))) {
+                    if (object != null && (object instanceof THCurvedLaser || shouldRenderTHObject(object, frustum, camX, camY, camZ))) {
                         poseStack.pushPose();
                         Vec3 objectPos = object.getOffsetPosition(partialTicks);
                         poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
                         if (object.collision) {
                             if (object instanceof THCurvedLaser laser) {
-                                THObjectContainerRenderer.renderTHCurvedLaserHitBoxes(laser, objectPos, poseStack, vertexConsumer, partialTicks, frustum);
+                                renderTHCurvedLaserHitBoxes(laser, objectPos, poseStack, vertexConsumer, partialTicks, frustum);
                             }else if(object instanceof THLaser laser){
                                 poseStack.pushPose();
                                 Vector3f rotation = object.getRotation();
@@ -136,7 +136,7 @@ public class THObjectContainerRenderer {
                                         color,color,color);
                                 poseStack.popPose();
                             } else {
-                                THObjectContainerRenderer.renderTHObjectsHitBox(object, poseStack, vertexConsumer);
+                                renderTHObjectsHitBox(object, poseStack, vertexConsumer);
                             }
                         }
                         poseStack.popPose();
@@ -147,7 +147,6 @@ public class THObjectContainerRenderer {
 
             Map<RenderType,List<THObject>> map = new HashMap<>();
             for (THObject object : objectList) {
-                //RenderType renderType = THObjectContainerRenderer.getRenderType(object);
                 RenderType renderType = THObjectContainerRenderer.getTHObjectRenderer(object).getRenderType(object);
                 map.computeIfAbsent(renderType, (key) -> new ArrayList<>()).add(object);
             }

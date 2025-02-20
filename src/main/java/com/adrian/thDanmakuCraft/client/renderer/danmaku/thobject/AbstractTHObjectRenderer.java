@@ -48,6 +48,10 @@ public abstract class AbstractTHObjectRenderer<T extends THObject>{
         }
     }
 
+    public void renderHitBox(T object,PoseStack poseStack,VertexConsumer vertexConsumer,float partialTicks){
+
+    }
+
     public EntityRenderDispatcher getRenderDispatcher(){
         return renderDispatcher;
     }
