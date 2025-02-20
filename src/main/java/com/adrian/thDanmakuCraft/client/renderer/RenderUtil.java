@@ -48,7 +48,7 @@ public class RenderUtil {
         ).normalize();
     }
 
-    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, float pow, Vector3f offsetPosition, Vector3f scale, final int edgeA, final int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, Color color, Color endColor, Color coreColor, boolean inverse) {
+    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, float pow, Vector3f offsetPosition, Vector3f scale, final int edgeA, final int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, Color color, Color endColor, Color coreColor, boolean inverse, boolean isStraight) {
         Color startColor = color;
         int edgeADiv2 = Mth.floor(edgeA / 2.0f);
         float angle1;
@@ -94,80 +94,83 @@ public class RenderUtil {
 
                 Color finalColor = color.subtract(deColor.multiply(i));
 
-                Vector3f scaleF          = scale;
-                Vector3f offsetPositionF = offsetPosition;
 
-                Vector3f[] vertex = new Vector3f[] {
-                        new Vector3f(x1*sin1,cos1,z1*sin1).mul(scaleF).add(offsetPositionF),
-                        new Vector3f(x2*sin1,cos1,z2*sin1).mul(scaleF).add(offsetPositionF),
-                        new Vector3f(x2*sin2,cos2,z2*sin2).mul(scaleF).add(offsetPositionF),
-                        new Vector3f(x1*sin2,cos2,z1*sin2).mul(scaleF).add(offsetPositionF),
+                Vector3f[] pos = new Vector3f[] {
+                        new Vector3f(x1*sin1,cos1,z1*sin1),
+                        new Vector3f(x2*sin1,cos1,z2*sin1),
+                        new Vector3f(x2*sin2,cos2,z2*sin2),
+                        new Vector3f(x1*sin2,cos2,z1*sin2),
                 };
-                Vector3f[] normal = vertex;
+                Vector3f[] vertex = new Vector3f[] {
+                        pos[0].mul(scale,new Vector3f()).add(offsetPosition),
+                        pos[1].mul(scale,new Vector3f()).add(offsetPosition),
+                        pos[2].mul(scale,new Vector3f()).add(offsetPosition),
+                        pos[3].mul(scale,new Vector3f()).add(offsetPosition),
+                };
+                Vector3f[] normal;
+                if (isStraight){
+                    normal = new Vector3f[] {
+                            new Vector3f(x1,0,z1),
+                            new Vector3f(x2,0,z2),
+                            new Vector3f(x2,0,z2),
+                            new Vector3f(x1,0,z1),
+                    };
+                }else {
+                    normal = pos;
+                }
                 Matrix4f pose$ = pose.pose();
-
-                boolean flag = true;
-
-                if (flag) {
-                    quadList.add(new Quad(
-                            new Quad.Vertex(pose$, vertex[0]),
-                            new Quad.Vertex(pose$, vertex[1]),
-                            new Quad.Vertex(pose$, vertex[2]),
-                            new Quad.Vertex(pose$, vertex[3])
-                    ));
-                    if (!inverse) {
-                        VertexBuilder builder = new VertexBuilder(consumer);
-                        builder.positionColorColorUvUvNormal(
-                                pose.pose(), vertex[0],
-                                startColor,coreColor,
-                                uvStart.x, uvStart.y,
-                                uvEnd.x, uvEnd.y,
-                                pose.normal(), normal[0]);
-                        builder.positionColorColorUvUvNormal(
-                                pose.pose(), vertex[1],
-                                startColor,coreColor,
-                                uvStart.x, uvStart.y,
-                                uvEnd.x, uvEnd.y,
-                                pose.normal(), normal[1]);
-                        builder.positionColorColorUvUvNormal(
-                                pose.pose(), vertex[2],
-                                finalColor,coreColor,
-                                uvStart.x, uvStart.y,
-                                uvEnd.x, uvEnd.y,
-                                pose.normal(), normal[2]);
-                        builder.positionColorColorUvUvNormal(
-                                pose.pose(), vertex[3],
-                                finalColor,coreColor,
-                                uvStart.x, uvStart.y,
-                                uvEnd.x, uvEnd.y,
-                                pose.normal(), normal[3]);
-                    }else {
-                        VertexBuilder builder = new VertexBuilder(consumer);
-                        builder.positionColorColorUvUvNormal(
-                                pose.pose(), vertex[3],
-                                finalColor,coreColor,
-                                uvStart.x, uvStart.y,
-                                uvEnd.x, uvEnd.y,
-                                pose.normal(), normal[3]);
-                        builder.positionColorColorUvUvNormal(
-                                pose.pose(), vertex[2],
-                                finalColor,coreColor,
-                                uvStart.x, uvStart.y,
-                                uvEnd.x, uvEnd.y,
-                                pose.normal(), normal[2]);
-                        builder.positionColorColorUvUvNormal(
-                                pose.pose(), vertex[1],
-                                startColor,coreColor,
-                                uvStart.x, uvStart.y,
-                                uvEnd.x, uvEnd.y,
-                                pose.normal(), normal[1]);
-                        builder.positionColorColorUvUvNormal(
-                                pose.pose(), vertex[0],
-                                startColor,coreColor,
-                                uvStart.x, uvStart.y,
-                                uvEnd.x, uvEnd.y,
-                                pose.normal(), normal[0]);
-                    }
+                if (!inverse) {
+                    VertexBuilder builder = new VertexBuilder(consumer);
+                    builder.positionColorColorUvUvNormal(
+                            pose$, vertex[0],
+                            startColor,coreColor,
+                            uvStart.x, uvStart.y,
+                            uvEnd.x, uvEnd.y,
+                            pose.normal(), normal[0]);
+                    builder.positionColorColorUvUvNormal(
+                            pose$, vertex[1],
+                            startColor,coreColor,
+                            uvStart.x, uvStart.y,
+                            uvEnd.x, uvEnd.y,
+                            pose.normal(), normal[1]);
+                    builder.positionColorColorUvUvNormal(
+                            pose$, vertex[2],
+                            finalColor,coreColor,
+                            uvStart.x, uvStart.y,
+                            uvEnd.x, uvEnd.y,
+                            pose.normal(), normal[2]);
+                    builder.positionColorColorUvUvNormal(
+                            pose$, vertex[3],
+                            finalColor,coreColor,
+                            uvStart.x, uvStart.y,
+                            uvEnd.x, uvEnd.y,
+                            pose.normal(), normal[3]);
+                }else {
+                    VertexBuilder builder = new VertexBuilder(consumer);
+                    builder.positionColorColorUvUvNormal(
+                            pose$, vertex[3],
+                            finalColor,coreColor,
+                            uvStart.x, uvStart.y,
+                            uvEnd.x, uvEnd.y,
+                            pose.normal(), normal[3]);
+                    builder.positionColorColorUvUvNormal(
+                            pose$, vertex[2],
+                            finalColor,coreColor,
+                            uvStart.x, uvStart.y,
+                            uvEnd.x, uvEnd.y,
+                            pose.normal(), normal[2]);
+                    builder.positionColorColorUvUvNormal(
+                            pose$, vertex[1],
+                            startColor,coreColor,
+                            uvStart.x, uvStart.y,
+                            uvEnd.x, uvEnd.y,
+                            pose.normal(), normal[1]);
+                    builder.positionColorColorUvUvNormal(
+                            pose$, vertex[0],
+                            startColor,coreColor,
+                            uvStart.x, uvStart.y,
+                            uvEnd.x, uvEnd.y,
+                            pose.normal(), normal[0]);
                 }
                 startColor = finalColor;
             }
@@ -183,7 +186,7 @@ public class RenderUtil {
     }
 
     public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, float pow, Vector3f offsetPosition, Vector3f scale, final int edgeA, final int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, Color color, Color endColor, Color coreColor) {
-        renderSphere(consumer, pose, pow, offsetPosition, scale, edgeA, edgeB, isHalf, uvStart, uvEnd, color, endColor, coreColor,false);
+        renderSphere(consumer, pose, pow, offsetPosition, scale, edgeA, edgeB, isHalf, uvStart, uvEnd, color, endColor, coreColor,false,false);
     }
     public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, float pow, Vector3f offsetPosition, Vector3f scale, int edgeA, int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, Color color, int alpha, Color coreColor) {
         renderSphere(consumer,pose,pow,offsetPosition,scale,edgeA,edgeB,isHalf,uvStart,uvEnd,color,THObject.Color(color.r,color.g,color.b,alpha),coreColor);
