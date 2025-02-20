@@ -7,6 +7,7 @@ import com.adrian.thDanmakuCraft.util.VertexBuilder;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.IImage;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.Blend;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.entity.spellcard.EntityTHSpellCard;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -46,7 +47,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
     public void renderSpellCardAura(EntityTHSpellCard spellCard, THObjectContainer container, PoseStack poseStack, Vec3 pos, float partialTicks){
         IImage.Image image = SPELLCARD_MAGIC_SQUAR;
         RenderType renderType = THRenderType.RENDER_TYPE_SPELLCARD_AURA.apply(
-                new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(image.getTextureLocation(), THBlendMode.getBlendMode(THObject.Blend.add))
+                new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(image.getTextureLocation(), THBlendMode.getBlendMode(Blend.add))
         );
 
         Color color = new Color(255,255,255,160);

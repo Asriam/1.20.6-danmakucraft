@@ -424,7 +424,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         this.luaClassName = tag.getString("LuaClassName");
         this.objectManager.load(tag.getCompound("object_storage"));
         //this.scriptManager.load(tag.getCompound("script"));
-        //this.targetUserManager.load(tag.getCompound("user_target"));
+        this.targetUserManager.load(tag.getCompound("user_target"));
         //this.parameterManager.load(tag.getCompound("parameters"));
         //this.ofLuaValue().set("params", luaValueStorageHelper.loadLuaTable(tag.getCompound("params")));
         this.luaValueAutoSaveDataManager.load(tag);

@@ -3,8 +3,8 @@ package com.adrian.thDanmakuCraft.client.renderer.entity;
 import com.adrian.thDanmakuCraft.client.renderer.THBlendMode;
 import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.Blend;
 import com.adrian.thDanmakuCraft.world.entity.EntityExample;
-import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -43,7 +43,7 @@ public class EntityExampleRenderer extends EntityRenderer<EntityExample> {
          */
 
         int index = entity.getIndex();
-        VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.RENDER_TYPE_2D_DANMAKU.apply(new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(TEXTURE_LOCATION2, THBlendMode.getBlendMode(THObject.Blend.add))));
+        VertexConsumer vertexconsumer = bufferSource.getBuffer(THRenderType.RENDER_TYPE_2D_DANMAKU.apply(new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(TEXTURE_LOCATION2, THBlendMode.getBlendMode(Blend.add))));
         vertex(vertexconsumer, posestack$pose, p_114710_, 0.0F, 0, 0, 1.0f/16*index);
         vertex(vertexconsumer, posestack$pose, p_114710_, 1.0F, 0, 1, 1.0f/16*index);
         vertex(vertexconsumer, posestack$pose, p_114710_, 1.0F, 1, 1, 1.0f/16*(index-1));

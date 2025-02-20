@@ -10,6 +10,7 @@ import com.adrian.thDanmakuCraft.events.RenderEvents;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.CollisionType;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
@@ -195,9 +196,9 @@ public class THObjectContainerRenderer {
 
     static void renderTHObjectsHitBox(@NotNull THObject object, PoseStack poseStack, VertexConsumer vertexConsumer) {
         AABB aabb = object.getBoundingBox().move(-object.getX(), -object.getY(), -object.getZ());
-        if(object.getCollisionType() == THObject.CollisionType.AABB) {
+        if(object.getCollisionType() == CollisionType.AABB) {
             LevelRenderer.renderLineBox(poseStack, vertexConsumer, aabb, 0.0F, 1.0F, 1.0F, 1.0F);
-        }else if(object.getCollisionType() == THObject.CollisionType.SPHERE){
+        }else if(object.getCollisionType() == CollisionType.SPHERE){
             Color color = THObject.Color(0,255,255,255);
             float size = (float) object.getSize().x;
             RenderUtil.renderSphere(vertexConsumer,poseStack.last(),1,
@@ -207,7 +208,7 @@ public class THObjectContainerRenderer {
                     Vec2.ZERO,
                     Vec2.ONE,
                     color,color,color);
-        }else if(object.getCollisionType() == THObject.CollisionType.ELLIPSOID){
+        }else if(object.getCollisionType() == CollisionType.ELLIPSOID){
             poseStack.pushPose();
             Vector3f rotation = object.getRotation();
             poseStack.mulPose(new Quaternionf().rotationYXZ(rotation.y,-rotation.x,rotation.z));

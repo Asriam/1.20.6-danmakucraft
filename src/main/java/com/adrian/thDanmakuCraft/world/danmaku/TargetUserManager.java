@@ -54,6 +54,18 @@ public class TargetUserManager implements IDataStorage {
         return serverLevel.getEntity(uuid);
     }
 
+    public void update(){
+        if(this.user == null && this.userUUID != null){
+            ServerLevel serverLevel = (ServerLevel) this.level();
+            this.user = serverLevel.getEntity(this.userUUID);
+        }
+
+        if(this.target == null && this.targetUUID != null){
+            ServerLevel serverLevel = (ServerLevel) this.level();
+            this.target = serverLevel.getEntity(this.targetUUID);
+        }
+    }
+
     @Nullable
     public Entity safeGetUser(){
         if(this.user == null && this.userUUID != null){
@@ -130,6 +142,4 @@ public class TargetUserManager implements IDataStorage {
             this.target = serverLevel.getEntity(this.targetUUID);
         }
     }
-
-
 }

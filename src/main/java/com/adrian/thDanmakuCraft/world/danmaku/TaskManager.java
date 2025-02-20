@@ -77,11 +77,19 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
     }
 
     public void restartLazyTasks(){
+        List<LazyTask> removeList = Lists.newArrayList();
         for(LazyTask lazyTask:lazyTasks){
             AbstractTask<T> task = this.getRegisteredTask(lazyTask.taskName);
-            task.timer = lazyTask.timer;
-            tickingTasks.add(task);
+            if (task != null) {
+                task.timer = lazyTask.timer;
+                tickingTasks.add(task);
+                removeList.add(lazyTask);
+            }
         }
+        for (LazyTask t : removeList){
+            lazyTasks.remove(t);
+        }
+        removeList.clear();
     }
 
     public void clearTasks(){
@@ -99,11 +107,15 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
     @Override
     public void encode(FriendlyByteBuf buffer) {
         /// write task list size
-        buffer.writeShort(this.tickingTasks.size());
+        buffer.writeShort(this.tickingTasks.size()+this.lazyTasks.size());
         /// write task names
         for(AbstractTask<T> task : this.tickingTasks){
             buffer.writeUtf(task.taskName);
             buffer.writeInt(task.timer);
+        }
+        for(LazyTask lazyTask : this.lazyTasks){
+            buffer.writeUtf(lazyTask.taskName);
+            buffer.writeInt(lazyTask.timer);
         }
     }
 
@@ -126,6 +138,12 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
             CompoundTag taskTag = new CompoundTag();
             taskTag.putString("task_name", task.taskName);
             taskTag.putInt("timer", task.timer);
+            listtag.add(taskTag);
+        }
+        for (LazyTask lazyTask : this.lazyTasks){
+            CompoundTag taskTag = new CompoundTag();
+            taskTag.putString("task_name", lazyTask.taskName);
+            taskTag.putInt("timer", lazyTask.timer);
             listtag.add(taskTag);
         }
         compoundTag.put("tasks", listtag);

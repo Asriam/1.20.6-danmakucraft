@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
-import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.Blend;
 import com.mojang.blaze3d.shaders.BlendMode;
 
 import java.util.EnumMap;
@@ -15,7 +15,7 @@ public class THBlendMode {
                 BlendMode.stringToBlendFunc(blendFunc));
     }
 
-    private static BlendMode parseBlend(THObject.Blend blend) {
+    private static BlendMode parseBlend(Blend blend) {
         return blend.isSeparateBlend() ? new BlendMode(
                 BlendMode.stringToBlendFactor(blend.getSrcColor()),
                 BlendMode.stringToBlendFactor(blend.getDstColor()),
@@ -28,15 +28,15 @@ public class THBlendMode {
                 BlendMode.stringToBlendFunc(blend.getBlendFunc()));
     }
 
-    private static final EnumMap<THObject.Blend, BlendMode> BLEND_MAP = new EnumMap<>(THObject.Blend.class);
+    private static final EnumMap<Blend, BlendMode> BLEND_MAP = new EnumMap<>(Blend.class);
 
     static {
-        for(THObject.Blend blend:THObject.Blend.class.getEnumConstants()){
+        for(Blend blend: Blend.class.getEnumConstants()){
             BLEND_MAP.put(blend,parseBlend(blend));
         }
     }
 
-    public static BlendMode getBlendMode(THObject.Blend blend) {
+    public static BlendMode getBlendMode(Blend blend) {
         return BLEND_MAP.get(blend);
     }
 }

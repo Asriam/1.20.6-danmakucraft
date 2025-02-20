@@ -24,13 +24,11 @@ end
 function testBullet2:onInit(i)
     self.class.super.onInit(self,i)
     --print("testBullet2")
+    self.taskManager:startTask("test")
 end
 
 function testBullet2:onTick()
     --self.class.super.onTick(self)
-    if(self:getTimer() == 2) then
-        self.taskManager:startTask("test")
-    end
 end
 
 ---@type Class|THCurvedLaser
