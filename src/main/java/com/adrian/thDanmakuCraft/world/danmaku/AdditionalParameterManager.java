@@ -16,6 +16,7 @@ import org.luaj.vm2.lib.*;
 import java.util.Map;
 import java.util.UUID;
 
+@Deprecated
 public class AdditionalParameterManager implements IDataStorage, ILuaValue {
 
     private final ITHObjectContainer container;

@@ -6,6 +6,8 @@ import com.adrian.thDanmakuCraft.world.IDataStorage;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.compress.utils.Lists;
@@ -146,31 +148,51 @@ public class THObjectManager implements IDataStorage {
     }
 
     public static CompoundTag THObjectListToTag(CompoundTag tag, List<THObject> objects) {
-        //CompoundTag tag = new CompoundTag();
-        int index = 0;
+        /*int index = 0;
         for (THObject object : objects) {
             if (object.shouldSave) {
                 CompoundTag tag2 = new CompoundTag();
-                tag2.putString("type", object.getType().getKey().toString());
+                tag2.putString("thobject_type", object.getType().getKey().toString());
                 object.save(tag2);
                 tag.put("object_" + index, tag2);
                 index++;
             }
+        }*/
+        ListTag list = new ListTag();
+        for (THObject object : objects) {
+            if (object.shouldSave) {
+                CompoundTag tag2 = new CompoundTag();
+                tag2.putString("thobject_type", object.getType().getKey().toString());
+                object.save(tag2);
+                list.add(tag2);
+            }
         }
+        tag.put("objects", list);
         return tag;
     }
 
     public static List<THObject> TagToTHObjectList(CompoundTag tag, THObjectContainer container) {
-        int list_size = tag.getAllKeys().size();
         List<THObject> objectList = Lists.newArrayList();
-        for (int i = 0; i < list_size; i++) {
-            CompoundTag objectTag = tag.getCompound("object_" + i);
-            ResourceLocation object_type = ResourceLocationUtil.of(objectTag.getString("type"));
+        /*for (String key : tag.getAllKeys()) {
+            CompoundTag objectTag = tag.getCompound(key);
+            ResourceLocation object_type = ResourceLocationUtil.of(objectTag.getString("thobject_type"));
             THObjectType<? extends THObject> type = THObjectType.getValue(object_type);
             if (type != null) {
                 THObject object = type.create(container);
                 object.load(objectTag);
                 objectList.add(object);
+            }
+        }*/
+        ListTag list = tag.getList("objects", ListTag.TAG_COMPOUND);
+        for (Tag _objectTag: list){
+            if(_objectTag instanceof CompoundTag objectTag){
+                ResourceLocation object_type = ResourceLocationUtil.of(objectTag.getString("thobject_type"));
+                THObjectType<? extends THObject> type = THObjectType.getValue(object_type);
+                if (type != null) {
+                    THObject object = type.create(container);
+                    object.load(objectTag);
+                    objectList.add(object);
+                }
             }
         }
         return objectList;

@@ -9,21 +9,25 @@ import org.luaj.vm2.LuaValue;
 public class LuaValueStorageHelper {
     //private static final Map<Integer,LuaValue> userDataMap = new HashMap<>();
 
-    private final IGetContainer container;
-    public LuaValueStorageHelper(IGetContainer container){
-        this.container = container;
+    private final IGetContainer iGetContainer;
+    public LuaValueStorageHelper(IGetContainer iGetContainer){
+        this.iGetContainer = iGetContainer;
     }
 
-    public void writeTHObject(FriendlyByteBuf byteBuf, THObject object){
+    public ITHObjectContainer getContainer(){
+        return this.iGetContainer.getContainer();
+    }
+
+    public void encodeTHObject(FriendlyByteBuf byteBuf, THObject object){
         byteBuf.writeUUID(object.getUUID());
     }
 
-    public LuaTable readTHObject(FriendlyByteBuf byteBuf){
-        THObject object = this.container.getContainer().getObjectFromUUID(byteBuf.readUUID());
+    public LuaTable decodeTHObject(FriendlyByteBuf byteBuf){
+        THObject object = this.getContainer().getObjectFromUUID(byteBuf.readUUID());
         return object == null ? LuaValue.tableOf() : object.ofLuaValue().checktable();
     }
 
-    public void writeLuaTable(FriendlyByteBuf byteBuf, LuaTable table) {
+    public void encodeLuaTable(FriendlyByteBuf byteBuf, LuaTable table) {
         if(!table.istable()){
             byteBuf.writeShort(0);
             return;
@@ -33,21 +37,21 @@ public class LuaValueStorageHelper {
         for (LuaValue key : keys) {
             String keyName = key.checkjstring();
             byteBuf.writeUtf(keyName);
-            writeLuaValue(byteBuf, table.get(key));
+            encodeLuaValue(byteBuf, table.get(key));
         }
     }
-    public LuaTable readLuaTable(FriendlyByteBuf byteBuf) {
+    public LuaTable decodeLuaTable(FriendlyByteBuf byteBuf) {
         LuaTable table = LuaValue.tableOf();
         int length = byteBuf.readShort();
         for (int i = 0; i < length; i++) {
             String keyName = byteBuf.readUtf();
-            LuaValue value = readLuaValue(byteBuf);
+            LuaValue value = decodeLuaValue(byteBuf);
             table.set(keyName, value);
         }
         return table;
     }
 
-    public void writeLuaValue(FriendlyByteBuf byteBuf, LuaValue luaValue) {
+    public void encodeLuaValue(FriendlyByteBuf byteBuf, LuaValue luaValue) {
         short type = (short) luaValue.type();
         byteBuf.writeShort(type);
         switch (type) {
@@ -58,16 +62,16 @@ public class LuaValueStorageHelper {
             case LuaValue.TTABLE -> {
                 if (THObject.LuaAPI.isTHObject(luaValue)) {
                     byteBuf.writeEnum(TableType.THOBJECT);
-                    writeTHObject(byteBuf, THObject.LuaAPI.checkTHObject(luaValue));
+                    encodeTHObject(byteBuf, THObject.LuaAPI.checkTHObject(luaValue));
                 }else {
                     byteBuf.writeEnum(TableType.TABLE);
-                    writeLuaTable(byteBuf, luaValue.checktable());
+                    encodeLuaTable(byteBuf, luaValue.checktable());
                 }
             }
         }
     }
 
-    public LuaValue readLuaValue(FriendlyByteBuf byteBuf) {
+    public LuaValue decodeLuaValue(FriendlyByteBuf byteBuf) {
         short type = byteBuf.readShort();
         return switch (type) {
             case LuaValue.TBOOLEAN -> LuaValue.valueOf(byteBuf.readBoolean());
@@ -77,9 +81,9 @@ public class LuaValueStorageHelper {
             case LuaValue.TTABLE -> {
                 TableType tableType = byteBuf.readEnum(TableType.class);
                 if (tableType == TableType.THOBJECT) {
-                    yield readTHObject(byteBuf);
+                    yield decodeTHObject(byteBuf);
                 }else if (tableType == TableType.TABLE) {
-                    yield readLuaTable(byteBuf);
+                    yield decodeLuaTable(byteBuf);
                 }
                 yield LuaValue.NIL;
             }
@@ -94,7 +98,7 @@ public class LuaValueStorageHelper {
     }
 
     public LuaTable loadTHObject(CompoundTag tag){
-        THObject object = this.container.getContainer().getObjectFromUUID(tag.getUUID("uuid"));
+        THObject object = this.getContainer().getObjectFromUUID(tag.getUUID("uuid"));
         return object == null ? LuaValue.tableOf() : object.ofLuaValue().checktable();
     }
     public CompoundTag saveLuaTable(LuaValue table) {
@@ -164,28 +168,4 @@ public class LuaValueStorageHelper {
         THOBJECT,
         THOBJECT_CONTAINER
     }
-
-    /*
-    @TestOnly
-    public static void main(String[] args) {
-
-        LuaTable testTable = LuaValue.tableOf();
-        LuaTable testTable3 = LuaValue.tableOf();
-
-        testTable.set("test", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-        testTable3.set("test", testTable);
-
-        LuaValueStorageHelper helper = new LuaValueStorageHelper();
-        CompoundTag tag = helper.saveLuaTable(testTable3);
-        LuaTable testTable2 = helper.loadLuaTable(tag);
-
-        //System.out.print("ssssssssssssssssssssssssssssssssssss");
-        //System.out.print(testTable2.get("test"));
-
-
-        final FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
-        helper.writeLuaTable(buffer, testTable3);
-        LuaTable table = helper.readLuaTable(buffer);
-        System.out.print(table.get("test").get("test"));
-    }*/
 }

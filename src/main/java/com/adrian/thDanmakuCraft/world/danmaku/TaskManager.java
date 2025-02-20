@@ -25,9 +25,12 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
     private final List<AbstractTask<T>> tickingTasks = Lists.newArrayList();
     /// 任務的目標對象
     private final T target;
+    ///  LuaValue形式
+    private final LuaValue luaValueForm;
 
     public TaskManager(T target){
         this.target = target;
+        this.luaValueForm = this.ofLuaClass();
     }
 
     /// tick添加的Task
@@ -215,11 +218,16 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
     }
 
     @Override
-    public LuaValue ofLuaValue() {
+    public LuaValue ofLuaClass() {
         LuaValue library = LuaValue.tableOf();
         library.setmetatable(this.getMeta());
         library.set("source", LuaValue.userdataOf(this));
         return library;
+    }
+
+    @Override
+    public LuaValue ofLuaValue(){
+        return this.luaValueForm;
     }
 
     @Override

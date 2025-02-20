@@ -15,14 +15,14 @@ end
 local testBullet2 = core.defineClass(testBullet)
 function testBullet2:onRegisterTasks()
     self.taskManager:registerTask("test", 100, function(target, timer)
-        print("sad"..timer)
+        --print("sad"..timer)
     end)
-    print("onRegisterTasks")
+    --print("onRegisterTasks")
 end
 
 function testBullet2:onInit(i)
     self.class.super.onInit(self,i)
-    print("testBullet2")
+    --print("testBullet2")
 end
 
 function testBullet2:onTick()

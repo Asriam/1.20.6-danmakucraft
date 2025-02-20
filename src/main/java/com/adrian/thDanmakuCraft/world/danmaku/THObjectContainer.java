@@ -375,7 +375,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         buffer.writeInt(this.lifetime);
         buffer.writeBoolean(this.isInited);
         this.targetUserManager.encode(buffer);
-        this.luaValueStorageHelper.writeLuaTable(buffer, this.ofLuaValue().get("params").checktable());
+        this.luaValueStorageHelper.encodeLuaTable(buffer, this.ofLuaValue().get("params").checktable());
         this.taskManager.encode(buffer);
         this.objectManager.encode(buffer);
         //this.scriptManager.encode(buffer);
@@ -391,7 +391,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         this.lifetime = buffer.readInt();
         this.isInited = buffer.readBoolean();
         this.targetUserManager.decode(buffer);
-        this.ofLuaValue().set("params", luaValueStorageHelper.readLuaTable(buffer));
+        this.ofLuaValue().set("params", luaValueStorageHelper.decodeLuaTable(buffer));
         this.taskManager.decode(buffer);
         this.objectManager.decode(buffer);
         //this.scriptManager.decode(buffer);

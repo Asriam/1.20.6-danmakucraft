@@ -20,7 +20,7 @@ import org.joml.Matrix4f;
 
 import java.util.List;
 
-public class SpellCardNameOverlay implements IGuiOverlay{
+public class SpellCardNameOverlay implements IGuiOverlay {
 
     public static final List<EntityTHSpellCard> spellCards = Lists.newArrayList();
     private final Minecraft minecraft;

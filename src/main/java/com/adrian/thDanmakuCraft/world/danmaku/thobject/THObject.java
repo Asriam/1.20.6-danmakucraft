@@ -747,7 +747,7 @@ public class THObject implements ILuaValue, IGetContainer {
         //this.scriptManager.writeData(buffer);
         //this.parameterManager.encode(buffer);
         //this.luaTaskManager.encode(buffer);
-        this.luaValueStorageHelper.writeLuaTable(buffer, this.ofLuaValue().get("params").checktable());
+        this.luaValueStorageHelper.encodeLuaTable(buffer, this.ofLuaValue().get("params").checktable());
         /*LuaValue params = this.ofLuaValue().get("params");
         if(params.istable()) {
             luaValueStorageHelper.writeLuaTable(buffer, params.checktable());
@@ -784,7 +784,7 @@ public class THObject implements ILuaValue, IGetContainer {
         //this.parameterManager.decode(buffer);
         //this.luaTaskManager.decode(buffer);
         this.setBoundingBox(this.getPosition(), this.size);
-        this.ofLuaValue().set("params", luaValueStorageHelper.readLuaTable(buffer));
+        this.ofLuaValue().set("params", luaValueStorageHelper.decodeLuaTable(buffer));
     }
 
     public void save(CompoundTag tag) {
@@ -1369,6 +1369,8 @@ public class THObject implements ILuaValue, IGetContainer {
             library.set("setNavi", setNavi);
             return library;
         }
+
+        public static final LuaValue meta = ILuaValue.setMeta(functions());
     }
 
     public void initLuaValue() {
@@ -1396,8 +1398,6 @@ public class THObject implements ILuaValue, IGetContainer {
         library.set("params", LuaValue.tableOf());
         return library;
     }
-
-    public static final LuaValue meta = ILuaValue.setMeta(functions());
 
     public LuaValue getMeta(){
         return meta;

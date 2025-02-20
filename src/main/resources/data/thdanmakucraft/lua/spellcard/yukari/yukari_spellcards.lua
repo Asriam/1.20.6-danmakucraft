@@ -7,7 +7,7 @@
 ---@type Class|THBullet
 local yukari_spellcrad_1_bullet_1 = core.defineClass()
 function yukari_spellcrad_1_bullet_1:onInit(_pos,_angle)
-    self:setStyle(bullet_styles.ball_small)
+    self:setStyle(bullet_styles.ball_mid)
     self:setPosition(_pos)
     self:setVelocity(_angle:scale(0.2),true)
     self:setAccelerationFromDirection(0.03,_angle)

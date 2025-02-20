@@ -41,7 +41,7 @@ public class THDanmakuCraftMod
     }
 
     private void clientSetup(final FMLCommonSetupEvent event) {
-        GuiEvents.register();
+        GuiEvents.addLayers();
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
@@ -52,7 +52,6 @@ public class THDanmakuCraftMod
     @SubscribeEvent
     public void onServerStartingEvent(final ServerStartingEvent event) {
         ResourceLoader.init(event.getServer().getResourceManager());
-
         LuaLoader.init();
         LuaCore.init();
     }
