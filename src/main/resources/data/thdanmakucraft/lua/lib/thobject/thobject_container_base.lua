@@ -12,7 +12,8 @@ function container:onConstruct()
 end
 
 ----此函數會在註冊Tasks時被調用
-function container:onRegisterTasks()
+---@param taskManager TaskManager
+function container:onRegisterTasks(taskManager)
 
 end
 

@@ -17,8 +17,9 @@ function object:onInit(vec3)
     self:initPosition(vec3)
 end
 
-----此函數會在註冊Tasks時被調用
-function object:onRegisterTasks()
+---此函數會在註冊Tasks時被調用
+---@param taskManager TaskManager
+function object:onRegisterTasks(taskManager)
 
 end
 

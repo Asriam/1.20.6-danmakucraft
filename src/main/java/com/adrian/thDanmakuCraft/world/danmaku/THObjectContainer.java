@@ -81,7 +81,8 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     }
 
     public void registerLuaTasks(){
-        this.invokeScriptEvent("onRegisterTasks", this.ofLuaValue());
+        this.invokeScriptEvent("onRegisterTasks", this.ofLuaValue(), this.taskManager.ofLuaValue());
+        this.taskManager.restartLazyTasks();
     }
 
     public void onAddToWorld(){
@@ -353,11 +354,6 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         return this.getObjectFromUUID(UUID.fromString(uuid));
     }
 
-    /*Deprecated
-    public void setLuaClassKey(String className) {
-        this.luaClassKey = className;
-    }*/
-
     public void setLuaClass(String className){
         this.luaClassName = className;
         LuaValue luaClass1 = LuaCore.getInstance().getLuaClass(className);
@@ -428,7 +424,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         this.luaClassName = tag.getString("LuaClassName");
         this.objectManager.load(tag.getCompound("object_storage"));
         //this.scriptManager.load(tag.getCompound("script"));
-        this.targetUserManager.load(tag.getCompound("user_target"));
+        //this.targetUserManager.load(tag.getCompound("user_target"));
         //this.parameterManager.load(tag.getCompound("parameters"));
         //this.ofLuaValue().set("params", luaValueStorageHelper.loadLuaTable(tag.getCompound("params")));
         this.luaValueAutoSaveDataManager.load(tag);
@@ -459,36 +455,25 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         return null;
     }
 
-    public static THObjectContainer checkTHObjectContainer(LuaValue luaValue) {
-        if (luaValue.get("source").checkuserdata() instanceof THObjectContainer container){
-            return container;
-        }
-        throw new NullPointerException();
-        //return null;
-    }
-
-    private static String getLuaClassName(LuaValue luaValue){
-        if(luaValue.isstring()){
-            return luaValue.checkjstring();
-        }else if(luaValue.istable()){
-            return luaValue.get("className").checkjstring();
-        }
-        return "";
-    }
-
-    public static void initTHObject(THObject object, String luaClassKey, Varargs args) {
-        object.setLuaClass(luaClassKey);
-        object.initLuaValue();
-        LuaValue luaObject = object.ofLuaValue();
-        if(args == LuaValue.NIL){
-            object.invokeScriptEvent("onInit",luaObject);
-        }else {
-            object.invokeScriptEvent("onInit", LuaValue.varargsOf(luaObject, args));
-        }
-        object.spawn();
-    }
-
     public static class LuaAPI {
+        private static THObjectContainer checkTHObjectContainer(LuaValue luaValue) {
+            if (luaValue.get("source").checkuserdata() instanceof THObjectContainer container){
+                return container;
+            }
+            throw new NullPointerException();
+            //return null;
+        }
+        private static void initTHObject(THObject object, String luaClassKey, Varargs args) {
+            object.setLuaClass(luaClassKey);
+            //object.initLuaValue();
+            LuaValue luaObject = object.ofLuaValue();
+            if(args == LuaValue.NIL){
+                object.invokeScriptEvent("onInit",luaObject);
+            }else {
+                object.invokeScriptEvent("onInit", LuaValue.varargsOf(luaObject, args));
+            }
+            object.spawn();
+        }
         private static final LibFunction getMaxObjectAmount = new OneArgFunction() {
 
             @Override
@@ -525,7 +510,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         private static final LibFunction createTHObject = new VarArgFunction() {
             @Override
             public Varargs invoke(Varargs varargs) {
-                String luaClassKey = getLuaClassName(varargs.arg(2));
+                String luaClassKey = ILuaValue.getLuaClassName(varargs.arg(2));
                 THObject object = checkTHObjectContainer(varargs.arg(1)).createTHObject(LuaValueToVec3(varargs.arg(4)));
                 initTHObject(object, luaClassKey, varargs.arg(3).checktable().unpack());
                 return object.ofLuaValue();
@@ -534,7 +519,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         private static final LibFunction createTHBullet = new VarArgFunction() {
             @Override
             public Varargs invoke(Varargs varargs) {
-                String luaClassKey = getLuaClassName(varargs.arg(2));
+                String luaClassKey = ILuaValue.getLuaClassName(varargs.arg(2));
                 THBullet bullet = checkTHObjectContainer(varargs.arg(1)).createTHBullet(
                         LuaValueToVec3(varargs.arg(4)),
                         varargs.arg(5).checkjstring(),
@@ -546,7 +531,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         private static final LibFunction createTHCurvedLaser = new VarArgFunction() {
             @Override
             public Varargs invoke(Varargs varargs) {
-                String luaClassKey = getLuaClassName(varargs.arg(2));
+                String luaClassKey = ILuaValue.getLuaClassName(varargs.arg(2));
                 Vec3 pos = LuaValueToVec3(varargs.arg(4));
                 int colorIndex = varargs.arg(5).checkint();
                 int length = varargs.arg(6).checkint();
@@ -597,7 +582,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
             @Override
             public Varargs invoke(Varargs varargs) {
                 LuaValue luaClass = varargs.arg(2);
-                String luaClassKey = getLuaClassName(luaClass);
+                String luaClassKey = ILuaValue.getLuaClassName(luaClass);
                 THObjectType<?> thobject_type = checkObjectType(luaClass.get("thobject_type"));
                 if (thobject_type == null) {
                     thobject_type = THObjectInit.TH_OBJECT.get();
@@ -659,7 +644,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         library.set("type", "thobject_container");
         library.set("source", LuaValue.userdataOf(this));
         //library.set("parameterManager", this.getParameterManager().ofLuaValue());
-        library.set("autosave", this.luaValueAutoSaveDataManager.ofLuaClass());
+        library.set("autosave", this.luaValueAutoSaveDataManager.ofLuaValue());
         library.set("taskManager", this.taskManager.ofLuaValue());
         library.set("params", LuaValue.tableOf());
         return library;

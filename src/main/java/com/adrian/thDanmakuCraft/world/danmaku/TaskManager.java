@@ -23,6 +23,8 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
     private final Map<String, AbstractTask<T>> registryTasks = Maps.newHashMap();
     /// 正在ticking的Task
     private final List<AbstractTask<T>> tickingTasks = Lists.newArrayList();
+    /// 等待加載的任務
+    private final List<LazyTask> lazyTasks = Lists.newArrayList();
     /// 任務的目標對象
     private final T target;
     ///  LuaValue形式
@@ -70,11 +72,16 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         tickingTasks.add(getRegisteredTask(taskName));
     }
 
+    public void loadTask(String taskName, int timer){
+        lazyTasks.add(new LazyTask(taskName,timer));
+    }
 
-    private void loadTask(String taskName, int timer){
-        AbstractTask<T> task = this.getRegisteredTask(taskName);
-        task.timer = timer;
-        tickingTasks.add(task);
+    public void restartLazyTasks(){
+        for(LazyTask lazyTask:lazyTasks){
+            AbstractTask<T> task = this.getRegisteredTask(lazyTask.taskName);
+            task.timer = lazyTask.timer;
+            tickingTasks.add(task);
+        }
     }
 
     public void clearTasks(){
@@ -137,7 +144,10 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         }
     }
 
-    public static abstract class AbstractTask<T> {
+    public record LazyTask(String taskName, int timer){
+    }
+
+    public static abstract class AbstractTask<T>{
         public int timer = 0;
         public final int lifetime;
         //public final T target;

@@ -36,8 +36,9 @@ public class THObject implements ILuaValue, IGetContainer {
     private final THObjectType<? extends THObject> type;
     //private final AdditionalParameterManager parameterManager;
     //private final LuaTaskManager luaTaskManager;
-    private final LuaValueStorageHelper luaValueStorageHelper = new LuaValueStorageHelper(this);
+    //private final LuaValueStorageHelper luaValueStorageHelper = new LuaValueStorageHelper(this);
     private final TaskManager<THObject> taskManager = new TaskManager<>(this);
+    private final LuaValueAutoSaveDataManager luaValueAutoSaveDataManager = new LuaValueAutoSaveDataManager(this);
     //private final Level level;
     protected final RandomSource random = RandomSource.create();
     protected ITHObjectContainer container;
@@ -93,6 +94,7 @@ public class THObject implements ILuaValue, IGetContainer {
         this.uuid = Mth.createInsecureUUID(this.random);
         this.initPosition(container.getPosition());
         this.registerTasks();
+        //this.luaValueForm = this.ofLuaValue();
     }
 
     public THObject(THObjectContainer container, Vec3 position) {
@@ -109,7 +111,8 @@ public class THObject implements ILuaValue, IGetContainer {
 
     }
     public void registerLuaTasks(){
-        this.invokeScriptEvent("onRegisterTasks", this.ofLuaValue());
+        this.invokeScriptEvent("onRegisterTasks", this.ofLuaValue(), this.taskManager.ofLuaValue());
+        this.taskManager.restartLazyTasks();
     }
 
     public void init(String luaClassKey, Varargs args) {
@@ -123,11 +126,10 @@ public class THObject implements ILuaValue, IGetContainer {
         }
     }
 
-    public <T extends THObject> T initPosition(Vec3 position) {
+    public void initPosition(Vec3 position) {
         this.setPosition(position);
         this.lastPosition = position;
         this.prePosition = position;
-        return (T) this;
     }
 
     public <T extends THObject> T shoot(float speed, Vec3 vectorRotation) {
@@ -714,6 +716,7 @@ public class THObject implements ILuaValue, IGetContainer {
         this.luaClassName = className;
         LuaValue luaClass1 = LuaCore.getInstance().getLuaClass(className);
         this.luaClass = luaClass1 == null ? LuaValue.NIL : luaClass1;
+        this.initLuaValue();
     }
 
     public String getLuaClassName() {
@@ -747,7 +750,9 @@ public class THObject implements ILuaValue, IGetContainer {
         //this.scriptManager.writeData(buffer);
         //this.parameterManager.encode(buffer);
         //this.luaTaskManager.encode(buffer);
-        this.luaValueStorageHelper.encodeLuaTable(buffer, this.ofLuaValue().get("params").checktable());
+        //this.luaValueStorageHelper.encodeLuaTable(buffer, this.ofLuaValue().get("params").checktable());
+        this.luaValueAutoSaveDataManager.encode(buffer);
+        this.taskManager.encode(buffer);
         /*LuaValue params = this.ofLuaValue().get("params");
         if(params.istable()) {
             luaValueStorageHelper.writeLuaTable(buffer, params.checktable());
@@ -783,8 +788,11 @@ public class THObject implements ILuaValue, IGetContainer {
         //this.scriptManager.readData(buffer);
         //this.parameterManager.decode(buffer);
         //this.luaTaskManager.decode(buffer);
+        //this.ofLuaValue().set("params", luaValueStorageHelper.decodeLuaTable(buffer));
+        //this.ofLuaValue();
+        this.luaValueAutoSaveDataManager.decode(buffer);
+        this.taskManager.decode(buffer);
         this.setBoundingBox(this.getPosition(), this.size);
-        this.ofLuaValue().set("params", luaValueStorageHelper.decodeLuaTable(buffer));
     }
 
     public void save(CompoundTag tag) {
@@ -806,8 +814,10 @@ public class THObject implements ILuaValue, IGetContainer {
         tag.putString("LuaClassName", luaClassName);
         //this.scriptManager.save(tag);
         //tag.put("parameters", this.parameterManager.save(new CompoundTag()));
-        tag.put("params", luaValueStorageHelper.saveLuaTable(this.ofLuaValue().get("params")));
+        //tag.put("params", luaValueStorageHelper.saveLuaTable(this.ofLuaValue().get("params")));
         //return tag;
+        this.luaValueAutoSaveDataManager.save(tag);
+        this.taskManager.save(tag);
     }
 
     public void load(CompoundTag tag) {
@@ -835,11 +845,13 @@ public class THObject implements ILuaValue, IGetContainer {
         this.isDead = tag.getBoolean("IsDead");
         this.collision = tag.getBoolean("Collision");
         this.collisionType = CollisionType.class.getEnumConstants()[tag.getInt("CollisionType")];
+        this.uuid = tag.getUUID("UUID");
         this.luaClassName = tag.getString("LuaClassName");
         //this.scriptManager.load(tag);
         //this.parameterManager.load(tag.getCompound("parameters"));
-        this.uuid = tag.getUUID("UUID");
-        this.ofLuaValue().set("params", luaValueStorageHelper.loadLuaTable(tag.getCompound("params")));
+        //this.ofLuaValue().set("params", luaValueStorageHelper.loadLuaTable(tag.getCompound("params")));
+        this.luaValueAutoSaveDataManager.load(tag);
+        this.taskManager.load(tag);
     }
 
     @Deprecated
@@ -1326,6 +1338,12 @@ public class THObject implements ILuaValue, IGetContainer {
                 return LuaValue.NIL;
             }
         };
+        protected static final LibFunction isClientSide = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                return LuaValue.valueOf(checkTHObject(luaValue0).level().isClientSide());
+            }
+        };
 
         public static LuaValue functions(){
             LuaValue library = LuaValue.tableOf();
@@ -1367,6 +1385,7 @@ public class THObject implements ILuaValue, IGetContainer {
             library.set("spawn", spawn);
             library.set("isSpawned", getIsSpawned);
             library.set("setNavi", setNavi);
+            library.set("isClientSide", isClientSide);
             return library;
         }
 
@@ -1394,6 +1413,7 @@ public class THObject implements ILuaValue, IGetContainer {
         library.set("container", this.getContainer().ofLuaValue());
         //library.set("parameterManager", this.getParameterManager().ofLuaValue());
         //library.set("taskManager", this.luaTaskManager.ofLuaValue());
+        library.set("autosave", this.luaValueAutoSaveDataManager.ofLuaValue());
         library.set("taskManager", this.taskManager.ofLuaValue());
         library.set("params", LuaValue.tableOf());
         return library;

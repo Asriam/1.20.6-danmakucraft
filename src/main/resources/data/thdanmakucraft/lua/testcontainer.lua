@@ -13,9 +13,10 @@ end
 
 ---@type Class|THBullet
 local testBullet2 = core.defineClass(testBullet)
-function testBullet2:onRegisterTasks()
-    self.taskManager:registerTask("test", 100, function(target, timer)
-        --print("sad"..timer)
+function testBullet2:onRegisterTasks(taskManager)
+    ---@param target THBullet
+    taskManager:registerTask("test", 100, function(target, timer)
+        target:move(util.vec3.new(0.0,-0.1,0.0))
     end)
     --print("onRegisterTasks")
 end
@@ -26,7 +27,7 @@ function testBullet2:onInit(i)
 end
 
 function testBullet2:onTick()
-    self.class.super.onTick(self)
+    --self.class.super.onTick(self)
     if(self:getTimer() == 2) then
         self.taskManager:startTask("test")
     end
@@ -35,6 +36,7 @@ end
 ---@type Class|THCurvedLaser
 local testLaser = core.defineClass()
 function testLaser:onInit(i)
+    self.autosave:register("params")
     self:setLifetime(600)
     self.params.angle = 360/num*i
 end
@@ -65,6 +67,12 @@ function container:onConstruct()
     --self.autosave:register("userRot")
 end
 
+function container:onRegisterTasks()
+    self.taskManager:registerTask("test", 100, function(target, timer)
+        print("sad"..timer)
+    end)
+end
+
 function container:onInit()
     local userRot = self:getUser():getRotation().y
     self.autosave:register("sad")
@@ -81,7 +89,10 @@ function container:onInit()
 end
 
 function container:onTick()
-    print(self.sad)
+    --print(self.sad)
+    if(self:getTimer() == 2) then
+        --self.taskManager:startTask("test")
+    end
 end
 
 ---@type Class|THBullet

@@ -10,6 +10,15 @@ public interface ILuaValue {
         return meta;
     }
 
+    static String getLuaClassName(LuaValue luaValue){
+        if(luaValue.isstring()){
+            return luaValue.checkjstring();
+        }else if(luaValue.istable()){
+            return luaValue.get("className").checkjstring();
+        }
+        return "";
+    }
+
     default LuaValue ofLuaClass(){
         LuaValue library = LuaValue.tableOf();
         library.setmetatable(this.getMeta());
