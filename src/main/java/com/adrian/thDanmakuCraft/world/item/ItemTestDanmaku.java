@@ -28,15 +28,15 @@ public class ItemTestDanmaku extends Item {
         level.addFreshEntity(entityTHObjectContainer);
 
         THObjectContainer container = entityTHObjectContainer.getContainer();
-        //container.setUser(player);
-        //container.setLuaClass("testContainer");
+        container.setUser(player);
+        container.setLuaClass("yukari_spellcard_2");
         //container.scriptInit();
-        THLaser laser = new THLaser(container);
+        /*THLaser laser = new THLaser(container);
         laser.setRotation(player.getXRot()* Mth.DEG_TO_RAD,player.getYRot()*Mth.DEG_TO_RAD);
         laser.setLength(0.0f);
-        laser.setWidth(0.5f);
-        laser.growLength(12.0f);
-        laser.spawn();
+        laser.setWidth(0.0f);
+        laser.growWidth(0.5f,40);
+        laser.spawn();*/
         //container.scriptEvent("onInit",container.ofLuaValue());
 
         //player.getCooldowns().addCooldown(this, container.getLifetime());

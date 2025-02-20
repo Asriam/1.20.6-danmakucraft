@@ -4,6 +4,7 @@ import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.CompoundTagUtil;
 import com.adrian.thDanmakuCraft.util.FriendlyByteBufUtil;
+import com.adrian.thDanmakuCraft.world.ILuaValue;
 import com.adrian.thDanmakuCraft.world.danmaku.ITHObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
@@ -20,6 +21,10 @@ import net.minecraft.world.phys.Vec3;
 import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.NotNull;
 import org.luaj.vm2.LuaValue;
+import org.luaj.vm2.Varargs;
+import org.luaj.vm2.lib.LibFunction;
+import org.luaj.vm2.lib.TwoArgFunction;
+import org.luaj.vm2.lib.VarArgFunction;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -55,8 +60,12 @@ public class THCurvedLaser extends THObject {
         this.laserColor = color;
     }
 
-    public void setLaserColorFormIndex(int i){
-        this.laserColor = THBullet.BULLET_INDEX_COLOR.values()[i].getColor();
+    public void setLaserColor(int r, int g, int b, int a){
+        this.setLaserColor(new Color(r,g,b,a));
+    }
+
+    public void setLaserColorByIndex(int i){
+        this.laserColor = THBullet.BULLET_INDEX_COLOR.getColorByIndex(i).getColor();
     }
     @Override
     public void encode(FriendlyByteBuf buffer) {
@@ -395,6 +404,42 @@ public class THCurvedLaser extends THObject {
         }
     }
 
+    private static class LuaAPI{
+        private static THCurvedLaser checkTHCurvedLaser(LuaValue luaValue) {
+            if (luaValue.get("source").checkuserdata() instanceof THCurvedLaser laser) {
+                return laser;
+            }
+            throw new NullPointerException();
+        }
+        private static final LibFunction setLaserColorByIndex = new TwoArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
+                checkTHCurvedLaser(luaValue0).setLaserColorByIndex(luaValue.checkint());
+                return LuaValue.NIL;
+            }
+        };
+        private static final LibFunction setLaserColor = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                checkTHCurvedLaser(varargs.arg1()).setLaserColor(
+                        varargs.arg(1).checkint(),
+                        varargs.arg(3).checkint(),
+                        varargs.arg(4).checkint(),
+                        varargs.arg(5).checkint()
+                );
+                return LuaValue.NIL;
+            }
+        };
+        private static LuaValue functions(){
+            LuaValue library = THObject.LuaAPI.functions();
+            library.set("setLaserColorByIndex", setLaserColorByIndex);
+            library.set("setLaserColor", setLaserColor);
+            return library;
+        }
+
+        public static final LuaValue meta = ILuaValue.setMeta(functions());
+    }
+
     @Override
     public LuaValue ofLuaClass(){
         LuaValue library = super.ofLuaClass();
@@ -407,4 +452,8 @@ public class THCurvedLaser extends THObject {
         return library;
     }
 
+    @Override
+    public LuaValue getMeta(){
+        return LuaAPI.meta;
+    }
 }

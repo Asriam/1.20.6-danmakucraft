@@ -59,3 +59,103 @@ function yukari_spellcrad_1:onTick()
     end
 end
 --------------------------------------------------------------------------------------------------
+---@type Class|THLaser
+local yukari_spellcrad_2_laser_1 = core.defineClass()
+function yukari_spellcrad_2_laser_1:onInit(_pos0,_pos1,_pos2,_width)
+    self.data = {}
+    self.autosave:register("data")
+    self.data.pos0 = _pos0
+    self.data.pos1 = _pos1
+    self.data.pos2 = _pos2
+    self.data.width = _width
+    self:setWidth(0)
+    self:setLaserColorByIndex(6)
+    self:setLifetime(300)
+end
+
+function yukari_spellcrad_2_laser_1:onTick()
+    local radius = 5.0
+    local angle = self.container.data.angle
+    local pos0 = self.data.pos0
+    local pos1 = self.data.pos1
+    local pos2 = self.data.pos2
+    self:setPosition(pos0:add(pos1:yRot(-angle)))
+    self:vectorTo(pos2:yRot(angle))
+
+    local mod = (self.timer+240)%240
+    if mod == 0 then
+        self:growWidth(self.data.width,60)
+    end
+
+    if mod == 120 then
+        self:growWidth(0.01,30)
+    end
+end
+
+---@type Class|THLaser
+local yukari_spellcrad_2_laser_2 = core.defineClass()
+function yukari_spellcrad_2_laser_2:onInit(_pos0,_pos1,_pos2,_width)
+    self.data = {}
+    self.autosave:register("data")
+    self.data.pos0 = _pos0
+    self.data.pos1 = _pos1
+    self.data.pos2 = _pos2
+    self.data.width = _width
+    self:setWidth(0)
+    self:setLaserColorByIndex(2)
+    self:setLifetime(300)
+end
+
+function yukari_spellcrad_2_laser_2:onTick()
+    local radius = 5.0
+    local angle = -self.container.data.angle*3
+    local pos0 = self.data.pos0
+    local pos1 = self.data.pos1
+    local pos2 = self.data.pos2
+    self:setPosition(pos0:add(pos1:yRot(-angle)))
+    self:vectorTo(pos2:yRot(angle))
+
+    local mod = (self.timer+240)%240
+    if mod == 0 then
+        self:growWidth(0.01,60)
+    end
+
+    if mod == 120 then
+        self:growWidth(self.data.width,30)
+    end
+end
+
+---@type Class|THObjectContainer
+local yukari_spellcrad_2 = core.defineClass("yukari_spellcard_2")
+function yukari_spellcrad_2:onInit()
+    self:setSpellCardName("Evil Spirits \"Butterfly in the Zen Temple\"")
+    self:setLifetime(300)
+    self.data = {}
+    self.autosave:register("data")
+    self.data.angle = 0
+    for i=0,3 do
+        local pos0 = self:getPosition()
+        local pos = util.vec3.new(10,0,0):yRot(-Mth.DEG_TO_RAD*90*i)
+        self:createTHLaser(yukari_spellcrad_2_laser_1,
+                {pos0,util.vec3.new(0,0,0),pos,1.0}
+        )
+
+        self:createTHLaser(yukari_spellcrad_2_laser_1,
+                {pos0,pos:yRot(-Mth.DEG_TO_RAD*90 * ((i+3)%2-0.5)*2), pos,1.0}
+        )
+
+        local pos2 = util.vec3.new(20,0,0):yRot(-Mth.DEG_TO_RAD*90*i)
+        self:createTHLaser(yukari_spellcrad_2_laser_2,
+                {pos0,util.vec3.new(0,0,0),pos2,1.0}
+        )
+
+        self:createTHLaser(yukari_spellcrad_2_laser_2,
+                {pos0,pos2:yRot(-Mth.DEG_TO_RAD*90 * ((i+3)%2-0.5)*2), pos2,1.0}
+        )
+    end
+end
+
+function yukari_spellcrad_2:onTick()
+    self.data.angle = self.timer/60
+end
+--------------------------------------------------------------------------------------------------

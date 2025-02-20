@@ -372,7 +372,7 @@ public class THObject implements ILuaValue, IGetContainer {
 
     public Vector3f getOffsetRotation(float partialTicks) {
         float x = Mth.lerp(partialTicks, this.lastRotation.x, this.xRot);
-        float y = Mth.lerp(partialTicks, this.lastRotation.y, this.yRot);
+        float y = Mth.lerp(partialTicks, this.lastRotation.y-this.yRot > Mth.PI ? -Mth.PI : this.lastRotation.y-this.yRot < -Mth.PI ? Mth.PI : 0.0f + this.lastRotation.y, this.yRot);
         float z = Mth.lerp(partialTicks, this.lastRotation.z, this.zRot);
         return new Vector3f(x, y, z);
     }

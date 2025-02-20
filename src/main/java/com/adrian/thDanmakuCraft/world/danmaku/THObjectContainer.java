@@ -11,6 +11,7 @@ import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THCurvedLaser;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THLaser;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -330,6 +331,10 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         return new THCurvedLaser(this, THBullet.BULLET_INDEX_COLOR.getColorByIndex(color),length,width);
     }
 
+    public THLaser createTHLaser() {
+        return new THLaser(this);
+    }
+
     public void spawnTHObject(THObject object){
         object.isSpawned = true;
         if (!this.getObjectManager().contains(object)) {
@@ -542,6 +547,15 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
                 return laser.ofLuaValue();
             }
         };
+        private static final LibFunction createTHLaser = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                String luaClassKey = ILuaValue.getLuaClassName(varargs.arg(2));
+                THLaser laser = checkTHObjectContainer(varargs.arg(1)).createTHLaser();
+                initTHObject(laser, luaClassKey, varargs.arg(3).checktable().unpack());
+                return laser.ofLuaValue();
+            }
+        };
         private static final LibFunction getUser = new OneArgFunction() {
             @Override
             public LuaValue call(LuaValue luaValue) {
@@ -619,6 +633,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
             library.set("createTHObject", createTHObject);
             library.set("createTHBullet", createTHBullet);
             library.set("createTHCurvedLaser", createTHCurvedLaser);
+            library.set("createTHLaser", createTHLaser);
             //library.set("getParameterManager", getParameterManager);
             library.set("discard", discard);
             library.set("newTHObject", newTHObject);

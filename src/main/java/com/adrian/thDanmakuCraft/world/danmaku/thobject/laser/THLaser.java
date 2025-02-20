@@ -4,6 +4,8 @@ import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.CompoundTagUtil;
 import com.adrian.thDanmakuCraft.util.FriendlyByteBufUtil;
+import com.adrian.thDanmakuCraft.world.ILuaValue;
+import com.adrian.thDanmakuCraft.world.LuaValueHelper;
 import com.adrian.thDanmakuCraft.world.danmaku.ITHObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.TaskManager;
@@ -15,10 +17,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
+import org.luaj.vm2.LuaValue;
+import org.luaj.vm2.Varargs;
+import org.luaj.vm2.lib.LibFunction;
+import org.luaj.vm2.lib.TwoArgFunction;
+import org.luaj.vm2.lib.VarArgFunction;
 
 import java.util.List;
 
@@ -44,13 +50,6 @@ public class THLaser extends THObject {
     }
 
     @Override
-    public void onTick(){
-        this.lastWidth = width;
-        this.lastLength = length;
-        super.onTick();
-    }
-
-    @Override
     public void registerTasks(){
         super.registerTasks();
         this.taskManager.registerTask("laser_width_set", new TaskManager.Task<>((target, timer,lifetime) ->{
@@ -67,19 +66,38 @@ public class THLaser extends THObject {
         }));
     }
 
-    public void growWidth(float width){
+    @Override
+    public void onTick(){
+        this.lastWidth = width;
+        this.lastLength = length;
+        super.onTick();
+        //this.vectorTo(new Vec3(0.0f,0.0f,10.0f).yRot(this.timer/20.0f));
+    }
+
+    public void growWidth(float width, int duration){
         this.targetWidth = width;
-        this.taskManager.startTask("laser_width_set",300);
+        this.taskManager.startTask("laser_width_set",duration);
     }
 
-    public void growLength(float length){
+    public void growLength(float length, int duration){
         this.targetLength = length;
-        this.taskManager.startTask("laser_length_set",300);
+        this.taskManager.startTask("laser_length_set",duration);
     }
 
-    public void grow(float width, float length){
-        this.growWidth(width);
-        this.growLength(length);
+    public void growVector(Vec3 vec3, int duration){
+        this.targetLength = (float) vec3.length();
+        this.setRotationByDirectionalVector(vec3.normalize());
+        this.taskManager.startTask("laser_length_set",duration);
+    }
+
+    public void grow(float width, float length, int duration){
+        this.growWidth(width,duration);
+        this.growLength(length,duration);
+    }
+
+    public void vectorTo(Vec3 vec3){
+        this.length = (float) vec3.length()/2;
+        this.setRotationByDirectionalVector(vec3);
     }
 
     public Vec3 getLaserCenter(){
@@ -144,6 +162,17 @@ public class THLaser extends THObject {
         return this.laserColor;
     }
 
+    public void setLaserColor(Color color){
+        this.laserColor = color;
+    }
+
+    public void setLaserColor(int r, int g, int b, int a){
+        this.setLaserColor(new Color(r,g,b,a));
+    }
+
+    public void setLaserColorByIndex(int index){
+        this.laserColor = THBullet.BULLET_INDEX_COLOR.getColorByIndex(index).getColor();
+    }
     @Override
     public void encode(FriendlyByteBuf buffer) {
         super.encode(buffer);
@@ -159,6 +188,8 @@ public class THLaser extends THObject {
         super.decode(buffer);
         this.width = buffer.readFloat();
         this.length = buffer.readFloat();
+        this.lastWidth = width;
+        this.lastLength = length;
         this.targetWidth = buffer.readFloat();
         this.targetLength = buffer.readFloat();
         this.laserColor = FriendlyByteBufUtil.readColor(buffer);
@@ -178,8 +209,111 @@ public class THLaser extends THObject {
         super.load(tag);
         this.width = tag.getFloat("Width");
         this.length = tag.getFloat("Length");
+        this.lastWidth = width;
+        this.lastLength = length;
         this.targetWidth = tag.getFloat("TargetWidth");
         this.targetLength = tag.getFloat("TargetLength");
         this.laserColor = CompoundTagUtil.getColor(tag, "LaserColor");
+    }
+
+    private static class LuaAPI{
+        private static THLaser checkTHLaser(LuaValue luaValue) {
+            if (luaValue.get("source").checkuserdata() instanceof THLaser laser) {
+                return laser;
+            }
+            throw new NullPointerException();
+        }
+        private static final LibFunction setLaserColorByIndex = new TwoArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
+                checkTHLaser(luaValue0).setLaserColorByIndex(luaValue.checkint());
+                return LuaValue.NIL;
+            }
+        };
+        private static final LibFunction setLaserColor = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                checkTHLaser(varargs.arg1()).setLaserColor(
+                        varargs.arg(1).checkint(),
+                        varargs.arg(3).checkint(),
+                        varargs.arg(4).checkint(),
+                        varargs.arg(5).checkint()
+                );
+                return LuaValue.NIL;
+            }
+        };
+        private static final LibFunction growWidth = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                checkTHLaser(varargs.arg1()).growWidth(varargs.tofloat(2),varargs.checkint(3));
+                return LuaValue.NIL;
+            }
+        };
+        private static final LibFunction growLength = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                checkTHLaser(varargs.arg1()).growLength(varargs.tofloat(2),varargs.checkint(3));
+                return LuaValue.NIL;
+            }
+        };
+        private static final LibFunction setWidth = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                checkTHLaser(varargs.arg1()).setWidth(varargs.tofloat(2));
+                return LuaValue.NIL;
+            }
+        };
+        private static final LibFunction setLength = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                checkTHLaser(varargs.arg1()).setLength(varargs.tofloat(2));
+                return LuaValue.NIL;
+            }
+        };
+        private static final LibFunction grow = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                checkTHLaser(varargs.arg1()).grow(varargs.tofloat(2),varargs.tofloat(3),varargs.checkint(4));
+                return LuaValue.NIL;
+            }
+        };
+        private static final LibFunction growVector = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                checkTHLaser(varargs.arg1()).growVector(LuaValueHelper.LuaValueToVec3(varargs.arg(2)),varargs.checkint(3));
+                return LuaValue.NIL;
+            }
+        };
+        private static final LibFunction vectorTo = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                checkTHLaser(varargs.arg1()).vectorTo(LuaValueHelper.LuaValueToVec3(varargs.arg(2)));
+                return LuaValue.NIL;
+            }
+        };
+        private static LuaValue functions(){
+            LuaValue library = THObject.LuaAPI.functions();
+            library.set("setLaserColorByIndex", setLaserColorByIndex);
+            library.set("setLaserColor", setLaserColor);
+            library.set("growWidth", growWidth);
+            library.set("growLength", growLength);
+            library.set("setWidth", setWidth);
+            library.set("setLength", setLength);
+            library.set("grow", grow);
+            library.set("growVector", growVector);
+            library.set("vectorTo", vectorTo);
+            return library;
+        }
+        public static final LuaValue meta = ILuaValue.setMeta(functions());
+    }
+
+    public LuaValue ofLuaClass(){
+        LuaValue library = super.ofLuaClass();
+        return library;
+    }
+
+    @Override
+    public LuaValue getMeta(){
+        return LuaAPI.meta;
     }
 }

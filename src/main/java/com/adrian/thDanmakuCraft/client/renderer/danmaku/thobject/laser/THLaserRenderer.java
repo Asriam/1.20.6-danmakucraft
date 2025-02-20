@@ -43,23 +43,32 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
         Vector3f scale = new Vector3f(laserWidth,laserLength,laserWidth);
         Color laserCoreColor = laser.getColor();
         Color laserColor = laser.getLaserColor().multiply(laserCoreColor);
-        int edgeA = 32;
+        int edgeA = 12;
         int edgeB = 8;
         /*RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 2,
                 ConstantUtil.VECTOR3F_ZERO,
-                scale.mul(0.7f,new Vector3f()),
+                scale,
+                edgeA, edgeB, false,
+                new Vec2(0.45f, 3.0f),
+                new Vec2(0.4f, 1.0f),
+                laserColor,
+                laserColor.multiply(0.1f),
+                laserCoreColor,false,true);*/
+        RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 2,
+                ConstantUtil.VECTOR3F_ZERO,
+                scale.mul(0.6f,0.8f,0.6f,new Vector3f()),
                 edgeA, edgeB, false,
                 new Vec2(0.0f, 1.0f),
-                new Vec2(1.0f, 1.0f),
+                new Vec2(0.3f, 1.0f),
                 laserCoreColor,
                 laserCoreColor.multiply(0.5f),
-                laserCoreColor);*/
+                laserCoreColor);
         RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 2,
                 ConstantUtil.VECTOR3F_ZERO,
                 scale,
                 edgeA, edgeB, false,
-                new Vec2(0.5f, 3.0f),
-                new Vec2(0.4f, 1.0f),
+                new Vec2(0.0f, 1.0f),
+                new Vec2(0.3f, 1.0f),
                 laserColor,
                 laserColor.multiply(0.1f),
                 laserCoreColor,false,true);

@@ -55,6 +55,15 @@ function container:createTHBullet(class, args, position, style, colorIndex) end
 ---@return THCurvedLaser
 function container:createTHCurvedLaser(class, args, position, colorIndex, length, width) end
 
+---@param class Class
+---@param args table
+---@param position util.Vec3
+---@param colorIndex number
+---@param length number
+---@param width number
+---@return THCurvedLaser
+function container:createTHLaser(class, args) end
+
 --[[
 ---@deprecated
 ---@return AdditionalParameterManager
