@@ -43,7 +43,7 @@ function testLaser:onAddTasks()
 end
 
 function testLaser:onTick()
-    local userRot = self.container.params.userRot
+    local userRot = self.container.userRot
     local angle = self.params.angle
     self:setVelocityFromRotation(0.2,
             util.vec2.new(
@@ -60,9 +60,16 @@ end
 
 ---@type Class|THObjectContainer
 local container = core.defineClass("testContainer")
+function container:onConstruct()
+    --self.autosave:register("sad")
+    --self.autosave:register("userRot")
+end
+
 function container:onInit()
     local userRot = self:getUser():getRotation().y
-    self.params.userRot = userRot
+    self.autosave:register("sad")
+    self.autosave:register("userRot")
+    self.userRot = userRot
     for i = 1,num  do
         self:createTHCurvedLaser(testLaser, {i}, self:getPosition(),1,120,0.5)
     end
@@ -70,9 +77,11 @@ function container:onInit()
     for i = 1,32 do
         self:createTHBullet(testBullet2, {i}, self:getPosition(),bullet_styles.ball_big,1)
     end
+    self.sad = "sdfhhsdfubnsdfusbdufd"
 end
 
 function container:onTick()
+    print(self.sad)
 end
 
 ---@type Class|THBullet

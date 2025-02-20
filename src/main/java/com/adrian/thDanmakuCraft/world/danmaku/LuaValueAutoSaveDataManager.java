@@ -48,10 +48,12 @@ public class LuaValueAutoSaveDataManager implements IDataStorage, ILuaValue {
 
     @Override
     public void decode(FriendlyByteBuf buffer) {
+        keys.clear();
         int size = buffer.readShort();
         for (int i=0;i<size;i++){
             String key = buffer.readUtf();
             LuaValue value = luaValueStorageHelper.decodeLuaValue(buffer);
+            keys.add(key);
             target.ofLuaValue().set(key, value);
         }
     }
@@ -71,11 +73,13 @@ public class LuaValueAutoSaveDataManager implements IDataStorage, ILuaValue {
 
     @Override
     public void load(CompoundTag compoundTag) {
+        keys.clear();
         ListTag list = compoundTag.getList("LuaValues", CompoundTag.TAG_COMPOUND);
         for(Tag _tag:list){
             if(_tag instanceof CompoundTag tag){
                 String key = tag.getString("key");
                 LuaValue value = luaValueStorageHelper.loadLuaValue(tag.getCompound("value"));
+                keys.add(key);
                 target.ofLuaValue().set(key, value);
             }
         }
