@@ -22,6 +22,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.apache.commons.compress.utils.Lists;
+import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -42,7 +43,7 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
 
         poseStack.pushPose();
         int edge = 4;
-        Color indexColor = laser.laserColor.getColor();
+        Color indexColor = laser.laserColor;
         Color laserColor = THObject.Color(
                 laser.color.r * indexColor.r / 255,
                 laser.color.g * indexColor.g / 255,
@@ -60,12 +61,14 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
                 poseStack.pushPose();
                 Vec3 prePos = laserPos.vectorTo(nodes0.getLast().getOffsetPosition(partialTicks));
                 poseStack.translate(prePos.x, prePos.y, prePos.z);
+                //Vec2 faceCamRotation = THObject.VectorAngleToRadAngle(this.getRenderDispatcher().camera.getPosition().vectorTo(nodes0.getLast().getOffsetPosition(partialTicks)));
+                //poseStack.mulPose(new Quaternionf().rotateY(faceCamRotation.y).rotateX(-faceCamRotation.x));
                 poseStack.mulPose(this.getRenderDispatcher().cameraOrientation());
                 poseStack.mulPose(Axis.XP.rotationDegrees(-90.0F));
                 RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 1,
                         ConstantUtil.VECTOR3F_ZERO,
                         new Vector3f(width2, width2, width2),
-                        6, 10, true,
+                        4, 12, true,
                         new Vec2(0.4f, 2.0f),
                         new Vec2(0.0f, 2.0f),
                         laserColor, laserColor, coreColor);

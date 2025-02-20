@@ -95,38 +95,23 @@ public class THBullet extends THObject {
     @Override
     public void encode(FriendlyByteBuf buffer) {
         super.encode(buffer);
-        //buffer.writeEnum(this.bulletIndexColor);
         buffer.writeEnum(this.style);
-        /*Color c = this.bulletColor;
-        buffer.writeInt(c.r);
-        buffer.writeInt(c.g);
-        buffer.writeInt(c.b);
-        buffer.writeInt(c.a);*/
         FriendlyByteBufUtil.writeColor(buffer,this.bulletColor);
     }
 
     @Override
     public void decode(FriendlyByteBuf buffer){
         super.decode(buffer);
-        //this.bulletIndexColor = buffer.readEnum(BULLET_INDEX_COLOR.class);
         this.style = buffer.readEnum(DefaultBulletStyle.class);
-        /*this.setBulletColor(
-                buffer.readInt(),
-                buffer.readInt(),
-                buffer.readInt(),
-                buffer.readInt()
-        );*/
         this.bulletColor = FriendlyByteBufUtil.readColor(buffer);
     }
 
     @Override
     public void save(CompoundTag tag) {
         super.save(tag);
-        //nbt.putInt("BulletIndexColor",this.bulletIndexColor.ordinal());
         tag.putInt("Style",this.style.ordinal());
         Color c = this.bulletColor;
         tag.put("BulletColor", CompoundTagUtil.newIntList(c.r, c.g, c.b, c.a));
-        //return tag;
     }
 
     @Override
@@ -323,65 +308,69 @@ public class THBullet extends THObject {
     public static class UserBulletStyle{
     }
 
-    private static THBullet checkTHBullet(LuaValue luaValue) {
-        if (luaValue.get("source").checkuserdata() instanceof THBullet bullet) {
-            return bullet;
+    private static class LuaAPI {
+        private static THBullet checkTHBullet(LuaValue luaValue) {
+            if (luaValue.get("source").checkuserdata() instanceof THBullet bullet) {
+                return bullet;
+            }
+            throw new NullPointerException();
         }
-        throw new NullPointerException();
+        private static final LibFunction setStyle = new TwoArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
+                checkTHBullet(luaValue0).setStyle(luaValue.checkjstring());
+                return LuaValue.NIL;
+            }
+        };
+        private static final LibFunction setBulletColorByIndex = new TwoArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
+                checkTHBullet(luaValue0).setBulletColorByIndex(luaValue.checkint());
+                return LuaValue.NIL;
+            }
+        };
+        private static final LibFunction setBulletColor = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                checkTHBullet(varargs.arg1()).setBulletColor(
+                        varargs.arg(1).checkint(),
+                        varargs.arg(3).checkint(),
+                        varargs.arg(4).checkint(),
+                        varargs.arg(5).checkint()
+                );
+                return LuaValue.NIL;
+            }
+        };
+        private static final LibFunction getStyle = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                return LuaValue.valueOf(checkTHBullet(luaValue0).getStyle().toString());
+            }
+        };
+        private static final LibFunction getBulletIndex = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                //return LuaValue.valueOf(checkTHBullet(luaValue0).getBulletIndexColor().getIndex());
+                return LuaValue.NIL;
+            }
+        };
+        private static final LibFunction getBulletColor = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                return LuaValueHelper.ColorToLuaValue(checkTHBullet(luaValue0).getBulletColor());
+            }
+        };
+        public static LuaValue functions(){
+            LuaValue library = THObject.LuaAPI.functions();
+            library.set("setStyle",       setStyle);
+            library.set("setBulletColorByIndex", setBulletColorByIndex);
+            library.set("setBulletColor", setBulletColor);
+            library.set("getStyle",       getStyle);
+            library.set("getBulletColor", getBulletColor);
+            return library;
+        }
+        public static final LuaValue meta = ILuaValue.setMeta(functions());
     }
-
-    private static final LibFunction setStyle = new TwoArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
-            checkTHBullet(luaValue0).setStyle(luaValue.checkjstring());
-            return LuaValue.NIL;
-        }
-    };
-
-    private static final LibFunction setBulletColorByIndex = new TwoArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
-            checkTHBullet(luaValue0).setBulletColorByIndex(luaValue.checkint());
-            return LuaValue.NIL;
-        }
-    };
-
-    private static final LibFunction setBulletColor = new VarArgFunction() {
-        @Override
-        public Varargs invoke(Varargs varargs){
-            checkTHBullet(varargs.arg1()).setBulletColor(
-                    varargs.arg(1).checkint(),
-                    varargs.arg(3).checkint(),
-                    varargs.arg(4).checkint(),
-                    varargs.arg(5).checkint()
-            );
-            return LuaValue.NIL;
-        }
-    };
-
-    private static final LibFunction getStyle = new OneArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0) {
-            return LuaValue.valueOf(checkTHBullet(luaValue0).getStyle().toString());
-        }
-    };
-
-    private static final LibFunction getBulletIndex = new OneArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0) {
-            //return LuaValue.valueOf(checkTHBullet(luaValue0).getBulletIndexColor().getIndex());
-            return LuaValue.NIL;
-        }
-    };
-
-    private static final LibFunction getBulletColor = new OneArgFunction() {
-        @Override
-        public LuaValue call(LuaValue luaValue0) {
-            return LuaValueHelper.ColorToLuaValue(checkTHBullet(luaValue0).getBulletColor());
-        }
-    };
-
-    public static final LuaValue meta = ILuaValue.setMeta(functions());
     @Override
     public LuaValue ofLuaClass(){
         LuaValue library = super.ofLuaClass();
@@ -390,21 +379,6 @@ public class THBullet extends THObject {
 
     @Override
     public LuaValue getMeta(){
-        return meta;
-    }
-
-    /*public static final LuaValue meta = LuaValue.tableOf();
-    static {
-        meta.set("__index", functions());
-    }*/
-    
-    public static LuaValue functions(){
-        LuaValue library = THObject.LuaAPI.functions();
-        library.set("setStyle",       setStyle);
-        library.set("setBulletColorByIndex", setBulletColorByIndex);
-        library.set("setBulletColor", setBulletColor);
-        library.set("getStyle",       getStyle);
-        library.set("getBulletColor", getBulletColor);
-        return library;
+        return LuaAPI.meta;
     }
 }

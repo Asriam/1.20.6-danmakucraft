@@ -4,7 +4,8 @@
 ---@field onInit fun(self)
 ---@field onTick fun(self)
 ---@field taskManager TaskManager
----@field params table auto savable parameters
+---@field timer number read only
+---@field autosave AutoSaveData
 local container = {}
 
 ---@return number

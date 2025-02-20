@@ -37,7 +37,7 @@ public class THObject implements ILuaValue, IGetContainer {
     //private final AdditionalParameterManager parameterManager;
     //private final LuaTaskManager luaTaskManager;
     //private final LuaValueStorageHelper luaValueStorageHelper = new LuaValueStorageHelper(this);
-    private final TaskManager<THObject> taskManager = new TaskManager<>(this);
+    protected final TaskManager<? extends THObject> taskManager = new TaskManager<>(this);
     private final LuaValueAutoSaveDataManager luaValueAutoSaveDataManager = new LuaValueAutoSaveDataManager(this);
     //private final Level level;
     protected final RandomSource random = RandomSource.create();
@@ -576,6 +576,7 @@ public class THObject implements ILuaValue, IGetContainer {
         }
 
         this.timer++;
+        this.ofLuaValue().set("timer",this.timer);
     }
 
     public Level level(){
@@ -900,11 +901,11 @@ public class THObject implements ILuaValue, IGetContainer {
 
     public static class LuaAPI {
         public static THObject checkTHObject(LuaValue luaValue) {
-            if (luaValue.get("source").checkuserdata() instanceof THObject object) {
+            /*if (luaValue.get("source").checkuserdata() instanceof THObject object) {
                 return object;
             }
-
-            throw new NullPointerException();
+            throw new NullPointerException();*/
+            return (THObject) luaValue.get("source").checkuserdata(THObject.class);
         }
 
         public static boolean isTHObject(LuaValue luaValue){
@@ -1291,7 +1292,8 @@ public class THObject implements ILuaValue, IGetContainer {
         //library.set("taskManager", this.luaTaskManager.ofLuaValue());
         library.set("autosave", this.luaValueAutoSaveDataManager.ofLuaValue());
         library.set("taskManager", this.taskManager.ofLuaValue());
-        library.set("params", LuaValue.tableOf());
+        library.set("timer",this.timer);
+        //library.set("params", LuaValue.tableOf());
         return library;
     }
 

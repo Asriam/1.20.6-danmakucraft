@@ -131,13 +131,13 @@ public class RenderUtil {
                                 pose.normal(), normal[1]);
                         builder.positionColorColorUvUvNormal(
                                 pose.pose(), vertex[2],
-                                startColor,coreColor,
+                                finalColor,coreColor,
                                 uvStart.x, uvStart.y,
                                 uvEnd.x, uvEnd.y,
                                 pose.normal(), normal[2]);
                         builder.positionColorColorUvUvNormal(
                                 pose.pose(), vertex[3],
-                                startColor,coreColor,
+                                finalColor,coreColor,
                                 uvStart.x, uvStart.y,
                                 uvEnd.x, uvEnd.y,
                                 pose.normal(), normal[3]);
@@ -145,13 +145,13 @@ public class RenderUtil {
                         VertexBuilder builder = new VertexBuilder(consumer);
                         builder.positionColorColorUvUvNormal(
                                 pose.pose(), vertex[3],
-                                startColor,coreColor,
+                                finalColor,coreColor,
                                 uvStart.x, uvStart.y,
                                 uvEnd.x, uvEnd.y,
                                 pose.normal(), normal[3]);
                         builder.positionColorColorUvUvNormal(
                                 pose.pose(), vertex[2],
-                                startColor,coreColor,
+                                finalColor,coreColor,
                                 uvStart.x, uvStart.y,
                                 uvEnd.x, uvEnd.y,
                                 pose.normal(), normal[2]);

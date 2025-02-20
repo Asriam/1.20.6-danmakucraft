@@ -1,7 +1,9 @@
 package com.adrian.thDanmakuCraft.world.danmaku.thobject.laser;
 
 import com.adrian.thDanmakuCraft.init.THObjectInit;
+import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.CompoundTagUtil;
+import com.adrian.thDanmakuCraft.util.FriendlyByteBufUtil;
 import com.adrian.thDanmakuCraft.world.danmaku.ITHObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
@@ -24,7 +26,7 @@ import java.util.function.Predicate;
 
 public class THCurvedLaser extends THObject {
 
-    public THBullet.BULLET_INDEX_COLOR laserColor;
+    public Color laserColor;
     public final NodeManager nodeManager;
     public int nodeMount;
     public float width;
@@ -41,7 +43,7 @@ public class THCurvedLaser extends THObject {
 
     public THCurvedLaser(ITHObjectContainer container, THBullet.BULLET_INDEX_COLOR laserColor, int nodeMount, float width){
         this(THObjectInit.TH_CURVED_LASER.get(),container);
-        this.laserColor = laserColor;
+        this.laserColor = laserColor.getColor();
         this.nodeMount = nodeMount;
         this.width = width;
         float width2 = width * 0.5f;
@@ -49,12 +51,19 @@ public class THCurvedLaser extends THObject {
         this.nodeManager.initNodeList(nodeMount);
     }
 
+    public void setLaserColor(Color color){
+        this.laserColor = color;
+    }
+
+    public void setLaserColorFormIndex(int i){
+        this.laserColor = THBullet.BULLET_INDEX_COLOR.values()[i].getColor();
+    }
     @Override
     public void encode(FriendlyByteBuf buffer) {
         super.encode(buffer);
         buffer.writeFloat(this.width);
-        buffer.writeEnum(this.laserColor);
         buffer.writeInt(this.renderCull);
+        FriendlyByteBufUtil.writeColor(buffer,this.laserColor);
         this.nodeManager.writeData(buffer);
     }
 
@@ -62,8 +71,9 @@ public class THCurvedLaser extends THObject {
     public void decode(FriendlyByteBuf buffer){
         super.decode(buffer);
         this.width = buffer.readFloat();
-        this.laserColor = buffer.readEnum(THBullet.BULLET_INDEX_COLOR.class);
         this.renderCull = buffer.readInt();
+        //this.laserColor = buffer.readEnum(THBullet.BULLET_INDEX_COLOR.class);
+        this.laserColor = FriendlyByteBufUtil.readColor(buffer);
         this.nodeManager.readData(buffer);
     }
 
@@ -71,8 +81,9 @@ public class THCurvedLaser extends THObject {
     public void save(CompoundTag tag) {
         super.save(tag);
         tag.putFloat("Width",this.width);
-        tag.putInt("LaserColor",this.laserColor.ordinal());
         tag.putInt("RenderCull",this.renderCull);
+        //tag.putInt("LaserColor",this.laserColor.ordinal());
+        CompoundTagUtil.putColor(tag, "LaserColor", this.laserColor);
         this.nodeManager.save(tag);
         //return tag;
     }
@@ -81,8 +92,9 @@ public class THCurvedLaser extends THObject {
     public void load(CompoundTag tag){
         super.load(tag);
         this.width = tag.getFloat("Width");
-        this.laserColor = THBullet.BULLET_INDEX_COLOR.class.getEnumConstants()[tag.getInt("LaserColor")];
         this.renderCull = tag.getInt("RenderCull");
+        //this.laserColor = THBullet.BULLET_INDEX_COLOR.class.getEnumConstants()[tag.getInt("LaserColor")];
+        this.laserColor = CompoundTagUtil.getColor(tag, "LaserColor");
         this.nodeManager.load(tag);
     }
 

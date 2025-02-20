@@ -263,7 +263,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         return LuaAPI.meta;
     }
 
-    public static class LuaAPI {
+    private static class LuaAPI {
         private static TaskManager<ILuaValue> checkTaskManager(LuaValue luaValue) {
             if (luaValue.get("source").checkuserdata() instanceof TaskManager<?> taskManager){
                 return (TaskManager<ILuaValue>) taskManager;

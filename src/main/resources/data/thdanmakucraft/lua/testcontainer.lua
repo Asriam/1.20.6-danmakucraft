@@ -28,7 +28,7 @@ function testBullet2:onInit(i)
 end
 
 function testBullet2:onTick()
-    --self.class.super.onTick(self)
+    self.class.super.onTick(self)
 end
 
 ---@type Class|THCurvedLaser
@@ -36,6 +36,7 @@ local testLaser = core.defineClass()
 function testLaser:onInit(i)
     self.autosave:register("params")
     self:setLifetime(600)
+    self.params = {}
     self.params.angle = 360/num*i
 end
 
@@ -48,10 +49,14 @@ function testLaser:onTick()
     self:setVelocityFromRotation(0.2,
             util.vec2.new(
                     0.0,
-                    angle + 60 * Mth.sin(self:getTimer() * 0.1) + userRot
+                    angle + 60 * Mth.sin(self.timer * 0.1) + userRot
             ),
             true,
             true);
+
+    for i=0,100 do
+        local timer = self.timer
+    end
 end
 
 function testLaser:onRemove()

@@ -209,7 +209,7 @@ public class THRenderType extends RenderStateShard{
                     .createCompositeState(true)
             )
     );
-    /*
+
     public static final RenderType LIGHTNING2 = RenderType.create("lightning_2", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS, 786432, false, true,
             RenderType.CompositeState.builder()
                     .setShaderState(RENDERTYPE_LIGHTNING_SHADER)
@@ -219,7 +219,7 @@ public class THRenderType extends RenderStateShard{
                     //.setWriteMaskState(COLOR_WRITE)
                     .createCompositeState(false)
     );
-
+/*
     public static final RenderType LIGHTNING_NO_CULL = RenderType.create("lightning_no_cull", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS, 786432, false, true,
             RenderType.CompositeState.builder()
                     .setShaderState(RENDERTYPE_LIGHTNING_SHADER)

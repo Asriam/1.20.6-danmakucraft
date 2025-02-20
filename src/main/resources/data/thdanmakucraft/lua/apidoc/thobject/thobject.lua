@@ -15,7 +15,8 @@
 ---@field class Class
 ---@field container THObjectContainer
 ---@field taskManager TaskManager
----@field params table auto save parameters
+---@field timer number read only
+---@field autosave AutoSaveData
 local object = {}
 
 ---@param x number

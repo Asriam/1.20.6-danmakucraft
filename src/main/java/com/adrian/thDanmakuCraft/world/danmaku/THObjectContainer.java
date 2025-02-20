@@ -220,6 +220,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
             }
         }
         this.timer++;
+        this.ofLuaValue().set("timer",this.timer);
     }
 
     public void setSpellCardName(String name){
@@ -646,7 +647,8 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         //library.set("parameterManager", this.getParameterManager().ofLuaValue());
         library.set("autosave", this.luaValueAutoSaveDataManager.ofLuaValue());
         library.set("taskManager", this.taskManager.ofLuaValue());
-        library.set("params", LuaValue.tableOf());
+        library.set("timer",this.timer);
+        //library.set("params", LuaValue.tableOf());
         return library;
     }
 

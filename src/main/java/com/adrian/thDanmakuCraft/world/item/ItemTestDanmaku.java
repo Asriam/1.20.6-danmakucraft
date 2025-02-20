@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.world.item;
 
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THLaser;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.adrian.thDanmakuCraft.world.entity.spellcard.EntityTHSpellCard;
@@ -27,8 +28,12 @@ public class ItemTestDanmaku extends Item {
 
         THObjectContainer container = entityTHObjectContainer.getContainer();
         container.setUser(player);
-        container.setLuaClass("testContainer");
-        container.scriptInit();
+        //container.setLuaClass("testContainer");
+        //container.scriptInit();
+        THLaser laser = new THLaser(container);
+        laser.setWidth(1.0f);
+        laser.setLength(6.0f);
+        laser.spawn();
         //container.scriptEvent("onInit",container.ofLuaValue());
 
         //player.getCooldowns().addCooldown(this, container.getLifetime());

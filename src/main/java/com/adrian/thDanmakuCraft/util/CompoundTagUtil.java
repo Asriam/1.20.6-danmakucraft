@@ -55,4 +55,13 @@ public class CompoundTagUtil {
     public static ListTag newVector3f(Vector3f vec3) {
         return newFloatList(vec3.x, vec3.y, vec3.z);
     }
+
+    public static void putColor(CompoundTag tag,String key,Color color){
+        tag.put(key, newIntList(color.r,color.g,color.b,color.a));
+    }
+
+    public static Color getColor(CompoundTag tag,String key){
+        ListTag list = tag.getList(key, Tag.TAG_INT);
+        return Color.of(list.getInt(0), list.getInt(1), list.getInt(2), list.getInt(3));
+    }
 }

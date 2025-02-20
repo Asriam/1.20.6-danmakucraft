@@ -1,16 +1,23 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.laser;
 
+import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.THBlendMode;
 import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRendererProvider;
+import com.adrian.thDanmakuCraft.util.Color;
+import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THLaser;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 @OnlyIn(value = Dist.CLIENT)
 public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
@@ -20,7 +27,37 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
     }
 
     @Override
-    public void render(THLaser laser, Vec3 objectPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer, int combinedOverlay) {
+    public void render(THLaser laser, Vec3 laserPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer, int combinedOverlay) {
+        renderLaser(laser, laserPos, partialTicks, poseStack, vertexConsumer);
+    }
+
+    public static void renderLaser(THLaser laser, Vec3 laserPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer){
+        poseStack.pushPose();
+        Vector3f rotation = laser.getRotation();
+        poseStack.mulPose(new Quaternionf().rotationYXZ(rotation.y, -rotation.x + Mth.PI/2, rotation.z));
+        float laserWidth = laser.getWidthForRender(partialTicks);
+        float laserLength = laser.getLengthForRender(partialTicks);
+        Vector3f scale = new Vector3f(laserWidth,laserLength,laserWidth);
+        Color laserColor = laser.getLaserColor();
+        RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 3,
+                ConstantUtil.VECTOR3F_ZERO,
+                scale.mul(0.8f,new Vector3f()),
+                10, 6, false,
+                new Vec2(0.0f, 1.0f),
+                new Vec2(1.0f, 1.0f),
+                laser.getColor(),
+                Color.VOID(),
+                laser.getColor());
+        RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 3,
+                ConstantUtil.VECTOR3F_ZERO,
+                scale,
+                10, 6, false,
+                new Vec2(0.0f, 1.0f),
+                new Vec2(1.0f, 1.0f),
+                laserColor,
+                Color.VOID(),
+                laser.getColor());
+        poseStack.popPose();
     }
 
     @Override

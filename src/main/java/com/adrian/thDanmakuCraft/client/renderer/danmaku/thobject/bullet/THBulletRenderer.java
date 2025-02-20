@@ -37,7 +37,7 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
     }
 
     public void renderTHBullet(THBullet.DefaultBulletStyle style, THBullet bullet, Vec3 bulletPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer, int overlay) {
-        poseStack.pushPose();
+        //poseStack.pushPose();
         THBulletRenderers.THBulletRendererFactory factory = THBulletRenderers.getRenderer(style);
         if (style.is3D() && factory != null) {
             int time = 6;
@@ -79,7 +79,7 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
             poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
             THBulletRenderers.render2DBullet(this, bullet, poseStack, vertexConsumer, partialTicks, overlay);
         }
-        poseStack.popPose();
+        //poseStack.popPose();
     }
 
     @Override
