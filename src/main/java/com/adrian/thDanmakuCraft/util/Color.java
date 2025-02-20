@@ -67,6 +67,10 @@ public class Color {
         return this.multiply(factor, factor, factor, factor);
     }
 
+    public Color multiply(Color color){
+        return this.multiply((float) color.r /255, (float) color.g /255, (float) color.b /255, (float) color.a /255);
+    }
+
     public Color divide(float r, float g, float b, float a) {
         return new Color((int) (this.r / r), (int) (this.g / g), (int) (this.b / b), (int) (this.a / a));
     }

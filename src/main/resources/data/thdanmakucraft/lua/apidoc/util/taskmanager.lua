@@ -8,12 +8,12 @@
 local TaskManager = {}
 
 ---@param name string
----@param lifetime number
 ---@param runnable fun(target:any,timer:number,lifetime:number)
-function TaskManager:registerTask(name, lifetime, runnable) end
+function TaskManager:registerTask(name, runnable) end
 
 ---@param name string
-function TaskManager:startTask(name) end
+---@param lifetime number
+function TaskManager:startTask(name, lifetime) end
 
 ---@param name string
 function TaskManager:removeTask(name) end

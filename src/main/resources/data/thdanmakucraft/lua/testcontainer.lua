@@ -16,7 +16,7 @@ local testBullet2 = core.defineClass(testBullet)
 ---@param taskManager TaskManager
 function testBullet2:onRegisterTasks(taskManager)
     ---@param target THBullet
-    taskManager:registerTask("test", 100, function(target, timer, lifetime)
+    taskManager:registerTask("test", function(target, timer, lifetime)
         target:move(util.vec3.new(0.0,-0.1,0.0))
     end)
     --print("onRegisterTasks")
@@ -25,7 +25,7 @@ end
 function testBullet2:onInit(i)
     self.class.super.onInit(self,i)
     --print("testBullet2")
-    self.taskManager:startTask("test")
+    self.taskManager:startTask("test",120)
 end
 
 function testBullet2:onTick()
@@ -72,7 +72,7 @@ function container:onConstruct()
 end
 
 function container:onRegisterTasks()
-    self.taskManager:registerTask("test", 100, function(target, timer)
+    self.taskManager:registerTask("test", function(target, timer)
         print("sad"..timer)
     end)
 end
@@ -111,7 +111,7 @@ function container2:onInit()
     self:setSpellCardName("境符「波與粒的境界」")
     self:getMaxObjectAmount(10)
     self:setLifetime(300)
-    self.taskManager:startTask("test")
+    self.taskManager:startTask("test",120)
     print("sad")
 end
 

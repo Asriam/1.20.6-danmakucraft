@@ -68,16 +68,18 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
             return null;
         }
     }
-    public void startTask(String taskName){
+    public void startTask(String taskName, int lifetime){
         if (registryTasks.containsKey(taskName)){
-            tickingTasks.add(getRegisteredTask(taskName));
+            AbstractTask<T> task = getRegisteredTask(taskName);
+            task.lifetime = lifetime;
+            tickingTasks.add(task);
         }else {
             THDanmakuCraftMod.LOGGER.warn("Attempted to start a unregistered task! task name:{}",taskName);
         }
     }
 
-    public void loadTask(String taskName, int timer){
-        lazyTasks.add(new LazyTask(taskName,timer));
+    public void loadTask(String taskName, int timer, int lifetime){
+        lazyTasks.add(new LazyTask(taskName,timer,lifetime));
     }
 
     public void restartLazyTasks(){
@@ -86,6 +88,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
             AbstractTask<T> task = this.getRegisteredTask(lazyTask.taskName);
             if (task != null) {
                 task.timer = lazyTask.timer;
+                task.lifetime = lazyTask.lifetime;
                 tickingTasks.add(task);
                 removeList.add(lazyTask);
             }
@@ -116,10 +119,12 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         for(AbstractTask<T> task : this.tickingTasks){
             buffer.writeUtf(task.taskName);
             buffer.writeInt(task.timer);
+            buffer.writeInt(task.lifetime);
         }
         for(LazyTask lazyTask : this.lazyTasks){
             buffer.writeUtf(lazyTask.taskName);
             buffer.writeInt(lazyTask.timer);
+            buffer.writeInt(lazyTask.lifetime);
         }
     }
 
@@ -131,7 +136,8 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         for (int i=0;i<size;i++){
             String taskName = buffer.readUtf();
             int timer = buffer.readInt();
-            this.loadTask(taskName,timer);
+            int lifetime = buffer.readInt();
+            this.loadTask(taskName,timer,lifetime);
         }
     }
 
@@ -142,12 +148,14 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
             CompoundTag taskTag = new CompoundTag();
             taskTag.putString("task_name", task.taskName);
             taskTag.putInt("timer", task.timer);
+            taskTag.putInt("lifetime", task.lifetime);
             listtag.add(taskTag);
         }
         for (LazyTask lazyTask : this.lazyTasks){
             CompoundTag taskTag = new CompoundTag();
             taskTag.putString("task_name", lazyTask.taskName);
             taskTag.putInt("timer", lazyTask.timer);
+            taskTag.putInt("lifetime", lazyTask.lifetime);
             listtag.add(taskTag);
         }
         compoundTag.put("tasks", listtag);
@@ -161,23 +169,24 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
             if(_tag instanceof CompoundTag tag){
                 String taskName = tag.getString("task_name");
                 int timer = tag.getInt("timer");
-                this.loadTask(taskName,timer);
+                int lifetime = tag.getInt("lifetime");
+                this.loadTask(taskName,timer,lifetime);
             }
         }
     }
 
-    public record LazyTask(String taskName, int timer){
+    public record LazyTask(String taskName, int timer, int lifetime){
     }
 
     public static abstract class AbstractTask<T>{
         public int timer = 0;
-        public final int lifetime;
+        public int lifetime = 0;
         //public final T target;
         public String taskName;
 
-        public AbstractTask(int lifetime){
+        public AbstractTask(){
             //this.target = target;
-            this.lifetime = lifetime;
+            //this.lifetime = lifetime;
         }
 
         abstract void tick(T target);
@@ -193,8 +202,8 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
 
         public TaskRunnable<T> runnable;
 
-        public Task(int lifetime, TaskRunnable<T> runnable){
-            super(lifetime);
+        public Task(TaskRunnable<T> runnable){
+            super();
             this.runnable = runnable;
         }
 
@@ -204,7 +213,8 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         }
 
         Task<T> copy(){
-            Task<T> task = new Task<>(this.lifetime, this.runnable);
+            Task<T> task = new Task<>( this.runnable);
+            task.lifetime = this.lifetime;
             task.taskName = this.taskName;
             return task;
         }
@@ -220,8 +230,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         public final LuaFunction runnable;
         public boolean canInvoke = true;
 
-        public LuaTask(int lifetime, LuaValue runnable) {
-            super(lifetime);
+        public LuaTask(LuaValue runnable) {
             this.canInvoke = runnable.isfunction();
             this.runnable = runnable.checkfunction();
         }
@@ -243,7 +252,8 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
 
         @Override
         LuaTask<T> copy() {
-            LuaTask<T> task = new LuaTask<>(this.lifetime, this.runnable);
+            LuaTask<T> task = new LuaTask<>(this.runnable);
+            task.lifetime = this.lifetime;
             task.taskName = this.taskName;
             return task;
         }
@@ -279,7 +289,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
             @Override
             public Varargs invoke(Varargs varargs) {
                 TaskManager<ILuaValue> taskManager = checkTaskManager(varargs.arg(1));
-                taskManager.registerTask(varargs.checkjstring(2), new TaskManager.LuaTask<>(varargs.checkint(3), varargs.checkfunction(4)));
+                taskManager.registerTask(varargs.checkjstring(2), new TaskManager.LuaTask<>(varargs.checkfunction(3)));
                 return LuaValue.NIL;
             }
         };
@@ -288,7 +298,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
             @Override
             public Varargs invoke(Varargs varargs) {
                 TaskManager<ILuaValue> taskManager = checkTaskManager(varargs.arg(1));
-                taskManager.startTask(varargs.checkjstring(2));
+                taskManager.startTask(varargs.checkjstring(2), varargs.checkint(3));
                 return LuaValue.NIL;
             }
         };
