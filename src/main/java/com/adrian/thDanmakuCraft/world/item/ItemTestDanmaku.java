@@ -28,8 +28,8 @@ public class ItemTestDanmaku extends Item {
         level.addFreshEntity(entityTHObjectContainer);
 
         THObjectContainer container = entityTHObjectContainer.getContainer();
-        container.setUser(player);
-        container.setLuaClass("testContainer");
+        //container.setUser(player);
+        //container.setLuaClass("testContainer");
         //container.scriptInit();
         THLaser laser = new THLaser(container);
         laser.setRotation(player.getXRot()* Mth.DEG_TO_RAD,player.getYRot()*Mth.DEG_TO_RAD);
