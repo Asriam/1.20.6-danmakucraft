@@ -34,7 +34,7 @@ function c.vec2(x, y) end
 function c.vec3(x, y, z) end
 
 ---@param className string
----@param parentClass Class
+---@param superClass Class
 ---@return Class
 ---@overload fun(className:string, superClass:Class)
 ---@overload fun(className:string, superClass:string)
@@ -44,7 +44,7 @@ function c.vec3(x, y, z) end
 function c.defineClass(className, superClass) end
 
 ---@param className string
----@param parentClass Class
+---@param superClass Class
 ---@return Class
 ---@overload fun(className:string)
 function c.defineSpellCardClass(className, superClass) end

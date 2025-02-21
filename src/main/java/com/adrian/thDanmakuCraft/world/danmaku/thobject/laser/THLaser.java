@@ -37,16 +37,14 @@ public class THLaser extends THObject {
     protected float targetWidth = 0.0f;
     protected float targetLength = 0.0f;
     protected Color laserColor = THBullet.BULLET_INDEX_COLOR.COLOR_RED.getColor();
-    //public Vec3 lastDirection = Vec3.ZERO;
-    //public Vec3 laserDirection = Vec3.ZERO;
 
-    public THLaser(THObjectType<THLaser> type, ITHObjectContainer container) {
+    public THLaser(THObjectType<? extends THLaser> type, ITHObjectContainer container) {
         super(type, container);
     }
 
     public THLaser(THObjectContainer container){
         this(THObjectInit.TH_LASER.get(),container);
-        this.setPosition(container.getPosition());
+        this.initPosition(container.getPosition());
     }
 
     @Override
@@ -230,7 +228,7 @@ public class THLaser extends THObject {
         this.laserColor = CompoundTagUtil.getColor(tag, "LaserColor");
     }
 
-    private static class LuaAPI{
+    protected static class LuaAPI{
         private static THLaser checkTHLaser(LuaValue luaValue) {
             if (luaValue.get("source").checkuserdata() instanceof THLaser laser) {
                 return laser;
@@ -305,7 +303,7 @@ public class THLaser extends THObject {
                 return LuaValue.NIL;
             }
         };
-        private static LuaValue functions(){
+        protected static LuaValue functions(){
             LuaValue library = THObject.LuaAPI.functions();
             library.set("setLaserColorByIndex", setLaserColorByIndex);
             library.set("setLaserColor", setLaserColor);

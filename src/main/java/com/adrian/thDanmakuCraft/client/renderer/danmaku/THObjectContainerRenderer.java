@@ -251,8 +251,8 @@ public class THObjectContainerRenderer {
     }
 
     static void renderTHCurvedLaserHitBoxes(THCurvedLaser laser, Vec3 laserPos, PoseStack poseStack, VertexConsumer vertexConsumer, float partialTicks, Frustum frustum){
-        List<THCurvedLaser.LaserNode> nodes = laser.nodeManager.getAllNodes();
-        for(THCurvedLaser.LaserNode node: nodes){
+        List<THCurvedLaser.NodeManager.LaserNode> nodes = laser.nodeManager.getAllNodes();
+        for(THCurvedLaser.NodeManager.LaserNode node: nodes){
             Vec3 pos = node.getPosition();
             AABB aabb = node.getBoundingBoxForCulling().inflate(0.5D);
             if (aabb.hasNaN() || aabb.getSize() == 0.0D) {

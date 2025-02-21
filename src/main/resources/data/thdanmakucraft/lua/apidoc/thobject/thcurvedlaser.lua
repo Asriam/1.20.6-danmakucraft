@@ -4,7 +4,7 @@
 --- DateTime: 2024/12/31 13:35
 ---
 
----@class THCurvedLaser:THObject
+---@class THCurvedLaser:THLaser
 local laser = {}
 
 ---@class LaserNode

@@ -24,19 +24,23 @@ import org.luaj.vm2.lib.VarArgFunction;
 
 public class THBullet extends THObject {
     protected DefaultBulletStyle style = DefaultBulletStyle.arrow_big;
-    //protected BULLET_INDEX_COLOR bulletIndexColor = BULLET_INDEX_COLOR.COLOR_DEEP_RED;
     protected Color bulletColor = BULLET_INDEX_COLOR.COLOR_DEEP_RED.color;
 
-    public THBullet(THObjectType<THBullet> type, ITHObjectContainer container) {
+    public THBullet(THObjectType<? extends THBullet> type, ITHObjectContainer container) {
         super(type, container);
     }
 
-    public THBullet(THObjectContainer container, DefaultBulletStyle style, BULLET_INDEX_COLOR bulletColor) {
+    public THBullet(ITHObjectContainer container, DefaultBulletStyle style, BULLET_INDEX_COLOR bulletColor) {
         this(THObjectInit.TH_BULLET.get(), container);
         this.style         = style;
         this.size          = style.size;
         this.collisionType = style.collisionType;
         this.setBulletColorByIndex(bulletColor);
+    }
+
+    public THBullet(ITHObjectContainer container){
+        this(THObjectInit.TH_BULLET.get(), container);
+        this.initPosition(container.getPosition());
     }
 
     public void setBulletColorByIndex(BULLET_INDEX_COLOR bulletIndexColor){

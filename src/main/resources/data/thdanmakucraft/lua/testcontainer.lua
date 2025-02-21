@@ -39,6 +39,7 @@ function testLaser:onInit(i)
     self:setLifetime(600)
     self.params = {}
     self.params.angle = 360/num*i
+    self:setWidth(0.01)
 end
 
 function testLaser:onAddTasks()
@@ -57,6 +58,10 @@ function testLaser:onTick()
 
     for i=0,100 do
         local timer = self.timer
+    end
+
+    if self.timer == 40 then
+        self:growWidth(0.5,120)
     end
 end
 

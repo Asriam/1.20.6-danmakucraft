@@ -61,7 +61,7 @@ function container:createTHCurvedLaser(class, args, position, colorIndex, length
 ---@param colorIndex number
 ---@param length number
 ---@param width number
----@return THCurvedLaser
+---@return THLaser
 function container:createTHLaser(class, args) end
 
 --[[

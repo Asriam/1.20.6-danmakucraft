@@ -9,7 +9,5 @@
 ---@field super Class
 local class = {}
 
-class.type = "class"
-
 ---@return boolean
 function class:isInstanceof(class2) end
