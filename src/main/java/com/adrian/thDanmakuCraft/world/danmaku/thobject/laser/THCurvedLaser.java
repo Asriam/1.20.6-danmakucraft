@@ -221,7 +221,8 @@ public class THCurvedLaser extends AbstractLaser {
                     entitiesInBound.forEach((entity -> {
                         if (!entity.equals(laser.getContainer().getUser()) && entity.getBoundingBox().intersects(node.getBoundingBox())) {
                             laser.onHit(new EntityHitResult(entity, node.getPosition()));
-                            if (laser.breakable) node.isValid = false;
+                            if (laser.breakable)
+                                node.isValid = false;
                         }
                     }));
                 }

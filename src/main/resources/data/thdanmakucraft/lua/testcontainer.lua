@@ -78,7 +78,7 @@ function container:onRegisterTasks()
 end
 
 function container:onInit()
-    local userRot = self:getUser():getRotation().y
+    local userRot = 0
     self.autosave:register("sad")
     self.autosave:register("userRot")
     self.userRot = userRot

@@ -662,9 +662,9 @@ public class THObject implements ILuaValue, IGetContainer {
     }
 
     public void onHit(HitResult result) {
-        this.setVelocity(Vec3.ZERO, false);
         this.invokeScriptEvent("onHit", this.ofLuaValue());
         if (this.shouldSetDeadWhenCollision) {
+            this.setVelocity(Vec3.ZERO, false);
             this.setDead();
         }
 
