@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.world.danmaku.thobject.laser;
 
+import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.CompoundTagUtil;
@@ -74,18 +75,18 @@ public class THLaser extends THObject {
 
     public void growWidth(float width, int duration){
         this.targetWidth = width;
-        this.taskManager.startTask("laser_width_set",duration);
+        this.taskManager.startTask("laser_width_set",duration,0);
     }
 
     public void growLength(float length, int duration){
         this.targetLength = length;
-        this.taskManager.startTask("laser_length_set",duration);
+        this.taskManager.startTask("laser_length_set",duration,0);
     }
 
     public void growVector(Vec3 vec3, int duration){
         this.targetLength = (float) vec3.length();
         this.setRotationByDirectionalVector(vec3.normalize());
-        this.taskManager.startTask("laser_length_set",duration);
+        this.taskManager.startTask("laser_length_set",duration,0);
     }
 
     public void grow(float width, float length, int duration){

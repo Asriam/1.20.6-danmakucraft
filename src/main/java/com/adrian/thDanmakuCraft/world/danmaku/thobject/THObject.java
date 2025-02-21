@@ -37,7 +37,7 @@ public class THObject implements ILuaValue, IGetContainer {
     //private final AdditionalParameterManager parameterManager;
     //private final LuaTaskManager luaTaskManager;
     //private final LuaValueStorageHelper luaValueStorageHelper = new LuaValueStorageHelper(this);
-    protected final TaskManager<? extends THObject> taskManager = new TaskManager<>(this);
+    public final TaskManager<? extends THObject> taskManager = new TaskManager<>(this);
     private final LuaValueAutoSaveDataManager luaValueAutoSaveDataManager = new LuaValueAutoSaveDataManager(this);
     //private final Level level;
     protected final RandomSource random = RandomSource.create();
@@ -811,6 +811,7 @@ public class THObject implements ILuaValue, IGetContainer {
         //this.ofLuaValue();
         this.luaValueAutoSaveDataManager.decode(buffer);
         this.taskManager.decode(buffer);
+        //this.taskManager.restartLazyTasks();
         this.setBoundingBox(this.getPosition(), this.size);
     }
 
@@ -831,10 +832,6 @@ public class THObject implements ILuaValue, IGetContainer {
         tag.putInt("CollisionType", this.collisionType.ordinal());
         tag.putUUID("UUID", this.uuid);
         tag.putString("LuaClassName", luaClassName);
-        //this.scriptManager.save(tag);
-        //tag.put("parameters", this.parameterManager.save(new CompoundTag()));
-        //tag.put("params", luaValueStorageHelper.saveLuaTable(this.ofLuaValue().get("params")));
-        //return tag;
         this.luaValueAutoSaveDataManager.save(tag);
         this.taskManager.save(tag);
     }
@@ -866,11 +863,9 @@ public class THObject implements ILuaValue, IGetContainer {
         this.collisionType = CollisionType.class.getEnumConstants()[tag.getInt("CollisionType")];
         this.uuid = tag.getUUID("UUID");
         this.luaClassName = tag.getString("LuaClassName");
-        //this.scriptManager.load(tag);
-        //this.parameterManager.load(tag.getCompound("parameters"));
-        //this.ofLuaValue().set("params", luaValueStorageHelper.loadLuaTable(tag.getCompound("params")));
         this.luaValueAutoSaveDataManager.load(tag);
         this.taskManager.load(tag);
+        //this.taskManager.restartLazyTasks();
     }
 
     @Deprecated

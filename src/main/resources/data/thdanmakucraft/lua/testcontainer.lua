@@ -25,11 +25,14 @@ end
 function testBullet2:onInit(i)
     self.class.super.onInit(self,i)
     --print("testBullet2")
-    self.taskManager:startTask("test",120)
+    --self.taskManager:startTask("test",120,40)
 end
 
 function testBullet2:onTick()
     --self.class.super.onTick(self)
+    if self.timer == 40 then
+        self.taskManager:startTask("test",120)
+    end
 end
 
 ---@type Class|THCurvedLaser
@@ -40,6 +43,9 @@ function testLaser:onInit(i)
     self.params = {}
     self.params.angle = 360/num*i
     self:setWidth(0.01)
+    self:growWidth(0.5,120)
+    self.taskManager:startTask("laser_width_set",120)
+    print(self:isClientSide())
 end
 
 function testLaser:onAddTasks()
@@ -61,7 +67,7 @@ function testLaser:onTick()
     end
 
     if self.timer == 40 then
-        self:growWidth(0.5,120)
+        --self:growWidth(0.5,120)
     end
 end
 

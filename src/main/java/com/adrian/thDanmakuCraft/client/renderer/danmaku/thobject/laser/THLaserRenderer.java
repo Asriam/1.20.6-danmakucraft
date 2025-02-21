@@ -37,7 +37,7 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
         Vector3f rotation = laser.getOffsetRotation(partialTicks);
         Vec3 pos = laser.getLaserCenterForRender(partialTicks);
         poseStack.translate(pos.x,pos.y,pos.z);
-        poseStack.mulPose(new Quaternionf().rotationYXZ(-rotation.y, rotation.x - Mth.PI/2, rotation.z));
+        poseStack.mulPose(new Quaternionf().rotationYXZ(-rotation.y, rotation.x + Mth.PI/2, rotation.z));
         float laserWidth = laser.getWidthForRender(partialTicks);
         float laserLength = laser.getLengthForRender(partialTicks);
         Vector3f scale = new Vector3f(laserWidth,laserLength,laserWidth);

@@ -96,6 +96,8 @@ function yukari_spellcrad_2_laser_1:onTick()
         self:growWidth(0.01,30)
         self:setCollision(false)
     end
+
+    --print(self.timer)
 end
 
 ---@type Class|THLaser
