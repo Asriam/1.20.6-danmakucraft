@@ -171,9 +171,11 @@ function object:spawn() end
 ---@return boolean
 function object:isSpawned() end
 
----@param flag boolean
-function object:setNavi(flag) end
+---@param bool boolean
+function object:setNavi(bool) end
 
+---@param bool boolean
+function object:setCollision(bool) end
 THObject = object
 
 --[[

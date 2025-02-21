@@ -7,6 +7,7 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.compress.utils.Lists;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
@@ -17,6 +18,7 @@ import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 import org.luaj.vm2.lib.jse.JsePlatform;
 import org.slf4j.Logger;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.luaj.vm2.LuaValue.NIL;
@@ -28,6 +30,7 @@ public class LuaCore {
     private final Globals GLOBALS = JsePlatform.standardGlobals();
     private final Map<String,LuaValue> luaClassMap = Maps.newHashMap();
     private final Map<String,LuaValue> metaTableMap = Maps.newHashMap();
+    public final List<String> spellCardClassKeys = Lists.newArrayList();
 
     public static LuaValue LuaUtilVec2;
     public static LuaValue LuaUtilVec3;
@@ -94,6 +97,27 @@ public class LuaCore {
         return NIL;
     }
 
+    public LuaValue defineClass(Varargs varargs){
+        LuaValue clazz = LuaValue.tableOf();
+        LuaValue arg1 = varargs.arg(1);
+        if (arg1.isstring()) {
+            LuaValue superClass = checkLuaClass(varargs.arg(2));
+            String className = arg1.checkjstring();
+            className = superClass.isnil() ? className : superClass.get("className").checkjstring() + "#" + className;
+            clazz.set("className", className);
+            setSuperClass(clazz,superClass);
+            LUA.luaClassMap.put(className, clazz);
+        }else {
+            LuaValue superClass = checkLuaClass(varargs.arg(1));
+            String className = "class$$"+(luaClassMap.size()+1);
+            className = superClass.isnil() ? className : superClass.get("className").checkjstring() + "#" + className;
+            clazz.set("className", className);
+            setSuperClass(clazz,superClass);
+            LUA.luaClassMap.put(className, clazz);
+        }
+        return clazz;
+    }
+
     public LuaValue coreAPI(){
         LuaValue library = LuaValue.tableOf();
         library.set("mod_id", THDanmakuCraftMod.MOD_ID);
@@ -123,7 +147,6 @@ public class LuaCore {
                 return LuaValue.NIL;
             }
         });
-
         library.set("vec3", new VarArgFunction() {
             @Override
             public LuaValue invoke(Varargs varargs) {
@@ -134,7 +157,6 @@ public class LuaCore {
                         varargs.arg(3).checkdouble()));
             }
         });
-
         library.set("vec2", new VarArgFunction() {
             @Override
             public LuaValue invoke(Varargs varargs) {
@@ -143,7 +165,6 @@ public class LuaCore {
                         varargs.arg(2).tofloat()));
             }
         });
-
         library.set("defineClass", new VarArgFunction() {
             @Override
             public LuaValue invoke(Varargs varargs) {
@@ -158,11 +179,36 @@ public class LuaCore {
                     LUA.luaClassMap.put(className, clazz);
                 }else {
                     LuaValue superClass = checkLuaClass(varargs.arg(1));
-                    String className = "class$$"+(luaClassMap.size()+1);
+                    String className = "class$$"+(LUA.luaClassMap.size()+1);
                     className = superClass.isnil() ? className : superClass.get("className").checkjstring() + "#" + className;
                     clazz.set("className", className);
                     setSuperClass(clazz,superClass);
                     LUA.luaClassMap.put(className, clazz);
+                }
+                return clazz;
+            }
+        });
+        library.set("defineSpellCardClass", new VarArgFunction() {
+            @Override
+            public LuaValue invoke(Varargs varargs) {
+                LuaValue clazz = LuaValue.tableOf();
+                LuaValue arg1 = varargs.arg(1);
+                if (arg1.isstring()) {
+                    LuaValue superClass = checkLuaClass(varargs.arg(2));
+                    String className = arg1.checkjstring();
+                    className = superClass.isnil() ? className : superClass.get("className").checkjstring() + "#" + className;
+                    clazz.set("className", className);
+                    setSuperClass(clazz,superClass);
+                    LUA.luaClassMap.put(className, clazz);
+                    LUA.spellCardClassKeys.add(className);
+                }else {
+                    LuaValue superClass = checkLuaClass(varargs.arg(1));
+                    String className = "class$$"+(LUA.luaClassMap.size()+1);
+                    className = superClass.isnil() ? className : superClass.get("className").checkjstring() + "#" + className;
+                    clazz.set("className", className);
+                    setSuperClass(clazz,superClass);
+                    LUA.luaClassMap.put(className, clazz);
+                    LUA.spellCardClassKeys.add(className);
                 }
                 return clazz;
             }

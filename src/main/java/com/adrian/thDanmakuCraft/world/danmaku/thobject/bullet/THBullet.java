@@ -72,16 +72,18 @@ public class THBullet extends THObject {
 
     @Override
     public float getDamage(){
-        return this.style.damage * super.getDamage();
+        return super.getDamage()/*this.style.damage * super.getDamage()*/;
     }
 
     public void setStyle(DefaultBulletStyle style) {
         this.style = style;
         this.size = style.getSize();
+        this.damage = style.damage;
     }
 
     public void setStyle(String style) {
         this.setStyle(DefaultBulletStyle.valueOf(style));
+
     }
 
     public DefaultBulletStyle getStyle() {

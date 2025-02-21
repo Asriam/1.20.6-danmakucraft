@@ -33,10 +33,12 @@ public class ItemTestDanmaku extends Item {
         //container.scriptInit();
         /*THLaser laser = new THLaser(container);
         laser.setRotation(player.getXRot()* Mth.DEG_TO_RAD,player.getYRot()*Mth.DEG_TO_RAD);
-        laser.setLength(0.0f);
+        laser.setLength(10.0f);
         laser.setWidth(0.0f);
         laser.growWidth(0.5f,40);
-        laser.spawn();*/
+        laser.setLifetime(1000);
+        laser.spawn();
+        container.setLifetime(1000);*/
         //container.scriptEvent("onInit",container.ofLuaValue());
 
         //player.getCooldowns().addCooldown(this, container.getLifetime());

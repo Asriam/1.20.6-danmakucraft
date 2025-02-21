@@ -19,7 +19,7 @@ function yukari_spellcrad_1_bullet_1:onTick()
 end
 --------------------------------------------------------------------------------------------------
 ---@type Class|THObjectContainer
-local yukari_spellcrad_1 = core.defineClass("yukari_spellcard_1")
+local yukari_spellcrad_1 = core.defineSpellCardClass("yukari_spellcard_1")
 function yukari_spellcrad_1:onInit()
     self:setSpellCardName("Border Sign \"Boundary of Truth and Falsehood\"")
     self:setLifetime(300)
@@ -71,6 +71,7 @@ function yukari_spellcrad_2_laser_1:onInit(_pos0,_pos1,_pos2,_width)
     self:setWidth(0)
     self:setLaserColorByIndex(6)
     self:setLifetime(300)
+    self:setCollision(false)
 end
 
 function yukari_spellcrad_2_laser_1:onTick()
@@ -87,8 +88,13 @@ function yukari_spellcrad_2_laser_1:onTick()
         self:growWidth(self.data.width,60)
     end
 
+    if mod == 20 then
+        self:setCollision(true)
+    end
+
     if mod == 120 then
         self:growWidth(0.01,30)
+        self:setCollision(false)
     end
 end
 
@@ -117,16 +123,21 @@ function yukari_spellcrad_2_laser_2:onTick()
 
     local mod = (self.timer+240)%240
     if mod == 0 then
-        self:growWidth(0.01,60)
+        self:growWidth(0.01,30)
+        self:setCollision(false)
     end
 
     if mod == 120 then
-        self:growWidth(self.data.width,30)
+        self:growWidth(self.data.width,60)
+    end
+
+    if mod == 120+20 then
+        self:setCollision(true)
     end
 end
 
 ---@type Class|THObjectContainer
-local yukari_spellcrad_2 = core.defineClass("yukari_spellcard_2")
+local yukari_spellcrad_2 = core.defineSpellCardClass("yukari_spellcard_2")
 function yukari_spellcrad_2:onInit()
     self:setSpellCardName("Evil Spirits \"Butterfly in the Zen Temple\"")
     self:setLifetime(300)

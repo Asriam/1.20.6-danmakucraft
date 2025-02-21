@@ -46,19 +46,19 @@ public class CollisionHelper {
     public static boolean isCollidingOrientedEllipsoidBox(Vec3 center, Vec3 scale, Vector3f rotationAngles, AABB box) {
         // 创建旋转矩阵
         Matrix3x3d rotationMatrix = createRotationMatrix(new Vector3f(rotationAngles.x,-rotationAngles.y,rotationAngles.z));
-        /*
+
         // 遍历盒子的所有顶点，检测是否与椭球碰撞
         Vec3[] boxVertices = getVertices(box);
         for (Vec3 vertex : boxVertices) {
             // 全局点转换为椭球局部点
-            Vec3 localPoint = transformToLocal(vertex, ellipsoidCenter, rotationMatrix);
+            Vec3 localPoint = transformToLocal(vertex, center, rotationMatrix);
 
             // 检查局部空间中的点是否在椭球内
-            if (isPointInUnitEllipsoid(localPoint, radii)) {
+            if (isPointInUnitEllipsoid(localPoint, scale)) {
                 return true; // 碰撞
             }
         }
-         */
+
         // 如果没有顶点在椭球内，检查椭球中心到盒子最近点
         return checkClosestPointOnBoxToEllipsoid(center, scale, rotationMatrix, box);
     }

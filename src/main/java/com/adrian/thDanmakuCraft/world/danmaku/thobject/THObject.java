@@ -1233,6 +1233,13 @@ public class THObject implements ILuaValue, IGetContainer {
                 return LuaValue.NIL;
             }
         };
+        protected static final LibFunction setCollision = new TwoArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0, LuaValue luaValue) {
+                checkTHObject(luaValue0).collision = (luaValue.checkboolean());
+                return LuaValue.NIL;
+            }
+        };
         protected static final LibFunction isClientSide = new OneArgFunction() {
             @Override
             public LuaValue call(LuaValue luaValue0) {
@@ -1280,6 +1287,7 @@ public class THObject implements ILuaValue, IGetContainer {
             library.set("spawn", spawn);
             library.set("isSpawned", getIsSpawned);
             library.set("setNavi", setNavi);
+            library.set("setCollision", setCollision);
             library.set("isClientSide", isClientSide);
             return library;
         }
