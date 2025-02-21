@@ -88,7 +88,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         }
     }
 
-    public boolean hasTask(String taskName){
+    public boolean hasRegisteredTask(String taskName){
         return registryTasks.containsKey(taskName);
     }
     public void startTask(String taskName, int lifetime, int delay){
@@ -114,7 +114,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
     public void restartLazyTasks(){
         List<LazyTask> removeList = Lists.newArrayList();
         for(LazyTask lazyTask:lazyTasks){
-            if (this.hasTask(lazyTask.taskName)) {
+            if (this.hasRegisteredTask(lazyTask.taskName)) {
                 AbstractTask<T> task = this.getRegisteredTask(lazyTask.taskName);
                 if (task != null) {
                     task.timer = lazyTask.timer;

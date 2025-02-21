@@ -130,14 +130,14 @@ public class THLaser extends THObject {
 
                 if (CollisionType.Ellipsoid(
                         this.getPosition().add(this.getLaserCenter()),
-                        new Vec3(width, width, length),
+                        new Vec3(width*0.6f, width*0.6f, length*0.9f),
                         new Vector3f(-r.x, -r.y, -r.z),
                         entity.getBoundingBox())) {
                     this.shouldSetDeadWhenCollision = false;
                     this.onHit(new EntityHitResult(entity, entity.position()));
-                    THBullet bullet = new THBullet((THObjectContainer) this.getContainer(), THBullet.DefaultBulletStyle.arrow_mid, THBullet.BULLET_INDEX_COLOR.COLOR_BLUE);
+                    /*THBullet bullet = new THBullet((THObjectContainer) this.getContainer(), THBullet.DefaultBulletStyle.arrow_mid, THBullet.BULLET_INDEX_COLOR.COLOR_BLUE);
                     bullet.initPosition(entity.position().add(0.0f, 2.0f, 0.0f));
-                    bullet.spawn();
+                    bullet.spawn();*/
                 }
             }
     }

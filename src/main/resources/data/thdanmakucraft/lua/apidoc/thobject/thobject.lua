@@ -176,6 +176,9 @@ function object:setNavi(bool) end
 
 ---@param bool boolean
 function object:setCollision(bool) end
+
+---@param damage number
+function object:setDamage(damage) end
 THObject = object
 
 --[[
