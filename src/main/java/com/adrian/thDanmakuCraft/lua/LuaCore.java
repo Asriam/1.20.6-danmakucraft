@@ -158,12 +158,11 @@ public class LuaCore {
                     LUA.luaClassMap.put(className, clazz);
                 }else {
                     LuaValue superClass = checkLuaClass(varargs.arg(1));
-                    String className = "class$"+(luaClassMap.size()+1);
+                    String className = "class$$"+(luaClassMap.size()+1);
                     className = superClass.isnil() ? className : superClass.get("className").checkjstring() + "#" + className;
                     clazz.set("className", className);
                     setSuperClass(clazz,superClass);
                     LUA.luaClassMap.put(className, clazz);
-                    System.out.print(className+"\n");
                 }
                 return clazz;
             }
@@ -171,10 +170,23 @@ public class LuaCore {
         library.set("registerMetaTable",new VarArgFunction() {
             @Override
             public LuaValue invoke(Varargs varargs) {
-                String keyName = varargs.arg(1).checkjstring();
+                /*String keyName = varargs.arg(1).checkjstring();
                 LuaValue meta = varargs.arg(2);
                 LUA.metaTableMap.put(keyName,meta);
-                meta.set("metatable_key", LuaValue.valueOf(keyName));
+                meta.set("metatable_key", LuaValue.valueOf(keyName));*/
+                LuaValue arg1 = varargs.arg(1);
+                LuaValue arg2 = varargs.arg(2);
+                if (arg1.isstring()){
+                    String keyName = arg1.checkjstring();
+                    LuaValue meta = arg2;
+                    metaTableMap.put(keyName,meta);
+                    meta.set("metatable_key", LuaValue.valueOf(keyName));
+                }else if (arg1.istable()){
+                    String keyName = "metatble$$"+metaTableMap.size()+1;
+                    LuaValue meta = arg1;
+                    metaTableMap.put(keyName,meta);
+                    meta.set("metatable_key", LuaValue.valueOf(keyName));
+                }
                 return LuaValue.NIL;
             }
         });

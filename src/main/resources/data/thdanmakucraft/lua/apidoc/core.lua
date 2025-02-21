@@ -49,4 +49,5 @@ function c.getClass(className) end
 
 ---@param metatableName string
 ---@param metatable table
+---@overload fun(metatable:table)
 function c.registerMetaTable(metatableName, metatable) end

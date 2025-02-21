@@ -112,6 +112,11 @@ public class THLaser extends THObject {
     }
 
     @Override
+    public boolean shouldCollision(){
+        return this.width > 0.1f && super.shouldCollision();
+    }
+
+    @Override
     public void collisionLogic(){
         List<Entity> entitiesInBound = this.container.getEntitiesInBound();
         if (entitiesInBound.isEmpty()) {
@@ -119,19 +124,20 @@ public class THLaser extends THObject {
         }
 
         for (Entity entity : entitiesInBound) {
-            if (!this.canHitUser && entity.equals(this.getContainer().getUser())) {
-                continue;
-            }
-            Vector3f r = this.getRotation();
+                if (!this.canHitUser && entity.equals(this.getContainer().getUser())) {
+                    continue;
+                }
+                Vector3f r = this.getRotation();
 
-            if (CollisionType.Ellipsoid(
-                    this.getPosition().add(this.getLaserCenter()),
-                    new Vec3(width,width,length),
-                    new Vector3f(-r.x,r.y,r.z),
-                    entity.getBoundingBox())) {
-                this.onHit(new EntityHitResult(entity, this.getPosition()));
+                if (CollisionType.Ellipsoid(
+                        this.getPosition().add(this.getLaserCenter()),
+                        new Vec3(width*0.6f, width*0.6f, length),
+                        new Vector3f(-r.x, r.y, r.z),
+                        entity.getBoundingBox())) {
+                    this.shouldSetDeadWhenCollision = false;
+                    this.onHit(new EntityHitResult(entity, this.getPosition()));
+                }
             }
-        }
     }
 
     public void setWidth(float width){

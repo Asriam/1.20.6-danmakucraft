@@ -573,7 +573,7 @@ public class THObject implements ILuaValue, IGetContainer {
         this.invokeScriptEvent("onTick", this.ofLuaValue());
         this.taskManager.tickTasks();
 
-        if (this.collision) {
+        if (this.shouldCollision()) {
             this.collisionLogic();
         }
 
@@ -597,6 +597,9 @@ public class THObject implements ILuaValue, IGetContainer {
         return this.container.level();
     }
 
+    public boolean shouldCollision(){
+        return this.collision;
+    }
     public void collisionLogic() {
         List<Entity> entitiesInBound = this.container.getEntitiesInBound();
         if (entitiesInBound.isEmpty()) {

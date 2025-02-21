@@ -129,7 +129,7 @@ public class THObjectContainerRenderer {
                                 Color color = THObject.Color(0,255,255,255);
                                 RenderUtil.renderSphere(vertexConsumer,poseStack.last(),1,
                                         ConstantUtil.VECTOR3F_ZERO,
-                                        new Vector3f(laser.getWidth(),laser.getWidth(),laser.getLength()),
+                                        new Vector3f(laser.getWidth()*0.6f,laser.getWidth()*0.6f,laser.getLength()),
                                         6,6,false,
                                         Vec2.ZERO,
                                         Vec2.ONE,
