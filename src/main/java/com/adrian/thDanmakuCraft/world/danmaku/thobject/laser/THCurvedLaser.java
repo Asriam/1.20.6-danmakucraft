@@ -29,14 +29,13 @@ import org.luaj.vm2.lib.VarArgFunction;
 import java.util.List;
 import java.util.function.Predicate;
 
-public class THCurvedLaser extends THObject {
+public class THCurvedLaser extends AbstractLaser {
 
     public Color laserColor;
     public final NodeManager nodeManager;
     public int nodeMount;
     public float width;
     public boolean shouldUpdateNodes = true;
-    public boolean noNodeCulling = false;
     public boolean breakable = true;
     public int renderCull = 2;
 
@@ -81,7 +80,6 @@ public class THCurvedLaser extends THObject {
         super.decode(buffer);
         this.width = buffer.readFloat();
         this.renderCull = buffer.readInt();
-        //this.laserColor = buffer.readEnum(THBullet.BULLET_INDEX_COLOR.class);
         this.laserColor = FriendlyByteBufUtil.readColor(buffer);
         this.nodeManager.readData(buffer);
     }
@@ -91,10 +89,8 @@ public class THCurvedLaser extends THObject {
         super.save(tag);
         tag.putFloat("Width",this.width);
         tag.putInt("RenderCull",this.renderCull);
-        //tag.putInt("LaserColor",this.laserColor.ordinal());
         CompoundTagUtil.putColor(tag, "LaserColor", this.laserColor);
         this.nodeManager.save(tag);
-        //return tag;
     }
 
     @Override
@@ -102,7 +98,6 @@ public class THCurvedLaser extends THObject {
         super.load(tag);
         this.width = tag.getFloat("Width");
         this.renderCull = tag.getInt("RenderCull");
-        //this.laserColor = THBullet.BULLET_INDEX_COLOR.class.getEnumConstants()[tag.getInt("LaserColor")];
         this.laserColor = CompoundTagUtil.getColor(tag, "LaserColor");
         this.nodeManager.load(tag);
     }
@@ -440,7 +435,7 @@ public class THCurvedLaser extends THObject {
         public static final LuaValue meta = ILuaValue.setMeta(functions());
     }
 
-    @Override
+    /*@Override
     public LuaValue ofLuaClass(){
         LuaValue library = super.ofLuaClass();
         return library;
@@ -450,7 +445,7 @@ public class THCurvedLaser extends THObject {
     public LuaValue ofLuaValue(){
         LuaValue library = super.ofLuaValue();
         return library;
-    }
+    }*/
 
     @Override
     public LuaValue getMeta(){

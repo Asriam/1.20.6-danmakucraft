@@ -321,10 +321,10 @@ public class THLaser extends THObject {
         public static final LuaValue meta = ILuaValue.setMeta(functions());
     }
 
-    public LuaValue ofLuaClass(){
+    /*public LuaValue ofLuaClass(){
         LuaValue library = super.ofLuaClass();
         return library;
-    }
+    }*/
 
     @Override
     public LuaValue getMeta(){
