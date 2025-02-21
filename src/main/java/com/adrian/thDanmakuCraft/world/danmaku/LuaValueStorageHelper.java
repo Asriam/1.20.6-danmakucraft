@@ -1,5 +1,7 @@
 package com.adrian.thDanmakuCraft.world.danmaku;
 
+import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
+import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -41,8 +43,11 @@ public class LuaValueStorageHelper {
         }
     }
     public LuaTable decodeLuaTable(FriendlyByteBuf byteBuf) {
-        LuaTable table = LuaValue.tableOf();
         int length = byteBuf.readShort();
+        if(length == 0){
+            return LuaValue.tableOf();
+        }
+        LuaTable table = LuaValue.tableOf();
         for (int i = 0; i < length; i++) {
             String keyName = byteBuf.readUtf();
             LuaValue value = decodeLuaValue(byteBuf);
@@ -69,11 +74,20 @@ public class LuaValueStorageHelper {
                 }
             }
         }
+        LuaValue metatable = luaValue.getmetatable();
+        String metatablekey = "";
+        if (metatable != null && !metatable.isnil()){
+            LuaValue _key = metatable.get("metatable_key");
+            if (_key.isstring()) {
+                metatablekey = _key.checkjstring();
+            }
+        }
+        byteBuf.writeUtf(metatablekey);
     }
 
     public LuaValue decodeLuaValue(FriendlyByteBuf byteBuf) {
         short type = byteBuf.readShort();
-        return switch (type) {
+        LuaValue luaValue = switch (type) {
             case LuaValue.TBOOLEAN -> LuaValue.valueOf(byteBuf.readBoolean());
             case LuaValue.TINT -> LuaValue.valueOf(byteBuf.readInt());
             case LuaValue.TNUMBER -> LuaValue.valueOf(byteBuf.readDouble());
@@ -89,6 +103,12 @@ public class LuaValueStorageHelper {
             }
             default -> LuaValue.NIL;
         };
+        String metatableKey = byteBuf.readUtf();
+        if (!metatableKey.isEmpty() && LuaCore.getInstance().containsMetaTableKey(metatableKey)){
+            LuaValue metatable = LuaCore.getInstance().getMetaTable(metatableKey);
+            luaValue.setmetatable(metatable);
+        }
+        return luaValue;
     }
 
     public CompoundTag saveTHObject(THObject object){
@@ -140,12 +160,21 @@ public class LuaValueStorageHelper {
                 }
             }
         }
+        LuaValue metatable = luaValue.getmetatable();
+        String metatablekey = "";
+        if (metatable != null && !metatable.isnil()){
+            LuaValue _key = metatable.get("metatable_key");
+            if (_key.isstring()) {
+                metatablekey = _key.checkjstring();
+            }
+        }
+        valueTag.putString("metatable_key",metatablekey);
         return valueTag;
     }
 
     public LuaValue loadLuaValue(CompoundTag tag) {
         short type = tag.getShort("type");
-        return switch (type) {
+        LuaValue luaValue = switch (type) {
             case LuaValue.TBOOLEAN -> LuaValue.valueOf(tag.getBoolean("value"));
             case LuaValue.TINT -> LuaValue.valueOf(tag.getInt("value"));
             case LuaValue.TNUMBER -> LuaValue.valueOf(tag.getDouble("value"));
@@ -161,11 +190,19 @@ public class LuaValueStorageHelper {
             }
             default -> LuaValue.NIL;
         };
+        String metatableKey = tag.getString("metatable_key");
+        if (!metatableKey.isEmpty() && LuaCore.getInstance().containsMetaTableKey(metatableKey)){
+            LuaValue metatable = LuaCore.getInstance().getMetaTable(metatableKey);
+            luaValue.setmetatable(metatable);
+        }
+        return luaValue;
     }
 
     private enum TableType {
         TABLE,
         THOBJECT,
-        THOBJECT_CONTAINER
+        THOBJECT_CONTAINER,
+        VEC3,
+        VEC2,
     }
 }

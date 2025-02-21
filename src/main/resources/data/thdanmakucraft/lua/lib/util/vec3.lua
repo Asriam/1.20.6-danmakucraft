@@ -15,11 +15,10 @@ local abstractVec3 = {}
 ---@field z number
 ---@class util.Vec3:abstractVec3
 local vec3 = {}
-core.setupVec3Lib(vec3)
-
 local metatable = {__index = vec3 }
-
----@field vec3 table
+core.registerMetaTable("util.vec3",metatable)
+core.setupVec3Lib(vec3,metatable)
+---@param vec3 table
 ---@return util.Vec3
 function vec3.of(_vec3)
     local v = {

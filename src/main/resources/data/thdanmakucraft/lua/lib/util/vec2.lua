@@ -13,7 +13,19 @@ local abstractVec2 = {}
 ---@field y number
 ---@class util.Vec2:abstractVec2
 local vec2 = {}
-core.setupVec2Lib(vec2)
+local metatable = {__index = vec2 }
+core.registerMetaTable("util.vec2",metatable)
+core.setupVec2Lib(vec2,metatable)
+---@param vec2 table
+---@return util.Vec2
+function vec2.of(_vec2)
+    local v = {
+        x = _vec2.x or 0,
+        y = _vec2.y or 0,
+    }
+    setmetatable(v, metatable)
+    return v
+end
 
 ---@return util.Vec2
 function vec2.new(x, y)
@@ -21,10 +33,9 @@ function vec2.new(x, y)
         x = x or 0,
         y = y or 0
     }
-    setmetatable(v, {__index = vec2 })
+    setmetatable(v, metatable)
     return v
 end
-
 util.vec2 = vec2
 
 ---@param _vec2 util.Vec2

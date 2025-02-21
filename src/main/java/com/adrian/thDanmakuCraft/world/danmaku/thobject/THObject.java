@@ -786,6 +786,7 @@ public class THObject implements ILuaValue, IGetContainer {
         this.xRot = buffer.readFloat();
         this.yRot = buffer.readFloat();
         this.zRot = buffer.readFloat();
+        this.lastRotation = new Vector3f(this.xRot, this.yRot, this.zRot);
         this.velocity = buffer.readVec3();
         this.acceleration = buffer.readVec3();
         this.scale = buffer.readVector3f();

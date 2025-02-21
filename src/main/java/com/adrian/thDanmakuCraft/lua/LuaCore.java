@@ -11,6 +11,7 @@ import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.OneArgFunction;
+import org.luaj.vm2.lib.TwoArgFunction;
 import org.luaj.vm2.lib.VarArgFunction;
 import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 import org.luaj.vm2.lib.jse.JsePlatform;
@@ -26,6 +27,7 @@ public class LuaCore {
     private static LuaCore LUA = new LuaCore();
     private final Globals GLOBALS = JsePlatform.standardGlobals();
     private final Map<String,LuaValue> luaClassMap = Maps.newHashMap();
+    private final Map<String,LuaValue> metaTableMap = Maps.newHashMap();
 
     public static LuaValue LuaUtilVec2;
     public static LuaValue LuaUtilVec3;
@@ -166,6 +168,16 @@ public class LuaCore {
                 return clazz;
             }
         });
+        library.set("registerMetaTable",new VarArgFunction() {
+            @Override
+            public LuaValue invoke(Varargs varargs) {
+                String keyName = varargs.arg(1).checkjstring();
+                LuaValue meta = varargs.arg(2);
+                LUA.metaTableMap.put(keyName,meta);
+                meta.set("metatable_key", LuaValue.valueOf(keyName));
+                return LuaValue.NIL;
+            }
+        });
 
         library.set("getClass", new OneArgFunction() {
             @Override
@@ -178,24 +190,20 @@ public class LuaCore {
             }
         });
 
-        library.set("setupVec3Lib", new OneArgFunction() {
+        library.set("setupVec3Lib", new TwoArgFunction() {
             @Override
-            public LuaValue call(LuaValue luaValue) {
-                LuaCore.LuaUtilVec3 = luaValue;
-                LuaValue meta = LuaValue.tableOf();
-                meta.set("__index", luaValue);
-                LuaCore.LuaUtilVec3Meta = meta;
+            public LuaValue call(LuaValue vec3Lib, LuaValue metatable) {
+                LuaCore.LuaUtilVec3 = vec3Lib;
+                LuaCore.LuaUtilVec3Meta = metatable;
                 return null;
             }
         });
 
-        library.set("setupVec2Lib", new OneArgFunction() {
+        library.set("setupVec2Lib", new TwoArgFunction() {
             @Override
-            public LuaValue call(LuaValue luaValue) {
-                LuaCore.LuaUtilVec2 = luaValue;
-                LuaValue meta = LuaValue.tableOf();
-                meta.set("__index", luaValue);
-                LuaCore.LuaUtilVec2Meta = meta;
+            public LuaValue call(LuaValue vec2Lib, LuaValue metatable) {
+                LuaCore.LuaUtilVec2 = vec2Lib;
+                LuaCore.LuaUtilVec2Meta = metatable;
                 return null;
             }
         });
@@ -276,6 +284,18 @@ public class LuaCore {
     public LuaValue getLuaClass(LuaValue luaClass){
         String className = luaClass.get("className").checkjstring();
         return this.luaClassMap.get(className);
+    }
+
+    public boolean containsMetaTable(LuaValue metaTable){
+        return this.metaTableMap.containsValue(metaTable);
+    }
+
+    public boolean containsMetaTableKey(String key){
+        return this.metaTableMap.containsKey(key);
+    }
+
+    public LuaValue getMetaTable(String key){
+        return this.metaTableMap.get(key);
     }
 
     public static class core {

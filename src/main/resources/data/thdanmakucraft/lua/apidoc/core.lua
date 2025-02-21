@@ -46,3 +46,7 @@ function c.defineClass(className, superClass) end
 ---@param className self
 ---@return Class
 function c.getClass(className) end
+
+---@param metatableName string
+---@param metatable table
+function c.registerMetaTable(metatableName, metatable) end

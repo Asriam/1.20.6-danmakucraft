@@ -70,8 +70,8 @@ public class LuaValueHelper {
         library.set("x", x);
         library.set("y", y);
         library.set("z", z);
-        if(LuaCore.LuaUtilVec3Meta != null);
-        library.setmetatable(LuaCore.LuaUtilVec3Meta);
+        if(LuaCore.LuaUtilVec3Meta != null)
+            library.setmetatable(LuaCore.LuaUtilVec3Meta);
         return library;
     }
 

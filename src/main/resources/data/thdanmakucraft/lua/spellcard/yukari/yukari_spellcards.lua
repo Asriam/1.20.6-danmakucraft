@@ -96,11 +96,11 @@ end
 local yukari_spellcrad_2_laser_2 = core.defineClass()
 function yukari_spellcrad_2_laser_2:onInit(_pos0,_pos1,_pos2,_width)
     self.data = {}
-    self.autosave:register("data")
     self.data.pos0 = _pos0
     self.data.pos1 = _pos1
     self.data.pos2 = _pos2
     self.data.width = _width
+    self.autosave:register("data")
     self:setWidth(0)
     self:setLaserColorByIndex(2)
     self:setLifetime(300)
