@@ -75,7 +75,8 @@ public class THObjectContainerRenderer {
         return false;
     };
 
-    private static BufferBuilder HIT_BOX_BUFFER = new BufferBuilder(249);
+    private static final BufferBuilder HIT_BOX_BUFFER = new BufferBuilder(896);
+    private static final BufferBuilder DANMAKU_BUFFER = new BufferBuilder(897);
     public static void renderTHObjects(EntityRenderDispatcher entityRenderDispatcher, Frustum frustum, List<THObject> objectList, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int combinedOverlay){
         final Vec3 cameraPosition = entityRenderDispatcher.camera.getPosition();
         final double camX = cameraPosition.x;
@@ -100,20 +101,6 @@ public class THObjectContainerRenderer {
 
         RenderSystem.enableBlend();
         if (!objectList.isEmpty()) {
-            /*if (entityRenderDispatcher.shouldRenderHitBoxes()) {
-                BufferBuilder vertexConsumer = (BufferBuilder) bufferSource.getBuffer(RenderType.lines());
-                for (THObject object:objectList) {
-                    AbstractTHObjectRenderer<THObject> renderer = THObjectContainerRenderer.getTHObjectRenderer(object);
-                    if (renderer.shouldRender(object, frustum, camX, camY, camZ) && object.collision) {
-                        poseStack.pushPose();
-                        Vec3 objectPos = object.getOffsetPosition(partialTicks);
-                        poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
-                        renderer.renderHitBox(object, objectPos, partialTicks, poseStack, vertexConsumer);
-                        poseStack.popPose();
-                    }
-                }
-            }*/
-
             boolean shouldRenderHitBox = entityRenderDispatcher.shouldRenderHitBoxes();
             RenderType renderTypeLines = RenderType.lines();
 
@@ -153,16 +140,17 @@ public class THObjectContainerRenderer {
                     BufferUploader.drawWithShader(HIT_BOX_BUFFER.end());
                     renderTypeLines.clearRenderState();
                 }
-
                 renderType.setupRenderState();
+                BufferUploader.drawWithShader(builder.end());
+                renderType.clearRenderState();
+                /*renderType.setupRenderState();
                 if (shouldApplyEffect()) {
                     THObjectContainerRenderer.TEST_RENDER_TARGET.bindWrite(true);
                 }
-                BufferUploader.drawWithShader(builder.end());
-                if (shouldApplyEffect()) {
+                BufferUploader.drawWithShader(builder.end());*if (shouldApplyEffect()) {
                     THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
                 }
-                renderType.clearRenderState();
+                renderType.clearRenderState();*/
             }
         }
 
@@ -170,11 +158,11 @@ public class THObjectContainerRenderer {
         RenderSystem.disableBlend();
         RenderSystem.defaultBlendFunc();
 
-        if(shouldApplyEffect()) {
+        /*if(shouldApplyEffect()) {
             THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
             mainRenderTarget.copyDepthFrom(THObjectContainerRenderer.TEST_RENDER_TARGET);
             mainRenderTarget.bindWrite(true);
-        }
+        }*/
     }
 
     public static List<THObject> layerObjects(List<THObject> list, double camX, double camY, double camZ){

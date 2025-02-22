@@ -62,8 +62,6 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
                 poseStack.pushPose();
                 Vec3 prePos = laserPos.vectorTo(nodes0.getLast().getOffsetPosition(partialTicks));
                 poseStack.translate(prePos.x, prePos.y, prePos.z);
-                //Vec2 faceCamRotation = THObject.VectorAngleToRadAngle(this.getRenderDispatcher().camera.getPosition().vectorTo(nodes0.getLast().getOffsetPosition(partialTicks)));
-                //poseStack.mulPose(new Quaternionf().rotateY(faceCamRotation.y).rotateX(-faceCamRotation.x));
                 poseStack.mulPose(this.getRenderDispatcher().cameraOrientation());
                 poseStack.mulPose(Axis.XP.rotationDegrees(-90.0F));
                 RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 1,
@@ -97,7 +95,7 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
         poseStack.popPose();
     }
 
-    //曲線聚光渲染的一坨屎山
+    ///曲線聚光渲染的一坨屎山
     @OnlyIn(value = Dist.CLIENT)
     public void renderCurvedLaser(Vec3 laserPos, VertexConsumer vertexConsumer, PoseStack poseStack, List<THCurvedLaser.NodeManager.LaserNode> nodeList, float width, float coreWidth, int edge, int cull, Color laserColor, Color coreColor, float partialTicks, int combinedOverlay, float laserLength, float coreLength) {
         if (nodeList.isEmpty() || nodeList.size() < 3) {

@@ -90,9 +90,8 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         }
 
         color = new Color(180,180,255,160);
+        int sample = 12;
         {
-            int sample = 36;
-
             time = 40.0f;
             open = timer > time ? 1.0f : (float) Math.pow(Math.min(timer / time,1.0f),0.8f);
             close = timer < container.getLifetime()-time ? 1.0f : 1.0f - (float) Math.pow(Math.clamp((timer-(container.getLifetime())) / time,0.0f,1.0f),0.8f);
@@ -130,6 +129,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
             );
             num = 8.0f;
             int aaa = 4;
+            sample = 24;
 
             float rotateOffset = Mth.PI/4.0f + timer / 6.0f;
             for (int g=0;g<=2;g++) {
@@ -174,8 +174,6 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
     }
 
     public static void beforeRenderEntities(LevelRenderer levelRenderer, float partialTick){
-        //MAGIC_SQUAR_BUFFER.clear();
-        //AURA_BUFFER.clear();
         MAGIC_SQUAR_BUFFER.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
         AURA_BUFFER.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
     }

@@ -72,6 +72,7 @@ function yukari_spellcrad_2_laser_1:onInit(_pos0,_pos1,_pos2,_width)
     self:setLaserColorByIndex(6)
     self:setLifetime(300)
     self:setCollision(false)
+    self:setDamage(3.0)
 end
 
 function yukari_spellcrad_2_laser_1:onTick()
@@ -112,6 +113,7 @@ function yukari_spellcrad_2_laser_2:onInit(_pos0,_pos1,_pos2,_width)
     self:setWidth(0)
     self:setLaserColorByIndex(2)
     self:setLifetime(300)
+    self:setDamage(3.0)
 end
 
 function yukari_spellcrad_2_laser_2:onTick()

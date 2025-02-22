@@ -96,7 +96,7 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
         RenderUtil.renderSphere(vertexConsumer,poseStack.last(),1,
                 ConstantUtil.VECTOR3F_ZERO,
                 new Vector3f(laser.getWidth()*0.6f,laser.getWidth()*0.6f,laser.getLength()),
-                6,6,false,
+                6,8,false,
                 Vec2.ZERO,
                 Vec2.ONE,
                 color,color,color);
