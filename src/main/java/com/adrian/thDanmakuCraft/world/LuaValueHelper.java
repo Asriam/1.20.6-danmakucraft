@@ -26,7 +26,7 @@ public class LuaValueHelper {
         public static final LibFunction getPosition = new OneArgFunction() {
             @Override
             public LuaValue call(LuaValue luaValue0) {
-                return Vec3ToLuaValue(checkEntity(luaValue0).position());
+                return Vec3ToLuaValue(checkEntity(luaValue0).getBoundingBox().getCenter());
             }
         };
 

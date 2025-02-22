@@ -109,11 +109,11 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
 
         {
             //external
-            Vec3[] lastNodePos_1 = new Vec3[edge];
-            Vec3[] lastNodePos_2 = new Vec3[edge];
+            Vector3f[] lastNodePos_1 = new Vector3f[edge];
+            Vector3f[] lastNodePos_2 = new Vector3f[edge];
             //core
-            Vec3[] lastNodePos_3 = new Vec3[edge];
-            Vec3[] lastNodePos_4 = new Vec3[edge];
+            Vector3f[] lastNodePos_3 = new Vector3f[edge];
+            Vector3f[] lastNodePos_4 = new Vector3f[edge];
             //normal
             Vector3f[] lastNormal_3 = new Vector3f[edge];
             Vector3f[] lastNormal_4 = new Vector3f[edge];
@@ -171,14 +171,14 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
                             Vec3 aaa3 = p01.xRot(right_angle + angle2.x).yRot(angle2.y);
                             Vec3 aaa4 = p02.xRot(right_angle + angle2.x).yRot(angle2.y);
                             //core render
-                            Vec3 calculatedPos3_1 = lastNodePos_3[i] == null ? aaa1.scale(posA1).add(_pos1) : lastNodePos_3[i];
-                            Vec3 calculatedPos3_2 = lastNodePos_4[i] == null ? aaa2.scale(posA1).add(_pos1) : lastNodePos_4[i];
+                            Vector3f calculatedPos3_1 = lastNodePos_3[i] == null ? aaa1.scale(posA1).add(_pos1).toVector3f() : lastNodePos_3[i];
+                            Vector3f calculatedPos3_2 = lastNodePos_4[i] == null ? aaa2.scale(posA1).add(_pos1).toVector3f() : lastNodePos_4[i];
 
                             Vector3f normal3_1 = lastNormal_3[i] == null ? aaa1.toVector3f() : lastNormal_3[i];
                             Vector3f normal3_2 = lastNormal_4[i] == null ? aaa2.toVector3f() : lastNormal_4[i];
 
-                            Vec3 calculatedPos4_1 = aaa3.scale(posB2).add(_pos2);
-                            Vec3 calculatedPos4_2 = aaa4.scale(posB2).add(_pos2);
+                            Vector3f calculatedPos4_1 = aaa3.scale(posB2).add(_pos2).toVector3f();
+                            Vector3f calculatedPos4_2 = aaa4.scale(posB2).add(_pos2).toVector3f();
 
                             Vector3f normal4_1 = aaa3.toVector3f();
                             Vector3f normal4_2 = aaa4.toVector3f();
@@ -190,26 +190,26 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
                             lastNormal_4[i] = normal4_2;
 
                             VertexBuilder builder = new VertexBuilder(THObjectContainerRenderer.BUFFER_2);
-                            builder.positionColorColorUvUvNormal(pose.pose(), calculatedPos3_1.toVector3f(), coreColor, GRAY, 0.5f, 2.0f, 0.0f, 2.0f, pose.normal(), normal3_1);
-                            builder.positionColorColorUvUvNormal(pose.pose(), calculatedPos4_1.toVector3f(), coreColor, GRAY, 0.5f, 2.0f, 0.0f, 2.0f, pose.normal(), normal4_1);
-                            builder.positionColorColorUvUvNormal(pose.pose(), calculatedPos4_2.toVector3f(), coreColor, GRAY, 0.5f, 2.0f, 0.0f, 2.0f, pose.normal(), normal4_2);
-                            builder.positionColorColorUvUvNormal(pose.pose(), calculatedPos3_2.toVector3f(), coreColor, GRAY, 0.5f, 2.0f, 0.0f, 2.0f, pose.normal(), normal3_2);
+                            builder.positionColorColorUvUvNormal(pose.pose(), calculatedPos3_1, coreColor, GRAY, 0.5f, 2.0f, 0.0f, 2.0f, pose.normal(), normal3_1);
+                            builder.positionColorColorUvUvNormal(pose.pose(), calculatedPos4_1, coreColor, GRAY, 0.5f, 2.0f, 0.0f, 2.0f, pose.normal(), normal4_1);
+                            builder.positionColorColorUvUvNormal(pose.pose(), calculatedPos4_2, coreColor, GRAY, 0.5f, 2.0f, 0.0f, 2.0f, pose.normal(), normal4_2);
+                            builder.positionColorColorUvUvNormal(pose.pose(), calculatedPos3_2, coreColor, GRAY, 0.5f, 2.0f, 0.0f, 2.0f, pose.normal(), normal3_2);
 
                             //external render
-                            Vec3 calculatedPos1_1 = lastNodePos_1[i] == null ? aaa1.scale(posA).add(_pos1) : lastNodePos_1[i];
-                            Vec3 calculatedPos1_2 = lastNodePos_2[i] == null ? aaa2.scale(posA).add(_pos1) : lastNodePos_2[i];
+                            Vector3f calculatedPos1_1 = lastNodePos_1[i] == null ? aaa1.scale(posA).add(_pos1).toVector3f() : lastNodePos_1[i];
+                            Vector3f calculatedPos1_2 = lastNodePos_2[i] == null ? aaa2.scale(posA).add(_pos1).toVector3f() : lastNodePos_2[i];
 
-                            Vec3 calculatedPos2_1 = aaa3.scale(posB).add(_pos2);
-                            Vec3 calculatedPos2_2 = aaa4.scale(posB).add(_pos2);
+                            Vector3f calculatedPos2_1 = aaa3.scale(posB).add(_pos2).toVector3f();
+                            Vector3f calculatedPos2_2 = aaa4.scale(posB).add(_pos2).toVector3f();
 
                             lastNodePos_1[i] = calculatedPos2_1;
                             lastNodePos_2[i] = calculatedPos2_2;
 
                             builder = new VertexBuilder(vertexConsumer);
-                            builder.positionColorColorUvUvNormal(pose.pose(), calculatedPos1_1.toVector3f(), laserColor, coreColor2, 0.4f, 2.0f, -0.1f, 2.0f, pose.normal(), normal3_1);
-                            builder.positionColorColorUvUvNormal(pose.pose(), calculatedPos2_1.toVector3f(), laserColor, coreColor2, 0.4f, 2.0f, -0.1f, 2.0f, pose.normal(), normal4_1);
-                            builder.positionColorColorUvUvNormal(pose.pose(), calculatedPos2_2.toVector3f(), laserColor, coreColor2, 0.4f, 2.0f, -0.1f, 2.0f, pose.normal(), normal4_2);
-                            builder.positionColorColorUvUvNormal(pose.pose(), calculatedPos1_2.toVector3f(), laserColor, coreColor2, 0.4f, 2.0f, -0.1f, 2.0f, pose.normal(), normal3_2);
+                            builder.positionColorColorUvUvNormal(pose.pose(), calculatedPos1_1, laserColor, coreColor2, 0.4f, 2.0f, -0.1f, 2.0f, pose.normal(), normal3_1);
+                            builder.positionColorColorUvUvNormal(pose.pose(), calculatedPos2_1, laserColor, coreColor2, 0.4f, 2.0f, -0.1f, 2.0f, pose.normal(), normal4_1);
+                            builder.positionColorColorUvUvNormal(pose.pose(), calculatedPos2_2, laserColor, coreColor2, 0.4f, 2.0f, -0.1f, 2.0f, pose.normal(), normal4_2);
+                            builder.positionColorColorUvUvNormal(pose.pose(), calculatedPos1_2, laserColor, coreColor2, 0.4f, 2.0f, -0.1f, 2.0f, pose.normal(), normal3_2);
 
                         }
                     }
