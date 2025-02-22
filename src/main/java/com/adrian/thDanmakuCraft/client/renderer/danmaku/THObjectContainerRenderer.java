@@ -76,7 +76,7 @@ public class THObjectContainerRenderer {
     };
 
     private static final BufferBuilder HIT_BOX_BUFFER = new BufferBuilder(896);
-    private static final BufferBuilder DANMAKU_BUFFER = new BufferBuilder(897);
+    public static final BufferBuilder BUFFER_2 = new BufferBuilder(897);
     public static void renderTHObjects(EntityRenderDispatcher entityRenderDispatcher, Frustum frustum, List<THObject> objectList, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int combinedOverlay){
         final Vec3 cameraPosition = entityRenderDispatcher.camera.getPosition();
         final double camX = cameraPosition.x;
@@ -118,6 +118,7 @@ public class THObjectContainerRenderer {
                 if (shouldRenderHitBox){
                     HIT_BOX_BUFFER.begin(renderTypeLines.mode(), renderTypeLines.format());
                 }
+                BUFFER_2.begin(renderType.mode(), renderType.format());
                 for (THObject object : sortedList) {
                     if (object != null) {
                         AbstractTHObjectRenderer<THObject> renderer = THObjectContainerRenderer.getTHObjectRenderer(object);
@@ -141,6 +142,7 @@ public class THObjectContainerRenderer {
                     renderTypeLines.clearRenderState();
                 }
                 renderType.setupRenderState();
+                BufferUploader.drawWithShader(BUFFER_2.end());
                 BufferUploader.drawWithShader(builder.end());
                 renderType.clearRenderState();
                 /*renderType.setupRenderState();

@@ -3,6 +3,7 @@ package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.laser;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.THBlendMode;
 import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.util.Color;
@@ -51,12 +52,9 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
                 (int) (laser.color.a * 0.7f)
         );
         Color coreColor = laser.color;
-
-        //VertexConsumer vertexConsumer = bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE);
-
         var nodes0 = laser.nodeManager.getAllNodes();
         float width = laser.getWidthForRender(partialTicks);
-        if(laser.spawnAnimation) {
+        if(laser.spawnAnimation && false) {
             float width2 = width * 3.0f * (float) Math.pow((double) (nodes0.size() - (laser.getTimer() + partialTicks)) / nodes0.size(), 0.4f);
             if (width2 > 0) {
                 poseStack.pushPose();
@@ -107,10 +105,9 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
         final float perAngle = Mth.DEG_TO_RAD * 360.0f / edge;
 
         boolean renderCore = true;
-        boolean renderExternal = false;
+        boolean renderExternal = true;
 
-        for(int g = 0; g < 2; g++) {
-
+        {
             //external
             Vec3[] lastNodePos_1 = new Vec3[edge];
             Vec3[] lastNodePos_2 = new Vec3[edge];
@@ -118,10 +115,8 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
             Vec3[] lastNodePos_3 = new Vec3[edge];
             Vec3[] lastNodePos_4 = new Vec3[edge];
             //normal
-            Vec3[] lastNormal_1 = new Vec3[edge];
-            Vec3[] lastNormal_2 = new Vec3[edge];
-            Vec3[] lastNormal_3 = new Vec3[edge];
-            Vec3[] lastNormal_4 = new Vec3[edge];
+            Vector3f[] lastNormal_3 = new Vector3f[edge];
+            Vector3f[] lastNormal_4 = new Vector3f[edge];
 
             Color coreColor2 = coreColor.multiply(0.5f);
 
@@ -152,79 +147,75 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
                         _pos1 = pos1.subtract(laserPos);
                         _pos2 = pos2.subtract(laserPos);
 
-                        float nodeWidth1 = circle((float) (index) / (nodeList.size()), laserLength);
-                        float nodeWidth2 = circle((float) (index + 1) / (nodeList.size()), laserLength);
-                        float posA = nodeWidth1 * width;
-                        float posB = !(index >= nodeList.size() - 2) ? nodeWidth2 * width : 0.0f;
+                        float width01 = (float) (index) / (nodeList.size());
+                        float width02 = (float) (index + 1) / (nodeList.size());
 
-                        float nodeWidth3 = circle((float) (index) / (nodeList.size()), coreLength);
-                        float nodeWidth4 = circle((float) (index + 1) / (nodeList.size()), coreLength);
+                        float nodeWidth1 = circle(width01, laserLength);
+                        float nodeWidth2 = circle(width02, laserLength);
+                        boolean flag = !(index >= nodeList.size() - 2);
+                        float posA = nodeWidth1 * width;
+                        float posB = flag ? nodeWidth2 * width : 0.0f;
+
+                        float nodeWidth3 = circle(width01, coreLength);
+                        float nodeWidth4 = circle(width02, coreLength);
                         float posA1 = nodeWidth3 * coreWidth;
-                        float posB2 = !(index >= nodeList.size() - 2) ? nodeWidth4 * coreWidth : 0.0f;
+                        float posB2 = flag ? nodeWidth4 * coreWidth : 0.0f;
 
                         for (int i = 0; i < edge; i++) {
-                            if (renderCore) {
-                                //core render
-                                Vec3 calculatedPos3_1 = lastNodePos_3[i] == null ? pos0.yRot(i * perAngle).xRot(right_angle + angle1.x).yRot(angle1.y).scale(posA1).add(_pos1) : lastNodePos_3[i];
-                                Vec3 calculatedPos3_2 = lastNodePos_4[i] == null ? pos0.yRot((i + 1) * perAngle).xRot(right_angle + angle1.x).yRot(angle1.y).scale(posA1).add(_pos1) : lastNodePos_4[i];
+                            Vec3 p01 = pos0.yRot(i * perAngle);
+                            Vec3 p02 = pos0.yRot((i + 1) * perAngle);
 
-                                Vec3 normal3_1 = lastNormal_3[i] == null ? pos0.yRot(i * perAngle).xRot(right_angle + angle1.x).yRot(angle1.y) : lastNormal_3[i];
-                                Vec3 normal3_2 = lastNormal_4[i] == null ? pos0.yRot((i + 1) * perAngle).xRot(right_angle + angle1.x).yRot(angle1.y) : lastNormal_4[i];
+                            Vec3 aaa1 = p01.xRot(right_angle + angle1.x).yRot(angle1.y);
+                            Vec3 aaa2 = p02.xRot(right_angle + angle1.x).yRot(angle1.y);
 
-                                Vec3 calculatedPos4_1 = pos0.yRot(i * perAngle).xRot(right_angle + angle2.x).yRot(angle2.y).scale(posB2).add(_pos2);
-                                Vec3 calculatedPos4_2 = pos0.yRot((i + 1) * perAngle).xRot(right_angle + angle2.x).yRot(angle2.y).scale(posB2).add(_pos2);
+                            Vec3 aaa3 = p01.xRot(right_angle + angle2.x).yRot(angle2.y);
+                            Vec3 aaa4 = p02.xRot(right_angle + angle2.x).yRot(angle2.y);
+                            //core render
+                            Vec3 calculatedPos3_1 = lastNodePos_3[i] == null ? aaa1.scale(posA1).add(_pos1) : lastNodePos_3[i];
+                            Vec3 calculatedPos3_2 = lastNodePos_4[i] == null ? aaa2.scale(posA1).add(_pos1) : lastNodePos_4[i];
 
-                                Vec3 normal4_1 = pos0.yRot(i * perAngle).xRot(right_angle + angle2.x).yRot(angle2.y);
-                                Vec3 normal4_2 = pos0.yRot((i + 1) * perAngle).xRot(right_angle + angle2.x).yRot(angle2.y);
+                            Vector3f normal3_1 = lastNormal_3[i] == null ? aaa1.toVector3f() : lastNormal_3[i];
+                            Vector3f normal3_2 = lastNormal_4[i] == null ? aaa2.toVector3f() : lastNormal_4[i];
 
-                                lastNodePos_3[i] = calculatedPos4_1;
-                                lastNodePos_4[i] = calculatedPos4_2;
+                            Vec3 calculatedPos4_1 = aaa3.scale(posB2).add(_pos2);
+                            Vec3 calculatedPos4_2 = aaa4.scale(posB2).add(_pos2);
 
-                                lastNormal_3[i] = normal4_1;
-                                lastNormal_4[i] = normal4_2;
+                            Vector3f normal4_1 = aaa3.toVector3f();
+                            Vector3f normal4_2 = aaa4.toVector3f();
 
-                                VertexBuilder builder = new VertexBuilder(vertexConsumer);
-                                builder.positionColorColorUvUvNormal(pose.pose(),calculatedPos3_1.toVector3f(), coreColor,GRAY, 0.5f,2.0f, 0.0f,2.0f, pose.normal(),normal3_1.toVector3f());
-                                builder.positionColorColorUvUvNormal(pose.pose(),calculatedPos4_1.toVector3f(), coreColor,GRAY, 0.5f,2.0f, 0.0f,2.0f, pose.normal(),normal4_1.toVector3f());
-                                builder.positionColorColorUvUvNormal(pose.pose(),calculatedPos4_2.toVector3f(), coreColor,GRAY, 0.5f,2.0f, 0.0f,2.0f, pose.normal(),normal4_2.toVector3f());
-                                builder.positionColorColorUvUvNormal(pose.pose(),calculatedPos3_2.toVector3f(), coreColor,GRAY, 0.5f,2.0f, 0.0f,2.0f, pose.normal(),normal3_2.toVector3f());
+                            lastNodePos_3[i] = calculatedPos4_1;
+                            lastNodePos_4[i] = calculatedPos4_2;
 
-                            }
+                            lastNormal_3[i] = normal4_1;
+                            lastNormal_4[i] = normal4_2;
 
-                            if (renderExternal) {
-                                //external render
-                                Vec3 calculatedPos1_1 = lastNodePos_1[i] == null ? pos0.yRot(i * perAngle).xRot(right_angle + angle1.x).yRot(angle1.y).scale(posA).add(_pos1) : lastNodePos_1[i];
-                                Vec3 calculatedPos1_2 = lastNodePos_2[i] == null ? pos0.yRot((i + 1) * perAngle).xRot(right_angle + angle1.x).yRot(angle1.y).scale(posA).add(_pos1) : lastNodePos_2[i];
+                            VertexBuilder builder = new VertexBuilder(THObjectContainerRenderer.BUFFER_2);
+                            builder.positionColorColorUvUvNormal(pose.pose(), calculatedPos3_1.toVector3f(), coreColor, GRAY, 0.5f, 2.0f, 0.0f, 2.0f, pose.normal(), normal3_1);
+                            builder.positionColorColorUvUvNormal(pose.pose(), calculatedPos4_1.toVector3f(), coreColor, GRAY, 0.5f, 2.0f, 0.0f, 2.0f, pose.normal(), normal4_1);
+                            builder.positionColorColorUvUvNormal(pose.pose(), calculatedPos4_2.toVector3f(), coreColor, GRAY, 0.5f, 2.0f, 0.0f, 2.0f, pose.normal(), normal4_2);
+                            builder.positionColorColorUvUvNormal(pose.pose(), calculatedPos3_2.toVector3f(), coreColor, GRAY, 0.5f, 2.0f, 0.0f, 2.0f, pose.normal(), normal3_2);
 
-                                Vec3 normal1_1 = lastNormal_1[i] == null ? pos0.yRot(i * perAngle).xRot(right_angle + angle1.x).yRot(angle1.y) : lastNormal_1[i];
-                                Vec3 normal1_2 = lastNormal_2[i] == null ? pos0.yRot((i + 1) * perAngle).xRot(right_angle + angle1.x).yRot(angle1.y) : lastNormal_2[i];
+                            //external render
+                            Vec3 calculatedPos1_1 = lastNodePos_1[i] == null ? aaa1.scale(posA).add(_pos1) : lastNodePos_1[i];
+                            Vec3 calculatedPos1_2 = lastNodePos_2[i] == null ? aaa2.scale(posA).add(_pos1) : lastNodePos_2[i];
 
-                                Vec3 calculatedPos2_1 = pos0.yRot(i * perAngle).xRot(right_angle + angle2.x).yRot(angle2.y).scale(posB).add(_pos2);
-                                Vec3 calculatedPos2_2 = pos0.yRot((i + 1) * perAngle).xRot(right_angle + angle2.x).yRot(angle2.y).scale(posB).add(_pos2);
+                            Vec3 calculatedPos2_1 = aaa3.scale(posB).add(_pos2);
+                            Vec3 calculatedPos2_2 = aaa4.scale(posB).add(_pos2);
 
-                                Vec3 normal2_1 = pos0.yRot(i * perAngle).xRot(right_angle + angle2.x).yRot(angle2.y);
-                                Vec3 normal2_2 = pos0.yRot((i + 1) * perAngle).xRot(right_angle + angle2.x).yRot(angle2.y);
+                            lastNodePos_1[i] = calculatedPos2_1;
+                            lastNodePos_2[i] = calculatedPos2_2;
 
-                                lastNodePos_1[i] = calculatedPos2_1;
-                                lastNodePos_2[i] = calculatedPos2_2;
+                            builder = new VertexBuilder(vertexConsumer);
+                            builder.positionColorColorUvUvNormal(pose.pose(), calculatedPos1_1.toVector3f(), laserColor, coreColor2, 0.4f, 2.0f, -0.1f, 2.0f, pose.normal(), normal3_1);
+                            builder.positionColorColorUvUvNormal(pose.pose(), calculatedPos2_1.toVector3f(), laserColor, coreColor2, 0.4f, 2.0f, -0.1f, 2.0f, pose.normal(), normal4_1);
+                            builder.positionColorColorUvUvNormal(pose.pose(), calculatedPos2_2.toVector3f(), laserColor, coreColor2, 0.4f, 2.0f, -0.1f, 2.0f, pose.normal(), normal4_2);
+                            builder.positionColorColorUvUvNormal(pose.pose(), calculatedPos1_2.toVector3f(), laserColor, coreColor2, 0.4f, 2.0f, -0.1f, 2.0f, pose.normal(), normal3_2);
 
-                                lastNormal_1[i] = normal2_1;
-                                lastNormal_2[i] = normal2_2;
-
-                                VertexBuilder builder = new VertexBuilder(vertexConsumer);
-                                builder.positionColorColorUvUvNormal(pose.pose(),calculatedPos1_1.toVector3f(), laserColor,coreColor2, 0.4f,2.0f, -0.1f,2.0f, pose.normal(),normal1_1.toVector3f());
-                                builder.positionColorColorUvUvNormal(pose.pose(),calculatedPos2_1.toVector3f(), laserColor,coreColor2, 0.4f,2.0f, -0.1f,2.0f, pose.normal(),normal2_1.toVector3f());
-                                builder.positionColorColorUvUvNormal(pose.pose(),calculatedPos2_2.toVector3f(), laserColor,coreColor2, 0.4f,2.0f, -0.1f,2.0f, pose.normal(),normal2_2.toVector3f());
-                                builder.positionColorColorUvUvNormal(pose.pose(),calculatedPos1_2.toVector3f(), laserColor,coreColor2, 0.4f,2.0f, -0.1f,2.0f, pose.normal(),normal1_2.toVector3f());
-
-                            }
                         }
                     }
                 }
                 index += 1;
             }
-            renderCore = false;
-            renderExternal = true;
         }
     }
 
