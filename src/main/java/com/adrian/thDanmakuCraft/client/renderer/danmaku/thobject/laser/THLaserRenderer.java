@@ -38,8 +38,8 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
         Vec3 pos = laser.getLaserCenterForRender(partialTicks);
         poseStack.translate(pos.x,pos.y,pos.z);
         poseStack.mulPose(new Quaternionf().rotationYXZ(-rotation.y, rotation.x + Mth.PI/2, rotation.z));
-        float laserWidth = laser.getWidthForRender(partialTicks);
-        float laserLength = laser.getLengthForRender(partialTicks);
+        float laserWidth = laser.getWidthForRender(partialTicks)/2;
+        float laserLength = laser.getLengthForRender(partialTicks)/2;
         Vector3f scale = new Vector3f(laserWidth,laserLength,laserWidth);
         Color laserCoreColor = laser.getColor();
         Color laserColor = laser.getLaserColor().multiply(laserCoreColor);
@@ -88,14 +88,16 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
     @Override
     public void renderHitBox(THLaser laser, Vec3 objectPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer){
         poseStack.pushPose();
-        Vector3f rotation = laser.getRotation();
-        Vec3 pos = laser.getLaserCenter();
+        Vector3f rotation = laser.getOffsetRotation(partialTicks);
+        Vec3 pos = laser.getLaserCenterForRender(partialTicks);
         poseStack.translate(pos.x,pos.y,pos.z);
         poseStack.mulPose(new Quaternionf().rotationYXZ(-rotation.y,rotation.x,rotation.z));
         Color color = new  Color(0,255,255,255);
+        float width = laser.getWidthForRender(partialTicks)/2;
+        float length = laser.getLengthForRender(partialTicks)/2;
         RenderUtil.renderSphere(vertexConsumer,poseStack.last(),1,
                 ConstantUtil.VECTOR3F_ZERO,
-                new Vector3f(laser.getWidth()*0.6f,laser.getWidth()*0.6f,laser.getLength()),
+                new Vector3f(width*0.6f,width*0.6f,length),
                 6,8,false,
                 Vec2.ZERO,
                 Vec2.ONE,

@@ -95,19 +95,19 @@ public class THLaser extends THObject {
     }
 
     public void vectorTo(Vec3 vec3){
-        this.length = (float) vec3.length()/2;
-        this.setRotationByDirectionalVector(vec3);
+        this.length = (float) vec3.length();
+        this.setRotationByDirectionalVector(vec3.normalize());
     }
 
     public Vec3 getLaserCenter(){
         Vector3f rotation = this.getRotation();
-        return new Vec3(0.0f,0.0f,1.0f).xRot(-rotation.x).yRot(-rotation.y).scale(length);
+        return new Vec3(0.0f,0.0f,1.0f).xRot(-rotation.x).yRot(-rotation.y).scale(length/2);
     }
 
     public Vec3 getLaserCenterForRender(float partialTick){
         Vector3f rotation = this.getOffsetRotation(partialTick);
         float length = Mth.lerp(partialTick,this.lastLength,this.length);
-        return new Vec3(0.0f,0.0f,1.0f).xRot(-rotation.x).yRot(-rotation.y).scale(length);
+        return new Vec3(0.0f,0.0f,1.0f).xRot(-rotation.x).yRot(-rotation.y).scale(length/2);
     }
 
     @Override
@@ -130,7 +130,7 @@ public class THLaser extends THObject {
 
                 if (CollisionType.Ellipsoid(
                         this.getPosition().add(this.getLaserCenter()),
-                        new Vec3(width*0.6f, width*0.6f, length*0.9f),
+                        new Vec3(width/2*0.6f, width/2*0.6f, length/2*0.9f),
                         new Vector3f(-r.x, -r.y, -r.z),
                         entity.getBoundingBox())) {
                     this.shouldSetDeadWhenCollision = false;

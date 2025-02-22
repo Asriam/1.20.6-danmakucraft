@@ -129,7 +129,7 @@ public class THObjectContainerRenderer {
                             poseStack.pushPose();
                             renderer.render(object, objectPos, partialTicks, poseStack, builder, combinedOverlay);
                             poseStack.popPose();
-                            if(shouldRenderHitBox) {
+                            if(shouldRenderHitBox && object.collision) {
                                 renderer.renderHitBox(object, objectPos, partialTicks, poseStack, HIT_BOX_BUFFER);
                             }
                             poseStack.popPose();

@@ -152,20 +152,20 @@ function yukari_spellcrad_2:onInit()
         local pos0 = self:getPosition()
         local pos = util.vec3.new(10,0,0):yRot(-Mth.DEG_TO_RAD*90*i)
         self:createTHLaser(yukari_spellcrad_2_laser_1,
-                {pos0,util.vec3.new(0,0,0),pos,1.0}
+                {pos0,util.vec3.new(0,0,0),pos,2.0}
         )
 
         self:createTHLaser(yukari_spellcrad_2_laser_1,
-                {pos0,pos:yRot(-Mth.DEG_TO_RAD*90 * ((i+3)%2-0.5)*2), pos,1.0}
+                {pos0,pos:yRot(-Mth.DEG_TO_RAD*90 * ((i+3)%2-0.5)*2), pos,2.0}
         )
 
         local pos2 = util.vec3.new(20,0,0):yRot(-Mth.DEG_TO_RAD*90*i)
         self:createTHLaser(yukari_spellcrad_2_laser_2,
-                {pos0,util.vec3.new(0,0,0),pos2,1.0}
+                {pos0,util.vec3.new(0,0,0),pos2,2.0}
         )
 
         self:createTHLaser(yukari_spellcrad_2_laser_2,
-                {pos0,pos2:yRot(-Mth.DEG_TO_RAD*90 * ((i+3)%2-0.5)*2), pos2,1.0}
+                {pos0,pos2:yRot(-Mth.DEG_TO_RAD*90 * ((i+3)%2-0.5)*2), pos2,2.0}
         )
     end
 end
