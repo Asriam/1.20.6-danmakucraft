@@ -3,10 +3,10 @@ package com.adrian.thDanmakuCraft.events;
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
+import com.adrian.thDanmakuCraft.client.renderer.entity.EntityTHSpellCardRenderer;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.world.entity.Entity;
@@ -26,44 +26,25 @@ import java.util.Map;
 @Mod.EventBusSubscriber(modid = THDanmakuCraftMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class RenderEvents {
     private static final Map<String, RenderLevelStageTask> renderLevelStageTasks = new HashMap<>();
-
     public static int renderTickCount = 0;
-
     private static Minecraft minecraft = Minecraft.getInstance();
     @SubscribeEvent
     public static void renderLevelStage(RenderLevelStageEvent event) {
         Matrix4f pose = event.getPoseStack();
         PoseStack poseStack = new PoseStack();
         float partialTick = event.getPartialTick();
-
-        /*if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES){
-            List<THObject> objects = Lists.newArrayList();
-            for(Entity entity : minecraft.level.entitiesForRendering()){
-                if (entity instanceof EntityTHObjectContainer container){
-                    objects.addAll(container.getContainer().getObjectManager().getTHObjects());
-                }
-            }
-            //poseStack.mulPose(pose);
-            poseStack.pushPose();
-            THObjectContainerRenderer.renderTHObjects(
-                    minecraft.getEntityRenderDispatcher(),
-                    minecraft.levelRenderer.getFrustum(),
-                    objects,
-                    minecraft.level.tickRateManager().isFrozen() ? 1.0f : partialTick,
-                    poseStack,
-                    minecraft.renderBuffers().bufferSource(),
-                    1);
-            poseStack.popPose();
-        }*/
-
         for (RenderLevelStageTask renderHelper: renderLevelStageTasks.values()){
             if (event.getStage() == renderHelper.stage){
                 renderHelper.render(poseStack,partialTick);
             }
         }
+
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES){
+            afterRenderEntities(event.getLevelRenderer(),partialTick);
+        }
     }
 
-    public static void beforeRenderingEntities(LevelRenderer levelRenderer, float partialTick, Camera camera){
+    public static void beforeRenderEntities(LevelRenderer levelRenderer, float partialTick){
         PoseStack poseStack = new PoseStack();
         List<THObject> objects = Lists.newArrayList();
         for(Entity entity : minecraft.level.entitiesForRendering()){
@@ -81,7 +62,15 @@ public class RenderEvents {
                 minecraft.renderBuffers().bufferSource(),
                 1);
         poseStack.popPose();
+
+        EntityTHSpellCardRenderer.beforeRenderEntities(levelRenderer,partialTick);
     }
+
+    public static void afterRenderEntities(LevelRenderer levelRenderer, float partialTick){
+        EntityTHSpellCardRenderer.afterRenderEntities(levelRenderer,partialTick);
+    }
+
+
 
     public static void registerRenderLevelStageTask(String name, RenderLevelStageEvent.Stage stage, RenderTask renderHelper){
         renderLevelStageTasks.computeIfAbsent(name, k -> new RenderLevelStageTask(stage, renderHelper));

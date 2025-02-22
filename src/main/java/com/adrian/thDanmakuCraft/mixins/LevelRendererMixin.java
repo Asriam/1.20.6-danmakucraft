@@ -2,7 +2,6 @@ package com.adrian.thDanmakuCraft.mixins;
 
 import com.adrian.thDanmakuCraft.events.RenderEvents;
 import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
@@ -22,7 +21,7 @@ public class LevelRendererMixin {
     }
 
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;entitiesForRendering()Ljava/lang/Iterable;"))
-    private void renderLevel(float partialTick,
+    private void beforeRenderEntity(float partialTick,
                             long p_109602_,
                             boolean p_109603_,
                             Camera camera,
@@ -31,6 +30,20 @@ public class LevelRendererMixin {
                             Matrix4f pose,
                             Matrix4f p_330527_,
                             CallbackInfo callback){
-        RenderEvents.beforeRenderingEntities(self(), partialTick, camera);
+        RenderEvents.beforeRenderEntities(self(), partialTick);
     }
+
+    /*
+    @Inject(method = "renderLevel", at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/client/multiplayer/ClientLevel;entitiesForRendering()Ljava/lang/Iterable;"))
+    private void afterRenderEntity(float partialTick,
+                            long p_109602_,
+                            boolean p_109603_,
+                            Camera camera,
+                            GameRenderer gameRenderer,
+                            LightTexture lightTexture,
+                            Matrix4f pose,
+                            Matrix4f p_330527_,
+                            CallbackInfo callback){
+        RenderEvents.afterRenderEntities(self(), partialTick);
+    }*/
 }

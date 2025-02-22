@@ -14,6 +14,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -191,5 +192,13 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         RenderSystem.disableCull();
         BufferUploader.drawWithShader(builder1.end());
         renderType.clearRenderState();
+    }
+
+    public static void beforeRenderEntities(LevelRenderer levelRenderer, float partialTick){
+        
+    }
+
+    public static void afterRenderEntities(LevelRenderer levelRenderer, float partialTick){
+
     }
 }

@@ -45,6 +45,26 @@ public class VertexBuilder {
         positionColorUV(pose, pos.x, pos.y, pos.z,color,u,v);
     }
 
+    public void positionUVColor(
+            Matrix4f pose, float x, float y, float z,
+            float u, float v,
+            int r, int g, int b, int a){
+        builder.vertex(pose,x,y,z).uv(u,v).color(r,g,b,a).endVertex();
+    }
+
+    public void positionUVColor(
+            Matrix4f pose, float x, float y, float z,
+            float u, float v,
+            Color color){
+        positionUVColor(pose, x, y, z, u ,v ,color.r, color.g, color.b, color.a);
+    }
+
+    public void positionUVColor(
+            Matrix4f pose, Vector3f pos,
+            float u, float v,
+            Color color){
+        positionUVColor(pose, pos.x, pos.y, pos.z, u ,v ,color.r, color.g, color.b, color.a);
+    }
     public void positionColorColorUV(
             Matrix4f pose, float x, float y, float z,
             int r, int g, int b, int a,
