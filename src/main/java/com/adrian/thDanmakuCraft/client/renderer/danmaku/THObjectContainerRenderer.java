@@ -138,12 +138,12 @@ public class THObjectContainerRenderer {
                         }
                     }
                 }
-
+                BufferBuilder.RenderedBuffer buffer = builder.end();
                 renderType.setupRenderState();
                 if (shouldApplyEffect()) {
                     THObjectContainerRenderer.TEST_RENDER_TARGET.bindWrite(true);
                 }
-                BufferUploader.drawWithShader(builder.end());
+                BufferUploader.drawWithShader(buffer);
                 if (shouldApplyEffect()) {
                     THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
                 }
