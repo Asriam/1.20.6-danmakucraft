@@ -9,6 +9,8 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
 public class ItemSpellCard extends Item {
+    String spellCardKey = "";
+
     public ItemSpellCard(Properties p_41383_) {
         super(p_41383_);
     }

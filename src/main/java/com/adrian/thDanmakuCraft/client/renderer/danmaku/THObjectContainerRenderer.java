@@ -5,18 +5,11 @@ import com.adrian.thDanmakuCraft.client.renderer.*;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRenderers;
-import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.bullet.THBulletRenderers;
 import com.adrian.thDanmakuCraft.events.RenderEvents;
-import com.adrian.thDanmakuCraft.util.Color;
-import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
-import com.adrian.thDanmakuCraft.world.danmaku.thobject.CollisionType;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
-import com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet.THBullet;
-import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THCurvedLaser;
-import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THLaser;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -27,13 +20,10 @@ import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
 
 import java.util.*;
 
@@ -113,34 +103,13 @@ public class THObjectContainerRenderer {
             if (entityRenderDispatcher.shouldRenderHitBoxes()) {
                 BufferBuilder vertexConsumer = (BufferBuilder) bufferSource.getBuffer(RenderType.lines());
                 for (THObject object:objectList) {
-                    if (object != null && (object instanceof THCurvedLaser || shouldRenderTHObject(object, frustum, camX, camY, camZ))) {
+                    AbstractTHObjectRenderer<THObject> renderer = THObjectContainerRenderer.getTHObjectRenderer(object);
+                    if (renderer.shouldRender(object, frustum, camX, camY, camZ) && object.collision) {
                         poseStack.pushPose();
                         Vec3 objectPos = object.getOffsetPosition(partialTicks);
                         poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
-                        if (object.collision) {
-                            if (object instanceof THCurvedLaser laser) {
-                                renderTHCurvedLaserHitBoxes(laser, objectPos, poseStack, vertexConsumer, partialTicks, frustum);
-                            }else if(object instanceof THLaser laser){
-                                poseStack.pushPose();
-                                Vector3f rotation = object.getRotation();
-                                Vec3 pos = laser.getLaserCenter();
-                                poseStack.translate(pos.x,pos.y,pos.z);
-                                poseStack.mulPose(new Quaternionf().rotationYXZ(-rotation.y,rotation.x,rotation.z));
-                                Color color = THObject.Color(0,255,255,255);
-                                RenderUtil.renderSphere(vertexConsumer,poseStack.last(),1,
-                                        ConstantUtil.VECTOR3F_ZERO,
-                                        new Vector3f(laser.getWidth()*0.6f,laser.getWidth()*0.6f,laser.getLength()),
-                                        6,6,false,
-                                        Vec2.ZERO,
-                                        Vec2.ONE,
-                                        color,color,color);
-                                poseStack.popPose();
-                            } else {
-                                renderTHObjectsHitBox(object, poseStack, vertexConsumer);
-                            }
-                        }
+                        renderer.renderHitBox(object, objectPos, partialTicks, poseStack, vertexConsumer);
                         poseStack.popPose();
-
                     }
                 }
             }
@@ -193,83 +162,6 @@ public class THObjectContainerRenderer {
         }
     }
 
-    public static RenderType getRenderType(THObject object) {
-        RenderType renderType;
-        if(object instanceof THBullet bullet) {
-            if(bullet.getStyle().is3D()){
-                renderType = THBulletRenderers.getRenderer(bullet.getStyle()).getRenderType(bullet);
-            }else {
-                renderType = THBulletRenderers.getBullet2DRenderer().getRenderType(bullet);
-            }
-        }else if(object instanceof THCurvedLaser || object instanceof THLaser){
-            renderType = THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(object.getBlend()), true));
-        }else {
-            renderType = THRenderType.RENDER_TYPE_THOBJECT.apply(new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(
-                    object.getImage().getTextureLocation(),
-                    THBlendMode.getBlendMode(object.getBlend()))
-            );
-        }
-        return renderType;
-    }
-
-    static void renderTHObjectsHitBox(@NotNull THObject object, PoseStack poseStack, VertexConsumer vertexConsumer) {
-        AABB aabb = object.getBoundingBox().move(-object.getX(), -object.getY(), -object.getZ());
-        if(object.getCollisionType() == CollisionType.AABB) {
-            LevelRenderer.renderLineBox(poseStack, vertexConsumer, aabb, 0.0F, 1.0F, 1.0F, 1.0F);
-        }else if(object.getCollisionType() == CollisionType.SPHERE){
-            Color color = THObject.Color(0,255,255,255);
-            float size = (float) object.getSize().x;
-            RenderUtil.renderSphere(vertexConsumer,poseStack.last(),1,
-                    ConstantUtil.VECTOR3F_ZERO,
-                    new Vector3f(size,size,size),
-                    6,6,false,
-                    Vec2.ZERO,
-                    Vec2.ONE,
-                    color,color,color);
-        }else if(object.getCollisionType() == CollisionType.ELLIPSOID){
-            poseStack.pushPose();
-            Vector3f rotation = object.getRotation();
-            poseStack.mulPose(new Quaternionf().rotationYXZ(rotation.y,-rotation.x,rotation.z));
-            Color color = THObject.Color(0,255,255,255);
-            RenderUtil.renderSphere(vertexConsumer,poseStack.last(),1,
-                    ConstantUtil.VECTOR3F_ZERO,
-                    object.getSize().toVector3f(),
-                    6,6,false,
-                    Vec2.ZERO,
-                    Vec2.ONE,
-                    color,color,color);
-            poseStack.popPose();
-
-
-        }
-
-        Vec3 vec31 = object.getMotionDirection();
-        Matrix4f matrix4f = poseStack.last().pose();
-        //Matrix3f matrix3f = poseStack.last().normal();
-        vertexConsumer.vertex(matrix4f, 0.0F, 0.0F, 0.0F).color(0, 0, 255, 255).normal(poseStack.last(), (float)vec31.x, (float)vec31.y, (float)vec31.z).endVertex();
-        vertexConsumer.vertex(matrix4f, (float)(vec31.x * 2.0D), (float)((vec31.y * 2.0D)), (float)(vec31.z * 2.0D)).color(0, 0, 255, 255).normal(poseStack.last(), (float)vec31.x, (float)vec31.y, (float)vec31.z).endVertex();
-    }
-
-    static void renderTHCurvedLaserHitBoxes(THCurvedLaser laser, Vec3 laserPos, PoseStack poseStack, VertexConsumer vertexConsumer, float partialTicks, Frustum frustum){
-        List<THCurvedLaser.NodeManager.LaserNode> nodes = laser.nodeManager.getAllNodes();
-        for(THCurvedLaser.NodeManager.LaserNode node: nodes){
-            Vec3 pos = node.getPosition();
-            AABB aabb = node.getBoundingBoxForCulling().inflate(0.5D);
-            if (aabb.hasNaN() || aabb.getSize() == 0.0D) {
-                aabb = new AABB(pos.x() - 2.0D, pos.y() - 2.0D, pos.z() - 2.0D, pos.x() + 2.0D, pos.y() + 2.0D, pos.z() + 2.0D);
-            }
-
-            if (node.isValid() && frustum.isVisible(aabb)) {
-                poseStack.pushPose();
-                AABB aabb2 = node.getBoundingBox().move(-pos.x(), -pos.y(), -pos.z());
-                Vec3 offsetPos = laserPos.vectorTo(node.getOffsetPosition(partialTicks));
-                poseStack.translate(offsetPos.x(), offsetPos.y(), offsetPos.z());
-                LevelRenderer.renderLineBox(poseStack, vertexConsumer, aabb2, 0.0F, 1.0F, 1.0F, 1.0F);
-                poseStack.popPose();
-            }
-        }
-    }
-
     public static List<THObject> layerObjects(List<THObject> list, double camX, double camY, double camZ){
         if (list == null || list.size() <= 1) {
             return list;
@@ -294,21 +186,6 @@ public class THObjectContainerRenderer {
     public static void renderContainerBound(THObjectContainer container, PoseStack poseStack, VertexConsumer vertexConsumer) {
         AABB aabb = container.getContainerBound().move(container.getPosition().reverse());
         LevelRenderer.renderLineBox(poseStack, vertexConsumer, aabb, 0.0F, 0.0F, 1.0F, 1.0F);
-    }
-
-    public static boolean shouldRenderTHObject(THObject object, Frustum frustum, double camX, double camY, double camZ) {
-        if (!object.shouldRender(camX,camY,camZ)) {
-            return false;
-        } else if (object.noCulling) {
-            return true;
-        } else {
-            AABB aabb = object.getBoundingBoxForCulling().inflate(0.5D);
-            if (aabb.hasNaN() || aabb.getSize() == 0.0D) {
-                aabb = new AABB(object.getX() - 2.0D, object.getY() - 2.0D, object.getZ() - 2.0D, object.getX() + 2.0D, object.getY() + 2.0D, object.getZ() + 2.0D);
-            }
-
-            return frustum.isVisible(aabb);
-        }
     }
 
     public static void applyEffect(PoseStack poseStack, float partialTick){

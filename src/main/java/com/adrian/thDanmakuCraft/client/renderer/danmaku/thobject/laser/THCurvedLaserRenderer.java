@@ -10,9 +10,11 @@ import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.util.VertexBuilder;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THCurvedLaser;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THLaser;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.util.Mth;
@@ -256,5 +258,30 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
     @Override
     public boolean shouldRender(THCurvedLaser object, Frustum frustum, double camX, double camY, double camZ) {
         return true;
+    }
+
+    @Override
+    public void renderHitBox(THCurvedLaser laser, Vec3 objectPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer){
+        renderTHCurvedLaserHitBoxes(laser, objectPos, poseStack, vertexConsumer, partialTicks, this.getFrustum());
+    }
+
+    static void renderTHCurvedLaserHitBoxes(THCurvedLaser laser, Vec3 laserPos, PoseStack poseStack, VertexConsumer vertexConsumer, float partialTicks, Frustum frustum){
+        List<THCurvedLaser.NodeManager.LaserNode> nodes = laser.nodeManager.getAllNodes();
+        for(THCurvedLaser.NodeManager.LaserNode node: nodes){
+            Vec3 pos = node.getPosition();
+            AABB aabb = node.getBoundingBoxForCulling().inflate(0.5D);
+            if (aabb.hasNaN() || aabb.getSize() == 0.0D) {
+                aabb = new AABB(pos.x() - 2.0D, pos.y() - 2.0D, pos.z() - 2.0D, pos.x() + 2.0D, pos.y() + 2.0D, pos.z() + 2.0D);
+            }
+
+            if (node.isValid() && frustum.isVisible(aabb)) {
+                poseStack.pushPose();
+                AABB aabb2 = node.getBoundingBox().move(-pos.x(), -pos.y(), -pos.z());
+                Vec3 offsetPos = laserPos.vectorTo(node.getOffsetPosition(partialTicks));
+                poseStack.translate(offsetPos.x(), offsetPos.y(), offsetPos.z());
+                LevelRenderer.renderLineBox(poseStack, vertexConsumer, aabb2, 0.0F, 1.0F, 1.0F, 1.0F);
+                poseStack.popPose();
+            }
+        }
     }
 }

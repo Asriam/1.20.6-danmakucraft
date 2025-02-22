@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 public class TaskManager<T> implements IDataStorage, ILuaValue{
+    public static final Integer MAX_TASK_SIZE = 256;
     /// 註冊好的Task
     private final Map<String, AbstractTask<T>> registryTasks = Maps.newHashMap();
     /// 正在ticking的Task
@@ -92,6 +93,11 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         return registryTasks.containsKey(taskName);
     }
     public void startTask(String taskName, int lifetime, int delay){
+        if(this.tickingTasks.size() > MAX_TASK_SIZE){
+            THDanmakuCraftMod.LOGGER.warn("task list is full! you cannot simultaneously run more than {} tasks!",MAX_TASK_SIZE);
+            return;
+        }
+
         if (registryTasks.containsKey(taskName)){
             AbstractTask<T> task = getRegisteredTask(taskName);
             task.lifetime = lifetime;

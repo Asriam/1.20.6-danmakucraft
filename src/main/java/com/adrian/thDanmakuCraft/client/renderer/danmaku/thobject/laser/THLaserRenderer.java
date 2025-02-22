@@ -84,4 +84,22 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
     public boolean shouldRender(THLaser object, Frustum frustum, double camX, double camY, double camZ) {
         return true;
     }
+
+    @Override
+    public void renderHitBox(THLaser laser, Vec3 objectPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer){
+        poseStack.pushPose();
+        Vector3f rotation = laser.getRotation();
+        Vec3 pos = laser.getLaserCenter();
+        poseStack.translate(pos.x,pos.y,pos.z);
+        poseStack.mulPose(new Quaternionf().rotationYXZ(-rotation.y,rotation.x,rotation.z));
+        Color color = new  Color(0,255,255,255);
+        RenderUtil.renderSphere(vertexConsumer,poseStack.last(),1,
+                ConstantUtil.VECTOR3F_ZERO,
+                new Vector3f(laser.getWidth()*0.6f,laser.getWidth()*0.6f,laser.getLength()),
+                6,6,false,
+                Vec2.ZERO,
+                Vec2.ONE,
+                color,color,color);
+        poseStack.popPose();
+    }
 }

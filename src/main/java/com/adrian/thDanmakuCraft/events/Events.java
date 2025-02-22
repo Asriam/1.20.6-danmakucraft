@@ -17,6 +17,8 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ResourceArgument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -25,6 +27,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
 
 @Mod.EventBusSubscriber
 public class Events {
@@ -45,34 +48,58 @@ public class Events {
         event.getDispatcher().register(Commands.literal("spellcard")
                 .requires(s -> s.hasPermission(2))
                 .then(Commands.literal("test")
-                    .then(Commands.argument("spellcardkey", StringArgumentType.string())
-                        .suggests((commandContext, builder) -> {
-                            for (String keys : LuaCore.getInstance().spellCardClassKeys) {
-                                builder.suggest(keys);
-                            }
-                            return builder.buildFuture();
-                        }).then(Commands.argument("position",Vec3Argument.vec3()).executes(arguments -> {
-                            var source = arguments.getSource();
-                            var player = source.getPlayer();
-                            var level = source.getLevel();
-                            EntityTHObjectContainer entityTHObjectContainer = new EntityTHSpellCard(null, level, "");
-                            entityTHObjectContainer.setPos(Vec3Argument.getVec3(arguments, "position"));
-                            level.addFreshEntity(entityTHObjectContainer);
-                            entityTHObjectContainer.getContainer().setLuaClass(StringArgumentType.getString(arguments, "spellcardkey"));
-                            return 15;
-                        }))))
+                        .then(Commands.argument("spellcardkey", StringArgumentType.string())
+                                .suggests((commandContext, builder) -> {
+                                    for (String keys : LuaCore.getInstance().spellCardClassKeys) {
+                                        builder.suggest(keys);
+                                    }
+                                    return builder.buildFuture();
+                                }).executes(arguments -> {
+                                    String spellCardKey = StringArgumentType.getString(arguments, "spellcardkey");
+                                    /*if (!LuaCore.getInstance().spellCardClassKeys.contains(spellCardKey)){
+                                        return 0;
+                                    }*/
+                                    var source = arguments.getSource();
+                                    var player = source.getPlayer();
+                                    var level = source.getLevel();
+                                    EntityTHObjectContainer entityTHObjectContainer = new EntityTHSpellCard(null, level, "");
+                                    entityTHObjectContainer.setPos(player.position());
+                                    level.addFreshEntity(entityTHObjectContainer);
+                                    entityTHObjectContainer.getContainer().setLuaClass(spellCardKey);
+                                    return 15;
+                                }).then(Commands.argument("position", Vec3Argument.vec3()).executes(arguments -> {
+                                    String spellCardKey = StringArgumentType.getString(arguments, "spellcardkey");
+                                    var source = arguments.getSource();
+                                    var player = source.getPlayer();
+                                    var level = source.getLevel();
+                                    EntityTHObjectContainer entityTHObjectContainer = new EntityTHSpellCard(null, level, "");
+                                    entityTHObjectContainer.setPos(Vec3Argument.getVec3(arguments, "position"));
+                                    level.addFreshEntity(entityTHObjectContainer);
+                                    entityTHObjectContainer.getContainer().setLuaClass(spellCardKey);
+                                    return 15;
+                                }))))
                 .then(Commands.literal("get")
                         .then(Commands.argument("spellcardkey", StringArgumentType.string())
-                        .suggests((commandContext, builder) -> {
-                            for (String keys : LuaCore.getInstance().spellCardClassKeys) {
-                                builder.suggest(keys);
+                                .suggests((commandContext, builder) -> {
+                                    for (String keys : LuaCore.getInstance().spellCardClassKeys) {
+                                        builder.suggest(keys);
+                                    }
+                                    return builder.buildFuture();
+                                }).executes(arguments -> {
+                                    var source = arguments.getSource();
+                                    var player = source.getPlayer();
+                                    var level = source.getLevel();
+                                    return 15;
+                                })))
+                .then(Commands.literal("clear")
+                        .executes(arguments -> {
+                            ServerLevel serverLevel = arguments.getSource().getLevel();
+                            for (Entity entity : serverLevel.getAllEntities()) {
+                                if (entity instanceof EntityTHSpellCard spellCard) {
+                                    spellCard.discard();
+                                }
                             }
-                            return builder.buildFuture();
-                        }).executes(arguments -> {
-                            var source = arguments.getSource();
-                            var player = source.getPlayer();
-                            var level = source.getLevel();
                             return 15;
-                        }))));
+                        })));
     }
 }

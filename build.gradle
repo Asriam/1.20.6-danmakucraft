@@ -149,10 +149,10 @@ dependencies {
     implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }
     // https://mvnrepository.com/artifact/org.luaj/luaj-jse
     minecraftLibrary 'org.luaj:luaj-jse:3.0.1'
-    /*jarJar(group: 'org.luaj', name: 'luaj-jse', version: '[2.0,3.0)') {
+    jarJar(group: 'org.luaj', name: 'luaj-jse', version: '[2.0,3.0)') {
         // Includes examplelib 2.8.0
         jarJar.pin(it, '3.0.1')
-    }*/
+    }
     // Apply Mixin AP
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
     //clientAnnotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
