@@ -75,7 +75,7 @@ public class THObjectContainerRenderer {
         return false;
     };
 
-    public static Frustum frustum = Minecraft.getInstance().levelRenderer.getFrustum();
+    private static BufferBuilder HIT_BOX_BUFFER = new BufferBuilder(249);
     public static void renderTHObjects(EntityRenderDispatcher entityRenderDispatcher, Frustum frustum, List<THObject> objectList, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int combinedOverlay){
         final Vec3 cameraPosition = entityRenderDispatcher.camera.getPosition();
         final double camX = cameraPosition.x;
@@ -100,7 +100,7 @@ public class THObjectContainerRenderer {
 
         RenderSystem.enableBlend();
         if (!objectList.isEmpty()) {
-            if (entityRenderDispatcher.shouldRenderHitBoxes()) {
+            /*if (entityRenderDispatcher.shouldRenderHitBoxes()) {
                 BufferBuilder vertexConsumer = (BufferBuilder) bufferSource.getBuffer(RenderType.lines());
                 for (THObject object:objectList) {
                     AbstractTHObjectRenderer<THObject> renderer = THObjectContainerRenderer.getTHObjectRenderer(object);
@@ -112,7 +112,10 @@ public class THObjectContainerRenderer {
                         poseStack.popPose();
                     }
                 }
-            }
+            }*/
+
+            boolean shouldRenderHitBox = entityRenderDispatcher.shouldRenderHitBoxes();
+            RenderType renderTypeLines = RenderType.lines();
 
             Map<RenderType,List<THObject>> map = new HashMap<>();
             for (THObject object : objectList) {
@@ -125,6 +128,9 @@ public class THObjectContainerRenderer {
                 List<THObject> sortedList = layerObjects(list, camX, camY, camZ);
                 BufferBuilder builder = RenderSystem.renderThreadTesselator().getBuilder();
                 builder.begin(renderType.mode(), renderType.format());
+                if (shouldRenderHitBox){
+                    HIT_BOX_BUFFER.begin(renderTypeLines.mode(), renderTypeLines.format());
+                }
                 for (THObject object : sortedList) {
                     if (object != null) {
                         AbstractTHObjectRenderer<THObject> renderer = THObjectContainerRenderer.getTHObjectRenderer(object);
@@ -132,18 +138,27 @@ public class THObjectContainerRenderer {
                             poseStack.pushPose();
                             Vec3 objectPos = object.getOffsetPosition(partialTicks);
                             poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
-                            //THObjectContainerRenderer.getTHObjectRenderer(object).render(object, objectPos, partialTicks, poseStack, builder, combinedOverlay);
+                            poseStack.pushPose();
                             renderer.render(object, objectPos, partialTicks, poseStack, builder, combinedOverlay);
+                            poseStack.popPose();
+                            if(shouldRenderHitBox) {
+                                renderer.renderHitBox(object, objectPos, partialTicks, poseStack, HIT_BOX_BUFFER);
+                            }
                             poseStack.popPose();
                         }
                     }
                 }
-                BufferBuilder.RenderedBuffer buffer = builder.end();
+                if (shouldRenderHitBox) {
+                    renderTypeLines.setupRenderState();
+                    BufferUploader.drawWithShader(HIT_BOX_BUFFER.end());
+                    renderTypeLines.clearRenderState();
+                }
+
                 renderType.setupRenderState();
                 if (shouldApplyEffect()) {
                     THObjectContainerRenderer.TEST_RENDER_TARGET.bindWrite(true);
                 }
-                BufferUploader.drawWithShader(buffer);
+                BufferUploader.drawWithShader(builder.end());
                 if (shouldApplyEffect()) {
                     THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
                 }
