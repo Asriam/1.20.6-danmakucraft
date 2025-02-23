@@ -1,6 +1,7 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
 import com.adrian.thDanmakuCraft.util.Color;
+import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -93,7 +94,7 @@ public class RenderUtil {
                 }
 
                 Color finalColor = color.subtract(deColor.multiply(i));
-
+                Matrix4f pose$ = pose.pose();
 
                 Vector3f[] pos = new Vector3f[] {
                         new Vector3f(x1*sin1,cos1,z1*sin1),
@@ -101,11 +102,17 @@ public class RenderUtil {
                         new Vector3f(x2*sin2,cos2,z2*sin2),
                         new Vector3f(x1*sin2,cos2,z1*sin2),
                 };
-                Vector3f[] vertex = new Vector3f[] {
+                Vector3f[] vertex = new Vector3f[]{
                         pos[0].mul(radius,new Vector3f()).add(offsetPosition),
                         pos[1].mul(radius,new Vector3f()).add(offsetPosition),
                         pos[2].mul(radius,new Vector3f()).add(offsetPosition),
                         pos[3].mul(radius,new Vector3f()).add(offsetPosition),
+                };
+                Vector3f[] real_position = new Vector3f[]{
+                        pose$.transformPosition(vertex[0],new Vector3f()),
+                        pose$.transformPosition(vertex[1],new Vector3f()),
+                        pose$.transformPosition(vertex[2],new Vector3f()),
+                        pose$.transformPosition(vertex[3],new Vector3f())
                 };
                 Matrix3f pose$normal = pose.normal();
                 Vector3f[] normal;
@@ -119,76 +126,30 @@ public class RenderUtil {
                 }else {
                     normal = pos;
                 }
-                Vector3f camaraPos = new Vector3f(0.0f,0.0f,0.0f);
-                Matrix4f pose$ = pose.pose();
-                //Matrix3f NormalMat = RenderSystem.getModelViewMatrix().normal(new Matrix3f());
+                Vector3f camaraPos = Minecraft.getInstance().getEntityRenderDispatcher().camera.getPosition().subtract(Minecraft.getInstance().player.getEyePosition(Minecraft.getInstance().getPartialTick())).reverse().toVector3f();
+                //Vector3f camaraPos = ConstantUtil.VECTOR3F_ZERO;
                 Vector3f QuadNormal = pose$normal.transform(calculateNormal(vertex[0], vertex[1], vertex[2], vertex[3]));
-                //Vector3f FinalNormal = multiply(NormalMat,QuadNormal);
-                //Color normalColor = new Color((int) ((FinalNormal.x+1)/2*255), (int) ((FinalNormal.y+1)/2*255), (int) ((FinalNormal.z+1)/2*255),255);
-                if(!(
-                        isAngleAcute(pose$.transformPosition(vertex[0], new Vector3f()),QuadNormal,camaraPos) &&
-                        isAngleAcute(pose$.transformPosition(vertex[1], new Vector3f()),QuadNormal,camaraPos) &&
-                        isAngleAcute(pose$.transformPosition(vertex[2], new Vector3f()),QuadNormal,camaraPos) &&
-                        isAngleAcute(pose$.transformPosition(vertex[3], new Vector3f()),QuadNormal,camaraPos)
-                )){
-                    continue;
+                if (inverse){
+                    QuadNormal.mul(-1.0f);
                 }
-
-                /*if(-FinalNormal.z > 0.5f){
-                    continue;
-                }*/
-                if (!inverse) {
+                if((
+                        isAngleAcute(real_position[0],QuadNormal,camaraPos) &&
+                        isAngleAcute(real_position[1],QuadNormal,camaraPos) &&
+                        isAngleAcute(real_position[2],QuadNormal,camaraPos) &&
+                        isAngleAcute(real_position[3],QuadNormal,camaraPos)
+                )) {
                     VertexBuilder builder = new VertexBuilder(consumer);
-                    builder.positionColorColorUvUvNormal(
-                            pose$, vertex[0],
-                            startColor,coreColor,
-                            uvStart.x, uvStart.y,
-                            uvEnd.x, uvEnd.y,
-                            pose$normal, normal[0]);
-                    builder.positionColorColorUvUvNormal(
-                            pose$, vertex[1],
-                            startColor,coreColor,
-                            uvStart.x, uvStart.y,
-                            uvEnd.x, uvEnd.y,
-                            pose$normal, normal[1]);
-                    builder.positionColorColorUvUvNormal(
-                            pose$, vertex[2],
-                            finalColor,coreColor,
-                            uvStart.x, uvStart.y,
-                            uvEnd.x, uvEnd.y,
-                            pose$normal, normal[2]);
-                    builder.positionColorColorUvUvNormal(
-                            pose$, vertex[3],
-                            finalColor,coreColor,
-                            uvStart.x, uvStart.y,
-                            uvEnd.x, uvEnd.y,
-                            pose$normal, normal[3]);
-                }else {
-                    VertexBuilder builder = new VertexBuilder(consumer);
-                    builder.positionColorColorUvUvNormal(
-                            pose$, vertex[3],
-                            finalColor,coreColor,
-                            uvStart.x, uvStart.y,
-                            uvEnd.x, uvEnd.y,
-                            pose$normal, normal[3]);
-                    builder.positionColorColorUvUvNormal(
-                            pose$, vertex[2],
-                            finalColor,coreColor,
-                            uvStart.x, uvStart.y,
-                            uvEnd.x, uvEnd.y,
-                            pose$normal, normal[2]);
-                    builder.positionColorColorUvUvNormal(
-                            pose$, vertex[1],
-                            startColor,coreColor,
-                            uvStart.x, uvStart.y,
-                            uvEnd.x, uvEnd.y,
-                            pose$normal, normal[1]);
-                    builder.positionColorColorUvUvNormal(
-                            pose$, vertex[0],
-                            startColor,coreColor,
-                            uvStart.x, uvStart.y,
-                            uvEnd.x, uvEnd.y,
-                            pose$normal, normal[0]);
+                    if (!inverse) {
+                        builder.vertex(real_position[0]).color(startColor).color(coreColor).uv(uvStart.x, uvStart.y).uv(uvEnd.x, uvEnd.y).normal(pose$normal, normal[0]).endVertex();
+                        builder.vertex(real_position[1]).color(startColor).color(coreColor).uv(uvStart.x, uvStart.y).uv(uvEnd.x, uvEnd.y).normal(pose$normal, normal[1]).endVertex();
+                        builder.vertex(real_position[2]).color(finalColor).color(coreColor).uv(uvStart.x, uvStart.y).uv(uvEnd.x, uvEnd.y).normal(pose$normal, normal[2]).endVertex();
+                        builder.vertex(real_position[3]).color(finalColor).color(coreColor).uv(uvStart.x, uvStart.y).uv(uvEnd.x, uvEnd.y).normal(pose$normal, normal[3]).endVertex();
+                    } else {
+                        builder.vertex(real_position[3]).color(finalColor).color(coreColor).uv(uvStart.x, uvStart.y).uv(uvEnd.x, uvEnd.y).normal(pose$normal, normal[3]).endVertex();
+                        builder.vertex(real_position[2]).color(finalColor).color(coreColor).uv(uvStart.x, uvStart.y).uv(uvEnd.x, uvEnd.y).normal(pose$normal, normal[2]).endVertex();
+                        builder.vertex(real_position[1]).color(startColor).color(coreColor).uv(uvStart.x, uvStart.y).uv(uvEnd.x, uvEnd.y).normal(pose$normal, normal[1]).endVertex();
+                        builder.vertex(real_position[0]).color(startColor).color(coreColor).uv(uvStart.x, uvStart.y).uv(uvEnd.x, uvEnd.y).normal(pose$normal, normal[0]).endVertex();
+                    }
                 }
                 startColor = finalColor;
             }
@@ -203,7 +164,7 @@ public class RenderUtil {
         float dotProduct = normal.dot(viewDirection);
 
         // 判斷夾角是否是銳角
-        return dotProduct > 0;
+        return dotProduct > 0.0f;
     }
     public static Vector3f multiply(Matrix3f mat3, Vector3f vec3) {
         float x = vec3.x * mat3.m00 + vec3.y * mat3.m10 + vec3.z * mat3.m20;

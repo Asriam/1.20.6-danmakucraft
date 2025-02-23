@@ -99,22 +99,30 @@ public class THBulletRenderers {
                 THBulletRenderer.BULLET_LEVEL_OF_DETAIL cull = THBulletRenderer.BULLET_LEVEL_OF_DETAIL.getQualityLevel(bullet, camPos.x, camPos.y, camPos.z);
                 int edgeA = cull.edgeANum;
                 int edgeB = cull.edgeBNum;
+                this.shouldCull = true;
                 Vector3f offset = new Vector3f(0.0f, -0.45f, 0.0f);
-                /*RenderUtil.renderSphere(vertexconsumer, posestack_pose, 2,
+                RenderUtil.renderSphere(vertexconsumer, posestack_pose, 2,
                         offset.add(0.0f, 0.4f, 0.0f, new Vector3f()),
                         coreScale,
                         edgeA, edgeB, false,
                         new Vec2(0.8f, 1.0f),
                         new Vec2(0.2f, 3.0f),
                         color, 20, coreColor);
-                RenderUtil.renderSphere(vertexconsumer, posestack_pose, 1.2f,
+                /*RenderUtil.renderSphere(vertexconsumer, posestack_pose, 1.2f,
                         offset,
                         scale,
                         edgeA, edgeB, true,
                         new Vec2(0.4f, 2.0f),
                         new Vec2(0.4f, 2.0f),
                         color, 0, coreColor.multiply(0.3f));*/
-                this.shouldCull = true;
+                RenderUtil.renderSphere(vertexconsumer, posestack_pose, 1.2f,
+                        offset,
+                        scale,
+                        edgeA, edgeB, true,
+                        new Vec2(0.4f, 2.0f),
+                        new Vec2(0.4f, 2.0f),
+                        color, color.setAlpha(0), coreColor.multiply(0.3f),true,false);
+                /*this.shouldCull = true;
                 new SphereRenderer(
                         offset.add(0.0f, 0.4f, 0.0f, new Vector3f()), coreScale,
                         edgeA, edgeB,
@@ -141,7 +149,7 @@ public class THBulletRenderers {
                             0.4f, 2.0f,
                             0.4f, 2.0f,
                             posestack_pose.normal(), normal);
-                });
+                });*/
             }
         }
 
