@@ -13,6 +13,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
@@ -35,11 +36,11 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
     public static void renderLaser(THLaser laser, Vec3 laserPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer){
         poseStack.pushPose();
         Vector3f rotation = laser.getOffsetRotation(partialTicks);
-        Vec3 pos = laser.getLaserCenterForRender(partialTicks);
+        Vec3 pos = laser.getOffsetLaserCenter(partialTicks);
         poseStack.translate(pos.x,pos.y,pos.z);
         poseStack.mulPose(new Quaternionf().rotationYXZ(-rotation.y, rotation.x + Mth.PI/2, rotation.z));
-        float laserWidth = laser.getWidthForRender(partialTicks)/2;
-        float laserLength = laser.getLengthForRender(partialTicks)/2;
+        float laserWidth = laser.getOffsetWidth(partialTicks)/2;
+        float laserLength = laser.getOffsetLength(partialTicks)/2;
         Vector3f scale = new Vector3f(laserWidth,laserLength,laserWidth);
         Color laserCoreColor = laser.getColor();
         Color laserColor = laser.getLaserColor().multiply(laserCoreColor);
@@ -81,20 +82,33 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
     }
 
     @Override
-    public boolean shouldRender(THLaser object, Frustum frustum, double camX, double camY, double camZ) {
-        return true;
+    public boolean shouldRender(THLaser laser, Frustum frustum, double camX, double camY, double camZ) {
+        Vec3 closetPoint = laser.getClosetPoint(new Vec3(camX,camY,camZ));
+        Vec3 startPos = laser.getPosition();
+        Vec3 endPos = laser.getEndPos();
+        float width = laser.getWidth();
+        return frustum.isVisible(new AABB(
+                closetPoint.x-width,closetPoint.y-width,closetPoint.z-width,
+                closetPoint.x+width,closetPoint.y+width,closetPoint.z+width
+        )) || frustum.isVisible(new AABB(
+                startPos.x-width,startPos.y-width,startPos.z-width,
+                startPos.x+width,startPos.y+width,startPos.z+width
+        )) || frustum.isVisible(new AABB(
+                endPos.x-width,endPos.y-width,endPos.z-width,
+                endPos.x+width,endPos.y+width,endPos.z+width
+        ));
     }
 
     @Override
     public void renderHitBox(THLaser laser, Vec3 objectPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer){
         poseStack.pushPose();
         Vector3f rotation = laser.getOffsetRotation(partialTicks);
-        Vec3 pos = laser.getLaserCenterForRender(partialTicks);
+        Vec3 pos = laser.getOffsetLaserCenter(partialTicks);
         poseStack.translate(pos.x,pos.y,pos.z);
         poseStack.mulPose(new Quaternionf().rotationYXZ(-rotation.y,rotation.x,rotation.z));
         Color color = new  Color(0,255,255,255);
-        float width = laser.getWidthForRender(partialTicks)/2;
-        float length = laser.getLengthForRender(partialTicks)/2;
+        float width = laser.getOffsetWidth(partialTicks)/2;
+        float length = laser.getOffsetLength(partialTicks)/2;
         RenderUtil.renderSphere(vertexConsumer,poseStack.last(),1,
                 ConstantUtil.VECTOR3F_ZERO,
                 new Vector3f(width*0.6f,width*0.6f,length),

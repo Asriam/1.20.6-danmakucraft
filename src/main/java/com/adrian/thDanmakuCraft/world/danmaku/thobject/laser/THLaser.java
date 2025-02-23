@@ -1,10 +1,10 @@
 package com.adrian.thDanmakuCraft.world.danmaku.thobject.laser;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.CompoundTagUtil;
 import com.adrian.thDanmakuCraft.util.FriendlyByteBufUtil;
+import com.adrian.thDanmakuCraft.util.MathUtil;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
 import com.adrian.thDanmakuCraft.world.LuaValueHelper;
 import com.adrian.thDanmakuCraft.world.danmaku.ITHObjectContainer;
@@ -99,12 +99,37 @@ public class THLaser extends THObject {
         this.setRotationByDirectionalVector(vec3.normalize());
     }
 
+    public Vec3 getVector(){
+        Vector3f rotation = this.getRotation();
+        return new Vec3(0.0f,0.0f,1.0f).xRot(-rotation.x).yRot(-rotation.y).scale(this.length);
+    }
+
+    public Vec3 getOffsetVector(float partialTicks){
+        Vector3f rotation = this.getOffsetRotation(partialTicks);
+        return new Vec3(0.0f,0.0f,1.0f).xRot(-rotation.x).yRot(-rotation.y).scale(this.getOffsetLength(partialTicks));
+    }
+
+    public Vec3 getEndPos(){
+        return this.getPosition().add(this.getVector());
+    }
+
+    public Vec3 getOffsetEndPos(float partialTicks){
+        return this.getOffsetPosition(partialTicks).add(this.getOffsetVector(partialTicks));
+    }
+    public Vec3 getClosetPoint(Vec3 camaraPos){
+        return MathUtil.getClosestPointOnSegment(this.getPosition(),this.getEndPos(),camaraPos);
+    }
+
+    public Vec3 getOffsetClosetPoint(Vec3 camaraPos, float partialTicks){
+        return MathUtil.getClosestPointOnSegment(this.getOffsetPosition(partialTicks),this.getOffsetEndPos(partialTicks),camaraPos);
+    }
+
     public Vec3 getLaserCenter(){
         Vector3f rotation = this.getRotation();
         return new Vec3(0.0f,0.0f,1.0f).xRot(-rotation.x).yRot(-rotation.y).scale(length/2);
     }
 
-    public Vec3 getLaserCenterForRender(float partialTick){
+    public Vec3 getOffsetLaserCenter(float partialTick){
         Vector3f rotation = this.getOffsetRotation(partialTick);
         float length = Mth.lerp(partialTick,this.lastLength,this.length);
         return new Vec3(0.0f,0.0f,1.0f).xRot(-rotation.x).yRot(-rotation.y).scale(length/2);
@@ -158,11 +183,11 @@ public class THLaser extends THObject {
         return this.length;
     }
 
-    public float getWidthForRender(float partialTick){
+    public float getOffsetWidth(float partialTick){
         return Mth.lerp(partialTick,lastWidth,width);
     }
 
-    public float getLengthForRender(float partialTick){
+    public float getOffsetLength(float partialTick){
         return Mth.lerp(partialTick,lastLength,length);
     }
 

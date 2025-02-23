@@ -53,7 +53,7 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
         );
         Color coreColor = laser.color;
         var nodes0 = laser.nodeManager.getAllNodes();
-        float width = laser.getWidthForRender(partialTicks);
+        float width = laser.getOffsetWidth(partialTicks);
         if(laser.spawnAnimation && false) {
             float width2 = width * 3.0f * (float) Math.pow((double) (nodes0.size() - (laser.getTimer() + partialTicks)) / nodes0.size(), 0.4f);
             if (width2 > 0) {
