@@ -28,7 +28,7 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
     }
 
     @Override
-    public void render(THLaser laser, Vec3 laserPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer, int combinedOverlay) {
+    public void render(THLaser laser, Vec3 laserPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer) {
         renderLaser(laser, laserPos, partialTicks, poseStack, vertexConsumer);
     }
 

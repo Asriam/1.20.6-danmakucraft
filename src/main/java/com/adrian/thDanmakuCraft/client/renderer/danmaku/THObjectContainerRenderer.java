@@ -128,7 +128,7 @@ public class THObjectContainerRenderer {
                             Vec3 objectPos = object.getOffsetPosition(partialTicks);
                             poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
                             poseStack.pushPose();
-                            renderer.render(object, objectPos, partialTicks, poseStack, builder, combinedOverlay);
+                            renderer.render(object, objectPos, partialTicks, poseStack, builder);
                             poseStack.popPose();
                             if(shouldRenderHitBox && object.collision) {
                                 renderer.renderHitBox(object, objectPos, partialTicks, poseStack, HIT_BOX_BUFFER);

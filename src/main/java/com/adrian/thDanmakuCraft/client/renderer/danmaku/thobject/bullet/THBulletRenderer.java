@@ -27,16 +27,16 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
     }
 
     @Override
-    public void render(THBullet bullet, Vec3 bulletPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer, int combinedOverlay) {
+    public void render(THBullet bullet, Vec3 bulletPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer) {
         if (bullet.color.a <= 0) {
             return;
         }
         //poseStack.pushPose();
-        this.renderTHBullet(bullet.getStyle(), bullet, bulletPos, partialTicks, poseStack, vertexConsumer, combinedOverlay);
+        this.renderTHBullet(bullet.getStyle(), bullet, bulletPos, partialTicks, poseStack, vertexConsumer);
         //poseStack.popPose();
     }
 
-    public void renderTHBullet(THBullet.DefaultBulletStyle style, THBullet bullet, Vec3 bulletPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer, int overlay) {
+    public void renderTHBullet(THBullet.DefaultBulletStyle style, THBullet bullet, Vec3 bulletPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer) {
         //poseStack.pushPose();
         THBulletRenderers.THBulletRendererFactory factory = THBulletRenderers.getRenderer(style);
         if (style.is3D() && factory != null) {
@@ -69,7 +69,7 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
                     Vector3f rotation = bullet.getRotation();
                     poseStack.mulPose(new Quaternionf().rotationYXZ(rotation.y, -rotation.x + Mth.DEG_TO_RAD * 90.0f, rotation.z));
                 }
-                THBulletRenderers.render3DBullet(this, bullet, poseStack, vertexConsumer, factory, partialTicks, overlay);
+                THBulletRenderers.render3DBullet(this, bullet, poseStack, vertexConsumer, factory, partialTicks);
             }
 
         } else {
@@ -77,7 +77,7 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
             Vec2 rotation = THObject.VectorAngleToRadAngle(this.getRenderDispatcher().camera.getPosition().vectorTo(bulletPos));
             poseStack.mulPose(new Quaternionf().rotateY(rotation.y).rotateX(-rotation.x));
             poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
-            THBulletRenderers.render2DBullet(this, bullet, poseStack, vertexConsumer, partialTicks, overlay);
+            THBulletRenderers.render2DBullet(this, bullet, poseStack, vertexConsumer, partialTicks);
         }
         //poseStack.popPose();
     }

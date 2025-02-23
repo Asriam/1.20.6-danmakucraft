@@ -33,7 +33,7 @@ public abstract class AbstractTHObjectRenderer<T extends THObject>{
     public AbstractTHObjectRenderer(THObjectRendererProvider.Context context) {
     }
 
-    public abstract void render(T object, Vec3 objectPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer, int combinedOverlay);
+    public abstract void render(T object, Vec3 objectPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer);
 
     public RenderType getRenderType(T object){
         return THRenderType.RENDER_TYPE_THOBJECT.apply(

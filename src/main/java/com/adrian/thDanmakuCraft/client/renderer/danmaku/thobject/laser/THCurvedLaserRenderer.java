@@ -37,7 +37,7 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
     }
 
     @Override
-    public void render(THCurvedLaser laser, Vec3 laserPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer, int combinedOverlay) {
+    public void render(THCurvedLaser laser, Vec3 laserPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer) {
         if (laser.color.a <= 0) {
             return;
         }

@@ -21,7 +21,7 @@ public class THObjectRenderer extends AbstractTHObjectRenderer<THObject> {
         super(context);
     }
 
-    public void render(THObject object, Vec3 objectPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer, int combinedOverlay) {
+    public void render(THObject object, Vec3 objectPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer) {
         if (object.color.a <= 0) {
             return;
         }
