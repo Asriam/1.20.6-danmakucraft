@@ -125,7 +125,7 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
             }
             d4 *= d4;
 
-            if(distSquare < d4*distOfLevel[0]*distOfLevel[0]){
+            if      (distSquare < d4*distOfLevel[0]*distOfLevel[0]){
                 return VERY_VERY_CLOSE;
             }else if(distSquare < d4*distOfLevel[1]*distOfLevel[1]){
                 return VERY_CLOSE;

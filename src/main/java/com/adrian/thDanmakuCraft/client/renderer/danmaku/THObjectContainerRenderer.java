@@ -101,6 +101,7 @@ public class THObjectContainerRenderer {
 
         RenderSystem.enableBlend();
         if (!objectList.isEmpty()) {
+            ///Batching
             boolean shouldRenderHitBox = entityRenderDispatcher.shouldRenderHitBoxes();
             RenderType renderTypeLines = RenderType.lines();
 

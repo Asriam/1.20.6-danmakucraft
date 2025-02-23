@@ -6,26 +6,43 @@ import org.joml.Vector3f;
 
 public class SphereRenderer {
 
-    private final int edgeA;
+    //private final int edgeA;
     private final int edgeB;
     private final Vector3f radius;
     private final float pow;
-    private final boolean isHalf;
+    //private final boolean isHalf;
     private final Color startColor;
-    private final Color endColor;
+    //private final Color endColor;
     private final boolean isStraight;
     private final Vector3f offsetPosition;
+    private final int edgeADiv2;
+    private final Color deColor;
+    private final float angle1;
+    private final float angle2;
 
     public SphereRenderer(Vector3f offsetPosition, Vector3f radius, int edgeA, int edgeB, float pow, boolean isHalf, Color startColor, Color endColor, boolean isStraight) {
-        this.edgeA = edgeA;
+        //this.edgeA = edgeA;
         this.edgeB = edgeB;
         this.offsetPosition = offsetPosition;
         this.radius = radius;
         this.pow = pow;
-        this.isHalf = isHalf;
+        //this.isHalf = isHalf;
         this.startColor = startColor;
-        this.endColor = endColor;
+        //this.endColor = endColor;
         this.isStraight = isStraight;
+        this.edgeADiv2 = Mth.floor(edgeA / 2.0f);
+        int edge3 = edgeADiv2-1;
+        if (isHalf){
+            angle1 = Mth.DEG_TO_RAD * (90.0f/edgeADiv2);
+        }else {
+            angle1 = Mth.DEG_TO_RAD * (180.0f/edgeADiv2);
+        }
+        angle2 = Mth.DEG_TO_RAD * (360.0f/edgeB);
+        this.deColor = Color.of(
+                (startColor.r - endColor.r)/ edge3,
+                (startColor.g - endColor.g)/ edge3,
+                (startColor.b - endColor.b)/ edge3,
+                (startColor.a - endColor.a)/ edge3);
     }
 
     public SphereRenderer(Vector3f offsetPosition, Vector3f radius, int edgeA, int edgeB, float pow, Color startColor, Color endColor){
@@ -33,25 +50,6 @@ public class SphereRenderer {
     }
 
     public void render(VertexHelper helper){
-        int edgeADiv2 = Mth.floor(edgeA / 2.0f);
-        float angle1;
-        float angle2;
-
-        if (isHalf){
-            angle1 = Mth.DEG_TO_RAD * (90.0f/edgeADiv2);
-        }else {
-            angle1 = Mth.DEG_TO_RAD * (180.0f/edgeADiv2);
-        }
-
-        angle2 = Mth.DEG_TO_RAD * (360.0f/edgeB);
-        int edge3 = edgeADiv2-1;
-
-        Color deColor = Color.of(
-                (startColor.r - endColor.r)/ edge3,
-                (startColor.g - endColor.g)/ edge3,
-                (startColor.b - endColor.b)/ edge3,
-                (startColor.a - endColor.a)/ edge3);
-
         for (int j = 0; j < edgeB; j++) {
             float x1 = Mth.cos((angle2 * j));
             float z1 = Mth.sin((angle2 * j));
@@ -66,14 +64,8 @@ public class SphereRenderer {
                 float sin02 = Mth.sin((i + 1) * angle1);
                 float cos2 = Mth.cos((i + 1) * angle1);
 
-                float sin1, sin2;
-                if (pow == 1.0f) {
-                    sin1 = sin01;
-                    sin2 = sin02;
-                } else {
-                    sin1 = (float) Math.pow(sin01, pow);
-                    sin2 = (float) Math.pow(sin02, pow);
-                }
+                float sin1 = pow == 1.0f ? sin01 : (float) Math.pow(sin01, pow);
+                float sin2 = pow == 1.0f ? sin02 : (float) Math.pow(sin02, pow);
 
                 Color finalColor = this.startColor.subtract(deColor.multiply(i));
 
