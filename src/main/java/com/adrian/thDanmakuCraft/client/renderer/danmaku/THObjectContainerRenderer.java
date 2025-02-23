@@ -77,6 +77,7 @@ public class THObjectContainerRenderer {
 
     private static final BufferBuilder HIT_BOX_BUFFER = new BufferBuilder(896);
     public static final BufferBuilder BUFFER_2 = new BufferBuilder(897);
+
     public static void renderTHObjects(EntityRenderDispatcher entityRenderDispatcher, Frustum frustum, List<THObject> objectList, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int combinedOverlay){
         final Vec3 cameraPosition = entityRenderDispatcher.camera.getPosition();
         final double camX = cameraPosition.x;
@@ -101,11 +102,10 @@ public class THObjectContainerRenderer {
 
         RenderSystem.enableBlend();
         if (!objectList.isEmpty()) {
-            ///Batching
             boolean shouldRenderHitBox = entityRenderDispatcher.shouldRenderHitBoxes();
             RenderType renderTypeLines = RenderType.lines();
-
-            Map<RenderType,List<THObject>> map = new HashMap<>();
+            ///Batching
+            Map<RenderType, List<THObject>> map = new HashMap<>();
             for (THObject object : objectList) {
                 RenderType renderType = THObjectContainerRenderer.getTHObjectRenderer(object).getRenderType(object);
                 map.computeIfAbsent(renderType, (key) -> new ArrayList<>()).add(object);
@@ -116,7 +116,7 @@ public class THObjectContainerRenderer {
                 List<THObject> sortedList = layerObjects(list, camX, camY, camZ);
                 BufferBuilder builder = RenderSystem.renderThreadTesselator().getBuilder();
                 builder.begin(renderType.mode(), renderType.format());
-                if (shouldRenderHitBox){
+                if (shouldRenderHitBox) {
                     HIT_BOX_BUFFER.begin(renderTypeLines.mode(), renderTypeLines.format());
                 }
                 BUFFER_2.begin(renderType.mode(), renderType.format());
@@ -130,7 +130,7 @@ public class THObjectContainerRenderer {
                             poseStack.pushPose();
                             renderer.render(object, objectPos, partialTicks, poseStack, builder);
                             poseStack.popPose();
-                            if(shouldRenderHitBox && object.collision) {
+                            if (shouldRenderHitBox && object.collision) {
                                 renderer.renderHitBox(object, objectPos, partialTicks, poseStack, HIT_BOX_BUFFER);
                             }
                             poseStack.popPose();
@@ -142,21 +142,19 @@ public class THObjectContainerRenderer {
                     BufferUploader.drawWithShader(HIT_BOX_BUFFER.end());
                     renderTypeLines.clearRenderState();
                 }
+                if (shouldApplyEffect()) {
+                    THObjectContainerRenderer.TEST_RENDER_TARGET.bindWrite(true);
+                }
                 renderType.setupRenderState();
                 BufferUploader.drawWithShader(BUFFER_2.end());
                 BufferUploader.drawWithShader(builder.end());
                 renderType.clearRenderState();
-                /*renderType.setupRenderState();
                 if (shouldApplyEffect()) {
-                    THObjectContainerRenderer.TEST_RENDER_TARGET.bindWrite(true);
-                }
-                BufferUploader.drawWithShader(builder.end());*if (shouldApplyEffect()) {
                     THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
                 }
-                renderType.clearRenderState();*/
             }
+            map.clear();
         }
-
         RenderSystem.blendEquation(32774);
         RenderSystem.disableBlend();
         RenderSystem.defaultBlendFunc();

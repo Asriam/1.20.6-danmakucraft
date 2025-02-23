@@ -46,6 +46,9 @@ end
 
 util.vec3 = vec3
 
+vec3.zero = vec3.new(0, 0, 0)
+vec3.one = vec3.new(1, 1, 1)
+
 ---@param _vec3 util.Vec3
 ---@return util.Vec3
 function vec3:vectorTo(_vec3)

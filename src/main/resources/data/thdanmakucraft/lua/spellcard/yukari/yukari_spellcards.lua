@@ -31,7 +31,7 @@ function yukari_spellcrad_1:onTick()
     local bbb = function(_pos,_angle)
         self:createTHBullet(yukari_spellcrad_1_bullet_1,
                 {_pos:add(_angle:scale(math.min(timer/120,1)^0.4*1.6)),_angle},
-                _pos,bullet_styles.arrow_big,3)
+                _pos,bullet_styles.grain_a,3)
     end
 
     if timer < 300 then
@@ -151,7 +151,7 @@ function yukari_spellcrad_2:onInit()
         local pos0 = self:getPosition()
         local pos = util.vec3.new(10,0,0):yRot(-Mth.DEG_TO_RAD*90*i)
         self:createTHLaser(yukari_spellcrad_2_laser_1,
-                {pos0,util.vec3.new(0,0,0),pos,2.0}
+                {pos0,util.vec3.zero,pos,2.0}
         )
 
         self:createTHLaser(yukari_spellcrad_2_laser_1,
@@ -160,7 +160,7 @@ function yukari_spellcrad_2:onInit()
 
         local pos2 = util.vec3.new(20,0,0):yRot(-Mth.DEG_TO_RAD*90*i)
         self:createTHLaser(yukari_spellcrad_2_laser_2,
-                {pos0,util.vec3.new(0,0,0),pos2,2.0}
+                {pos0,util.vec3.zero,pos2,2.0}
         )
 
         self:createTHLaser(yukari_spellcrad_2_laser_2,

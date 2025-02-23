@@ -24,8 +24,6 @@ out float vertexDistance;
 
 void main() {
     mat3 normalMat = mat3(transpose(inverse(ModelViewMat)));
-    normal = normalize(normalMat * Normal);
-
     vec4 viewSpace = ModelViewMat * vec4(Position, 1.0f);
     viewDir = vec3(viewSpace);
     //real position
@@ -37,6 +35,6 @@ void main() {
     //vertCoord = UV;
     vertCoord = vec2(0.0f,0.0f);
     params = vec4(UV2,UV3);
-
+    normal = normalize(normalMat * Normal);
     vertexDistance = fog_distance(Position, FogShape);
 }

@@ -33,19 +33,19 @@ function c.vec2(x, y) end
 ---@return util.Vec3
 function c.vec3(x, y, z) end
 
+---@generic T:Class
 ---@param className string
----@param superClass Class
----@return Class
----@overload fun(className:string, superClass:Class)
----@overload fun(className:string, superClass:string)
+---@param superClass T
+---@return Class|T
+---@overload fun(className:string, superClass:T)
 ---@overload fun()
----@overload fun(superClass:Class)
+---@overload fun(superClass:T)
 ---@overload fun(className:string)
 function c.defineClass(className, superClass) end
 
 ---@param className string
 ---@param superClass Class
----@return Class
+---@return Class|THObjectContainer
 ---@overload fun(className:string)
 function c.defineSpellCardClass(className, superClass) end
 

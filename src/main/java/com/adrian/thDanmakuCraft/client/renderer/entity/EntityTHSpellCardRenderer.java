@@ -58,7 +58,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         float rotate = (timer)/10.0f;
         float time = 30.0f;
         float open = timer > time ? 1.0f : (float) Math.pow(Math.min(timer / time,1.0f),0.8f);
-        float close = timer < container.getLifetime()-time ? 1.0f : 1.0f - (float) Math.pow(Math.clamp((timer-(container.getLifetime())) / time,0.0f,1.0f),2.0f);
+        float close = timer < container.getLifetime()-time ? 1.0f : 1.0f - (float) Math.pow(Math.clamp((timer-container.getLifetime()+time) / time,0.0f,1.0f),2.0f);
         float timeLeft = 1.0f-(float) container.getTimer()/container.getLifetime();
         Vec2 faceCamRotation = THObject.VectorAngleToRadAngle(this.getRenderDispatcher().camera.getPosition().vectorTo(pos));
         Vec2 scale = Vec2.ONE
@@ -90,7 +90,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
             color = new Color(180,180,255,160);
             time = 40.0f;
             open = timer > time ? 1.0f : (float) Math.pow(Math.min(timer / time,1.0f),0.8f);
-            close = timer < container.getLifetime()-time ? 1.0f : 1.0f - (float) Math.pow(Math.clamp((timer-(container.getLifetime())) / time,0.0f,1.0f),0.8f);
+            close = timer < container.getLifetime()-time ? 1.0f : 1.0f - (float) Math.pow(Math.clamp((timer-container.getLifetime()) / time,0.0f,1.0f),0.8f);
             float width = 1.6f * timeLeft * 1.4f;
             float width2 = width*3.0f;
             float num = 4.0f;

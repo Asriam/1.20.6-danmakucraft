@@ -625,6 +625,12 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
                 return LuaValue.NIL;
             }
         };
+        protected static final LibFunction isClientSide = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                return LuaValue.valueOf(checkTHObjectContainer(luaValue0).level().isClientSide());
+            }
+        };
         private static LuaValue functions() {
             LuaValue library = LuaValue.tableOf();
             library.set("getMaxObjectAmount", getMaxObjectAmount);
@@ -643,6 +649,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
             library.set("newTHObject", newTHObject);
             library.set("setSpellCardName", setSpellCardName);
             library.set("setLifetime", setLifetime);
+            library.set("isClientSide", isClientSide);
             return library;
         }
     }

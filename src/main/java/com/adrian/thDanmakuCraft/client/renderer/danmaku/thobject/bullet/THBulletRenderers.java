@@ -240,7 +240,7 @@ public class THBulletRenderers {
                         offset,
                         scale,
                         edgeA, edgeB, false,
-                        new Vec2(0.5f, 2.0f),
+                        new Vec2(0.4f, 3.0f),
                         new Vec2(0.1f, 2.0f),
                         color, color.multiply(0.5f), coreColor);
             }

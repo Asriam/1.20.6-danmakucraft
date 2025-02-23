@@ -132,7 +132,7 @@ function container2:onTick()
     ---@param _pos util.Vec3
     ---@param _angle util.Vec3
     local bbb = function(_pos,_angle)
-        local bullet2 = self:createTHBullet(nil, {i}, _pos,"grain_a",3)
+        local bullet2 = self:createTHBullet(nil, {}, _pos,"grain_a",3)
         bullet2:setPosition(_pos:add(_angle:scale(2.0)))
         bullet2:setVelocity(_angle:scale(0.2),true)
         bullet2:setAccelerationFromDirection(0.02,_angle)
@@ -162,4 +162,25 @@ function container2:onTick()
         local angle3 = rotation:xRot(Mth.DEG_TO_RAD*90-Mth.DEG_TO_RAD*180):xRot(rotate.x):yRot(rotate.y)
         bbb(pos,angle3)
     end
+end
+
+---@type Class|THObjectContainer
+local container3 = core.defineClass("testContainer3")
+function container3:onInit()
+    self:setSpellCardName("test")
+    local _s = 0
+    for key, style in pairs(bullet_styles) do
+        for _i=1,16 do
+            local bullet = self:createTHBullet(nil, {}, self:getPosition(), style, _i)
+            bullet:setPosition(self:getPosition():add(util.vec3.new(_i*2,0,_s*2)))
+            bullet:setLifetime(300)
+            bullet:setBlend("add")
+        end
+        print(style)
+        _s = _s + 1
+    end
+end
+
+function container3:onTick()
+
 end
