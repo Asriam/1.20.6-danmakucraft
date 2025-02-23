@@ -43,8 +43,8 @@ function testLaser:onInit(i)
     self.params = {}
     self.params.angle = 360/num*i
     self:setWidth(0.01)
-    self:growWidth(0.5,120)
-    self.taskManager:startTask("laser_width_set",120)
+    self:growWidth(1,120)
+    --self.taskManager:startTask("laser_width_set",120)
     print(self:isClientSide())
 end
 
@@ -82,7 +82,7 @@ function container:onConstruct()
     --self.autosave:register("userRot")
 end
 
-function container:onRegisterTasks()
+function container:onRegisterTasks(taskManager)
     self.taskManager:registerTask("test", function(target, timer)
         print("sad"..timer)
     end)

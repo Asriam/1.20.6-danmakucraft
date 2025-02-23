@@ -31,6 +31,8 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
     ///  LuaValue形式
     private final LuaValue luaValueForm;
 
+    public boolean canRegister = false;
+
     public TaskManager(T target){
         this.target = target;
         this.luaValueForm = this.ofLuaClass();
@@ -76,6 +78,13 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
     }
 
     public void registerTask(String taskName, AbstractTask<T> task){
+        if(!canRegister){
+            try {
+                throw new IllegalAccessException("You cannot register any tasks outer register method!");
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
         registryTasks.put(taskName, task);
         task.taskName = taskName;
     }

@@ -3,7 +3,7 @@ package com.adrian.thDanmakuCraft.client.renderer.entity;
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.client.renderer.THBlendMode;
 import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
-import com.adrian.thDanmakuCraft.util.VertexBuilder;
+import com.adrian.thDanmakuCraft.client.renderer.VertexBuilder;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.IImage;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
@@ -85,13 +85,9 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
             }
         }
 
-        if(!container.shouldRenderLineAura){
-            return;
-        }
-
-        color = new Color(180,180,255,160);
-        int sample = 12;
-        {
+        if(container.shouldRenderLineAura){
+            int sample = 12;
+            color = new Color(180,180,255,160);
             time = 40.0f;
             open = timer > time ? 1.0f : (float) Math.pow(Math.min(timer / time,1.0f),0.8f);
             close = timer < container.getLifetime()-time ? 1.0f : 1.0f - (float) Math.pow(Math.clamp((timer-(container.getLifetime())) / time,0.0f,1.0f),0.8f);

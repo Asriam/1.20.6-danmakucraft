@@ -99,4 +99,24 @@ public class Color {
     public int[] getAll() {
         return new int[]{r, g, b, a};
     }
+
+    public Color copy() {
+        return new Color(r, g, b, a);
+    }
+
+    public Color setRed(int r){
+        return new Color(r, g, b, a);
+    }
+
+    public Color setGreen(int g){
+        return new Color(r, g, b, a);
+    }
+
+    public Color setBlue(int b){
+        return new Color(r, g, b, a);
+    }
+
+    public Color setAlpha(int a){
+        return new Color(r, g, b, a);
+    }
 }

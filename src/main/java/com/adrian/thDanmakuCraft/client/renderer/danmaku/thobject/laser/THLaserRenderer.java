@@ -45,22 +45,22 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
         Color laserColor = laser.getLaserColor().multiply(laserCoreColor);
         int edgeA = 12;
         int edgeB = 8;
-        /*RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 2,
+        RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 2,
                 ConstantUtil.VECTOR3F_ZERO,
                 scale,
                 edgeA, edgeB, false,
-                new Vec2(0.45f, 3.0f),
-                new Vec2(0.4f, 1.0f),
-                laserColor,
+                new Vec2(0.5f, 3.0f),
+                new Vec2(0.5f, 1.0f),
+                laserColor.multiply(0.8f),
                 laserColor.multiply(0.1f),
-                laserCoreColor,false,true);*/
-        RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 2,
+                laserCoreColor,false,false);
+        /*RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 2,
                 ConstantUtil.VECTOR3F_ZERO,
                 scale.mul(0.6f,0.8f,0.6f,new Vector3f()),
                 edgeA, edgeB, false,
                 new Vec2(0.0f, 1.0f),
                 new Vec2(0.3f, 1.0f),
-                laserCoreColor,
+                laserCoreColor.multiply(0.8f),
                 laserCoreColor.multiply(0.5f),
                 laserCoreColor);
         RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 2,
@@ -69,9 +69,9 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
                 edgeA, edgeB, false,
                 new Vec2(0.0f, 1.0f),
                 new Vec2(0.3f, 1.0f),
-                laserColor,
-                laserColor.multiply(0.1f),
-                laserCoreColor,false,true);
+                laserColor.multiply(0.6f),
+                laserColor.multiply(0.3f),
+                laserCoreColor,false,true);*/
         poseStack.popPose();
     }
 

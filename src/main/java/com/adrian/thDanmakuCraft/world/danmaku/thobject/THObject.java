@@ -94,7 +94,9 @@ public class THObject implements ILuaValue, IGetContainer {
         this.container = container;
         this.uuid = Mth.createInsecureUUID(this.random);
         this.initPosition(container.getPosition());
+        this.taskManager.canRegister = true;
         this.registerTasks();
+        this.taskManager.canRegister = false;
         //this.luaValueForm = this.ofLuaValue();
     }
 
@@ -112,7 +114,9 @@ public class THObject implements ILuaValue, IGetContainer {
 
     }
     public void registerLuaTasks(){
+        this.taskManager.canRegister = true;
         this.invokeScriptEvent("onRegisterTasks", this.ofLuaValue(), this.taskManager.ofLuaValue());
+        this.taskManager.canRegister = false;
         this.taskManager.restartLazyTasks();
     }
 

@@ -3,7 +3,7 @@ package com.adrian.thDanmakuCraft.client.gui.components;
 import com.adrian.thDanmakuCraft.events.TickEvents;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
-import com.adrian.thDanmakuCraft.util.VertexBuilder;
+import com.adrian.thDanmakuCraft.client.renderer.VertexBuilder;
 import com.adrian.thDanmakuCraft.world.entity.spellcard.EntityTHSpellCard;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Window;

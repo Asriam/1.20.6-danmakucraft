@@ -1,11 +1,9 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
 import com.adrian.thDanmakuCraft.util.Color;
-import com.adrian.thDanmakuCraft.util.VertexBuilder;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -48,7 +46,7 @@ public class RenderUtil {
         ).normalize();
     }
 
-    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, float pow, Vector3f offsetPosition, Vector3f scale, final int edgeA, final int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, Color color, Color endColor, Color coreColor, boolean inverse, boolean isStraight) {
+    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, float pow, Vector3f offsetPosition, Vector3f radius, final int edgeA, final int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, Color color, Color endColor, Color coreColor, boolean inverse, boolean isStraight) {
         Color startColor = color;
         int edgeADiv2 = Mth.floor(edgeA / 2.0f);
         float angle1;
@@ -102,10 +100,10 @@ public class RenderUtil {
                         new Vector3f(x1*sin2,cos2,z1*sin2),
                 };
                 Vector3f[] vertex = new Vector3f[] {
-                        pos[0].mul(scale,new Vector3f()).add(offsetPosition),
-                        pos[1].mul(scale,new Vector3f()).add(offsetPosition),
-                        pos[2].mul(scale,new Vector3f()).add(offsetPosition),
-                        pos[3].mul(scale,new Vector3f()).add(offsetPosition),
+                        pos[0].mul(radius,new Vector3f()).add(offsetPosition),
+                        pos[1].mul(radius,new Vector3f()).add(offsetPosition),
+                        pos[2].mul(radius,new Vector3f()).add(offsetPosition),
+                        pos[3].mul(radius,new Vector3f()).add(offsetPosition),
                 };
                 Vector3f[] normal;
                 if (isStraight){
@@ -185,11 +183,11 @@ public class RenderUtil {
         return new Vector3f(x, y, z);
     }
 
-    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, float pow, Vector3f offsetPosition, Vector3f scale, final int edgeA, final int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, Color color, Color endColor, Color coreColor) {
-        renderSphere(consumer, pose, pow, offsetPosition, scale, edgeA, edgeB, isHalf, uvStart, uvEnd, color, endColor, coreColor,false,false);
+    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, float pow, Vector3f offsetPosition, Vector3f radius, final int edgeA, final int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, Color color, Color endColor, Color coreColor) {
+        renderSphere(consumer, pose, pow, offsetPosition, radius, edgeA, edgeB, isHalf, uvStart, uvEnd, color, endColor, coreColor,false,false);
     }
-    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, float pow, Vector3f offsetPosition, Vector3f scale, int edgeA, int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, Color color, int alpha, Color coreColor) {
-        renderSphere(consumer,pose,pow,offsetPosition,scale,edgeA,edgeB,isHalf,uvStart,uvEnd,color,THObject.Color(color.r,color.g,color.b,alpha),coreColor);
+    public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, float pow, Vector3f offsetPosition, Vector3f radius, int edgeA, int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, Color color, int alpha, Color coreColor) {
+        renderSphere(consumer,pose,pow,offsetPosition,radius,edgeA,edgeB,isHalf,uvStart,uvEnd,color,THObject.Color(color.r,color.g,color.b,alpha),coreColor);
     }
 
     public static void renderCuboid(VertexConsumer consumer, PoseStack.Pose pose, Vec3 posOffset, Vec3 scale){

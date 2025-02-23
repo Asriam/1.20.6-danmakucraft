@@ -1,9 +1,8 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject;
 
-import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.IImage;
-import com.adrian.thDanmakuCraft.util.VertexBuilder;
+import com.adrian.thDanmakuCraft.client.renderer.VertexBuilder;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;

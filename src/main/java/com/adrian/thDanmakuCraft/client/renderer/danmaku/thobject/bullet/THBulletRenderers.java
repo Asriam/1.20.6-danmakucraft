@@ -3,7 +3,9 @@ package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.bullet;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.THBlendMode;
 import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
-import com.adrian.thDanmakuCraft.util.VertexBuilder;
+import com.adrian.thDanmakuCraft.client.renderer.VertexBuilder;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
+import com.adrian.thDanmakuCraft.client.renderer.shape.SphereRenderer;
 import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.util.IImage;
 import com.adrian.thDanmakuCraft.util.Color;
@@ -98,21 +100,48 @@ public class THBulletRenderers {
                 int edgeA = cull.edgeANum;
                 int edgeB = cull.edgeBNum;
                 Vector3f offset = new Vector3f(0.0f, -0.45f, 0.0f);
-                RenderUtil.renderSphere(vertexconsumer, posestack_pose, 2,
+                /*RenderUtil.renderSphere(vertexconsumer, posestack_pose, 2,
                         offset.add(0.0f, 0.4f, 0.0f, new Vector3f()),
                         coreScale,
                         edgeA, edgeB, false,
-                        new Vec2(0.5f, 2.0f),
-                        new Vec2(0.4f, 2.0f),
-                        coreColor.multiply(0.6f), 0, Color.WHITE().multiply(0.5f));
-                this.shouldCull = false;
+                        new Vec2(0.8f, 1.0f),
+                        new Vec2(0.2f, 3.0f),
+                        color, 20, coreColor);
                 RenderUtil.renderSphere(vertexconsumer, posestack_pose, 1.2f,
                         offset,
                         scale,
                         edgeA, edgeB, true,
-                        new Vec2(0.6f, 1.0f),
-                        new Vec2(0.6f, 2.0f),
-                        color, 0, coreColor.multiply(0.3f));
+                        new Vec2(0.4f, 2.0f),
+                        new Vec2(0.4f, 2.0f),
+                        color, 0, coreColor.multiply(0.3f));*/
+                this.shouldCull = true;
+                new SphereRenderer(
+                        offset.add(0.0f, 0.4f, 0.0f, new Vector3f()), coreScale,
+                        edgeA, edgeB,
+                        1.0f, false,
+                        color.multiply(0.6f), color.multiply(0.3f), false
+                ).render((pos, normal, vertexColor) -> {
+                    new VertexBuilder(THObjectContainerRenderer.BUFFER_2).positionColorColorUvUvNormal(
+                            posestack_pose.pose(), pos,
+                            vertexColor, coreColor,
+                            0.8f, 1.0f,
+                            0.2f, 3.0f,
+                            posestack_pose.normal(), normal);
+                });
+                this.shouldCull = false;
+                new SphereRenderer(
+                        offset, scale,
+                        edgeA, edgeB,
+                        1.2f, true,
+                        color, color.setAlpha(0), false
+                ).render((pos, normal, vertexColor) -> {
+                    new VertexBuilder(vertexconsumer).positionColorColorUvUvNormal(
+                            posestack_pose.pose(), pos,
+                            vertexColor, coreColor.multiply(0.3f),
+                            0.4f, 2.0f,
+                            0.4f, 2.0f,
+                            posestack_pose.normal(), normal);
+                });
             }
         }
 
@@ -211,8 +240,8 @@ public class THBulletRenderers {
                         offset,
                         scale,
                         edgeA, edgeB, false,
-                        new Vec2(0.5f, 3.0f),
-                        new Vec2(0.0f, 3.0f),
+                        new Vec2(0.5f, 2.0f),
+                        new Vec2(0.1f, 2.0f),
                         color, color.multiply(0.5f), coreColor);
             }
         }
@@ -229,9 +258,9 @@ public class THBulletRenderers {
                         ConstantUtil.VECTOR3F_ZERO,
                         coreScale,
                         edgeA, edgeB, false,
-                        new Vec2(0.5f, 2.0f),
+                        new Vec2(0.8f, 2.0f),
                         new Vec2(0.0f, 2.0f),
-                        coreColor, coreColor.multiply(0.5f), coreColor.multiply(0.5f));
+                        color, color.multiply(0.5f), coreColor);
                 RenderUtil.renderSphere(vertexconsumer, posestack_pose, 2,
                         ConstantUtil.VECTOR3F_ZERO,
                         scale,

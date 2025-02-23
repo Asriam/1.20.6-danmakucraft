@@ -7,7 +7,6 @@
 ---@type Class|THBullet
 local yukari_spellcrad_1_bullet_1 = core.defineClass()
 function yukari_spellcrad_1_bullet_1:onInit(_pos,_angle)
-    self:setStyle(bullet_styles.ball_mid)
     self:setPosition(_pos)
     self:setVelocity(_angle:scale(0.2),true)
     self:setAccelerationFromDirection(0.03,_angle)
@@ -32,7 +31,7 @@ function yukari_spellcrad_1:onTick()
     local bbb = function(_pos,_angle)
         self:createTHBullet(yukari_spellcrad_1_bullet_1,
                 {_pos:add(_angle:scale(math.min(timer/120,1)^0.4*1.6)),_angle},
-                _pos,bullet_styles.grain_a,3)
+                _pos,bullet_styles.grain_b,3)
     end
 
     if timer < 300 then

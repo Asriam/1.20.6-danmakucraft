@@ -65,7 +65,9 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     public THObjectContainer(Entity hostEntity) {
         this.hostEntity = hostEntity;
         this.setMaxObjectAmount(10000);
+        taskManager.canRegister = true;
         this.registerTasks();
+        taskManager.canRegister = false;
         //this.luaValueForm = this.ofLuaClass();
     }
 
@@ -82,7 +84,9 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     }
 
     public void registerLuaTasks(){
+        taskManager.canRegister = true;
         this.invokeScriptEvent("onRegisterTasks", this.ofLuaValue(), this.taskManager.ofLuaValue());
+        taskManager.canRegister = false;
         this.taskManager.restartLazyTasks();
     }
 

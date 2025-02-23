@@ -1,6 +1,8 @@
-package com.adrian.thDanmakuCraft.util;
+package com.adrian.thDanmakuCraft.client.renderer;
 
+import com.adrian.thDanmakuCraft.util.Color;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -11,6 +13,65 @@ public class VertexBuilder {
 
     public VertexBuilder(VertexConsumer builder){
         this.builder = builder;
+    }
+
+    public VertexBuilder vertex(double x, double y, double z){
+        builder.vertex(x,y,z);
+        return this;
+    }
+
+    public VertexBuilder vertex(Matrix4f pose, float x, float y, float z){
+        Vector3f pos = pose.transformPosition(x, y, z, new Vector3f());
+        return this.vertex(pos.x, pos.y, pos.z);
+    }
+
+    public VertexBuilder vertex(Vec3 vec3){
+        return this.vertex(vec3.x,vec3.y,vec3.z);
+    }
+
+    public VertexBuilder vertex(Vector3f vec3){
+        return this.vertex(vec3.x,vec3.y,vec3.z);
+    }
+
+    public VertexBuilder vertex(Matrix4f pose, Vector3f pos){
+        return this.vertex(pose,pos.x,pos.y,pos.z);
+    }
+
+    public VertexBuilder color(int r, int g, int b, int a){
+        builder.color(r,g,b,a);
+        return this;
+    }
+
+    public VertexBuilder color(Color color){
+        return this.color(color.r,color.g,color.b,color.a);
+    }
+
+    public VertexBuilder uv(float u, float v){
+        builder.uv(u,v);
+        return this;
+    }
+
+    public VertexBuilder normal(float nx, float ny, float nz){
+        builder.normal(nx,ny,nz);
+        return this;
+    }
+
+    public VertexBuilder normal(Vector3f normal){
+        return this.normal(normal.x, normal.y, normal.z);
+    }
+
+    public VertexBuilder normal(Matrix3f pose_normal, float nx, float ny, float nz){
+        Vector3f nom = transformNormal(pose_normal, nx, ny, nz);
+        return this.normal(nom.x,nom.y,nom.z);
+    }
+
+    public VertexBuilder normal(Matrix3f pose_normal, Vector3f normal){
+        Vector3f nom = transformNormal(pose_normal, normal);
+        return this.normal(nom.x,nom.y,nom.z);
+    }
+
+    public void endVertex(){
+        this.builder.endVertex();
     }
     public void positionColor(
             Matrix4f pose, float x, float y, float z,
