@@ -200,7 +200,7 @@ public class THBullet extends THObject {
         gun_bullet,
         butterfly,
         square,
-        ball_small(IMAGE_BALL_MID,1.6f,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.SPHERE, true),
+        ball_small(IMAGE_BALL_MID,2.0f,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.SPHERE, true),
         ball_mid(IMAGE_BALL_MID,2.6f,new Vec3(0.3f,0.3f,0.3f),false, CollisionType.SPHERE,false),
         ball_mid_c(IMAGE_BALL_MID),
         ball_big(IMAGE_BALL_MID,3.0f,new Vec3(0.5f,0.5f,0.5f),false, CollisionType.SPHERE, true),

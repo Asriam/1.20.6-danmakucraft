@@ -7,12 +7,12 @@
 
 local m = math
 
+---@param t number
 ---@param a number
 ---@param b number
----@param t number
 ---@return number
 function m.lerp(a, b, t)
-    return b + a * (t - b);
+    return a + t * (b - a);
 end
 
 ---@param number number

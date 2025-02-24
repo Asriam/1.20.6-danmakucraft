@@ -154,3 +154,13 @@ end
 function vec3:lengthSquared()
     return self.x ^ 2 + self.y ^ 2 + self.z ^ 2
 end
+
+---@param _vec3 util.Vec3
+---@param t number
+---@return util.Vec3
+function vec3:lerp(_vec3,t)
+    local x = math.lerp(self.x,_vec3.x,t)
+    local y = math.lerp(self.y,_vec3.y,t)
+    local z = math.lerp(self.z,_vec3.z,t)
+    return vec3.new(x,y,z)
+end

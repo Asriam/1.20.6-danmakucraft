@@ -1,7 +1,12 @@
 package com.adrian.thDanmakuCraft.client.renderer.shape;
 
+import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
+import com.adrian.thDanmakuCraft.client.renderer.VertexBuilder;
 import com.adrian.thDanmakuCraft.util.Color;
+import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import net.minecraft.util.Mth;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 public class SphereRenderer {
@@ -19,9 +24,14 @@ public class SphereRenderer {
     private final Color deColor;
     private final float angle1;
     private final float angle2;
+    private final Matrix4f pose;
+    private final Matrix3f pose_normal;
 
-    public SphereRenderer(Vector3f offsetPosition, Vector3f radius, int edgeA, int edgeB, float pow, boolean isHalf, Color startColor, Color endColor, boolean isStraight) {
+
+    public SphereRenderer(Matrix4f pose, Matrix3f pose_normal,Vector3f offsetPosition, Vector3f radius, int edgeA, int edgeB, float pow, boolean isHalf, Color startColor, Color endColor, boolean isStraight) {
         //this.edgeA = edgeA;
+        this.pose = pose;
+        this.pose_normal = pose_normal;
         this.edgeB = edgeB;
         this.offsetPosition = offsetPosition;
         this.radius = radius;
@@ -45,8 +55,8 @@ public class SphereRenderer {
                 (startColor.a - endColor.a)/ edge3);
     }
 
-    public SphereRenderer(Vector3f offsetPosition, Vector3f radius, int edgeA, int edgeB, float pow, Color startColor, Color endColor){
-        this(offsetPosition,radius,edgeA,edgeB,pow,false,startColor,endColor,false);
+    public SphereRenderer(Matrix4f pose, Matrix3f pose_normal, Vector3f offsetPosition, Vector3f radius, int edgeA, int edgeB, float pow, Color startColor, Color endColor){
+        this(pose,pose_normal,offsetPosition,radius,edgeA,edgeB,pow,false,startColor,endColor,false);
     }
 
     public void render(VertexHelper helper){
@@ -68,19 +78,17 @@ public class SphereRenderer {
                 float sin2 = pow == 1.0f ? sin02 : (float) Math.pow(sin02, pow);
 
                 Color finalColor = this.startColor.subtract(deColor.multiply(i));
-
-
                 Vector3f[] pos = new Vector3f[]{
                         new Vector3f(x1 * sin1, cos1, z1 * sin1),
                         new Vector3f(x2 * sin1, cos1, z2 * sin1),
                         new Vector3f(x2 * sin2, cos2, z2 * sin2),
                         new Vector3f(x1 * sin2, cos2, z1 * sin2),
                 };
-                Vector3f[] vertex = new Vector3f[]{
-                        pos[0].mul(radius, new Vector3f()).add(offsetPosition),
-                        pos[1].mul(radius, new Vector3f()).add(offsetPosition),
-                        pos[2].mul(radius, new Vector3f()).add(offsetPosition),
-                        pos[3].mul(radius, new Vector3f()).add(offsetPosition),
+                Vector3f[] real_position = new Vector3f[]{
+                        pose.transformPosition(pos[0].mul(radius, new Vector3f()).add(offsetPosition)),
+                        pose.transformPosition(pos[1].mul(radius, new Vector3f()).add(offsetPosition)),
+                        pose.transformPosition(pos[2].mul(radius, new Vector3f()).add(offsetPosition)),
+                        pose.transformPosition(pos[3].mul(radius, new Vector3f()).add(offsetPosition)),
                 };
                 Vector3f[] normal;
                 if (isStraight) {
@@ -93,10 +101,19 @@ public class SphereRenderer {
                 } else {
                     normal = pos;
                 }
-                helper.vertex(vertex[0], normal[0], startColor);
-                helper.vertex(vertex[1], normal[1], startColor);
-                helper.vertex(vertex[2], normal[2], finalColor);
-                helper.vertex(vertex[3], normal[3], finalColor);
+                Vector3f camaraPos = ConstantUtil.VECTOR3F_ZERO;
+                Vector3f QuadNormal = RenderUtil.calculateNormal(real_position[0], real_position[1], real_position[2], real_position[3]);
+                if(!RenderUtil.shouldCull() || (
+                        RenderUtil.isAngleAcute(real_position[0],QuadNormal,camaraPos) &&
+                        RenderUtil.isAngleAcute(real_position[1],QuadNormal,camaraPos) &&
+                        RenderUtil.isAngleAcute(real_position[2],QuadNormal,camaraPos) &&
+                        RenderUtil.isAngleAcute(real_position[3],QuadNormal,camaraPos)
+                )) {
+                    helper.vertex(real_position[0], VertexBuilder.transformNormal(pose_normal, normal[0]), startColor);
+                    helper.vertex(real_position[1], VertexBuilder.transformNormal(pose_normal, normal[1]), startColor);
+                    helper.vertex(real_position[2], VertexBuilder.transformNormal(pose_normal, normal[2]), finalColor);
+                    helper.vertex(real_position[3], VertexBuilder.transformNormal(pose_normal, normal[3]), finalColor);
+                }
                 startColor = finalColor;
             }
         }

@@ -49,6 +49,21 @@ public class RenderUtil {
         ).normalize();
     }
 
+    private static boolean shouldCull = true;
+    public static void enableCull(){
+        RenderSystem.assertOnRenderThread();
+        shouldCull = true;
+    }
+
+    public static void disableCull(){
+        RenderSystem.assertOnRenderThread();
+        shouldCull = false;
+    }
+
+    public static boolean shouldCull(){
+        return shouldCull;
+    }
+
     public static void renderSphere(VertexConsumer consumer, PoseStack.Pose pose, float pow, Vector3f offsetPosition, Vector3f radius, final int edgeA, final int edgeB, boolean isHalf, Vec2 uvStart, Vec2 uvEnd, Color color, Color endColor, Color coreColor, boolean inverse, boolean isStraight) {
         Color startColor = color;
         int edgeADiv2 = Mth.floor(edgeA / 2.0f);
@@ -102,17 +117,11 @@ public class RenderUtil {
                         new Vector3f(x2*sin2,cos2,z2*sin2),
                         new Vector3f(x1*sin2,cos2,z1*sin2),
                 };
-                Vector3f[] vertex = new Vector3f[]{
-                        pos[0].mul(radius,new Vector3f()).add(offsetPosition),
-                        pos[1].mul(radius,new Vector3f()).add(offsetPosition),
-                        pos[2].mul(radius,new Vector3f()).add(offsetPosition),
-                        pos[3].mul(radius,new Vector3f()).add(offsetPosition),
-                };
                 Vector3f[] real_position = new Vector3f[]{
-                        pose$.transformPosition(vertex[0],new Vector3f()),
-                        pose$.transformPosition(vertex[1],new Vector3f()),
-                        pose$.transformPosition(vertex[2],new Vector3f()),
-                        pose$.transformPosition(vertex[3],new Vector3f())
+                        pose$.transformPosition(pos[0].mul(radius,new Vector3f()).add(offsetPosition),new Vector3f()),
+                        pose$.transformPosition(pos[1].mul(radius,new Vector3f()).add(offsetPosition),new Vector3f()),
+                        pose$.transformPosition(pos[2].mul(radius,new Vector3f()).add(offsetPosition),new Vector3f()),
+                        pose$.transformPosition(pos[3].mul(radius,new Vector3f()).add(offsetPosition),new Vector3f())
                 };
                 Matrix3f pose$normal = pose.normal();
                 Vector3f[] normal;
@@ -126,13 +135,14 @@ public class RenderUtil {
                 }else {
                     normal = pos;
                 }
-                Vector3f camaraPos = Minecraft.getInstance().getEntityRenderDispatcher().camera.getPosition().subtract(Minecraft.getInstance().player.getEyePosition(Minecraft.getInstance().getPartialTick())).reverse().toVector3f();
-                //Vector3f camaraPos = ConstantUtil.VECTOR3F_ZERO;
-                Vector3f QuadNormal = pose$normal.transform(calculateNormal(vertex[0], vertex[1], vertex[2], vertex[3]));
+                //Vector3f camaraPos = Minecraft.getInstance().getEntityRenderDispatcher().camera.getPosition().subtract(Minecraft.getInstance().player.getEyePosition(Minecraft.getInstance().getPartialTick())).reverse().toVector3f();
+                Vector3f camaraPos = ConstantUtil.VECTOR3F_ZERO;
+                //Vector3f QuadNormal = pose$normal.transform(calculateNormal(vertex[0], vertex[1], vertex[2], vertex[3]));
+                Vector3f QuadNormal = calculateNormal(real_position[0], real_position[1], real_position[2], real_position[3]);
                 if (inverse){
                     QuadNormal.mul(-1.0f);
                 }
-                if((
+                if(!shouldCull || (
                         isAngleAcute(real_position[0],QuadNormal,camaraPos) &&
                         isAngleAcute(real_position[1],QuadNormal,camaraPos) &&
                         isAngleAcute(real_position[2],QuadNormal,camaraPos) &&

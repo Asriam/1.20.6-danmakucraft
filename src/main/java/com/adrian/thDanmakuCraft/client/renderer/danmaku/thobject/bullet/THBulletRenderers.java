@@ -108,47 +108,35 @@ public class THBulletRenderers {
                         new Vec2(0.8f, 1.0f),
                         new Vec2(0.2f, 3.0f),
                         color, 20, coreColor);
-                /*RenderUtil.renderSphere(vertexconsumer, posestack_pose, 1.2f,
-                        offset,
-                        scale,
-                        edgeA, edgeB, true,
-                        new Vec2(0.4f, 2.0f),
-                        new Vec2(0.4f, 2.0f),
-                        color, 0, coreColor.multiply(0.3f));*/
                 RenderUtil.renderSphere(vertexconsumer, posestack_pose, 1.2f,
                         offset,
                         scale,
                         edgeA, edgeB, true,
                         new Vec2(0.4f, 2.0f),
                         new Vec2(0.4f, 2.0f),
-                        color, color.setAlpha(0), coreColor.multiply(0.3f),true,false);
-                /*this.shouldCull = true;
+                        color, color.setAlpha(0), coreColor.multiply(0.3f), true, false);
+                /*
+                this.shouldCull = true;
+                VertexBuilder builder1 = new VertexBuilder(THObjectContainerRenderer.BUFFER_2);
+                VertexBuilder builder2 = new VertexBuilder(vertexconsumer);
                 new SphereRenderer(
+                        posestack_pose.pose(), posestack_pose.normal(),
                         offset.add(0.0f, 0.4f, 0.0f, new Vector3f()), coreScale,
                         edgeA, edgeB,
                         1.0f, false,
                         color.multiply(0.6f), color.multiply(0.3f), false
                 ).render((pos, normal, vertexColor) -> {
-                    new VertexBuilder(THObjectContainerRenderer.BUFFER_2).positionColorColorUvUvNormal(
-                            posestack_pose.pose(), pos,
-                            vertexColor, coreColor,
-                            0.8f, 1.0f,
-                            0.2f, 3.0f,
-                            posestack_pose.normal(), normal);
+                    builder1.vertex(pos).color(vertexColor).color(coreColor).uv(0.8f, 1.0f).uv(0.2f, 3.0f).normal(normal).endVertex();
                 });
                 this.shouldCull = false;
                 new SphereRenderer(
+                        posestack_pose.pose(), posestack_pose.normal(),
                         offset, scale,
                         edgeA, edgeB,
                         1.2f, true,
                         color, color.setAlpha(0), false
                 ).render((pos, normal, vertexColor) -> {
-                    new VertexBuilder(vertexconsumer).positionColorColorUvUvNormal(
-                            posestack_pose.pose(), pos,
-                            vertexColor, coreColor.multiply(0.3f),
-                            0.4f, 2.0f,
-                            0.4f, 2.0f,
-                            posestack_pose.normal(), normal);
+                    builder2.vertex(pos).color(vertexColor).color(coreColor.multiply(0.3f)).uv(0.4f, 2.0f).uv(0.4f, 2.0f).normal(normal).endVertex();
                 });*/
             }
         }

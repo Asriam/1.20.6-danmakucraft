@@ -122,3 +122,12 @@ end
 function vec2:lengthSquared()
     return self.x ^ 2 + self.y ^ 2
 end
+
+---@param _vec2 util.Vec2
+---@param t number
+---@return util.Vec2
+function vec2:lerp(_vec2, t)
+    local x = math.lerp(self.x, _vec2.x,t)
+    local y = math.lerp(self.y, _vec2.y,t)
+    return vec2.new(x,y)
+end
