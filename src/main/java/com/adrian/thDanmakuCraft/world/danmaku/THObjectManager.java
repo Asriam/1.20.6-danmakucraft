@@ -148,13 +148,6 @@ public class THObjectManager implements IDataStorage {
         }
     };
     public void encode(FriendlyByteBuf buffer) {
-        /*List<THObject> objects = this.getTHObjects();
-        buffer.writeInt(objects.size());
-        for (THObject object : this.getTHObjects()) {
-            //buffer.writeRegistryId(THDanmakuCraftRegistries.THOBJECT_TYPE,object.getType());
-            buffer.writeResourceLocation(object.getType().getKey());
-            object.encode(buffer);
-        }*/
         //buffer.writeCollection(this.getTHObjects(),codec);
         ByteBufOutputStream bos = new ByteBufOutputStream(buffer);
         try (GZIPOutputStream gzip = new GZIPOutputStream(bos)) {
@@ -167,18 +160,6 @@ public class THObjectManager implements IDataStorage {
     }
 
     public void decode(FriendlyByteBuf buffer) {
-        /*this.storage.clear();
-        int listSize = buffer.readInt();
-        List<THObject> objects = Lists.newArrayList();
-        for (int i = 0; i < listSize; i++) {
-            //THObject object = buffer.readRegistryIdSafe(THObjectType.class).create(this.container);
-            THObject object = THObjectType.getValue(buffer.readResourceLocation()).create(this.container);
-            if(object != null) {
-                object.decode(buffer);
-                objects.add(object);
-            }
-        }
-        this.recreate(objects);*/
         /*List<THObject> objects = buffer.readCollection(ArrayList::new,codec);
         this.recreate(objects);*/
         ByteBufInputStream bis = new ByteBufInputStream(buffer);
@@ -193,16 +174,6 @@ public class THObjectManager implements IDataStorage {
     }
 
     public static CompoundTag THObjectListToTag(CompoundTag tag, List<THObject> objects) {
-        /*int index = 0;
-        for (THObject object : objects) {
-            if (object.shouldSave) {
-                CompoundTag tag2 = new CompoundTag();
-                tag2.putString("thobject_type", object.getType().getKey().toString());
-                object.save(tag2);
-                tag.put("object_" + index, tag2);
-                index++;
-            }
-        }*/
         ListTag list = new ListTag();
         for (THObject object : objects) {
             if (object.shouldSave) {
@@ -218,16 +189,6 @@ public class THObjectManager implements IDataStorage {
 
     public static List<THObject> TagToTHObjectList(CompoundTag tag, THObjectContainer container) {
         List<THObject> objectList = Lists.newArrayList();
-        /*for (String key : tag.getAllKeys()) {
-            CompoundTag objectTag = tag.getCompound(key);
-            ResourceLocation object_type = ResourceLocationUtil.of(objectTag.getString("thobject_type"));
-            THObjectType<? extends THObject> type = THObjectType.getValue(object_type);
-            if (type != null) {
-                THObject object = type.create(container);
-                object.load(objectTag);
-                objectList.add(object);
-            }
-        }*/
         ListTag list = tag.getList("objects", ListTag.TAG_COMPOUND);
         for (Tag _objectTag: list){
             if(_objectTag instanceof CompoundTag objectTag){
