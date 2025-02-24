@@ -155,7 +155,7 @@ public class THObjectManager implements IDataStorage {
             tempBuffer.writeCollection(this.getTHObjects(), codec);
             gzip.write(tempBuffer.array());
         } catch (IOException e) {
-            throw new RuntimeException("壓縮失敗", e);
+            throw new RuntimeException("壓縮失敗!", e);
         }
     }
 
@@ -169,7 +169,7 @@ public class THObjectManager implements IDataStorage {
             List<THObject> objects = tempBuffer.readCollection(ArrayList::new, codec);
             this.recreate(objects);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("解壓失敗!",e);
         }
     }
 
