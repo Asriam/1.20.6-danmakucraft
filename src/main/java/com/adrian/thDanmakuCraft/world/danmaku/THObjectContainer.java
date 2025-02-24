@@ -625,6 +625,12 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
                 return LuaValue.NIL;
             }
         };
+        private static final LibFunction getLifetime = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                return LuaValue.valueOf(checkTHObjectContainer(luaValue0).getLifetime());
+            }
+        };
         protected static final LibFunction isClientSide = new OneArgFunction() {
             @Override
             public LuaValue call(LuaValue luaValue0) {
@@ -649,6 +655,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
             library.set("newTHObject", newTHObject);
             library.set("setSpellCardName", setSpellCardName);
             library.set("setLifetime", setLifetime);
+            library.set("getLifetime", getLifetime);
             library.set("isClientSide", isClientSide);
             return library;
         }

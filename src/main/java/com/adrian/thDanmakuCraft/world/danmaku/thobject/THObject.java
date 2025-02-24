@@ -772,15 +772,8 @@ public class THObject implements ILuaValue, IGetContainer {
         //this.scriptManager.writeData(buffer);
         //this.parameterManager.encode(buffer);
         //this.luaTaskManager.encode(buffer);
-        //this.luaValueStorageHelper.encodeLuaTable(buffer, this.ofLuaValue().get("params").checktable());
         this.luaValueAutoSaveDataManager.encode(buffer);
         this.taskManager.encode(buffer);
-        /*LuaValue params = this.ofLuaValue().get("params");
-        if(params.istable()) {
-            luaValueStorageHelper.writeLuaTable(buffer, params.checktable());
-        }else {
-            buffer.writeShort(0);
-        }*/
     }
 
     public void decode(FriendlyByteBuf buffer) {
@@ -811,8 +804,6 @@ public class THObject implements ILuaValue, IGetContainer {
         //this.scriptManager.readData(buffer);
         //this.parameterManager.decode(buffer);
         //this.luaTaskManager.decode(buffer);
-        //this.ofLuaValue().set("params", luaValueStorageHelper.decodeLuaTable(buffer));
-        //this.ofLuaValue();
         this.luaValueAutoSaveDataManager.decode(buffer);
         this.taskManager.decode(buffer);
         //this.taskManager.restartLazyTasks();
@@ -850,10 +841,14 @@ public class THObject implements ILuaValue, IGetContainer {
         ListTag sizeTag = tag.getList("Size", Tag.TAG_DOUBLE);
         ListTag colorTag = tag.getList("Color", Tag.TAG_INT);
         ListTag timerTag = tag.getList("Timers", Tag.TAG_INT);
-        this.setPosition(new Vec3(posTag.getDouble(0), posTag.getDouble(1), posTag.getDouble(2)));
+        Vec3 position = new Vec3(posTag.getDouble(0), posTag.getDouble(1), posTag.getDouble(2));
+        this.setPosition(position);
+        this.lastPosition = position;
         this.prePosition = new Vec3(prePosTag.getDouble(0), prePosTag.getDouble(1), prePosTag.getDouble(2));
         this.velocity = new Vec3(velocityTag.getDouble(0), velocityTag.getDouble(1), velocityTag.getDouble(2));
-        this.setRotation(rotationTag.getFloat(0), rotationTag.getFloat(1), rotationTag.getFloat(2));
+        Vector3f rotation = new Vector3f(rotationTag.getFloat(0), rotationTag.getFloat(1), rotationTag.getFloat(2));
+        this.setRotation(rotation);
+        this.lastRotation = rotation;
         this.acceleration = new Vec3(accelerationTag.getDouble(0), accelerationTag.getDouble(1), accelerationTag.getDouble(2));
         this.scale = new Vector3f(scaleTag.getFloat(0), scaleTag.getFloat(1), scaleTag.getFloat(2));
         this.size = new Vec3(sizeTag.getDouble(0), sizeTag.getDouble(1), sizeTag.getDouble(2));
@@ -1246,6 +1241,12 @@ public class THObject implements ILuaValue, IGetContainer {
                 return LuaValue.NIL;
             }
         };
+        private static final LibFunction getLifetime = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                return LuaValue.valueOf(checkTHObject(luaValue0).lifetime);
+            }
+        };
         protected static final LibFunction isClientSide = new OneArgFunction() {
             @Override
             public LuaValue call(LuaValue luaValue0) {
@@ -1258,6 +1259,7 @@ public class THObject implements ILuaValue, IGetContainer {
             library.set("initPosition", initPosition);
             library.set("setPosition", setPosition);
             library.set("setLifetime", setLifetime);
+            library.set("getLifetime", getLifetime);
             library.set("setScale", setScale);
             library.set("setSize", setSize);
             library.set("setVelocity", setVelocity);

@@ -34,6 +34,9 @@ function object:setPosition(x,y,z) end
 ---@param life number
 function object:setLifetime(life) end
 
+---@return number
+function object:getLifetime() end
+
 ---@param x number
 ---@param y number
 ---@param z number

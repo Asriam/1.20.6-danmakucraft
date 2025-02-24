@@ -5,16 +5,27 @@ import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.world.IDataStorage;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
+import io.netty.buffer.ByteBufInputStream;
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.buffer.Unpooled;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.StreamDecoder;
+import net.minecraft.network.codec.StreamEncoder;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.compress.utils.Lists;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 public class THObjectManager implements IDataStorage {
 
@@ -122,19 +133,41 @@ public class THObjectManager implements IDataStorage {
         this.recreate(TagToTHObjectList(tag, this.container));
     }
 
+    private final StreamCodec<FriendlyByteBuf, THObject> codec = new StreamCodec<FriendlyByteBuf, THObject>() {
+        @Override
+        public THObject decode(FriendlyByteBuf buffer) {
+            THObject object = THObjectType.getValue(buffer.readResourceLocation()).create(THObjectManager.this.container);
+            object.decode(buffer);
+            return object;
+        }
 
+        @Override
+        public void encode(FriendlyByteBuf buffer, THObject object) {
+            buffer.writeResourceLocation(object.getType().getKey());
+            object.encode(buffer);
+        }
+    };
     public void encode(FriendlyByteBuf buffer) {
-        List<THObject> objects = this.getTHObjects();
+        /*List<THObject> objects = this.getTHObjects();
         buffer.writeInt(objects.size());
         for (THObject object : this.getTHObjects()) {
             //buffer.writeRegistryId(THDanmakuCraftRegistries.THOBJECT_TYPE,object.getType());
             buffer.writeResourceLocation(object.getType().getKey());
             object.encode(buffer);
+        }*/
+        //buffer.writeCollection(this.getTHObjects(),codec);
+        ByteBufOutputStream bos = new ByteBufOutputStream(buffer);
+        try (GZIPOutputStream gzip = new GZIPOutputStream(bos)) {
+            FriendlyByteBuf tempBuffer = new FriendlyByteBuf(Unpooled.buffer());
+            tempBuffer.writeCollection(this.getTHObjects(), codec);
+            gzip.write(tempBuffer.array());
+        } catch (IOException e) {
+            throw new RuntimeException("壓縮失敗", e);
         }
     }
 
     public void decode(FriendlyByteBuf buffer) {
-        this.storage.clear();
+        /*this.storage.clear();
         int listSize = buffer.readInt();
         List<THObject> objects = Lists.newArrayList();
         for (int i = 0; i < listSize; i++) {
@@ -145,7 +178,18 @@ public class THObjectManager implements IDataStorage {
                 objects.add(object);
             }
         }
-        this.recreate(objects);
+        this.recreate(objects);*/
+        /*List<THObject> objects = buffer.readCollection(ArrayList::new,codec);
+        this.recreate(objects);*/
+        ByteBufInputStream bis = new ByteBufInputStream(buffer);
+        try (GZIPInputStream gzip = new GZIPInputStream(bis)) {
+            FriendlyByteBuf tempBuffer = new FriendlyByteBuf(Unpooled.buffer());
+            tempBuffer.writeBytes(gzip.readAllBytes());
+            List<THObject> objects = tempBuffer.readCollection(ArrayList::new, codec);
+            this.recreate(objects);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static CompoundTag THObjectListToTag(CompoundTag tag, List<THObject> objects) {

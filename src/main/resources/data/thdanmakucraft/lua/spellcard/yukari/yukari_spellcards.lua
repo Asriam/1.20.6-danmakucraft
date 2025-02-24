@@ -6,13 +6,18 @@
 --------------------------------------------------------------------------------------------------
 ---@type Class|THBullet
 local yukari_spellcrad_1_bullet_1 = core.defineClass()
-function yukari_spellcrad_1_bullet_1:onInit(_pos,_angle)
-    self:setPosition(_pos)
-    self:setVelocity(_angle:scale(0.2),true)
+---@param _pos util.Vec3
+---@param _angle util.Vec3
+---@param offset number
+function yukari_spellcrad_1_bullet_1:onInit(_pos,_angle,offset)
+    local velocity = _angle:scale(0.2 - 0.03*offset)
+    self:setPosition(_pos:add(velocity:scale(-offset)))
+    self:setVelocity(velocity,true)
     self:setAccelerationFromDirection(0.03,_angle)
     self:setLifetime(120)
     self:setBlend("add")
     self:setDamage(4.0)
+    self:setColor(255,255,255,100)
 end
 
 function yukari_spellcrad_1_bullet_1:onTick()
@@ -22,40 +27,47 @@ end
 local yukari_spellcrad_1 = core.defineSpellCardClass("yukari_spellcard_1")
 function yukari_spellcrad_1:onInit()
     self:setSpellCardName("Border Sign \"Boundary of Truth and Falsehood\"")
-    self:setLifetime(300)
+    self:setLifetime(600)
 end
 
 function yukari_spellcrad_1:onTick()
-    local timer = self:getTimer()
+    local timer = self.timer
     ---@param _pos util.Vec3
     ---@param _angle util.Vec3
-    local bbb = function(_pos,_angle)
-        self:createTHBullet(yukari_spellcrad_1_bullet_1,
-                {_pos:add(_angle:scale(math.min(timer/120,1)^0.4*1.6)),_angle},
-                _pos,bullet_styles.grain_a,3)
+    ---@return THBullet
+    local bbb = function(_pos,_angle,offset)
+        return self:createTHBullet(yukari_spellcrad_1_bullet_1,
+                {_pos:add(_angle:scale(math.min(timer/120,1)^0.4*1.6)),_angle,offset},
+                _pos,bullet_styles.ball_mid,3)
     end
 
-    if timer < 300 then
-        local pos = self:getPosition()
-        local rotation = util.vec3.new(0.0,0.0,1.0)
-        local way = 6
-        local rotate = util.vec2.new(
-                Mth.DEG_TO_RAD*(math.pow(timer*0.1,2)+360/way),
-                -Mth.DEG_TO_RAD*(math.pow(timer*0.08,2)+360/way))
+    if timer < 600 then
+        local num = 4
+        for g=0,(num-1) do
+            timer = math.lerp(self.timer,self.timer+1,g/num)
+            local pos = self:getPosition()
+            local rotation = util.vec3.new(0.0,0.0,1.0)
+            local way = 6
+            local rotate = util.vec2.new(
+                    Mth.DEG_TO_RAD*(math.pow(timer*0.1,2)+360/way),
+                    -Mth.DEG_TO_RAD*(math.pow(timer*0.08,2)+360/way))
 
-        local angle = rotation:xRot(Mth.DEG_TO_RAD*90):xRot(rotate.x):yRot(rotate.y)
-        bbb(pos,angle)
+            local angle = rotation:xRot(Mth.DEG_TO_RAD*90):xRot(rotate.x):yRot(rotate.y)
+            bbb(pos,angle,g/num)
+            --b:setPosition(b:getPosition():add(b:getVelocity():scale(1/num*g)))
 
-        local way2 = 4
-        for i=1,(way2-1) do
-            local angle2 = rotation:xRot(Mth.DEG_TO_RAD*90-Mth.DEG_TO_RAD*(180/way2)*i):yRot(Mth.DEG_TO_RAD*(180/way)*i)
-            for j=0,(way-1) do
-                local angle3 = angle2:yRot(-Mth.DEG_TO_RAD*(360/way)*j):normalize():xRot(rotate.x):yRot(rotate.y)
-                bbb(pos,angle3)
+            local way2 = 4
+            for i=1,(way2-1) do
+                local angle2 = rotation:xRot(Mth.DEG_TO_RAD*90-Mth.DEG_TO_RAD*(180/way2)*i):yRot(Mth.DEG_TO_RAD*(180/way)*i)
+                for j=0,(way-1) do
+                    local angle3 = angle2:yRot(-Mth.DEG_TO_RAD*(360/way)*j):normalize():xRot(rotate.x):yRot(rotate.y)
+                    b = bbb(pos,angle3,g/num)
+                end
             end
+            local angle3 = rotation:xRot(Mth.DEG_TO_RAD*90-Mth.DEG_TO_RAD*180):xRot(rotate.x):yRot(rotate.y)
+            bbb(pos,angle3,g/num)
+
         end
-        local angle3 = rotation:xRot(Mth.DEG_TO_RAD*90-Mth.DEG_TO_RAD*180):xRot(rotate.x):yRot(rotate.y)
-        bbb(pos,angle3)
     end
 end
 --------------------------------------------------------------------------------------------------
