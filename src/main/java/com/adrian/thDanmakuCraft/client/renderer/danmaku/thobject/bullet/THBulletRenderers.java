@@ -4,8 +4,6 @@ import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.THBlendMode;
 import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
 import com.adrian.thDanmakuCraft.client.renderer.VertexBuilder;
-import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
-import com.adrian.thDanmakuCraft.client.renderer.shape.SphereRenderer;
 import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.util.IImage;
 import com.adrian.thDanmakuCraft.util.Color;

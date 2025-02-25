@@ -32,6 +32,7 @@ end
 
 function yukari_spellcrad_1:onTick()
     local timer = self.timer
+    local timer2 = self.timer
     ---@param _pos util.Vec3
     ---@param _angle util.Vec3
     ---@return THBullet
@@ -41,10 +42,10 @@ function yukari_spellcrad_1:onTick()
                 _pos,bullet_styles.ball_mid,3)
     end
 
-    if timer < 600 then
-        local num = 4
+    if timer2 < 600 then
+        local num = 6
         for g=0,(num-1) do
-            timer = math.lerp(self.timer,self.timer+1,g/num)
+            timer = math.lerp(timer2,timer2+1,g/num)
             local pos = self:getPosition()
             local rotation = util.vec3.new(0.0,0.0,1.0)
             local way = 6

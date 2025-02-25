@@ -113,7 +113,7 @@ public class THObjectContainerRenderer {
             for (Map.Entry<RenderType, List<THObject>> entry : map.entrySet()) {
                 var renderType = entry.getKey();
                 var list = entry.getValue();
-                List<THObject> sortedList = layerObjects(list, camX, camY, camZ);
+                List<THObject> sortedList = sortObjects(list, camX, camY, camZ);
                 BufferBuilder builder = RenderSystem.renderThreadTesselator().getBuilder();
                 builder.begin(renderType.mode(), renderType.format());
                 if (shouldRenderHitBox) {
@@ -166,7 +166,7 @@ public class THObjectContainerRenderer {
         }*/
     }
 
-    public static List<THObject> layerObjects(List<THObject> list, double camX, double camY, double camZ){
+    public static List<THObject> sortObjects(List<THObject> list, double camX, double camY, double camZ){
         if (list == null || list.size() <= 1) {
             return list;
         }
@@ -176,9 +176,10 @@ public class THObjectContainerRenderer {
                 if (o1 == null || o2 == null) {
                     return 0;
                 }
+                Vec3 cam = new Vec3(camX, camY, camZ);
                 return Double.compare(
-                        o2.getPosition().distanceToSqr(camX,camY,camZ),
-                        o1.getPosition().distanceToSqr(camX,camY,camZ)
+                        o2.getPosition().distanceToSqr(cam),
+                        o1.getPosition().distanceToSqr(cam)
                 );
             });
         }catch (Exception e){

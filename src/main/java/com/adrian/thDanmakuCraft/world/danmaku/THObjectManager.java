@@ -12,15 +12,11 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.codec.StreamDecoder;
-import net.minecraft.network.codec.StreamEncoder;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.compress.utils.Lists;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -133,7 +129,7 @@ public class THObjectManager implements IDataStorage {
         this.recreate(TagToTHObjectList(tag, this.container));
     }
 
-    private final StreamCodec<FriendlyByteBuf, THObject> codec = new StreamCodec<FriendlyByteBuf, THObject>() {
+    private final StreamCodec<FriendlyByteBuf, THObject> THOBJECT_CODEC = new StreamCodec<FriendlyByteBuf, THObject>() {
         @Override
         public THObject decode(FriendlyByteBuf buffer) {
             THObject object = THObjectType.getValue(buffer.readResourceLocation()).create(THObjectManager.this.container);
@@ -152,7 +148,7 @@ public class THObjectManager implements IDataStorage {
         ByteBufOutputStream bos = new ByteBufOutputStream(buffer);
         try (GZIPOutputStream gzip = new GZIPOutputStream(bos)) {
             FriendlyByteBuf tempBuffer = new FriendlyByteBuf(Unpooled.buffer());
-            tempBuffer.writeCollection(this.getTHObjects(), codec);
+            tempBuffer.writeCollection(this.getTHObjects(), THOBJECT_CODEC);
             gzip.write(tempBuffer.array());
         } catch (IOException e) {
             throw new RuntimeException("壓縮失敗!", e);
@@ -164,9 +160,8 @@ public class THObjectManager implements IDataStorage {
         this.recreate(objects);*/
         ByteBufInputStream bis = new ByteBufInputStream(buffer);
         try (GZIPInputStream gzip = new GZIPInputStream(bis)) {
-            FriendlyByteBuf tempBuffer = new FriendlyByteBuf(Unpooled.buffer());
-            tempBuffer.writeBytes(gzip.readAllBytes());
-            List<THObject> objects = tempBuffer.readCollection(ArrayList::new, codec);
+            FriendlyByteBuf tempBuffer = new FriendlyByteBuf(Unpooled.wrappedBuffer(gzip.readAllBytes()));
+            List<THObject> objects = tempBuffer.readCollection(ArrayList::new, THOBJECT_CODEC);
             this.recreate(objects);
         } catch (IOException e) {
             throw new RuntimeException("解壓失敗!",e);

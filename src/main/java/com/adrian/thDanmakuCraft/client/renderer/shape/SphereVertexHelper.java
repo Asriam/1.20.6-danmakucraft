@@ -9,7 +9,7 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-public class SphereRenderer {
+public class SphereVertexHelper extends ShapeVertexHelper{
 
     //private final int edgeA;
     private final int edgeB;
@@ -18,6 +18,7 @@ public class SphereRenderer {
     //private final boolean isHalf;
     private final Color startColor;
     //private final Color endColor;
+    private final boolean inverse;
     private final boolean isStraight;
     private final Vector3f offsetPosition;
     private final int edgeADiv2;
@@ -28,7 +29,7 @@ public class SphereRenderer {
     private final Matrix3f pose_normal;
 
 
-    public SphereRenderer(Matrix4f pose, Matrix3f pose_normal,Vector3f offsetPosition, Vector3f radius, int edgeA, int edgeB, float pow, boolean isHalf, Color startColor, Color endColor, boolean isStraight) {
+    public SphereVertexHelper(Matrix4f pose, Matrix3f pose_normal, Vector3f offsetPosition, Vector3f radius, int edgeA, int edgeB, float pow, boolean isHalf, Color startColor, Color endColor, boolean inverse, boolean isStraight) {
         //this.edgeA = edgeA;
         this.pose = pose;
         this.pose_normal = pose_normal;
@@ -39,6 +40,7 @@ public class SphereRenderer {
         //this.isHalf = isHalf;
         this.startColor = startColor;
         //this.endColor = endColor;
+        this.inverse = inverse;
         this.isStraight = isStraight;
         this.edgeADiv2 = Mth.floor(edgeA / 2.0f);
         int edge3 = edgeADiv2-1;
@@ -55,11 +57,11 @@ public class SphereRenderer {
                 (startColor.a - endColor.a)/ edge3);
     }
 
-    public SphereRenderer(Matrix4f pose, Matrix3f pose_normal, Vector3f offsetPosition, Vector3f radius, int edgeA, int edgeB, float pow, Color startColor, Color endColor){
-        this(pose,pose_normal,offsetPosition,radius,edgeA,edgeB,pow,false,startColor,endColor,false);
+    public SphereVertexHelper(Matrix4f pose, Matrix3f pose_normal, Vector3f offsetPosition, Vector3f radius, int edgeA, int edgeB, float pow, Color startColor, Color endColor){
+        this(pose,pose_normal,offsetPosition,radius,edgeA,edgeB,pow,false,startColor,endColor,false,false);
     }
 
-    public void render(VertexHelper helper){
+    public void vertex(ShapeVertexHelper.VertexHelper helper){
         for (int j = 0; j < edgeB; j++) {
             float x1 = Mth.cos((angle2 * j));
             float z1 = Mth.sin((angle2 * j));
@@ -103,23 +105,30 @@ public class SphereRenderer {
                 }
                 Vector3f camaraPos = ConstantUtil.VECTOR3F_ZERO;
                 Vector3f QuadNormal = RenderUtil.calculateNormal(real_position[0], real_position[1], real_position[2], real_position[3]);
+                if (inverse){
+                    QuadNormal.mul(-1.0f);
+                }
                 if(!RenderUtil.shouldCull() || (
                         RenderUtil.isAngleAcute(real_position[0],QuadNormal,camaraPos) &&
                         RenderUtil.isAngleAcute(real_position[1],QuadNormal,camaraPos) &&
                         RenderUtil.isAngleAcute(real_position[2],QuadNormal,camaraPos) &&
                         RenderUtil.isAngleAcute(real_position[3],QuadNormal,camaraPos)
                 )) {
-                    helper.vertex(real_position[0], VertexBuilder.transformNormal(pose_normal, normal[0]), startColor);
-                    helper.vertex(real_position[1], VertexBuilder.transformNormal(pose_normal, normal[1]), startColor);
-                    helper.vertex(real_position[2], VertexBuilder.transformNormal(pose_normal, normal[2]), finalColor);
-                    helper.vertex(real_position[3], VertexBuilder.transformNormal(pose_normal, normal[3]), finalColor);
+                    if (!inverse) {
+                        helper.vertex(real_position[0], VertexBuilder.transformNormal(pose_normal, normal[0]), startColor);
+                        helper.vertex(real_position[1], VertexBuilder.transformNormal(pose_normal, normal[1]), startColor);
+                        helper.vertex(real_position[2], VertexBuilder.transformNormal(pose_normal, normal[2]), finalColor);
+                        helper.vertex(real_position[3], VertexBuilder.transformNormal(pose_normal, normal[3]), finalColor);
+                    }else{
+                        helper.vertex(real_position[3], VertexBuilder.transformNormal(pose_normal, normal[3]), finalColor);
+                        helper.vertex(real_position[2], VertexBuilder.transformNormal(pose_normal, normal[2]), finalColor);
+                        helper.vertex(real_position[1], VertexBuilder.transformNormal(pose_normal, normal[1]), startColor);
+                        helper.vertex(real_position[0], VertexBuilder.transformNormal(pose_normal, normal[0]), startColor);
+                    }
                 }
                 startColor = finalColor;
             }
         }
     }
 
-    public interface VertexHelper{
-        void vertex(Vector3f vertexPos, Vector3f normal, Color color);
-    }
 }

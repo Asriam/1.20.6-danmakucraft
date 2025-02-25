@@ -15,7 +15,7 @@ import net.minecraft.world.entity.Entity;
 
 public class ModelBroom<T extends Entity> extends EntityModel<T> {
 	// This layer location should be baked with EntityRendererProvider.Context in the entity renderer and passed into this model's constructor
-	public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(ResourceLocationUtil.mod("modelbroom"), "main");
+	public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(ResourceLocationUtil.mod("textures/entity/mount/broom_mount.png"), "main");
 	private final ModelPart main;
 	private final ModelPart bb_main;
 	private final ModelPart bone3;
