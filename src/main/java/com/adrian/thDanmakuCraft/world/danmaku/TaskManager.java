@@ -243,7 +243,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         public AbstractTask(){
         }
 
-        abstract void tick(T target);
+        protected abstract void tick(T target);
         boolean isAlive(){
             return this.timer <= this.lifetime;
         }
@@ -253,15 +253,16 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
 
     public static class Task<T> extends AbstractTask<T> {
 
-        public TaskRunnable<T> runnable;
+        private TaskRunnable<T> runnable;
 
         public Task(TaskRunnable<T> runnable){
             super();
             this.runnable = runnable;
         }
 
-        void tick(T target){
-            runnable.run(target, this.timer, this.lifetime);
+        protected void tick(T target){
+            //runnable.run(target, this.timer, this.lifetime);
+            runnable.run(this,target);
             this.timer++;
         }
 
@@ -273,16 +274,20 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
             return task;
         }
 
-        public interface TaskRunnable<T> {
+        /*public interface TaskRunnable<T> {
             void run(T target, int timer, int lifetime);
+        }*/
+
+        public interface TaskRunnable<T> {
+            void run(Task<T> task, T target);
         }
     }
 
     /// Lua任务类，用于执行Lua脚本
     public static class LuaTask<T extends ILuaValue> extends AbstractTask<T> {
 
-        public final LuaFunction runnable;
-        public boolean canInvoke = true;
+        private final LuaFunction runnable;
+        private boolean canInvoke = true;
 
         public LuaTask(LuaValue runnable) {
             this.canInvoke = runnable.isfunction();
@@ -290,7 +295,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         }
 
         @Override
-        void tick(T target) {
+        protected void tick(T target) {
             try {
                 this.runnable.invoke(target.ofLuaValue(), LuaValue.valueOf(this.timer), LuaValue.valueOf(this.lifetime));
             }catch (Exception e){

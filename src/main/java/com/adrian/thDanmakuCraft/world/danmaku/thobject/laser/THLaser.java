@@ -51,15 +51,15 @@ public class THLaser extends THObject {
     @Override
     public void registerTasks(){
         super.registerTasks();
-        this.taskManager.registerTask("laser_width_set", new TaskManager.Task<>((target, timer,lifetime) ->{
+        this.taskManager.registerTask("laser_width_set", new TaskManager.Task<>((task,target) ->{
             if(target instanceof THLaser self){
-                float v = (float) timer /lifetime;
+                float v = (float) task.timer /task.lifetime;
                 self.width = Mth.lerp(v,self.width,self.targetWidth);
             }
         }));
-        this.taskManager.registerTask("laser_length_set", new TaskManager.Task<>((target, timer,lifetime) ->{
+        this.taskManager.registerTask("laser_length_set", new TaskManager.Task<>((task,target) ->{
             if(target instanceof THLaser self){
-                float v = (float) timer /lifetime;
+                float v = (float) task.timer /task.lifetime;
                 self.length = Mth.lerp(v,self.length,self.targetLength);
             }
         }));
