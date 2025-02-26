@@ -3,6 +3,7 @@ package com.adrian.thDanmakuCraft.client.model;
 // Exported for Minecraft version 1.17 or later with Mojang mappings
 // Paste this class into your mod and generate all required imports
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
+import com.adrian.thDanmakuCraft.world.entity.mount.BroomMount;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.EntityModel;
@@ -10,12 +11,11 @@ import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
-public class ModelBroom<T extends Entity> extends EntityModel<T> {
+public class BroomMountModel<T extends BroomMount> extends EntityModel<T> {
 	// This layer location should be baked with EntityRendererProvider.Context in the entity renderer and passed into this model's constructor
-	public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(ResourceLocationUtil.mod("textures/entity/mount/broom_mount.png"), "main");
+	public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(ResourceLocationUtil.mod("broom_mount"), "main");
 	private final ModelPart main;
 	private final ModelPart bb_main;
 	private final ModelPart bone3;
@@ -49,7 +49,7 @@ public class ModelBroom<T extends Entity> extends EntityModel<T> {
 	private final ModelPart bone29;
 	private final ModelPart bone30;
 
-	public ModelBroom(ModelPart root) {
+	public BroomMountModel(ModelPart root) {
 		this.main = root.getChild("main");
 		this.bb_main = this.main.getChild("bb_main");
 		this.bone3 = this.main.getChild("bone3");
@@ -156,7 +156,7 @@ public class ModelBroom<T extends Entity> extends EntityModel<T> {
 	}
 
 	@Override
-	public void setupAnim(Entity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+	public void setupAnim(BroomMount entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
 
 	}
 

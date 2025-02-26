@@ -4,6 +4,7 @@ import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.client.renderer.entity.EntityExampleRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.entity.EntityTHObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.entity.EntityTHSpellCardRenderer;
+import com.adrian.thDanmakuCraft.client.renderer.entity.mount.BroomMountRenderer;
 import com.adrian.thDanmakuCraft.init.EntityInit;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraftforge.api.distmarker.Dist;
@@ -19,6 +20,7 @@ public class ClientModEvents {
         EntityRenderers.register(EntityInit.EXAMPLE_ENTITY.get(), EntityExampleRenderer::new);
         EntityRenderers.register(EntityInit.ENTITY_THOBJECT_CONTAINER.get(), EntityTHObjectContainerRenderer::new);
         EntityRenderers.register(EntityInit.ENTITY_THSPELLCARD.get(), EntityTHSpellCardRenderer::new);
+        EntityRenderers.register(EntityInit.BROOM_MOUNT.get(), BroomMountRenderer::new);
         //event.registerEntityRenderer(EntityInit.EXAMPLE_ENTITY.get(), EntityExampleRenderer::new);
         //event.registerEntityRenderer(EntityInit.ENTITY_THOBJECT_CONTAINER.get(), EntityTHObjectContainerRenderer::new);
     }

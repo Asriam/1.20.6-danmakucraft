@@ -40,7 +40,7 @@ public class RenderEvents {
         }
 
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES){
-            afterRenderEntities(event.getLevelRenderer(),partialTick);
+            //afterRenderEntities(event.getLevelRenderer(),partialTick);
         }
     }
 

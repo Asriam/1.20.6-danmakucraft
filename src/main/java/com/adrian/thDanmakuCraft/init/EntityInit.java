@@ -4,6 +4,7 @@ import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.world.entity.EntitySingleTHObject;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
+import com.adrian.thDanmakuCraft.world.entity.mount.BroomMount;
 import com.adrian.thDanmakuCraft.world.entity.spellcard.EntityTHSpellCard;
 import com.adrian.thDanmakuCraft.world.entity.EntityExample;
 import net.minecraft.core.registries.Registries;
@@ -40,5 +41,12 @@ public class EntityInit {
             () -> EntityType.Builder.<EntityTHSpellCard>of(EntityTHSpellCard::new, MobCategory.MISC)
                     .sized(1.0f,1.0f)
                     .build(ResourceLocationUtil.mod("entity_thspellcard").toString())
+    );
+
+    public static final RegistryObject<EntityType<BroomMount>> BROOM_MOUNT = ENTITIES.register(
+            "broom_mount",
+            () -> EntityType.Builder.<BroomMount>of(BroomMount::new, MobCategory.MISC)
+                    .sized(1.0f,1.0f)
+                    .build(ResourceLocationUtil.mod("broom_mount").toString())
     );
 }
