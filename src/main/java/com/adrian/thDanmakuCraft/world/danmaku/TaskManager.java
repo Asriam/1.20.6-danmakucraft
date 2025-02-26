@@ -62,10 +62,10 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         List<AbstractTask<T>> removeList = Lists.newArrayList();
         for(AbstractTask<T> task : tickingTasks){
             if(task.isAlive()) {
-                if(task.delay <= 0) {
+                if(task.startTime <= 0) {
                     task.tick(target);
                 }
-                task.delay = Math.max(task.delay-1,0);
+                task.startTime = Math.max(task.startTime -1,0);
             }else {
                 removeList.add(task);
             }
@@ -101,7 +101,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
     public boolean hasRegisteredTask(String taskName){
         return registryTasks.containsKey(taskName);
     }
-    public void startTask(String taskName, int lifetime, int delay){
+    public void startTask(String taskName, int lifetime, int startTime){
         if(this.tickingTasks.size() > MAX_TASK_SIZE){
             THDanmakuCraftMod.LOGGER.warn("task list is full! you cannot simultaneously run more than {} tasks!",MAX_TASK_SIZE);
             return;
@@ -110,7 +110,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         if (registryTasks.containsKey(taskName)){
             AbstractTask<T> task = getRegisteredTask(taskName);
             task.lifetime = lifetime;
-            task.delay = delay;
+            task.startTime = startTime;
             tickingTasks.add(task);
             //THDanmakuCraftMod.LOGGER.warn("task started! task name:{}",taskName);
         }else {
@@ -122,8 +122,8 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         this.startTask(taskName,lifetime,0);
     }
 
-    public void loadTask(String taskName, int timer, int lifetime, int delay){
-        lazyTasks.add(new LazyTask(taskName,timer,lifetime,delay));
+    public void loadTask(String taskName, int timer, int lifetime, int startTime){
+        lazyTasks.add(new LazyTask(taskName,timer,lifetime,startTime));
     }
 
     public void restartLazyTasks(){
@@ -134,7 +134,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
                 if (task != null) {
                     task.timer = lazyTask.timer;
                     task.lifetime = lazyTask.lifetime;
-                    task.delay = lazyTask.delay;
+                    task.startTime = lazyTask.delay;
                     tickingTasks.add(task);
                     removeList.add(lazyTask);
                 } else {
@@ -169,7 +169,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
             buffer.writeUtf(task.taskName);
             buffer.writeInt(task.timer);
             buffer.writeInt(task.lifetime);
-            buffer.writeInt(task.delay);
+            buffer.writeInt(task.startTime);
         }
         for(LazyTask lazyTask : this.lazyTasks){
             buffer.writeUtf(lazyTask.taskName);
@@ -202,7 +202,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
             taskTag.putString("task_name", task.taskName);
             taskTag.putInt("timer", task.timer);
             taskTag.putInt("lifetime", task.lifetime);
-            taskTag.putInt("delay", task.delay);
+            taskTag.putInt("delay", task.startTime);
             listtag.add(taskTag);
         }
         for (LazyTask lazyTask : this.lazyTasks){
@@ -237,7 +237,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
     public static abstract class AbstractTask<T>{
         public int timer = 0;
         public int lifetime = 0;
-        public int delay = 0;
+        public int startTime = 0;
         public String taskName;
 
         public AbstractTask(){
@@ -269,7 +269,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
             Task<T> task = new Task<>( this.runnable);
             task.lifetime = this.lifetime;
             task.taskName = this.taskName;
-            task.delay = this.delay;
+            task.startTime = this.startTime;
             return task;
         }
 
@@ -309,7 +309,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
             LuaTask<T> task = new LuaTask<>(this.runnable);
             task.lifetime = this.lifetime;
             task.taskName = this.taskName;
-            task.delay = this.delay;
+            task.startTime = this.startTime;
             return task;
         }
     }
