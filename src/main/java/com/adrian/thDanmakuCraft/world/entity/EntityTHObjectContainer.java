@@ -15,6 +15,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
+import org.jetbrains.annotations.NotNull;
 
 public class EntityTHObjectContainer extends Entity implements IEntityAdditionalSpawnData {
     //private static final EntityDataAccessor<THObjectContainer> DATA_THOBJECT_CONTAINER = SynchedEntityData.defineId(EntityTHObjectContainer.class, MyEntityDataSerializers.THOBJECT_CONTAINER);
@@ -57,6 +58,10 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
         //this.setBoundingBox(this.getContainer().getContainerBound());
     }
 
+    @NotNull
+    public Level getLevel() {
+        return this.level();
+    }
     /*
     @Override
     public final EntityDimensions getDimensions(Pose pose) {

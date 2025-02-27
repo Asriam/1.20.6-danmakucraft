@@ -2,6 +2,7 @@ package com.adrian.thDanmakuCraft.events;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
+import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.entity.EntityTHSpellCardRenderer;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
@@ -45,6 +46,7 @@ public class RenderEvents {
     }
 
     public static void beforeRenderEntities(LevelRenderer levelRenderer, float partialTick){
+        //THObjectContainerRenderer.beforeRenderEntities(levelRenderer,partialTick);
         PoseStack poseStack = new PoseStack();
         List<THObject> objects = Lists.newArrayList();
         for(Entity entity : minecraft.level.entitiesForRendering()){
@@ -68,6 +70,7 @@ public class RenderEvents {
 
     public static void afterRenderEntities(LevelRenderer levelRenderer, float partialTick){
         EntityTHSpellCardRenderer.afterRenderEntities(levelRenderer,partialTick);
+        //THObjectContainerRenderer.afterRenderEntities(levelRenderer,partialTick);
     }
 
 

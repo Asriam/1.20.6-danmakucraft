@@ -40,7 +40,7 @@ public class THObjectContainerRenderer {
 
     }
 
-    static {
+    /*static {
         RenderEvents.registerRenderLevelStageTask("test_effect_clear", RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS, (poseStack, partialTick) -> {
             //TEST_RENDER_TARGET.resize(THObjectContainerRenderer.MAIN_RENDER_TARGET.width , THObjectContainerRenderer.MAIN_RENDER_TARGET.height, false);
             if(shouldApplyEffect()){
@@ -54,10 +54,38 @@ public class THObjectContainerRenderer {
                 RenderLevelStageEvent.Stage.AFTER_ENTITIES,
                 (poseStack, partialTick) -> {
                     if (shouldApplyEffect()) {
+                        if (Minecraft.useShaderTransparency()) {
+                            Minecraft.getInstance().levelRenderer.getItemEntityTarget().bindWrite(false);
+                        }
                         THObjectContainerRenderer.applyEffect(poseStack, partialTick);
+                        if (Minecraft.useShaderTransparency()) {
+                            Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
+                        }
                     }
                 });
+    }*/
+
+    /*public static void beforeRenderEntities(LevelRenderer levelRenderer, float partialTick){
+        if(shouldApplyEffect()) {
+            TEST_RENDER_TARGET.resize(THObjectContainerRenderer.MAIN_RENDER_TARGET.width , THObjectContainerRenderer.MAIN_RENDER_TARGET.height, false);
+            TEST_RENDER_TARGET.setClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            TEST_RENDER_TARGET.clear(Minecraft.ON_OSX);
+            TEST_RENDER_TARGET.copyDepthFrom(MAIN_RENDER_TARGET);
+            MAIN_RENDER_TARGET.bindWrite(false);
+        }
     }
+
+    public static void afterRenderEntities(LevelRenderer levelRenderer, float partialTick){
+        if (shouldApplyEffect()) {
+            if (Minecraft.useShaderTransparency()) {
+                Minecraft.getInstance().levelRenderer.getItemEntityTarget().bindWrite(false);
+            }
+            THObjectContainerRenderer.applyEffect();
+            if (Minecraft.useShaderTransparency()) {
+                Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
+            }
+        }
+    }*/
 
     public static RenderTarget getRenderTarget(){
         return TEST_RENDER_TARGET;
@@ -75,9 +103,20 @@ public class THObjectContainerRenderer {
         return false;
     };
 
+    private static final Map<RenderType,BufferBuilder> buffers = new HashMap<>();
     private static final BufferBuilder HIT_BOX_BUFFER = new BufferBuilder(896);
-    public static final BufferBuilder BUFFER_2 = new BufferBuilder(897);
+    public static BufferBuilder BUFFER_2 = new BufferBuilder(897);
 
+    private static BufferBuilder getBuffer(RenderType renderType){
+        if (buffers.containsKey(renderType)){
+            return buffers.get(renderType);
+        }
+        return buffers.computeIfAbsent(renderType, (key) -> {
+            BufferBuilder builder = new BufferBuilder(899+buffers.size());
+            builder.begin(renderType.mode(), renderType.format());
+            return builder;
+        });
+    }
     public static void renderTHObjects(EntityRenderDispatcher entityRenderDispatcher, Frustum frustum, List<THObject> objectList, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int combinedOverlay){
         final Vec3 cameraPosition = entityRenderDispatcher.camera.getPosition();
         final double camX = cameraPosition.x;
@@ -90,7 +129,7 @@ public class THObjectContainerRenderer {
         if(shader != null) {
             THObjectContainerRenderer.DEPTH_BUFFER.copyDepthFrom(mainRenderTarget);
             shader.setSampler("DepthBuffer", THObjectContainerRenderer.DEPTH_BUFFER.getDepthTextureId());
-            //shader.setSampler("ScreenBuffer", mainRenderTarget.getColorTextureId());
+            shader.setSampler("ScreenBuffer", mainRenderTarget.getColorTextureId());
             mainRenderTarget.bindWrite(true);
         }
 
@@ -105,7 +144,7 @@ public class THObjectContainerRenderer {
             boolean shouldRenderHitBox = entityRenderDispatcher.shouldRenderHitBoxes();
             RenderType renderTypeLines = RenderType.lines();
             ///Batching
-            Map<RenderType, List<THObject>> map = new HashMap<>();
+            final Map<RenderType, List<THObject>> map = new HashMap<>();
             for (THObject object : objectList) {
                 RenderType renderType = THObjectContainerRenderer.getTHObjectRenderer(object).getRenderType(object);
                 map.computeIfAbsent(renderType, (key) -> new ArrayList<>()).add(object);
@@ -154,16 +193,59 @@ public class THObjectContainerRenderer {
                 }
             }
             map.clear();
+
+
+            /*for (Map.Entry<RenderType, BufferBuilder> entry : buffers.entrySet()){
+                RenderType rendertype = entry.getKey();
+                BufferBuilder builder = entry.getValue();
+                builder.begin(rendertype.mode(), rendertype.format());
+            }
+            if (shouldRenderHitBox) {
+                HIT_BOX_BUFFER.begin(renderTypeLines.mode(), renderTypeLines.format());
+            }
+            List<THObject> sortedList = sortObjects(objectList, camX, camY, camZ);
+            for (THObject object : sortedList) {
+                if (object != null) {
+                    AbstractTHObjectRenderer<THObject> renderer = THObjectContainerRenderer.getTHObjectRenderer(object);
+                    BufferBuilder builder = getBuffer(renderer.getRenderType(object));
+                    BUFFER_2 = builder;
+                    if (renderer.shouldRender(object, frustum, camX, camY, camZ)) {
+                        poseStack.pushPose();
+                        Vec3 objectPos = object.getOffsetPosition(partialTicks);
+                        poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
+                        poseStack.pushPose();
+                        renderer.render(object, objectPos, partialTicks, poseStack, builder);
+                        poseStack.popPose();
+                        if (shouldRenderHitBox && object.collision) {
+                            renderer.renderHitBox(object, objectPos, partialTicks, poseStack, HIT_BOX_BUFFER);
+                        }
+                        poseStack.popPose();
+                    }
+                }
+            }
+            if (shouldRenderHitBox) {
+                renderTypeLines.setupRenderState();
+                BufferUploader.drawWithShader(HIT_BOX_BUFFER.end());
+                renderTypeLines.clearRenderState();
+            }
+
+            for (Map.Entry<RenderType, BufferBuilder> entry : buffers.entrySet()){
+                RenderType rendertype = entry.getKey();
+                BufferBuilder builder = entry.getValue();
+                rendertype.setupRenderState();
+                BufferUploader.drawWithShader(builder.end());
+                rendertype.clearRenderState();
+            }*/
         }
         RenderSystem.blendEquation(32774);
-        RenderSystem.disableBlend();
+        //RenderSystem.disableBlend();
         RenderSystem.defaultBlendFunc();
 
-        /*if(shouldApplyEffect()) {
+        if(shouldApplyEffect()) {
             THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
             mainRenderTarget.copyDepthFrom(THObjectContainerRenderer.TEST_RENDER_TARGET);
             mainRenderTarget.bindWrite(true);
-        }*/
+        }
     }
 
     public static List<THObject> sortObjects(List<THObject> list, double camX, double camY, double camZ){
@@ -193,7 +275,7 @@ public class THObjectContainerRenderer {
         LevelRenderer.renderLineBox(poseStack, vertexConsumer, aabb, 0.0F, 0.0F, 1.0F, 1.0F);
     }
 
-    public static void applyEffect(PoseStack poseStack, float partialTick){
+    public static void applyEffect(){
         ShaderInstance customShader = ShaderLoader.getShader(ResourceLocationUtil.mod("box_blur"));
         if (customShader != null) {
             RenderTarget inTarget = TEST_RENDER_TARGET;

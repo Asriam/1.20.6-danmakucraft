@@ -257,7 +257,11 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     }
 
     public Level level(){
-        return this.hostEntity.level();
+        Level level = this.hostEntity.level();
+        if (level == null){
+            this.discard();
+        }
+        return level;
     }
 
     public final void setBound(AABB boundingBox) {

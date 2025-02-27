@@ -186,7 +186,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         renderType.clearRenderState();
 
         renderType.setupRenderState();
-        RenderSystem.disableCull();
+        RenderSystem.enableCull();
         BufferUploader.drawWithShader(MAGIC_SQUAR_BUFFER.end());
         renderType.clearRenderState();
     }

@@ -42,6 +42,11 @@ public class VertexBuilder {
         return this;
     }
 
+    public VertexBuilder color(float r, float g, float b, float a){
+        builder.color(r,g,b,a);
+        return this;
+    }
+
     public VertexBuilder color(Color color){
         return this.color(color.r,color.g,color.b,color.a);
     }
@@ -76,7 +81,7 @@ public class VertexBuilder {
     public void positionColor(
             Matrix4f pose, float x, float y, float z,
             int r, int g, int b, int a){
-        builder.vertex(pose,x,y,z).color(r,g,b,a).endVertex();
+        this.vertex(pose,x,y,z).color(r,g,b,a).endVertex();
     }
 
     public void positionColor(
@@ -89,7 +94,7 @@ public class VertexBuilder {
             Matrix4f pose, float x, float y, float z,
             int r, int g, int b, int a,
             float u, float v){
-        builder.vertex(pose,x,y,z).color(r,g,b,a).uv(u,v).endVertex();
+        this.vertex(pose,x,y,z).color(r,g,b,a).uv(u,v).endVertex();
     }
 
     public void positionColorUV(
@@ -110,7 +115,7 @@ public class VertexBuilder {
             Matrix4f pose, float x, float y, float z,
             float u, float v,
             int r, int g, int b, int a){
-        builder.vertex(pose,x,y,z).uv(u,v).color(r,g,b,a).endVertex();
+        this.vertex(pose,x,y,z).uv(u,v).color(r,g,b,a).endVertex();
     }
 
     public void positionUVColor(
@@ -131,7 +136,7 @@ public class VertexBuilder {
             int r, int g, int b, int a,
             int r2, int g2, int b2, int a2,
             float u, float v){
-        builder.vertex(pose,x,y,z).color(r,g,b,a).color(r2,g2,b2,a2).uv(u,v).endVertex();
+        this.vertex(pose,x,y,z).color(r,g,b,a).color(r2,g2,b2,a2).uv(u,v).endVertex();
     }
 
     public void positionColorColorUV(
@@ -157,7 +162,7 @@ public class VertexBuilder {
             float u, float v,
             float u2, float v2,
             float nx, float ny, float nz){
-        builder.vertex(pose,x,y,z).color(r,g,b,a).color(r2,g2,b2,a2).uv(u,v).uv(u2,v2).normal(nx,ny,nz).endVertex();
+        this.vertex(pose,x,y,z).color(r,g,b,a).color(r2,g2,b2,a2).uv(u,v).uv(u2,v2).normal(nx,ny,nz).endVertex();
     }
 
     public void positionColorColorUvUvNormal(
