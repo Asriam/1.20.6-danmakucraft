@@ -20,6 +20,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
 import org.joml.Vector3f;
+import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.*;
@@ -508,8 +509,7 @@ public class THObject implements ILuaValue, IGetContainer {
         this.shouldSetDeadWhenCollision = shouldSetDeadWhenCollision;
     }
 
-    private final Map<String, LuaValue> scriptEventCache = Maps.newHashMap();
-
+    private static final Map<String, LuaFunction> scriptEventCache = Maps.newHashMap();
     public LuaValue getLuaClass(){
         if (this.luaClass == null || this.luaClass.isnil()) {
             LuaValue luaClass1 = LuaCore.getInstance().getLuaClass(this.getLuaClassName());
@@ -529,17 +529,20 @@ public class THObject implements ILuaValue, IGetContainer {
             return;
         }
 
-        LuaValue event;
+        LuaFunction event = null;
         if (scriptEventCache.containsKey(eventName)) {
             event = scriptEventCache.get(eventName);
         } else {
-            event = luaClass.get(eventName);
-            scriptEventCache.put(eventName, event);
+            LuaValue value = luaClass.get(eventName);
+            if(value.isfunction()){
+                event = value.checkfunction();
+                scriptEventCache.put(this.getLuaClassName()+"$"+eventName, event);
+            }
         }
 
-        if (!event.isnil() && event.isfunction()) {
+        if (event != null) {
             try {
-                event.checkfunction().invoke(args);
+                event.invoke(args);
             } catch (Exception e) {
                 THDanmakuCraftMod.LOGGER.error("Failed invoke script!", e);
                 this.remove();

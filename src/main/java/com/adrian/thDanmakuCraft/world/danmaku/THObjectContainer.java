@@ -147,6 +147,13 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         }
     }*/
 
+    public void scriptInit(){
+        if(!this.isInited) {
+            this.invokeScriptEvent("onInit", this.ofLuaValue());
+            this.isInited = true;
+        }
+    }
+
     public LuaValue getLuaClass(){
         if (this.luaClass == null || this.luaClass.isnil()) {
             LuaValue luaClass1 = LuaCore.getInstance().getLuaClass(this.getLuaClassName());
@@ -157,14 +164,6 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
             }
         }
         return this.luaClass;
-    }
-
-
-    public void scriptInit(){
-        if(!this.isInited) {
-            this.invokeScriptEvent("onInit", this.ofLuaValue());
-            this.isInited = true;
-        }
     }
 
     //private final Map<String,LuaValue> scriptEventCache = Maps.newHashMap();

@@ -179,6 +179,10 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
                 new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(SPELLCARD_MAGIC_SQUAR.getTextureLocation(), THBlendMode.getBlendMode(Blend.add))
         );
 
+        /*if (Minecraft.useShaderTransparency()) {
+            Minecraft.getInstance().levelRenderer.getItemEntityTarget().bindWrite(false);
+        }*/
+
         renderType.setupRenderState();
         RenderSystem.setShaderTexture(0, spellCardAura.getTextureLocation());
         RenderSystem.enableCull();
@@ -189,5 +193,9 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         RenderSystem.enableCull();
         BufferUploader.drawWithShader(MAGIC_SQUAR_BUFFER.end());
         renderType.clearRenderState();
+
+        /*if (Minecraft.useShaderTransparency()) {
+            Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
+        }*/
     }
 }
