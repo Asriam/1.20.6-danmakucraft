@@ -2,6 +2,7 @@ package com.adrian.thDanmakuCraft.lua;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import net.minecraft.util.Mth;
@@ -9,6 +10,7 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.compress.utils.Lists;
 import org.luaj.vm2.Globals;
+import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.OneArgFunction;
@@ -29,6 +31,7 @@ public class LuaCore {
     private static LuaCore LUA = new LuaCore();
     private final Globals GLOBALS = JsePlatform.standardGlobals();
     private final Map<String,LuaValue> luaClassMap = Maps.newHashMap();
+    //private final Map<String, LuaFunction> luaFunctionMap = Maps.newHashMap();
     private final Map<String,LuaValue> metaTableMap = Maps.newHashMap();
     public final List<String> spellCardClassKeys = Lists.newArrayList();
 
@@ -42,6 +45,7 @@ public class LuaCore {
     public LuaCore() {
         //GLOBALS = JsePlatform.standardGlobals();
         this.putAPI();
+        THObject.scriptEventCache.clear();
         luaLoader = LuaLoader.instance;
     }
 
@@ -216,10 +220,6 @@ public class LuaCore {
         library.set("registerMetaTable",new VarArgFunction() {
             @Override
             public LuaValue invoke(Varargs varargs) {
-                /*String keyName = varargs.arg(1).checkjstring();
-                LuaValue meta = varargs.arg(2);
-                LUA.metaTableMap.put(keyName,meta);
-                meta.set("metatable_key", LuaValue.valueOf(keyName));*/
                 LuaValue arg1 = varargs.arg(1);
                 LuaValue arg2 = varargs.arg(2);
                 if (arg1.isstring()){

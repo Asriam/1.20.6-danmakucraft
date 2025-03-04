@@ -509,7 +509,7 @@ public class THObject implements ILuaValue, IGetContainer {
         this.shouldSetDeadWhenCollision = shouldSetDeadWhenCollision;
     }
 
-    private static final Map<String, LuaFunction> scriptEventCache = Maps.newHashMap();
+    public static final Map<String, LuaFunction> scriptEventCache = Maps.newHashMap();
     public LuaValue getLuaClass(){
         if (this.luaClass == null || this.luaClass.isnil()) {
             LuaValue luaClass1 = LuaCore.getInstance().getLuaClass(this.getLuaClassName());
