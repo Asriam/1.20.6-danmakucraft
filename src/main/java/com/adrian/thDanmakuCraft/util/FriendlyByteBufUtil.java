@@ -1,7 +1,13 @@
 package com.adrian.thDanmakuCraft.util;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.StreamDecoder;
+import net.minecraft.network.codec.StreamEncoder;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.Collection;
+import java.util.function.IntFunction;
 
 public class FriendlyByteBufUtil {
 
@@ -33,5 +39,24 @@ public class FriendlyByteBufUtil {
                 byteBuf.readInt(),
                 byteBuf.readInt()
         );
+    }
+
+    public static <T> void writeCollection(FriendlyByteBuf byteBuf, Collection<T> collection, StreamEncoder<? super FriendlyByteBuf, T> encoder){
+        byteBuf.writeVarInt(collection.size());
+
+        for (T t : collection) {
+            encoder.encode(byteBuf, t);
+        }
+    }
+
+    public static <T, C extends Collection<T>> C readCollection(FriendlyByteBuf byteBuf, IntFunction<C> intFunction, StreamDecoder<? super FriendlyByteBuf, T> decoder){
+        int i = byteBuf.readVarInt();
+        C c = (C)intFunction.apply(i);
+
+        for (int j = 0; j < i; j++) {
+            c.add(decoder.decode(byteBuf));
+        }
+
+        return c;
     }
 }

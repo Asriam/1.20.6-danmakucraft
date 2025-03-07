@@ -96,7 +96,7 @@ public class THLaser extends THObject {
 
     public void vectorTo(Vec3 vec3){
         this.length = (float) vec3.length();
-        this.setRotationByDirectionalVector(vec3.normalize());
+        this.setRotationByDirectionalVector(vec3);
     }
 
     public Vec3 getVector(){
@@ -252,6 +252,10 @@ public class THLaser extends THObject {
         this.targetWidth = tag.getFloat("TargetWidth");
         this.targetLength = tag.getFloat("TargetLength");
         this.laserColor = CompoundTagUtil.getColor(tag, "LaserColor");
+    }
+
+    public enum LaserStyle{
+
     }
 
     protected static class LuaAPI{

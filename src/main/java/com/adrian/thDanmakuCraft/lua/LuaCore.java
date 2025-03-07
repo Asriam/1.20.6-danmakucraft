@@ -1,8 +1,9 @@
 package com.adrian.thDanmakuCraft.lua;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
+import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
-import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
+import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import net.minecraft.util.Mth;
@@ -10,7 +11,6 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.compress.utils.Lists;
 import org.luaj.vm2.Globals;
-import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.OneArgFunction;
@@ -45,7 +45,7 @@ public class LuaCore {
     public LuaCore() {
         //GLOBALS = JsePlatform.standardGlobals();
         this.putAPI();
-        THObject.scriptEventCache.clear();
+        THObjectContainer.scriptEventCache.clear();
         luaLoader = LuaLoader.instance;
     }
 
@@ -124,7 +124,13 @@ public class LuaCore {
 
     public LuaValue coreAPI(){
         LuaValue library = LuaValue.tableOf();
+        /// Fields
         library.set("mod_id", THDanmakuCraftMod.MOD_ID);
+        library.set("type_thobject", LuaValue.userdataOf(THObjectInit.TH_OBJECT.get()));
+        library.set("type_bullet", LuaValue.userdataOf(THObjectInit.TH_BULLET.get()));
+        library.set("type_laser", LuaValue.userdataOf(THObjectInit.TH_LASER.get()));
+        library.set("type_curvy_laser", LuaValue.userdataOf(THObjectInit.TH_CURVY_LASER.get()));
+        /// Functions
         library.set( "doFile", new OneArgFunction(){
             @Override
             public LuaValue call(LuaValue luaValue) {

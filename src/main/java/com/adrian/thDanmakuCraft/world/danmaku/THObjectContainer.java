@@ -10,9 +10,10 @@ import com.adrian.thDanmakuCraft.world.ILuaValue;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet.THBullet;
-import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THCurvedLaser;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THCurvyLaser;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THLaser;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
+import com.google.common.collect.Maps;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -22,6 +23,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.compress.utils.Lists;
+import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.*;
@@ -166,6 +168,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         return this.luaClass;
     }
 
+    public static final Map<String, LuaFunction> scriptEventCache = Maps.newHashMap();
     //private final Map<String,LuaValue> scriptEventCache = Maps.newHashMap();
     public void invokeScriptEvent(String eventName, LuaValue... args){
         if(this.luaClass == null || this.luaClass.isnil()) {
@@ -175,12 +178,30 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
             }
             this.luaClass = luaClass1;
         }
-        LuaValue event = this.luaClass.get(eventName);
-
-        if(!event.isnil() && event.isfunction()){
+        //LuaValue event = this.luaClass.get(eventName);
+        /*if(!event.isnil() && event.isfunction()){
             try {
                 event.checkfunction().invoke(args);
             }catch (Exception e){
+                THDanmakuCraftMod.LOGGER.error("Failed invoke script!", e);
+                this.discard();
+            }
+        }*/
+
+        LuaFunction event = null;
+        if (THObjectContainer.scriptEventCache.containsKey(eventName)) {
+            event = THObjectContainer.scriptEventCache.get(eventName);
+        } else {
+            LuaValue value = luaClass.get(eventName);
+            if(value.isfunction()){
+                event = value.checkfunction();
+                THObjectContainer.scriptEventCache.put(this.getLuaClassName()+"$"+eventName, event);
+            }
+        }
+        if (event != null) {
+            try {
+                event.invoke(args);
+            } catch (Exception e) {
                 THDanmakuCraftMod.LOGGER.error("Failed invoke script!", e);
                 this.discard();
             }
@@ -334,8 +355,8 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         return new THBullet(this, THBullet.DefaultBulletStyle.valueOf(style), THBullet.BULLET_INDEX_COLOR.getColorByIndex(color));
     }
 
-    public THCurvedLaser createTHCurvedLaser(Vec3 pos, int color, int length, float width) {
-        return new THCurvedLaser(this, THBullet.BULLET_INDEX_COLOR.getColorByIndex(color),length,width);
+    public THCurvyLaser createTHCurvedLaser(Vec3 pos, int color, int length, float width) {
+        return new THCurvyLaser(this, THBullet.BULLET_INDEX_COLOR.getColorByIndex(color),length,width);
     }
 
     public THLaser createTHLaser() {
@@ -549,7 +570,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
                 int colorIndex = varargs.arg(5).checkint();
                 int length = varargs.arg(6).checkint();
                 float width = varargs.arg(7).tofloat();
-                THCurvedLaser laser = checkTHObjectContainer(varargs.arg(1)).createTHCurvedLaser(pos, colorIndex, length, width);
+                THCurvyLaser laser = checkTHObjectContainer(varargs.arg(1)).createTHCurvedLaser(pos, colorIndex, length, width);
                 initTHObject(laser, luaClassKey, varargs.arg(3).checktable().unpack());
                 return laser.ofLuaValue();
             }

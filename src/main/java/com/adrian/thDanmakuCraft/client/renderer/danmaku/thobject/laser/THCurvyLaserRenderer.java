@@ -9,7 +9,7 @@ import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRender
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.client.renderer.VertexBuilder;
-import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THCurvedLaser;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THCurvyLaser;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -30,14 +30,14 @@ import org.joml.Vector3f;
 import java.util.List;
 
 @OnlyIn(value = Dist.CLIENT)
-public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLaser> {
+public class THCurvyLaserRenderer extends AbstractTHObjectRenderer<THCurvyLaser> {
 
-    public THCurvedLaserRenderer(THObjectRendererProvider.Context context) {
+    public THCurvyLaserRenderer(THObjectRendererProvider.Context context) {
         super(context);
     }
 
     @Override
-    public void render(THCurvedLaser laser, Vec3 laserPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer) {
+    public void render(THCurvyLaser laser, Vec3 laserPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer) {
         if (laser.color.a <= 0) {
             return;
         }
@@ -73,20 +73,20 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
             }
         }
 
-        List<List<THCurvedLaser.NodeManager.LaserNode>> piecewisedNodeList = Lists.newArrayList();
-        List<THCurvedLaser.NodeManager.LaserNode> nodeList = Lists.newArrayList();
-        for (THCurvedLaser.NodeManager.LaserNode node : nodes0) {
+        List<List<THCurvyLaser.NodeManager.LaserNode>> piecewisedNodeList = Lists.newArrayList();
+        List<THCurvyLaser.NodeManager.LaserNode> nodeList = Lists.newArrayList();
+        for (THCurvyLaser.NodeManager.LaserNode node : nodes0) {
             if (node.isValid()) {
                 nodeList.add(node);
             } else {
-                List<THCurvedLaser.NodeManager.LaserNode> nodes = Lists.newArrayList();
+                List<THCurvyLaser.NodeManager.LaserNode> nodes = Lists.newArrayList();
                 nodes.addAll(nodeList);
                 piecewisedNodeList.add(nodes);
                 nodeList = Lists.newArrayList();
             }
         }
         piecewisedNodeList.add(nodeList);
-        for (List<THCurvedLaser.NodeManager.LaserNode> NodeList : piecewisedNodeList) {
+        for (List<THCurvyLaser.NodeManager.LaserNode> NodeList : piecewisedNodeList) {
             renderCurvedLaser(laserPos, vertexConsumer, poseStack, NodeList, width/2, width/2 * 0.5f, 6, laser.getRenderCull(), laserColor, coreColor, partialTicks, 1.0f, 0.883334f);
         }
         //this.renderCurvedLaser(renderer,laserPos,bufferSource.getBuffer(THRenderType.TEST_RENDER_TYPE),poseStack,this.nodeManager.getNodes(),this.width,this.width*0.5f,edge, 1, color, coreColor,partialTicks,combinedOverlay,1.0f,0.95f);
@@ -95,7 +95,7 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
 
     ///曲線聚光渲染的一坨屎山
     @OnlyIn(value = Dist.CLIENT)
-    public void renderCurvedLaser(Vec3 laserPos, VertexConsumer vertexConsumer, PoseStack poseStack, List<THCurvedLaser.NodeManager.LaserNode> nodeList, float width, float coreWidth, int edge, int cull, Color laserColor, Color coreColor, float partialTicks, float laserLength, float coreLength) {
+    public void renderCurvedLaser(Vec3 laserPos, VertexConsumer vertexConsumer, PoseStack poseStack, List<THCurvyLaser.NodeManager.LaserNode> nodeList, float width, float coreWidth, int edge, int cull, Color laserColor, Color coreColor, float partialTicks, float laserLength, float coreLength) {
         if (nodeList.isEmpty() || nodeList.size() < 3) {
             return;
         }
@@ -125,17 +125,17 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
         int index = 0;
         Color GRAY = Color.GRAY();
         Vec3 pos0 = new Vec3(1.0f, 0.0d, 0.0d);
-        for (THCurvedLaser.NodeManager.LaserNode node : nodeList) {
+        for (THCurvyLaser.NodeManager.LaserNode node : nodeList) {
             if (index + 1 >= nodeList.size()) {
                 break;
             }
 
             if (node.isValid() && (cull >= 1 && (cull == 1 || (index + cull) % cull == 0)) || index == nodeList.size() - 2) {
-                THCurvedLaser.NodeManager.LaserNode node2 = nodeList.get(index + 1);
+                THCurvyLaser.NodeManager.LaserNode node2 = nodeList.get(index + 1);
                 if (shouldRenderNode(node, node2, this.getFrustum())) {
                     Vec3 pos1 = node.getOffsetPosition(partialTicks);
                     Vec3 pos2 = node2.getOffsetPosition(partialTicks);
-                    THCurvedLaser.NodeManager.LaserNode node3 = !(index >= nodeList.size() - 2) ? nodeList.get(index + 2) : null;
+                    THCurvyLaser.NodeManager.LaserNode node3 = !(index >= nodeList.size() - 2) ? nodeList.get(index + 2) : null;
                     Vec2 node1Angle = THObject.VectorAngleToRadAngle(pos1.vectorTo(pos2));
                     Vec2 node2Angle = node3 != null ? THObject.VectorAngleToRadAngle(pos2.vectorTo(node3.getOffsetPosition(partialTicks))) : node1Angle;
 
@@ -226,7 +226,7 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
         }
     }
 
-    public static boolean shouldRenderNode(THCurvedLaser.NodeManager.LaserNode node1, THCurvedLaser.NodeManager.LaserNode node2, Frustum frustum) {
+    public static boolean shouldRenderNode(THCurvyLaser.NodeManager.LaserNode node1, THCurvyLaser.NodeManager.LaserNode node2, Frustum frustum) {
         AABB aabb1 = node1.getBoundingBoxForCulling().inflate(0.5D);
         AABB aabb2 = node2.getBoundingBoxForCulling().inflate(0.5D);
         if (aabb1.hasNaN() || aabb1.getSize() == 0.0D) {
@@ -247,23 +247,23 @@ public class THCurvedLaserRenderer extends AbstractTHObjectRenderer<THCurvedLase
     }
 
     @Override
-    public RenderType getRenderType(THCurvedLaser laser){
+    public RenderType getRenderType(THCurvyLaser laser){
         return THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(laser.getBlend()), true));
     }
 
     @Override
-    public boolean shouldRender(THCurvedLaser object, Frustum frustum, double camX, double camY, double camZ) {
+    public boolean shouldRender(THCurvyLaser object, Frustum frustum, double camX, double camY, double camZ) {
         return true;
     }
 
     @Override
-    public void renderHitBox(THCurvedLaser laser, Vec3 objectPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer){
+    public void renderHitBox(THCurvyLaser laser, Vec3 objectPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer){
         renderTHCurvedLaserHitBoxes(laser, objectPos, poseStack, vertexConsumer, partialTicks, this.getFrustum());
     }
 
-    static void renderTHCurvedLaserHitBoxes(THCurvedLaser laser, Vec3 laserPos, PoseStack poseStack, VertexConsumer vertexConsumer, float partialTicks, Frustum frustum){
-        List<THCurvedLaser.NodeManager.LaserNode> nodes = laser.nodeManager.getAllNodes();
-        for(THCurvedLaser.NodeManager.LaserNode node: nodes){
+    static void renderTHCurvedLaserHitBoxes(THCurvyLaser laser, Vec3 laserPos, PoseStack poseStack, VertexConsumer vertexConsumer, float partialTicks, Frustum frustum){
+        List<THCurvyLaser.NodeManager.LaserNode> nodes = laser.nodeManager.getAllNodes();
+        for(THCurvyLaser.NodeManager.LaserNode node: nodes){
             Vec3 pos = node.getPosition();
             AABB aabb = node.getBoundingBoxForCulling().inflate(0.5D);
             if (aabb.hasNaN() || aabb.getSize() == 0.0D) {

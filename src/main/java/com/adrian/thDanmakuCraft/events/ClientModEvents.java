@@ -6,6 +6,7 @@ import com.adrian.thDanmakuCraft.client.renderer.entity.EntityTHObjectContainerR
 import com.adrian.thDanmakuCraft.client.renderer.entity.EntityTHSpellCardRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.entity.mount.BroomMountRenderer;
 import com.adrian.thDanmakuCraft.init.EntityInit;
+import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -26,6 +27,9 @@ public class ClientModEvents {
     }
     @SubscribeEvent
     public static void clientSetup(FMLClientSetupEvent event){
+        event.enqueueWork(() -> {
+
+        });
     }
 
 }

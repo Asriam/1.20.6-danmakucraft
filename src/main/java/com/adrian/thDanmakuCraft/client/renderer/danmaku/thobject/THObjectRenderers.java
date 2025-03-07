@@ -2,7 +2,7 @@ package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject;
 
 
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.bullet.THBulletRenderer;
-import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.laser.THCurvedLaserRenderer;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.laser.THCurvyLaserRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.laser.THLaserRenderer;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
@@ -32,6 +32,6 @@ public class THObjectRenderers {
         register(THObjectInit.TH_OBJECT.get(),       THObjectRenderer::new);
         register(THObjectInit.TH_BULLET.get(),       THBulletRenderer::new);
         register(THObjectInit.TH_LASER.get(),        THLaserRenderer::new);
-        register(THObjectInit.TH_CURVED_LASER.get(), THCurvedLaserRenderer::new);
+        register(THObjectInit.TH_CURVY_LASER.get(), THCurvyLaserRenderer::new);
     }
 }

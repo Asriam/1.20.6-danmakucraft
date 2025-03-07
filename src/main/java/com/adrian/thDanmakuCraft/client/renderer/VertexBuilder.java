@@ -3,10 +3,13 @@ package com.adrian.thDanmakuCraft.client.renderer;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
+@OnlyIn(Dist.CLIENT)
 public class VertexBuilder {
 
     private final VertexConsumer builder;

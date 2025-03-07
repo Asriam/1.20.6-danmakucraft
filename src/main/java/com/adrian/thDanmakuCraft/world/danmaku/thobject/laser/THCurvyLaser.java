@@ -24,7 +24,7 @@ import org.luaj.vm2.LuaValue;
 import java.util.List;
 import java.util.function.Predicate;
 
-public class THCurvedLaser extends THLaser {
+public class THCurvyLaser extends THLaser {
 
     public Color laserColor;
     public final NodeManager nodeManager;
@@ -34,19 +34,19 @@ public class THCurvedLaser extends THLaser {
     public boolean breakable = true;
     public int renderCull = 2;
 
-    public THCurvedLaser(THObjectType<THCurvedLaser> type, ITHObjectContainer container) {
+    public THCurvyLaser(THObjectType<THCurvyLaser> type, ITHObjectContainer container) {
         super(type, container);
         this.nodeManager = new NodeManager(this);
         this.shouldSetDeadWhenCollision = false;
     }
 
-    public THCurvedLaser(ITHObjectContainer container){
-        this(THObjectInit.TH_CURVED_LASER.get(), container);
+    public THCurvyLaser(ITHObjectContainer container){
+        this(THObjectInit.TH_CURVY_LASER.get(), container);
         this.initPosition(container.getPosition());
     }
 
-    public THCurvedLaser(ITHObjectContainer container, THBullet.BULLET_INDEX_COLOR laserColor, int nodeMount, float width){
-        this(THObjectInit.TH_CURVED_LASER.get(),container);
+    public THCurvyLaser(ITHObjectContainer container, THBullet.BULLET_INDEX_COLOR laserColor, int nodeMount, float width){
+        this(THObjectInit.TH_CURVY_LASER.get(),container);
         this.laserColor = laserColor.getColor();
         this.nodeMount = nodeMount;
         this.width = width;
@@ -154,9 +154,9 @@ public class THCurvedLaser extends THLaser {
 
     public static class NodeManager{
         private final List<LaserNode> nodeList;
-        private final THCurvedLaser laser;
+        private final THCurvyLaser laser;
 
-        public NodeManager(THCurvedLaser laser) {
+        public NodeManager(THCurvyLaser laser) {
             this.nodeList = Lists.newArrayList();
             this.laser = laser;
         }
@@ -396,8 +396,8 @@ public class THCurvedLaser extends THLaser {
     }
 
     protected static class LuaAPI{
-        private static THCurvedLaser checkTHCurvedLaser(LuaValue luaValue) {
-            if (luaValue.get("source").checkuserdata() instanceof THCurvedLaser laser) {
+        private static THCurvyLaser checkTHCurvedLaser(LuaValue luaValue) {
+            if (luaValue.get("source").checkuserdata() instanceof THCurvyLaser laser) {
                 return laser;
             }
             throw new NullPointerException();

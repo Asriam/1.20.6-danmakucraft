@@ -52,7 +52,7 @@ function yukari_spellcrad_1:onTick()
     end
 
     if timer2 < 600 then
-        local num = 6
+        local num = 4
         for g=0,(num-1) do
             timer = math.lerp(timer2,timer2+1,g/num)
             local pos = self:getPosition()

@@ -4,7 +4,7 @@ import com.adrian.thDanmakuCraft.world.IDataStorage;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet.THBullet;
-import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THCurvedLaser;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THCurvyLaser;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THLaser;
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.CompoundTag;
@@ -95,8 +95,8 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
         return (THLaser) this.getTHObject(key);
     }
 
-    public THCurvedLaser getTHCurvedLaser(String key){
-        return (THCurvedLaser) this.getTHObject(key);
+    public THCurvyLaser getTHCurvedLaser(String key){
+        return (THCurvyLaser) this.getTHObject(key);
     }
 
     @Override

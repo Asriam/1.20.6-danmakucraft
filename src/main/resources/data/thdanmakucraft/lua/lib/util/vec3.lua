@@ -145,6 +145,10 @@ function vec3:zRot(_number)
     return vec3.new(self.x * cos + self.y * sin, self.y * cos - self.x * sin, self.z)
 end
 
+function vec3:rotateXYZ(xRot,yRot,zRot)
+    return vec3.of(self):yRot(yRot):xRot(xRot):zRot(zRot)
+end
+
 ---@return util.Vec3
 function vec3:length()
     return math.sqrt(self.x ^ 2 + self.y ^ 2 + self.z ^ 2)
