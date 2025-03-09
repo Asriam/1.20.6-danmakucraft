@@ -565,7 +565,6 @@ public class THObject implements ILuaValue, IGetContainer {
         if (!this.shouldTick) {
             return;
         }
-
         this.positionX += this.velocity.x;
         this.positionY += this.velocity.y;
         this.positionZ += this.velocity.z;

@@ -5,6 +5,7 @@ import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.script.IScript;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.lua.LuaManager;
+import com.adrian.thDanmakuCraft.util.LuaValueUtil;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
@@ -156,8 +157,18 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         }
     }
 
+    public void setLuaClass(String className){
+        this.luaClassName = className;
+        LuaValue luaClass1 = LuaCore.getInstance().getLuaClass(className);
+        this.luaClass = luaClass1 == null ? LuaValue.NIL : luaClass1;
+    }
+
+    public String getLuaClassName() {
+        return this.luaClassName;
+    }
+
     public LuaValue getLuaClass(){
-        if (this.luaClass == null || this.luaClass.isnil()) {
+        if (LuaValueUtil.isNotValid(this.luaClass)) {
             LuaValue luaClass1 = LuaCore.getInstance().getLuaClass(this.getLuaClassName());
             if (luaClass1 != null && !luaClass1.isnil()) {
                 this.luaClass = luaClass1;
@@ -171,7 +182,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     public static final Map<String, LuaFunction> scriptEventCache = Maps.newHashMap();
     //private final Map<String,LuaValue> scriptEventCache = Maps.newHashMap();
     public void invokeScriptEvent(String eventName, LuaValue... args){
-        if(this.luaClass == null || this.luaClass.isnil()) {
+        if(LuaValueUtil.isNotValid(this.luaClass)) {
             LuaValue luaClass1 = LuaCore.getInstance().getLuaClass(this.getLuaClassName());
             if (luaClass1 == null) {
                 return;
@@ -386,16 +397,6 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
 
     public <T extends THObject> T getObjectFromUUID(String uuid) {
         return this.getObjectFromUUID(UUID.fromString(uuid));
-    }
-
-    public void setLuaClass(String className){
-        this.luaClassName = className;
-        LuaValue luaClass1 = LuaCore.getInstance().getLuaClass(className);
-        this.luaClass = luaClass1 == null ? LuaValue.NIL : luaClass1;
-    }
-
-    public String getLuaClassName() {
-        return this.luaClassName;
     }
 
     public void encode(FriendlyByteBuf buffer) {
