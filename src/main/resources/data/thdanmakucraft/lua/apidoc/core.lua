@@ -38,9 +38,9 @@ function c.vec3(x, y, z) end
 ---@param superClass T
 ---@return Class|T
 ---@overload fun(className:string, superClass:T)
----@overload fun()
----@overload fun(superClass:T)
 ---@overload fun(className:string)
+---@overload fun(superClass:T)
+---@overload fun()
 function c.defineClass(className, superClass) end
 
 ---@param className string
@@ -57,3 +57,9 @@ function c.getClass(className) end
 ---@param metatable table
 ---@overload fun(metatable:table)
 function c.registerMetaTable(metatableName, metatable) end
+
+---@field thobject    userdata
+---@field bullet      userdata
+---@field laser       userdata
+---@field curvy_laser userdata
+c.thobject_types = {}

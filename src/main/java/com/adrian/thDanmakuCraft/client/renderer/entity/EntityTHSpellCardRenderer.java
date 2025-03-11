@@ -86,6 +86,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         }
 
         if(container.shouldRenderLineAura){
+            final float radius0 = 15.0f;
             int sample = 12;
             color = new Color(180,180,255,160);
             time = 40.0f;
@@ -94,7 +95,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
             float width = 1.6f * timeLeft * 1.4f;
             float width2 = width*3.0f;
             float num = 4.0f;
-            float radius = (20.0f + 10.0f) * open*close * timeLeft;
+            float radius = (radius0 + 10.0f) * open*close * timeLeft;
             uvStart = new Vec2(1.0f / 8.0f * (5), 0.0f);
             uvEnd = new Vec2(1.0f / 8.0f * (5+1), 1.0f);
 
@@ -129,7 +130,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
 
             float rotateOffset = Mth.PI/4.0f + timer / 6.0f;
             for (int g=0;g<=2;g++) {
-                radius = (20.0f+g*2.0f) * open*close * timeLeft;
+                radius = (radius0+g*2.0f) * open*close * timeLeft;
                 poseStack.pushPose();
                 PoseStack.Pose pose = poseStack.last();
                 poseStack.mulPose(new Quaternionf()

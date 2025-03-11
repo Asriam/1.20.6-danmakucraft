@@ -11,6 +11,7 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.compress.utils.Lists;
 import org.luaj.vm2.Globals;
+import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.OneArgFunction;
@@ -126,10 +127,12 @@ public class LuaCore {
         LuaValue library = LuaValue.tableOf();
         /// Fields
         library.set("mod_id", THDanmakuCraftMod.MOD_ID);
-        library.set("type_thobject", LuaValue.userdataOf(THObjectInit.TH_OBJECT.get()));
-        library.set("type_bullet", LuaValue.userdataOf(THObjectInit.TH_BULLET.get()));
-        library.set("type_laser", LuaValue.userdataOf(THObjectInit.TH_LASER.get()));
-        library.set("type_curvy_laser", LuaValue.userdataOf(THObjectInit.TH_CURVY_LASER.get()));
+        LuaTable thobjectTypes = LuaValue.tableOf();
+        thobjectTypes.set("thobject", LuaValue.userdataOf(THObjectInit.TH_OBJECT.get()));
+        thobjectTypes.set("bullet", LuaValue.userdataOf(THObjectInit.TH_BULLET.get()));
+        thobjectTypes.set("laser", LuaValue.userdataOf(THObjectInit.TH_LASER.get()));
+        thobjectTypes.set("curvy_laser", LuaValue.userdataOf(THObjectInit.TH_CURVY_LASER.get()));
+        library.set("thobject_type", thobjectTypes);
         /// Functions
         library.set( "doFile", new OneArgFunction(){
             @Override

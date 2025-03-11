@@ -6,7 +6,6 @@ import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.util.*;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
 import com.adrian.thDanmakuCraft.world.danmaku.*;
-import com.google.common.collect.Maps;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.*;
@@ -26,7 +25,6 @@ import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static com.adrian.thDanmakuCraft.world.LuaValueHelper.*;
@@ -101,14 +99,18 @@ public class THObject implements ILuaValue, IGetContainer {
         //this.luaValueForm = this.ofLuaValue();
     }
 
-    public THObject(THObjectContainer container, Vec3 position) {
+    public THObject(THObjectContainer container){
         this(THObjectInit.TH_OBJECT.get(), container);
+    }
+
+    public THObject(THObjectContainer container, Vec3 position) {
+        this(container);
         this.initPosition(position);
     }
 
     public THObject(THObjectContainer container, Vec3 position, String luaClassKey) {
         this(container,position);
-        this.init(luaClassKey,LuaValue.NIL);
+        this.initLua(luaClassKey,LuaValue.NIL);
     }
 
     public void registerTasks(){
@@ -121,7 +123,7 @@ public class THObject implements ILuaValue, IGetContainer {
         this.taskManager.restartLazyTasks();
     }
 
-    public void init(String luaClassKey, Varargs args) {
+    public void initLua(String luaClassKey, Varargs args) {
         this.setLuaClass(luaClassKey);
         this.initLuaValue();
         LuaValue luaObject = this.ofLuaValue();

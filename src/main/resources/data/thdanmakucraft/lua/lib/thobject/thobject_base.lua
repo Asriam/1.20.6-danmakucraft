@@ -7,14 +7,15 @@
 ---@type Class|THObject
 THObjectBase = core.defineClass("THObject_Base")
 local object = THObjectBase
-object.thobject_type = "THObject_Base"
+object.thobject_type = core.thobject_types.thobject
 ---此函數會在THObject創建時調用
 function object:onConstruct()
 end
 
 ---此函數會在THObject第一次添加到THObjectContainer時調用
-function object:onInit(vec3)
-    self:initPosition(vec3)
+---@param position util.Vec3
+function object:onInit(position)
+    self:initPosition(position)
 end
 
 ---此函數會在註冊Tasks時被調用
@@ -37,4 +38,10 @@ end
 
 ---此函數會在THObject移除時調用
 function object:onRemove()
+end
+
+---@param className string
+---@return Class|THObject
+util.defineTHObject = function(className)
+    return core.defineClass(className,THObjectBase)
 end
