@@ -10,6 +10,12 @@ public interface ILuaValue {
         return meta;
     }
 
+    static LuaValue setConstantMeta(LuaValue luaValue){
+        LuaValue meta = setMeta(luaValue);
+        meta.set("__index", luaValue);
+        return meta;
+    }
+
     static String getLuaClassName(LuaValue luaValue){
         if(luaValue.isstring()){
             return luaValue.checkjstring();

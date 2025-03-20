@@ -39,7 +39,7 @@ public class SpellCardNameOverlay implements IGuiOverlay {
         return !spellCards.isEmpty();
     }
 
-    private static final ResourceLocation SPELL_CARD_UI_TEXTURE = ResourceLocationUtil.mod("textures/gui/spellcard/boss_ui.png");
+    private static final ResourceLocation SPELL_CARD_UI_TEXTURE = ResourceLocationUtil.thdanmakucraft("textures/gui/spellcard/boss_ui.png");
 
     private static final BufferBuilder BUFFER_1 = new BufferBuilder(221);
     private static final BufferBuilder BUFFER_2 = new BufferBuilder(222);

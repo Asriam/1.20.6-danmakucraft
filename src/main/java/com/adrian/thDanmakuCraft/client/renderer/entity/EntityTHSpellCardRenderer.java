@@ -1,11 +1,14 @@
 package com.adrian.thDanmakuCraft.client.renderer.entity;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.client.renderer.THBlendMode;
 import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
 import com.adrian.thDanmakuCraft.client.renderer.VertexBuilder;
+import com.adrian.thDanmakuCraft.client.renderer.shape.ShapeVertexHelper;
+import com.adrian.thDanmakuCraft.client.renderer.shape.SphereVertexHelper;
 import com.adrian.thDanmakuCraft.util.Color;
+import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.util.IImage;
+import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.Blend;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
@@ -18,7 +21,6 @@ import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -36,21 +38,20 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         super.render(entity, rotationX, partialTicks, poseStack, bufferSource, combinedOverlay);
         THObjectContainer container = entity.getContainer();
         if(container.isSpellCard() && (container.shouldRenderMagicAura || container.shouldRenderLineAura)) {
-            renderSpellCardAura(entity,entity.getContainer(), poseStack, entity.getPosition(partialTicks), partialTicks);
+            renderSpellCardAura(entity,container, poseStack, entity.getPosition(partialTicks), partialTicks);
+
+            renderBackgroundWarpEffect(entity,container, poseStack, entity.getPosition(partialTicks), partialTicks);
         }
     }
 
     private static final BufferBuilder MAGIC_SQUAR_BUFFER = new BufferBuilder(250);
     private static final BufferBuilder AURA_BUFFER = new BufferBuilder(251);
+    private static final BufferBuilder BACKGROUND_WARP_EFFECT_BUFFER = new BufferBuilder(252);
 
-    private static IImage.Image spellCardAura = new IImage.Image(
-            ResourceLocation.fromNamespaceAndPath(THDanmakuCraftMod.MOD_ID,"textures/spellcard/eff_line.png"), 0.0f, 0.0f, 1.0f, 1.0f);
-
-    private static IImage.Image SPELLCARD_MAGIC_SQUAR = new IImage.Image(
-            ResourceLocation.fromNamespaceAndPath(THDanmakuCraftMod.MOD_ID,"textures/spellcard/eff_magicsquare.png"), 0.0f, 0.0f, 1.0f, 1.0f);
+    private static IImage.Image spellCardAura = new IImage.Image(ResourceLocationUtil.thdanmakucraft("textures/spellcard/eff_line.png"), 0.0f, 0.0f, 1.0f, 1.0f);
+    private static IImage.Image SPELLCARD_MAGIC_SQUAR = new IImage.Image(ResourceLocationUtil.thdanmakucraft("textures/spellcard/eff_magicsquare.png"), 0.0f, 0.0f, 1.0f, 1.0f);
     public void renderSpellCardAura(EntityTHSpellCard spellCard, THObjectContainer container, PoseStack poseStack, Vec3 pos, float partialTicks){
         IImage.Image image = SPELLCARD_MAGIC_SQUAR;
-
         Color color = new Color(255,255,255,160);
         Vec2 uvStart = image.getUVStart();
         Vec2 uvEnd =   image.getUVEnd();
@@ -168,6 +169,22 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
             }
             poseStack.popPose();
         }
+    }
+
+    public static void renderBackgroundWarpEffect(EntityTHSpellCard spellCard, THObjectContainer container, PoseStack poseStack, Vec3 pos, float partialTicks){
+        float radius = 10.0f;
+        poseStack.pushPose();
+        ShapeVertexHelper shapeVertexHelper = new SphereVertexHelper(
+                poseStack.last().pose(), poseStack.last().normal(),
+                ConstantUtil.VECTOR3F_ZERO, ConstantUtil.VECTOR3F_ONE.mul(radius),
+                12, 12, 0.0f,
+                new Color(255,255,255,255),
+                new Color(255,255,255,255));
+        BACKGROUND_WARP_EFFECT_BUFFER.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
+        shapeVertexHelper.vertex((vertexPos,normal,color)->{
+
+        });
+        poseStack.popPose();
     }
 
     public static void beforeRenderEntities(LevelRenderer levelRenderer, float partialTick){

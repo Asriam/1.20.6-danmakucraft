@@ -1,22 +1,19 @@
 package com.adrian.thDanmakuCraft.client.renderer.entity.mount;
 
-import com.adrian.thDanmakuCraft.client.model.BroomMountModel;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.world.entity.mount.BroomMount;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.resources.ResourceLocation;
 
 public class BroomMountRenderer extends EntityRenderer<BroomMount> {
 
-    ResourceLocation TEXTURE = ResourceLocationUtil.mod("textures/entity/mount/broom_mount.png");
+    ResourceLocation TEXTURE = ResourceLocationUtil.thdanmakucraft("textures/entity/mount/broom_mount.png");
     final Model model = null;
     public BroomMountRenderer(EntityRendererProvider.Context context) {
         super(context);

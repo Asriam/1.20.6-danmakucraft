@@ -16,7 +16,7 @@ public class THDanmakuCraftRegistries {
         public static final ResourceKey<Registry<THObjectType>> THOBJECT_TYPE = key("th_object");
 
         private static <T> ResourceKey<Registry<T>> key(String name) {
-            return ResourceKey.createRegistryKey(ResourceLocationUtil.mod(name));
+            return ResourceKey.createRegistryKey(ResourceLocationUtil.thdanmakucraft(name));
         }
     }
 

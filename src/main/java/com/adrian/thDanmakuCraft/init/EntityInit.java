@@ -20,33 +20,33 @@ public class EntityInit {
             "example_entity",
             () -> EntityType.Builder.<EntityExample>of(EntityExample::new, MobCategory.MISC)
                     .sized(1.0f,1.0f)
-                    .build(ResourceLocationUtil.mod("example_entity").toString())
+                    .build(ResourceLocationUtil.thdanmakucraft("example_entity").toString())
     );
     public static final RegistryObject<EntityType<EntityTHObjectContainer>> ENTITY_THOBJECT_CONTAINER = ENTITIES.register(
             "thobject_container",
             () -> EntityType.Builder.<EntityTHObjectContainer>of(EntityTHObjectContainer::new, MobCategory.MISC)
                     .sized(1.0F, 1.0F).eyeHeight(0.5F).spawnDimensionsScale(4.0F).clientTrackingRange(11)
-                    .build(ResourceLocationUtil.mod("thobject_container").toString())
+                    .build(ResourceLocationUtil.thdanmakucraft("thobject_container").toString())
     );
 
     public static final RegistryObject<EntityType<EntitySingleTHObject>> ENTITY_SINGLE_THOBJECT = ENTITIES.register(
             "entity_single_thobject",
             () -> EntityType.Builder.<EntitySingleTHObject>of(EntitySingleTHObject::new, MobCategory.MISC)
                     .sized(1.0f,1.0f)
-                    .build(ResourceLocationUtil.mod("entity_single_thobject").toString())
+                    .build(ResourceLocationUtil.thdanmakucraft("entity_single_thobject").toString())
     );
 
     public static final RegistryObject<EntityType<EntityTHSpellCard>> ENTITY_THSPELLCARD = ENTITIES.register(
             "entity_thspellcard",
             () -> EntityType.Builder.<EntityTHSpellCard>of(EntityTHSpellCard::new, MobCategory.MISC)
                     .sized(1.0f,1.0f)
-                    .build(ResourceLocationUtil.mod("entity_thspellcard").toString())
+                    .build(ResourceLocationUtil.thdanmakucraft("entity_thspellcard").toString())
     );
 
     public static final RegistryObject<EntityType<BroomMount>> BROOM_MOUNT = ENTITIES.register(
             "broom_mount",
             () -> EntityType.Builder.<BroomMount>of(BroomMount::new, MobCategory.MISC)
                     .sized(1.0f,1.0f)
-                    .build(ResourceLocationUtil.mod("broom_mount").toString())
+                    .build(ResourceLocationUtil.thdanmakucraft("broom_mount").toString())
     );
 }

@@ -5,7 +5,6 @@ import com.adrian.thDanmakuCraft.client.renderer.*;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRenderers;
-import com.adrian.thDanmakuCraft.events.RenderEvents;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
@@ -21,7 +20,6 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 
@@ -276,7 +274,7 @@ public class THObjectContainerRenderer {
     }
 
     public static void applyEffect(){
-        ShaderInstance customShader = ShaderLoader.getShader(ResourceLocationUtil.mod("box_blur"));
+        ShaderInstance customShader = ShaderLoader.getShader(ResourceLocationUtil.thdanmakucraft("box_blur"));
         if (customShader != null) {
             RenderTarget inTarget = TEST_RENDER_TARGET;
             RenderTarget outTarget = MAIN_RENDER_TARGET;

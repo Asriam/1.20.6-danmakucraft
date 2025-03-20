@@ -8,7 +8,7 @@ public class ResourceLocationUtil {
     public static ResourceLocation minecraft(String path) {
         return ResourceLocation.parse(path);
     }
-    public static ResourceLocation mod(String path) {
+    public static ResourceLocation thdanmakucraft(String path) {
         return ResourceLocation.fromNamespaceAndPath(THDanmakuCraftMod.MOD_ID, path);
     }
 

@@ -12,6 +12,9 @@ core = c
 ---@param filePath string
 function c.doFile(filePath) end
 
+---@param filePath string
+function c.doAllFilesInFolder(folderPath) end
+
 ---@param object any
 ---@return boolean
 function c.isValid(object) end

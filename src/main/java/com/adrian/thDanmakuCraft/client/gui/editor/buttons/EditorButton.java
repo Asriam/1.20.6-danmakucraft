@@ -11,12 +11,11 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 
 public class EditorButton {
 
-    private static final ResourceLocation EDITOR_BUTTON_TEXTURE = ResourceLocationUtil.mod("textures/gui/editor_button.png");
+    private static final ResourceLocation EDITOR_BUTTON_TEXTURE = ResourceLocationUtil.thdanmakucraft("textures/gui/editor_button.png");
 
     public int xPos;
     public int yPos;

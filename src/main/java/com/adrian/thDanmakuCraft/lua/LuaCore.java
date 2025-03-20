@@ -6,6 +6,7 @@ import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -53,7 +54,7 @@ public class LuaCore {
     public static void init(){
         LUA = new LuaCore();
         String path = "main.lua";
-        String script = LUA.luaLoader.getResourceAsString(ResourceLocationUtil.mod("lua/"+path));
+        String script = LUA.luaLoader.getResourceAsString(getFileLocation(path));
         LuaCore luaCore = LuaCore.getInstance();
         luaCore.GLOBALS.load(script,path).call();
     }
@@ -78,6 +79,10 @@ public class LuaCore {
         }
     }
 
+    public static ResourceLocation getFileLocation(String path){
+        return ResourceLocationUtil.thdanmakucraft("lua/"+path);
+    }
+
     public void bindClass(String key, Class<?> Class) throws Exception {
         //this.GLOBALS.load(key + " = luajava.bindClass('"+Class.getName()+"');").call();
         this.GLOBALS.set(key, CoerceJavaToLua.coerce(Class));
@@ -93,13 +98,18 @@ public class LuaCore {
 
     public LuaValue doFile(String path){
         try {
-            String script = luaLoader.getResourceAsString(ResourceLocationUtil.mod("lua/"+path));
+            String script = luaLoader.getResourceAsString(getFileLocation(path));
             return this.GLOBALS.load(script,path).call();
         } catch (Exception e) {
-            //e.printStackTrace();
-            THDanmakuCraftMod.LOGGER.error("Failed doing lua file!",e);
+            THDanmakuCraftMod.LOGGER.error("Failed loading lua file! the file path is not valid!",e);
         }
         return NIL;
+    }
+
+    public void doFolder(String path){
+        luaLoader.loadAllResourcesInFolderAsString(getFileLocation(path)).forEach((path1, resource) -> {
+            this.GLOBALS.load(resource,path).call();
+        });
     }
 
     public LuaValue defineClass(Varargs varargs){
@@ -132,12 +142,19 @@ public class LuaCore {
         thobjectTypes.set("bullet", LuaValue.userdataOf(THObjectInit.TH_BULLET.get()));
         thobjectTypes.set("laser", LuaValue.userdataOf(THObjectInit.TH_LASER.get()));
         thobjectTypes.set("curvy_laser", LuaValue.userdataOf(THObjectInit.TH_CURVY_LASER.get()));
-        library.set("thobject_type", thobjectTypes);
+        library.set("thobject_types", thobjectTypes);
         /// Functions
         library.set( "doFile", new OneArgFunction(){
             @Override
             public LuaValue call(LuaValue luaValue) {
                 return core.doFile(luaValue.checkjstring());
+            }
+        });
+        library.set( "doAllFilesInFolder", new OneArgFunction(){
+            @Override
+            public LuaValue call(LuaValue luaValue) {
+                core.doFolder(luaValue.checkjstring());
+                return LuaValue.NIL;
             }
         });
         library.set( "isValid", new OneArgFunction(){
@@ -345,7 +362,10 @@ public class LuaCore {
     }
 
     public LuaValue getLuaClass(String className){
+        //if (this.luaClassMap.containsKey(className)) {
         return this.luaClassMap.get(className);
+        //}
+        //throw new RuntimeException("There is no such class! class name:" + className);
     }
 
     public LuaValue getLuaClass(LuaValue luaClass){
@@ -368,6 +388,10 @@ public class LuaCore {
     public static class core {
         public static LuaValue doFile(String path) {
             return LuaCore.getInstance().doFile(path);
+        }
+
+        public static void doFolder(String path) {
+            LuaCore.getInstance().doFolder(path);
         }
 
         public static boolean isValid(Object object) {

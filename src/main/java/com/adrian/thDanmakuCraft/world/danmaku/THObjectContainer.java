@@ -8,6 +8,7 @@ import com.adrian.thDanmakuCraft.lua.LuaManager;
 import com.adrian.thDanmakuCraft.util.LuaValueUtil;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
+import com.adrian.thDanmakuCraft.world.ISerializable;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet.THBullet;
@@ -34,7 +35,7 @@ import java.util.*;
 
 import static com.adrian.thDanmakuCraft.world.LuaValueHelper.*;
 
-public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue, IGetContainer {
+public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue, IGetContainer, ISerializable {
     private Entity hostEntity;
     private static final int MAX_OBJECT_AMOUNT_LIMIT = 10000;
     private int maxObjectAmount = 2000;
@@ -127,28 +128,6 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     public boolean isInLifeTime(){
         return this.timer < this.lifetime;
     }
-
-    /*
-    public void task(){
-        boolean flag = false;
-
-        if(this.objectManager.isEmpty() && !flag) {
-            for (int j = 0; j< THBullet.DefaultBulletStyle.class.getEnumConstants().length; j++) {
-                for (int i = 0; i < 16; i++) {
-                    THObject a = (THObject) new THBullet(this, THBullet.DefaultBulletStyle.getStyleByIndex(j), THBullet.BULLET_INDEX_COLOR.getColorByIndex(i + 1))
-                            .initPosition(this.position().add(i*2, 0.0d, j*2))
-                            .shoot(
-                                    0.0f,
-                                    Vec3.ZERO
-                            );
-                    a.setLifetime(100);
-                    a.setBlend(THObject.Blend.add);
-                    //a.setBlend(THObject.Blend.class.getEnumConstants()[(int) ((THObject.Blend.class.getEnumConstants().length)*random.nextFloat())]);
-                    //a.blend = THObject.BlendMode.add;
-                }
-            }
-        }
-    }*/
 
     public void scriptInit(){
         if(!this.isInited) {
@@ -617,7 +596,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
             }
 
             if (luaValue.isstring()) {
-                return THObjectType.getValue(ResourceLocationUtil.mod(luaValue.checkjstring()));
+                return THObjectType.getValue(ResourceLocationUtil.thdanmakucraft(luaValue.checkjstring()));
             }
 
             return null;
@@ -632,7 +611,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
                     thobject_type = THObjectInit.TH_OBJECT.get();
                 }
                 THObject object = thobject_type.create(checkTHObjectContainer(varargs.arg(1)));
-                initTHObject(object, luaClassKey, varargs.arg(3).checktable().unpack());
+                initTHObject(object, luaClassKey, varargs.subargs(1).subargs(1));
                 return object.ofLuaValue();
             }
         };

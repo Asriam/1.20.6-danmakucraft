@@ -27,7 +27,7 @@ public class RenderTargetManager {
     }
 
     public static RenderTarget createRenderTarget(String name, int width, int height){
-        return createRenderTarget(ResourceLocationUtil.mod(name),width,height);
+        return createRenderTarget(ResourceLocationUtil.thdanmakucraft(name),width,height);
     }
 
     public static RenderTarget getRenderTarget(ResourceLocation name){
@@ -35,7 +35,7 @@ public class RenderTargetManager {
     }
 
     public static RenderTarget getRenderTarget(String name){
-        return getRenderTarget(ResourceLocationUtil.mod(name));
+        return getRenderTarget(ResourceLocationUtil.thdanmakucraft(name));
     }
 
     public static void releaseRenderTarget(ResourceLocation name){

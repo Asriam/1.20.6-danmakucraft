@@ -5,6 +5,7 @@ import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.util.*;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
+import com.adrian.thDanmakuCraft.world.ISerializable;
 import com.adrian.thDanmakuCraft.world.danmaku.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -30,7 +31,7 @@ import java.util.UUID;
 import static com.adrian.thDanmakuCraft.world.LuaValueHelper.*;
 import static com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject.LuaAPI.*;
 
-public class THObject implements ILuaValue, IGetContainer {
+public class THObject implements ILuaValue, IGetContainer, ISerializable {
     //private static final Logger log = LoggerFactory.getLogger(THObject.class);
     private final THObjectType<? extends THObject> type;
     //private final AdditionalParameterManager parameterManager;
@@ -41,7 +42,7 @@ public class THObject implements ILuaValue, IGetContainer {
     //private final Level level;
     protected final RandomSource random = RandomSource.create();
     protected ITHObjectContainer container;
-    protected static final ResourceLocation TEXTURE_WHITE = ResourceLocationUtil.mod("textures/white.png");
+    public static final ResourceLocation TEXTURE_WHITE = ResourceLocationUtil.thdanmakucraft("textures/white.png");
     protected IImage.Image image = new IImage.Image(TEXTURE_WHITE, 0.0f, 0.0f, 1.0f, 1.0f);
     protected static final AABB INITIAL_AABB = new AABB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
     protected AABB bb = INITIAL_AABB;

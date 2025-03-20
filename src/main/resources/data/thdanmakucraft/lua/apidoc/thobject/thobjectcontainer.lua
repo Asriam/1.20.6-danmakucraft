@@ -73,10 +73,8 @@ function container:getParameterManager() end
 function container:discard() end
 
 ---@param class Class
----@param args table
----@param position util.Vec3
 ---@return THObject
-function container:newTHObject(class, args) end
+function container:newTHObject(class, ...) end
 
 ---@param cardName string
 function container:setSpellCardName(cardName) end

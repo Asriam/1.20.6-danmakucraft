@@ -25,15 +25,16 @@ public class ShaderLoader {
 
     public static MyShaderInstance DANMAKU_DEPTH_OUTLINE_SHADER;
     public static MyShaderInstance DANMAKU_TEXTURE_SHADER;
+    public static MyShaderInstance BACKGROUND_WARP_EFFECT;
 
     public ShaderLoader() {
     }
 
     public static void registryShaders(ResourceProvider resourceProvider){
-        DANMAKU_DEPTH_OUTLINE_SHADER = registryShader(resourceProvider, ResourceLocationUtil.mod("danmaku/rendertype_danmaku_1"), THRenderType.TEST_FORMAT);
-        DANMAKU_TEXTURE_SHADER = registryShader(resourceProvider,ResourceLocationUtil.mod("danmaku/rendertype_danmaku_texture"), THRenderType.POSITION_COLOR_COLOR_TEX);
-        registryShader(resourceProvider,ResourceLocationUtil.mod("box_blur"), DefaultVertexFormat.POSITION);
-        registryShader(resourceProvider,ResourceLocationUtil.mod("test_shader"), new VertexFormat(
+        DANMAKU_DEPTH_OUTLINE_SHADER = registryShader(resourceProvider, ResourceLocationUtil.thdanmakucraft("danmaku/rendertype_danmaku_1"), THRenderType.TEST_FORMAT);
+        DANMAKU_TEXTURE_SHADER = registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("danmaku/rendertype_danmaku_texture"), MyVertexFormats.POSITION_COLOR_COLOR_TEX);
+        registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("box_blur"), DefaultVertexFormat.POSITION);
+        registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("test_shader"), new VertexFormat(
                 ImmutableMap.<String, VertexFormatElement>builder()
                         .put("Position", DefaultVertexFormat.ELEMENT_POSITION)
                         .put("Color"   , DefaultVertexFormat.ELEMENT_COLOR)
@@ -43,6 +44,8 @@ public class ShaderLoader {
                         .put("Normal"  , DefaultVertexFormat.ELEMENT_NORMAL)
                         .build()
         ));
+        BACKGROUND_WARP_EFFECT = registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("danmaku/rendertype_background_warp_effect"), MyVertexFormats.POSITION_NORMAL);
+
     }
 
     @SubscribeEvent

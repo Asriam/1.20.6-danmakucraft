@@ -4,6 +4,7 @@
 --- DateTime: 2025/1/23 下午 08:49
 ---
 
+core.doFile("lib/base_classes/lib.lua")
 core.doFile("lib/bullet_styles.lua")
 core.doFile("lib/util/util.lua")
 

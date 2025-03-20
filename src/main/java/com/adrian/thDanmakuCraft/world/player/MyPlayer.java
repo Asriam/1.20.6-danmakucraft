@@ -18,7 +18,7 @@ public class MyPlayer {
 
     public static void onAttachCapabilities(AttachCapabilitiesEvent<Entity> event){
         if(!event.getObject().getCapability(THObjectContainerProvider.PLAYER_THOBJECT_CONTAINER_CAPABILITY).isPresent()){
-            event.addCapability(ResourceLocationUtil.mod("thobject_container"), new THObjectContainerProvider());
+            event.addCapability(ResourceLocationUtil.thdanmakucraft("thobject_container"), new THObjectContainerProvider());
         }
     }
     public static void onPreTick(TickEvent.PlayerTickEvent.Pre event){

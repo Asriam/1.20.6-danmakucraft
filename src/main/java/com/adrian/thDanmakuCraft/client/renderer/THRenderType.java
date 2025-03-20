@@ -26,14 +26,6 @@ public class THRenderType extends RenderStateShard{
     public record RENDER_TYPE_2D_DANMAKU_CONTEXT(ResourceLocation textureLocation, BlendMode blendMode) {
     }
 
-    public static final VertexFormat POSITION_COLOR_COLOR_TEX = new VertexFormat(
-            ImmutableMap.<String, VertexFormatElement>builder()
-                    .put("Position", DefaultVertexFormat.ELEMENT_POSITION)
-                    .put("Color", DefaultVertexFormat.ELEMENT_COLOR)
-                    .put("Color2", DefaultVertexFormat.ELEMENT_COLOR)
-                    .put("UV0", DefaultVertexFormat.ELEMENT_UV0)
-                    .build()
-    );
     public static final ShaderStateShard DANMAKU_DEPTH_OUTLINE_SHADER = new ShaderStateShard(() -> ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER);
     public static final VertexFormat TEST_FORMAT = new VertexFormat(
             ImmutableMap.<String, VertexFormatElement>builder()
@@ -92,7 +84,7 @@ public class THRenderType extends RenderStateShard{
             ));
 
     public static final Function<RENDER_TYPE_2D_DANMAKU_CONTEXT, RenderType> RENDER_TYPE_2D_DANMAKU = Util.memoize((context) ->
-            RenderType.create("render_type_2d_danmaku", POSITION_COLOR_COLOR_TEX, VertexFormat.Mode.QUADS, 256, false, false,
+            RenderType.create("render_type_2d_danmaku", MyVertexFormats.POSITION_COLOR_COLOR_TEX, VertexFormat.Mode.QUADS, 256, false, false,
                     CompositeState.builder()
                             .setShaderState(new ShaderStateShard(() -> ShaderLoader.DANMAKU_TEXTURE_SHADER))
                             .setTextureState(new TextureStateShard(context.textureLocation, true, true))
