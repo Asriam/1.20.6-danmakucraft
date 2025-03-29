@@ -2,10 +2,7 @@ package com.adrian.thDanmakuCraft.client.renderer;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
-import com.google.common.collect.ImmutableMap;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormatElement;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraftforge.api.distmarker.Dist;
@@ -31,9 +28,10 @@ public class ShaderLoader {
     }
 
     public static void registryShaders(ResourceProvider resourceProvider){
-        DANMAKU_DEPTH_OUTLINE_SHADER = registryShader(resourceProvider, ResourceLocationUtil.thdanmakucraft("danmaku/rendertype_danmaku_1"), THRenderType.TEST_FORMAT);
+        DANMAKU_DEPTH_OUTLINE_SHADER = registryShader(resourceProvider, ResourceLocationUtil.thdanmakucraft("danmaku/rendertype_danmaku_1"), MyRenderTypes.TEST_FORMAT);
+        BACKGROUND_WARP_EFFECT = registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("danmaku/rendertype_bgwarpef"), MyVertexFormats.POSITION_NORMAL);
         DANMAKU_TEXTURE_SHADER = registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("danmaku/rendertype_danmaku_texture"), MyVertexFormats.POSITION_COLOR_COLOR_TEX);
-        registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("box_blur"), DefaultVertexFormat.POSITION);
+        /*registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("box_blur"), DefaultVertexFormat.POSITION);
         registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("test_shader"), new VertexFormat(
                 ImmutableMap.<String, VertexFormatElement>builder()
                         .put("Position", DefaultVertexFormat.ELEMENT_POSITION)
@@ -43,8 +41,7 @@ public class ShaderLoader {
                         .put("UV2"     , DefaultVertexFormat.ELEMENT_UV2)
                         .put("Normal"  , DefaultVertexFormat.ELEMENT_NORMAL)
                         .build()
-        ));
-        BACKGROUND_WARP_EFFECT = registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("danmaku/rendertype_background_warp_effect"), MyVertexFormats.POSITION_NORMAL);
+        ));*/
 
     }
 

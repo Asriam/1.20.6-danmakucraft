@@ -1,14 +1,18 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.Blend;
 import com.google.common.collect.ImmutableMap;
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.shaders.BlendMode;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
 import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -17,9 +21,9 @@ import java.util.function.Function;
 
 import static net.minecraft.client.renderer.RenderType.*;
 @OnlyIn(Dist.CLIENT)
-public class THRenderType extends RenderStateShard{
+public class MyRenderTypes extends RenderStateShard{
 
-    public THRenderType(String p_110161_, Runnable p_110162_, Runnable p_110163_) {
+    public MyRenderTypes(String p_110161_, Runnable p_110162_, Runnable p_110163_) {
         super(p_110161_, p_110162_, p_110163_);
     }
 
@@ -27,6 +31,13 @@ public class THRenderType extends RenderStateShard{
     }
 
     public static final ShaderStateShard DANMAKU_DEPTH_OUTLINE_SHADER = new ShaderStateShard(() -> ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER);
+    public static final ShaderStateShard BACKGROUND_WARP_EFFECT_SHADER = new ShaderStateShard(() -> {
+        RenderTarget target = Minecraft.getInstance().getMainRenderTarget();
+        ShaderInstance shader = ShaderLoader.BACKGROUND_WARP_EFFECT;
+        shader.setSampler("DepthBuffer",target.getDepthTextureId());
+        shader.setSampler("ScreenBuffer",target.getColorTextureId());
+        return shader;
+    });
     public static final VertexFormat TEST_FORMAT = new VertexFormat(
             ImmutableMap.<String, VertexFormatElement>builder()
                     .put("Position", DefaultVertexFormat.ELEMENT_POSITION)
@@ -82,6 +93,27 @@ public class THRenderType extends RenderStateShard{
                             .setOutputState(ITEM_ENTITY_TARGET)
                             .createCompositeState(true)
             ));
+
+    public static final RenderType RENDER_TYPE_BACKGROUND_WARP_EFFECT = RenderType.create("render_type_background_warp_effect", MyVertexFormats.POSITION_NORMAL, VertexFormat.Mode.QUADS, 256, false, false,
+                    CompositeState.builder()
+                            .setShaderState(BACKGROUND_WARP_EFFECT_SHADER)
+                            .setTransparencyState(
+                                    new TransparencyStateShard("custom_transparency", () -> {
+                                        RenderSystem.enableBlend();
+                                        THBlendMode.getBlendMode(Blend.normal).apply();
+                                    }, () -> {
+                                        RenderSystem.disableBlend();
+                                        RenderSystem.defaultBlendFunc();
+                                    }))
+                            .setCullState(NO_CULL)
+                            .setLightmapState(NO_LIGHTMAP)
+                            .setOverlayState(NO_OVERLAY)
+                            .setWriteMaskState(COLOR_DEPTH_WRITE)
+                            //.setOutputState(TRANSLUCENT_TARGET)
+                            //.setOutputState(ITEM_ENTITY_TARGET)
+                            .setOutputState(ITEM_ENTITY_TARGET)
+                            .createCompositeState(true)
+            );
 
     public static final Function<RENDER_TYPE_2D_DANMAKU_CONTEXT, RenderType> RENDER_TYPE_2D_DANMAKU = Util.memoize((context) ->
             RenderType.create("render_type_2d_danmaku", MyVertexFormats.POSITION_COLOR_COLOR_TEX, VertexFormat.Mode.QUADS, 256, false, false,

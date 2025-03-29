@@ -1,7 +1,6 @@
 #version 150
 
 #moj_import <fog.glsl>
-
 uniform sampler2D DepthBuffer;
 uniform sampler2D ScreenBuffer;
 
@@ -27,7 +26,7 @@ float LinearizeDepth(float depth) {
 }
 
 void main() {
-    if (vertexDistance > FogEnd){
+    /*if (vertexDistance > FogEnd){
         discard;
     }
     vec3 viewAngle = normalize(-viewDir);
@@ -37,8 +36,8 @@ void main() {
     // abs() so that the back faces get treated the same as the front, giving a rim effect.
     float rimStrength = 1 - max(dot(viewAngle, normal),0.0f); // The more orthogonal, the stronger
     //float rimFactor = pow(rimStrength, 1.0f)*1.6; // higher power = sharper rim light
-    float rimFactor  = pow(rimStrength-params.z, params.w) ; // higher power = sharper rim light
-    float rimFactor2 = pow(rimStrength+1.0f-params.x, params.y) ; // higher power = sharper rim light
+    float rimFactor  = pow(rimStrength-0.0f, 2.0f) ; // higher power = sharper rim light
+    float rimFactor2 = pow(rimStrength+1.0f-0.0f, 2.0f) ; // higher power = sharper rim light
 
     //float rimFactor = (-cos(pow(min(rimStrength,0.5f)/0.5f,3.0f)*3.1415926)+1)/2;
     vec4 rim  = vec4(rimFactor);
@@ -47,7 +46,7 @@ void main() {
     // - Create the intersection line -
     // Turn frag coord from screenspace -> NDC, which corresponds to the UV
     float sceneDepth  = LinearizeDepth(texture(DepthBuffer, texCoord).r);
-    float sceneDepth  = 1.0f;
+    //float sceneDepth  = 1.0f;
     float bubbleDepth = LinearizeDepth(gl_FragCoord.z);
 
     float distance = abs(bubbleDepth - sceneDepth); // linear difference in depth
@@ -59,11 +58,18 @@ void main() {
 
     //vec4 bubbleBase = vertexColor;
     vec4 outColor = vec4(normal, 1.0f);
+    outColor = vec4(0.5f,0.5f,0.5f, 1.0f);
 
     if(outColor.a < 0.05f){
         discard;
     }
 
     fragColor = linear_fog(outColor, vertexDistance, FogStart, FogEnd, FogColor);
-    //fragColor =  vec4(normal, 1.0f);
+    //fragColor =  vec4(normal, 1.0f);*/
+    vec2 texCoord = gl_FragCoord.xy/ScreenSize;
+    float depth = LinearizeDepth(texture(DepthBuffer, texCoord).r);
+    vec4 screen_color = texture(ScreenBuffer, texCoord);
+    vec4 outColor = screen_color + vec4(normal, depth);
+    fragColor = linear_fog(outColor, vertexDistance, FogStart, FogEnd, FogColor);
+    //fragColor = vec4(0.1f, 0.0f, 0.0f, 1.0f);
 }

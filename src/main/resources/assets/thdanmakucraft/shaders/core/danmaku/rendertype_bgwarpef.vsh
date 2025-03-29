@@ -17,11 +17,7 @@ void main() {
     mat3 normalMat = mat3(transpose(inverse(ModelViewMat)));
     vec4 viewSpace = ModelViewMat * vec4(Position, 1.0f);
     viewDir = vec3(viewSpace);
-    //real position
     gl_Position = ProjMat * viewSpace;
-    //normal = Normal;
-    //vertCoord = UV;
-    vertCoord = vec2(0.0f,0.0f);
     normal = normalize(normalMat * Normal);
     vertexDistance = fog_distance(Position, FogShape);
 }

@@ -1,8 +1,8 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.bullet;
 
+import com.adrian.thDanmakuCraft.client.renderer.MyRenderTypes;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.THBlendMode;
-import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
 import com.adrian.thDanmakuCraft.client.renderer.VertexBuilder;
 import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.util.IImage;
@@ -56,12 +56,12 @@ public class THBulletRenderers {
 
     public static abstract class BulletRenderer implements THBulletRendererFactory {
         public boolean shouldCull = true;
-        protected static RenderType defaultRenderType = THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(Blend.add), true));
+        protected static RenderType defaultRenderType = MyRenderTypes.TEST_RENDER_TYPE_FUNCTION.apply(new MyRenderTypes.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(Blend.add), true));
 
         public abstract void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor);
 
         public RenderType getRenderType(THBullet bullet){
-            return THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(bullet.getBlend()), this.shouldCull));
+            return MyRenderTypes.TEST_RENDER_TYPE_FUNCTION.apply(new MyRenderTypes.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(bullet.getBlend()), this.shouldCull));
         }
 
         public static class bullet_2d extends BulletRenderer{
@@ -74,8 +74,8 @@ public class THBulletRenderers {
             }
 
             public RenderType getRenderType(THBullet bullet){
-                return THRenderType.RENDER_TYPE_2D_DANMAKU.apply(
-                        new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(
+                return MyRenderTypes.RENDER_TYPE_2D_DANMAKU.apply(
+                        new MyRenderTypes.RENDER_TYPE_2D_DANMAKU_CONTEXT(
                         bullet.getImage().getTextureLocation(),
                         THBlendMode.getBlendMode(bullet.getBlend()))
                 );

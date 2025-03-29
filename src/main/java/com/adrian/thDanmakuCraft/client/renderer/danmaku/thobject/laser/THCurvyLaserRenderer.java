@@ -1,8 +1,8 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.laser;
 
+import com.adrian.thDanmakuCraft.client.renderer.MyRenderTypes;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.THBlendMode;
-import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRendererProvider;
@@ -248,7 +248,7 @@ public class THCurvyLaserRenderer extends AbstractTHObjectRenderer<THCurvyLaser>
 
     @Override
     public RenderType getRenderType(THCurvyLaser laser){
-        return THRenderType.TEST_RENDER_TYPE_FUNCTION.apply(new THRenderType.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(laser.getBlend()), true));
+        return MyRenderTypes.TEST_RENDER_TYPE_FUNCTION.apply(new MyRenderTypes.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(laser.getBlend()), true));
     }
 
     @Override

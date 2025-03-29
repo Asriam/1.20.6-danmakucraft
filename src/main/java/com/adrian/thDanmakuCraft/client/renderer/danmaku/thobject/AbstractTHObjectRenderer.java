@@ -1,8 +1,8 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject;
 
+import com.adrian.thDanmakuCraft.client.renderer.MyRenderTypes;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.THBlendMode;
-import com.adrian.thDanmakuCraft.client.renderer.THRenderType;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.CollisionType;
@@ -14,7 +14,6 @@ import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -36,8 +35,8 @@ public abstract class AbstractTHObjectRenderer<T extends THObject>{
     public abstract void render(T object, Vec3 objectPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer);
 
     public RenderType getRenderType(T object){
-        return THRenderType.RENDER_TYPE_THOBJECT.apply(
-                new THRenderType.RENDER_TYPE_2D_DANMAKU_CONTEXT(
+        return MyRenderTypes.RENDER_TYPE_THOBJECT.apply(
+                new MyRenderTypes.RENDER_TYPE_2D_DANMAKU_CONTEXT(
                 object.getImage().getTextureLocation(),
                 THBlendMode.getBlendMode(object.getBlend()))
         );
