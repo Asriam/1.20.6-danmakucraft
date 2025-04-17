@@ -79,11 +79,13 @@ void main() {
     fragColor = linear_fog(outColor, vertexDistance, FogStart, FogEnd, FogColor);
     //fragColor =  vec4(normal, 1.0f);*/
     vec2 texCoord = gl_FragCoord.xy/ScreenSize;
-    float senceDepth = texture(DepthBuffer, texCoord).r;
-    if(senceDepth < gl_FragCoord.z ){
+    float senceDepth = LinearizeDepth(texture(DepthBuffer, texCoord).r);
+    float aruaDepth = LinearizeDepth(gl_FragCoord.z);
+    if(senceDepth < aruaDepth ){
         discard;
     }
-    float distance = abs(LinearizeDepth(gl_FragCoord.z)-LinearizeDepth(senceDepth));
+
+    float distance = abs(aruaDepth-senceDepth);
     float threshold = 2.0f+sin(Timer/60.0f);
     float normalizedDistance = clamp(distance / threshold, 0.0, 1.0);
     vec4 intersection = mix(vec4(1), vec4(0), pow(normalizedDistance,3)); // white to transparent gradient
@@ -98,4 +100,5 @@ void main() {
     //fragColor = linear_fog(outColor, depth, FogStart, FogEnd, FogColor);
     fragColor = outColor;
     //fragColor = intersection;
+    //fragColor = vec4(vec3(senceDepth),1.0f);
 }

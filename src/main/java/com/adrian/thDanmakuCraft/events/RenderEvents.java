@@ -44,11 +44,15 @@ public class RenderEvents {
         }
 
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES){
+
+        }
+
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_WEATHER){
             ModelViewMatrix = new Matrix4f(RenderSystem.getModelViewMatrix());
             ProjectionMatrix = new Matrix4f(RenderSystem.getProjectionMatrix());
         }
 
-        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_WEATHER){
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL){
             afterRenderLevel(event.getLevelRenderer(),partialTick);
         }
     }

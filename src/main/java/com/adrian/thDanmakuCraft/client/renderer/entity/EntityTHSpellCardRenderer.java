@@ -238,7 +238,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         RenderTarget target = mc.getMainRenderTarget();
         int[] window = new int[]{target.width, target.height};
         TEST_RENDER_TARGET.resize(window[0],window[1],false);
-        //TEST_RENDER_TARGET.copyDepthFrom(target);
+        TEST_RENDER_TARGET.copyDepthFrom(target);
         /*TEST_RENDER_TARGET.bindWrite(false);
             //TEST_RENDER_TARGET.blitToScreen(window[0],window[1],false);
         TEST_RENDER_TARGET.unbindWrite();*/
@@ -248,14 +248,19 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         bg_warp_ef_rt.setupRenderState();
         RenderSystem.enableCull();
         ShaderInstance shader = RenderSystem.getShader();
+        //shader.getUniform("ProjMat").set(new Matrix4f());
+        //shader.getUniform("ModelViewMat").set(new Matrix4f());
+        //RenderSystem.getProjectionMatrix().set(RenderEvents.ProjectionMatrix);
+        Matrix4f modelViewMat = new Matrix4f(RenderSystem.getModelViewMatrix());
+        RenderSystem.getModelViewMatrix().set(RenderEvents.ModelViewMatrix);
         RenderSystem.disableDepthTest();
         TEST_RENDER_TARGET.bindWrite(true);
         BufferUploader.drawWithShader(BACKGROUND_WARP_EFFECT_BUFFER.end());
         bg_warp_ef_rt.clearRenderState();
 
         target.bindWrite(false);
-
         GlStateManager._enableBlend();
+        RenderSystem.getModelViewMatrix().set(modelViewMat);
         TEST_RENDER_TARGET.blitToScreen(window[0],window[1],false);
     }
 }
