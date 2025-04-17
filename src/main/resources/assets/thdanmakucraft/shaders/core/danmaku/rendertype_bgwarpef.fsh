@@ -33,6 +33,10 @@ vec2 uvWarp(vec2 uv, vec2 warpSize){
     return xy;
 }
 
+vec4 overlay(vec4 targetColor, vec4 overlayColor){
+    return (1.0-overlayColor.a) * targetColor + overlayColor.a * overlayColor;
+}
+
 void main() {
     vec3 viewAngle = normalize(-viewDir);
     float rimStrength = max(dot(viewAngle, normal),0.0f);
@@ -86,7 +90,7 @@ void main() {
     }
 
     float distance = abs(aruaDepth-senceDepth);
-    float threshold = 2.0f+sin(Timer/60.0f);
+    float threshold = 2.6f+sin(Timer/60.0f);
     float normalizedDistance = clamp(distance / threshold, 0.0, 1.0);
     vec4 intersection = mix(vec4(1), vec4(0), pow(normalizedDistance,3)); // white to transparent gradient
 
@@ -96,7 +100,7 @@ void main() {
     float depth = texture(DepthBuffer, uv2).r;
 
     vec4 screen_color = texture(ScreenBuffer, uv2);
-    vec4 outColor = max(linear_fog(screen_color, LinearizeDepth(depth), FogStart, FogEnd, FogColor),0) + vec4(vertexColor.rgb*vertexColor.a*rim*(1.0f-intersection.r),rim*(1.0f*intersection.r));
+    vec4 outColor = overlay(FogColor,screen_color)/*max(linear_fog(screen_color, LinearizeDepth(depth), FogStart, FogEnd, FogColor),0)*/ + vec4(vertexColor.rgb*vertexColor.a*rim*(1.0f-intersection.r),rim*(1.0f*intersection.r));
     //fragColor = linear_fog(outColor, depth, FogStart, FogEnd, FogColor);
     fragColor = outColor;
     //fragColor = intersection;

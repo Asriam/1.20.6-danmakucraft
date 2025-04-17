@@ -52,7 +52,7 @@ public class RenderEvents {
             ProjectionMatrix = new Matrix4f(RenderSystem.getProjectionMatrix());
         }
 
-        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL){
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_WEATHER){
             afterRenderLevel(event.getLevelRenderer(),partialTick);
         }
     }
