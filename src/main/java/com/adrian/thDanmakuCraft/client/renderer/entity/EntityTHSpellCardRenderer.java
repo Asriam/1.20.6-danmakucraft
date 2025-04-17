@@ -56,7 +56,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
     private static final IImage.Image SPELLCARD_MAGIC_SQUARE = new IImage.Image(ResourceLocationUtil.thdanmakucraft("textures/spellcard/eff_magicsquare.png"), 0.0f, 0.0f, 1.0f, 1.0f);
     public void renderSpellCardAura(EntityTHSpellCard spellCard, THObjectContainer container, PoseStack poseStack, Vec3 pos, float partialTicks){
         IImage.Image image = SPELLCARD_MAGIC_SQUARE;
-        Color color = new Color(255,255,255,160);
+        Color color = new Color(255,255,255,120);
         Vec2 uvStart = image.getUVStart();
         Vec2 uvEnd =   image.getUVEnd();
         float timer = container.getTimer()+partialTicks;
@@ -93,10 +93,10 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         if(container.shouldRenderLineAura){
             final float radius0 = 15.0f;
             int sample = 12;
-            color = new Color(180,180,255,160);
+            color = new Color(180,180,255,120);
             time = 40.0f;
             //open = timer > time ? 1.0f : (float) Math.pow(Math.min(timer / time,1.0f),0.8f);
-            close = timer < container.getLifetime()-time ? 1.0f : 1.0f - (float) Math.pow(Math.clamp((timer-container.getLifetime()) / time,0.0f,1.0f),0.8f);
+            close = timer < container.getLifetime()-time ? 1.0f : 1.0f - (float) Math.pow(Math.clamp((timer-(container.getLifetime()-20)) / time,0.0f,1.0f),3.0f);
             float width = 1.6f * timeLeft * 1.4f;
             float width2 = width*3.0f;
             float num = 4.0f;
@@ -189,20 +189,22 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         RenderUtil.enableCull();
         new SphereVertexHelper(poseStack.last().pose(), poseStack.last().normal(),
                 ConstantUtil.VECTOR3F_ZERO, new Vector3f(radius, radius, radius),
-                64, 64, 1.0f, false,
+                32, 32, 1.0f, false,
                 new Color(255,255,255,255),
                 new Color(255,255,255,255), true, false
         ).vertex((vertexPos,normal,color)->
                 builder.vertex(vertexPos).normal(normal).color(color2).endVertex());
-        /*new SphereVertexHelper(
-                poseStack.last().pose(), poseStack.last().normal(),
-                ConstantUtil.VECTOR3F_ZERO, new Vector3f(radius, radius, radius),
-                16, 16, 1.0f, false,
-                new Color(255,255,255,255),
-                new Color(255,255,255,255), true, false)
-                .vertex((vertexPos,normal,color)->{
-            builder.vertex(vertexPos).normal(normal).color(color2).endVertex();
-        });*/
+        if(true) {
+            new SphereVertexHelper(
+                    poseStack.last().pose(), poseStack.last().normal(),
+                    ConstantUtil.VECTOR3F_ZERO, new Vector3f(radius, radius, radius),
+                    32, 32, 1.0f, false,
+                    new Color(255, 255, 255, 255),
+                    new Color(255, 255, 255, 255), false, false)
+                    .vertex((vertexPos, normal, color) -> {
+                        builder.vertex(vertexPos).normal(normal).color(color2).endVertex();
+                    });
+        }
         RenderUtil.enableCull();
         poseStack.popPose();
     }

@@ -14,17 +14,17 @@ in vec4 vertexColor;
 in vec3 normal;
 in vec3 viewDir;
 in float vertexDistance;
+in float near;
+in float far;
 
 out vec4 fragColor;
 
-float near = -1.0f;
-float far = 1000.0f;
+//float near = FogStart;
+//float far = FogEnd;
 
 float LinearizeDepth(float depth) {
-    float zNdc = 2 * depth - 1;
-    float zEye = (2 * far * near) / ((far + near) - zNdc * (far - near));
-    float linearDepth = (zEye - near) / (far - near);
-    return linearDepth;
+    float z = depth*2.0-1.0f;
+    return (2.0f*near*far)/(far+near-z*(far-near));
 }
 
 vec2 uvWarp(vec2 uv, vec2 warpSize){
@@ -36,7 +36,7 @@ vec2 uvWarp(vec2 uv, vec2 warpSize){
 void main() {
     vec3 viewAngle = normalize(-viewDir);
     float rimStrength = max(dot(viewAngle, normal),0.0f);
-    float rim = pow(rimStrength,6.0f);
+    float rim = pow(rimStrength,3.0f);
 
     /*if (vertexDistance > FogEnd){
         discard;
@@ -79,15 +79,23 @@ void main() {
     fragColor = linear_fog(outColor, vertexDistance, FogStart, FogEnd, FogColor);
     //fragColor =  vec4(normal, 1.0f);*/
     vec2 texCoord = gl_FragCoord.xy/ScreenSize;
-    vec2 uv2 = uvWarp(texCoord,(-normal.rg+0.2*vec2(sin(Timer/40.0f),cos(Timer/36.0f)))*rim*0.6*sin(Timer/120.0f)/ (vertexDistance/20.0f));
-    float depth = texture(DepthBuffer, uv2).r;
-
-    if(texture(DepthBuffer, texCoord).r < gl_FragCoord.z ){
+    float senceDepth = texture(DepthBuffer, texCoord).r;
+    if(senceDepth < gl_FragCoord.z ){
         discard;
     }
+    float distance = abs(LinearizeDepth(gl_FragCoord.z)-LinearizeDepth(senceDepth));
+    float threshold = 2.0f+sin(Timer/60.0f);
+    float normalizedDistance = clamp(distance / threshold, 0.0, 1.0);
+    vec4 intersection = mix(vec4(1), vec4(0), pow(normalizedDistance,3)); // white to transparent gradient
+
+    float a = normalizedDistance;
+    vec2 warp = vec2(sin(Timer/40.0f),cos(Timer/36.0f));
+    vec2 uv2 = uvWarp(texCoord,(-normal.rg+0.2*warp)*rim*0.6*sin(Timer/120.0f)/ (vertexDistance/10.0f)*(1.0f-intersection.r)*0.4f);
+    float depth = texture(DepthBuffer, uv2).r;
 
     vec4 screen_color = texture(ScreenBuffer, uv2);
-    vec4 outColor = max(linear_fog(screen_color, depth, FogStart, FogEnd, FogColor),0) + vec4(vertexColor.rgb*vertexColor.a*rim,rim);
+    vec4 outColor = max(linear_fog(screen_color, LinearizeDepth(depth), FogStart, FogEnd, FogColor),0) + vec4(vertexColor.rgb*vertexColor.a*rim*(1.0f-intersection.r),rim*(1.0f*intersection.r));
     //fragColor = linear_fog(outColor, depth, FogStart, FogEnd, FogColor);
     fragColor = outColor;
+    //fragColor = intersection;
 }

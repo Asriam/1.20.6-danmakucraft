@@ -21,6 +21,8 @@ out vec4 coreColor;
 out vec2 vertCoord;
 out vec4 params;
 out float vertexDistance;
+out float near;
+out float far;
 
 void main() {
     mat3 normalMat = mat3(transpose(inverse(ModelViewMat)));
@@ -37,4 +39,7 @@ void main() {
     params = vec4(UV2,UV3);
     normal = normalize(normalMat * Normal);
     vertexDistance = fog_distance(Position, FogShape);
+
+    near = ProjMat[3][2]/(ProjMat[2][2]-1.0);
+    far = ProjMat[3][2]/(ProjMat[2][2]+1.0);
 }

@@ -21,17 +21,17 @@ in vec4 coreColor;
 in vec2 vertCoord;
 in vec4 params;
 in float vertexDistance;
+in float near;
+in float far;
 
 out vec4 fragColor;
 
-float near = -1.0f;
-float far = 1000.0f;
+//float near = -1.0f;
+//float far = 1000.0f;
 
 float LinearizeDepth(float depth) {
-    float zNdc = 2 * depth - 1;
-    float zEye = (2 * far * near) / ((far + near) - zNdc * (far - near));
-    float linearDepth = (zEye - near) / (far - near);
-    return linearDepth;
+    float z = depth*2.0-1.0f;
+    return (2.0f*near*far)/(far+near-z*(far-near));
 }
 
 /*
@@ -68,7 +68,7 @@ void main() {
 
     float distance = abs(bubbleDepth - sceneDepth); // linear difference in depth
 
-    float threshold = 0.01f;
+    float threshold = 0.4f;
     float normalizedDistance = clamp(distance / threshold, 0.0, 1.0); // [0, threshold] -> [0, 1]
 
     vec4 intersection = mix(vec4(1), vec4(0), pow(normalizedDistance,2)); // white to transparent gradient
