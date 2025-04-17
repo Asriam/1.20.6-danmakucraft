@@ -21,4 +21,12 @@ public class MyVertexFormats {
                     .put("Normal", DefaultVertexFormat.ELEMENT_NORMAL)
                     .build()
     );
+
+    public static final VertexFormat POSITION_NORMAL_COLOR = new VertexFormat(
+            ImmutableMap.<String, VertexFormatElement>builder()
+                    .put("Position", DefaultVertexFormat.ELEMENT_POSITION)
+                    .put("Normal", DefaultVertexFormat.ELEMENT_NORMAL)
+                    .put("Color", DefaultVertexFormat.ELEMENT_COLOR)
+                    .build()
+    );
 }

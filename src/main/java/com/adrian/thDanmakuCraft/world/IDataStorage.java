@@ -3,7 +3,7 @@ package com.adrian.thDanmakuCraft.world;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 
-public interface IDataStorage {
+public interface IDataStorage extends ISerializable{
 
     void encode(FriendlyByteBuf buffer);
 

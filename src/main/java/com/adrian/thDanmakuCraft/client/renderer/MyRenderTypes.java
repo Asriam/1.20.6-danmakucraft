@@ -1,8 +1,11 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
+import com.adrian.thDanmakuCraft.events.TickEvents;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.Blend;
 import com.google.common.collect.ImmutableMap;
+import com.mojang.blaze3d.pipeline.MainTarget;
 import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.shaders.BlendMode;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -31,9 +34,13 @@ public class MyRenderTypes extends RenderStateShard{
     }
 
     public static final ShaderStateShard DANMAKU_DEPTH_OUTLINE_SHADER = new ShaderStateShard(() -> ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER);
+    public static RenderTarget TEST_RENDER_TARGET = new TextureTarget(2000,2000,true,true);
     public static final ShaderStateShard BACKGROUND_WARP_EFFECT_SHADER = new ShaderStateShard(() -> {
         RenderTarget target = Minecraft.getInstance().getMainRenderTarget();
         ShaderInstance shader = ShaderLoader.BACKGROUND_WARP_EFFECT;
+        float timer = TickEvents.clientTicks+Minecraft.getInstance().getPartialTick();
+        shader.safeGetUniform("Timer").set(timer);
+        //System.out.println(timer);
         shader.setSampler("DepthBuffer",target.getDepthTextureId());
         shader.setSampler("ScreenBuffer",target.getColorTextureId());
         return shader;
@@ -108,7 +115,8 @@ public class MyRenderTypes extends RenderStateShard{
                             .setCullState(NO_CULL)
                             .setLightmapState(NO_LIGHTMAP)
                             .setOverlayState(NO_OVERLAY)
-                            .setWriteMaskState(COLOR_DEPTH_WRITE)
+                            .setWriteMaskState(COLOR_WRITE)
+                            .setDepthTestState(NO_DEPTH_TEST)
                             //.setOutputState(TRANSLUCENT_TARGET)
                             //.setOutputState(ITEM_ENTITY_TARGET)
                             .setOutputState(ITEM_ENTITY_TARGET)

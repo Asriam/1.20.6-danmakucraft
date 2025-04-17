@@ -3,6 +3,7 @@ package com.adrian.thDanmakuCraft.client.renderer.entity;
 import com.adrian.thDanmakuCraft.client.renderer.*;
 import com.adrian.thDanmakuCraft.client.renderer.shape.ShapeVertexHelper;
 import com.adrian.thDanmakuCraft.client.renderer.shape.SphereVertexHelper;
+import com.adrian.thDanmakuCraft.events.RenderEvents;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.util.IImage;
@@ -11,6 +12,8 @@ import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.Blend;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.entity.spellcard.EntityTHSpellCard;
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
@@ -23,9 +26,13 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import org.checkerframework.checker.units.qual.C;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+
+import static com.adrian.thDanmakuCraft.client.renderer.MyRenderTypes.TEST_RENDER_TARGET;
 
 public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<EntityTHSpellCard>{
     public EntityTHSpellCardRenderer(EntityRendererProvider.Context context) {
@@ -37,10 +44,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         super.render(entity, rotationX, partialTicks, poseStack, bufferSource, combinedOverlay);
         THObjectContainer container = entity.getContainer();
         if(container.isSpellCard() && (container.shouldRenderMagicAura || container.shouldRenderLineAura)) {
-            poseStack.pushPose();
             renderSpellCardAura(entity,container, poseStack, entity.getPosition(partialTicks), partialTicks);
-            poseStack.popPose();
-            renderBackgroundWarpEffect(entity,container, poseStack, entity.getPosition(partialTicks), partialTicks);
         }
     }
 
@@ -91,7 +95,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
             int sample = 12;
             color = new Color(180,180,255,160);
             time = 40.0f;
-            open = timer > time ? 1.0f : (float) Math.pow(Math.min(timer / time,1.0f),0.8f);
+            //open = timer > time ? 1.0f : (float) Math.pow(Math.min(timer / time,1.0f),0.8f);
             close = timer < container.getLifetime()-time ? 1.0f : 1.0f - (float) Math.pow(Math.clamp((timer-container.getLifetime()) / time,0.0f,1.0f),0.8f);
             float width = 1.6f * timeLeft * 1.4f;
             float width2 = width*3.0f;
@@ -169,59 +173,52 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
             }
             poseStack.popPose();
         }
+
+        if(true){
+            open = timer > time ? 1.0f : (float) Math.pow(Math.min(timer / time,1.0f),0.5f);
+            renderBackgroundWarpEffect(spellCard,container, poseStack, pos, partialTicks,40.0f*open*close*Mth.lerp(timeLeft,0.4f,1.0f),open*close);
+        }
     }
 
-    public static void renderBackgroundWarpEffect(EntityTHSpellCard spellCard, THObjectContainer container, PoseStack poseStack, Vec3 pos, float partialTicks){
-        float radius = 10.0f;
+    public static void renderBackgroundWarpEffect(EntityTHSpellCard spellCard, THObjectContainer container, PoseStack poseStack, Vec3 pos, float partialTicks, float radius, float alpha){
+        //float radius = 40.0f;
         poseStack.pushPose();
         //poseStack.translate(pos.x,pos.y,pos.z);
-
-        ShapeVertexHelper shapeVertexHelper = new SphereVertexHelper(
-                poseStack.last().pose(), poseStack.last().normal(),
-                ConstantUtil.VECTOR3F_ZERO, ConstantUtil.VECTOR3F_ONE.mul(radius),
-                12, 12, 0.0f, false,
+        final VertexBuilder builder = new VertexBuilder(BACKGROUND_WARP_EFFECT_BUFFER);
+        final Color color2 = new Color(255,0,200, (int) (180*alpha));
+        RenderUtil.enableCull();
+        new SphereVertexHelper(poseStack.last().pose(), poseStack.last().normal(),
+                ConstantUtil.VECTOR3F_ZERO, new Vector3f(radius, radius, radius),
+                64, 64, 1.0f, false,
                 new Color(255,255,255,255),
-                new Color(255,255,255,255), true, false);
-        BufferBuilder bufferBuilder = BACKGROUND_WARP_EFFECT_BUFFER;//RenderSystem.renderThreadTesselator().getBuilder();
-        //bufferBuilder.begin(VertexFormat.Mode.QUADS, MyVertexFormats.POSITION_NORMAL);
-        final VertexBuilder builder = new VertexBuilder(bufferBuilder);
-        shapeVertexHelper.vertex((vertexPos,normal,color)->{
-            builder.vertex(vertexPos).normal(normal).endVertex();
-        });
-
-        builder.vertex(new Vec3(-10.0f,10.0f,0.0f)).normal(ConstantUtil.VECTOR3F_ZERO).endVertex();
-        builder.vertex(new Vec3(10.0f,10.0f,0.0f)).normal(ConstantUtil.VECTOR3F_ZERO).endVertex();
-        builder.vertex(new Vec3(10.0f,-10.0f,0.0f)).normal(ConstantUtil.VECTOR3F_ZERO).endVertex();
-        builder.vertex(new Vec3(-10.0f,-10.0f,0.0f)).normal(ConstantUtil.VECTOR3F_ZERO).endVertex();
-        //System.out.println(pos);
-
-        /*RenderType bg_warp_ef_rt = MyRenderTypes.RENDER_TYPE_BACKGROUND_WARP_EFFECT;
-        bg_warp_ef_rt.setupRenderState();
-        RenderSystem.disableCull();
-        ShaderInstance shader = ShaderLoader.BACKGROUND_WARP_EFFECT;
-        //shader.getUniform("ScreenSize").set(new float[]{20.0f,20.0f});
-        BufferUploader.drawWithShader(bufferBuilder.end());
-        bg_warp_ef_rt.clearRenderState();*/
-
+                new Color(255,255,255,255), true, false
+        ).vertex((vertexPos,normal,color)->
+                builder.vertex(vertexPos).normal(normal).color(color2).endVertex());
+        /*new SphereVertexHelper(
+                poseStack.last().pose(), poseStack.last().normal(),
+                ConstantUtil.VECTOR3F_ZERO, new Vector3f(radius, radius, radius),
+                16, 16, 1.0f, false,
+                new Color(255,255,255,255),
+                new Color(255,255,255,255), true, false)
+                .vertex((vertexPos,normal,color)->{
+            builder.vertex(vertexPos).normal(normal).color(color2).endVertex();
+        });*/
+        RenderUtil.enableCull();
         poseStack.popPose();
     }
 
     public static void beforeRenderEntities(LevelRenderer levelRenderer, float partialTick){
         MAGIC_SQUARE_BUFFER.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
         AURA_BUFFER.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
-        BACKGROUND_WARP_EFFECT_BUFFER.begin(VertexFormat.Mode.QUADS, MyVertexFormats.POSITION_NORMAL);
-        BACKGROUND_WARP_EFFECT_BUFFER.clear();
+        BACKGROUND_WARP_EFFECT_BUFFER.begin(VertexFormat.Mode.QUADS, MyVertexFormats.POSITION_NORMAL_COLOR);
+        BACKGROUND_WARP_EFFECT_BUFFER.color(0,0,0,255);
+        //BACKGROUND_WARP_EFFECT_BUFFER.clear();
     }
 
     public static void afterRenderEntities(LevelRenderer levelRenderer, float partialTick){
         RenderType renderType = MyRenderTypes.RENDER_TYPE_SPELLCARD_AURA.apply(
                 new MyRenderTypes.RENDER_TYPE_2D_DANMAKU_CONTEXT(SPELLCARD_MAGIC_SQUARE.getTextureLocation(), THBlendMode.getBlendMode(Blend.add))
         );
-
-        /*if (Minecraft.useShaderTransparency()) {
-            Minecraft.getInstance().levelRenderer.getItemEntityTarget().bindWrite(false);
-        }*/
-
         renderType.setupRenderState();
         RenderSystem.setShaderTexture(0, spellCardAura.getTextureLocation());
         RenderSystem.enableCull();
@@ -232,13 +229,31 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         RenderSystem.enableCull();
         BufferUploader.drawWithShader(MAGIC_SQUARE_BUFFER.end());
         renderType.clearRenderState();
+    }
+
+    public static void afterRenderLevel(LevelRenderer levelRenderer, float partialTick){
+        Minecraft mc = Minecraft.getInstance();
+        RenderTarget target = mc.getMainRenderTarget();
+        int[] window = new int[]{target.width, target.height};
+        TEST_RENDER_TARGET.resize(window[0],window[1],false);
+        //TEST_RENDER_TARGET.copyDepthFrom(target);
+        /*TEST_RENDER_TARGET.bindWrite(false);
+            //TEST_RENDER_TARGET.blitToScreen(window[0],window[1],false);
+        TEST_RENDER_TARGET.unbindWrite();*/
+
 
         RenderType bg_warp_ef_rt = MyRenderTypes.RENDER_TYPE_BACKGROUND_WARP_EFFECT;
         bg_warp_ef_rt.setupRenderState();
-        RenderSystem.disableCull();
-        ShaderInstance shader = ShaderLoader.BACKGROUND_WARP_EFFECT;
-        //shader.getUniform("ScreenSize").set(new float[]{20.0f,20.0f});
+        RenderSystem.enableCull();
+        ShaderInstance shader = RenderSystem.getShader();
+        RenderSystem.disableDepthTest();
+        TEST_RENDER_TARGET.bindWrite(true);
         BufferUploader.drawWithShader(BACKGROUND_WARP_EFFECT_BUFFER.end());
         bg_warp_ef_rt.clearRenderState();
+
+        target.bindWrite(false);
+
+        GlStateManager._enableBlend();
+        TEST_RENDER_TARGET.blitToScreen(window[0],window[1],false);
     }
 }

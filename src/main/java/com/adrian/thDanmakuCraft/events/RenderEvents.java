@@ -6,6 +6,7 @@ import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRender
 import com.adrian.thDanmakuCraft.client.renderer.entity.EntityTHSpellCardRenderer;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -28,9 +29,12 @@ public class RenderEvents {
     private static final Map<String, RenderLevelStageTask> renderLevelStageTasks = new HashMap<>();
     public static int renderTickCount = 0;
     private static Minecraft minecraft = Minecraft.getInstance();
+    public static Matrix4f ModelViewMatrix = new Matrix4f();
+    public static Matrix4f ProjectionMatrix = new Matrix4f();
+    public static int RenderTicks = 0;
     @SubscribeEvent
     public static void renderLevelStage(RenderLevelStageEvent event) {
-        Matrix4f pose = event.getPoseStack();
+        //Matrix4f pose = event.getPoseStack();
         PoseStack poseStack = new PoseStack();
         float partialTick = event.getPartialTick();
         for (RenderLevelStageTask renderHelper: renderLevelStageTasks.values()){
@@ -40,7 +44,12 @@ public class RenderEvents {
         }
 
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES){
-            //afterRenderEntities(event.getLevelRenderer(),partialTick);
+            ModelViewMatrix = new Matrix4f(RenderSystem.getModelViewMatrix());
+            ProjectionMatrix = new Matrix4f(RenderSystem.getProjectionMatrix());
+        }
+
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_WEATHER){
+            afterRenderLevel(event.getLevelRenderer(),partialTick);
         }
     }
 
@@ -70,6 +79,10 @@ public class RenderEvents {
     public static void afterRenderEntities(LevelRenderer levelRenderer, float partialTick){
         EntityTHSpellCardRenderer.afterRenderEntities(levelRenderer,partialTick);
         //THObjectContainerRenderer.afterRenderEntities(levelRenderer,partialTick);
+    }
+
+    public static void afterRenderLevel(LevelRenderer levelRenderer, float partialTick){
+        EntityTHSpellCardRenderer.afterRenderLevel(levelRenderer,partialTick);
     }
 
 

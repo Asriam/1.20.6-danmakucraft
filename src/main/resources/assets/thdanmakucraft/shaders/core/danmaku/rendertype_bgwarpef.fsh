@@ -5,10 +5,12 @@ uniform sampler2D DepthBuffer;
 uniform sampler2D ScreenBuffer;
 
 uniform vec2 ScreenSize;
+uniform float Timer;
 uniform float FogStart;
 uniform float FogEnd;
 uniform vec4 FogColor;
 
+in vec4 vertexColor;
 in vec3 normal;
 in vec3 viewDir;
 in float vertexDistance;
@@ -25,7 +27,17 @@ float LinearizeDepth(float depth) {
     return linearDepth;
 }
 
+vec2 uvWarp(vec2 uv, vec2 warpSize){
+    vec2 xy = uv;
+    xy += warpSize;
+    return xy;
+}
+
 void main() {
+    vec3 viewAngle = normalize(-viewDir);
+    float rimStrength = max(dot(viewAngle, normal),0.0f);
+    float rim = pow(rimStrength,6.0f);
+
     /*if (vertexDistance > FogEnd){
         discard;
     }
@@ -67,9 +79,15 @@ void main() {
     fragColor = linear_fog(outColor, vertexDistance, FogStart, FogEnd, FogColor);
     //fragColor =  vec4(normal, 1.0f);*/
     vec2 texCoord = gl_FragCoord.xy/ScreenSize;
-    float depth = LinearizeDepth(texture(DepthBuffer, texCoord).r);
-    vec4 screen_color = texture(ScreenBuffer, texCoord);
-    vec4 outColor = screen_color + vec4(normal, depth);
-    fragColor = linear_fog(outColor, vertexDistance, FogStart, FogEnd, FogColor);
-    //fragColor = vec4(0.1f, 0.0f, 0.0f, 1.0f);
+    vec2 uv2 = uvWarp(texCoord,(-normal.rg+0.2*vec2(sin(Timer/40.0f),cos(Timer/36.0f)))*rim*0.6*sin(Timer/120.0f)/ (vertexDistance/20.0f));
+    float depth = texture(DepthBuffer, uv2).r;
+
+    if(texture(DepthBuffer, texCoord).r < gl_FragCoord.z ){
+        discard;
+    }
+
+    vec4 screen_color = texture(ScreenBuffer, uv2);
+    vec4 outColor = max(linear_fog(screen_color, depth, FogStart, FogEnd, FogColor),0) + vec4(vertexColor.rgb*vertexColor.a*rim,rim);
+    //fragColor = linear_fog(outColor, depth, FogStart, FogEnd, FogColor);
+    fragColor = outColor;
 }

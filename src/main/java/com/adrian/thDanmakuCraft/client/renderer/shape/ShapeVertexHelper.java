@@ -3,10 +3,11 @@ package com.adrian.thDanmakuCraft.client.renderer.shape;
 import com.adrian.thDanmakuCraft.util.Color;
 import org.joml.Vector3f;
 
-public abstract class ShapeVertexHelper {
+public interface ShapeVertexHelper {
 
-    public abstract void vertex(VertexHelper helper);
-    public abstract void vertexs(
+    void vertex(VertexHelper helper);
+
+    void vertexs(
             ShapeVertexHelper.VertexHelper helper1,
             ShapeVertexHelper.VertexHelper helper2,
             ShapeVertexHelper.VertexHelper helper3,

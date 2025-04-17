@@ -38,7 +38,7 @@ function c.vec3(x, y, z) end
 
 ---@generic T:Class
 ---@param className string
----@param superClass T
+---@param superClass Class|T
 ---@return Class|T
 ---@overload fun(className:string, superClass:T)
 ---@overload fun(className:string)

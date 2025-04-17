@@ -9,7 +9,7 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-public class SphereVertexHelper extends ShapeVertexHelper{
+public class SphereVertexHelper implements ShapeVertexHelper{
 
     //private final int edgeA;
     private final int edgeB;
@@ -195,10 +195,10 @@ public class SphereVertexHelper extends ShapeVertexHelper{
                         helper3.vertex(real_position[2], VertexBuilder.transformNormal(pose_normal, normal[2]), finalColor);
                         helper4.vertex(real_position[3], VertexBuilder.transformNormal(pose_normal, normal[3]), finalColor);
                     }else{
-                        helper1.vertex(real_position[3], VertexBuilder.transformNormal(pose_normal, normal[3]), finalColor);
-                        helper2.vertex(real_position[2], VertexBuilder.transformNormal(pose_normal, normal[2]), finalColor);
-                        helper3.vertex(real_position[1], VertexBuilder.transformNormal(pose_normal, normal[1]), startColor);
-                        helper4.vertex(real_position[0], VertexBuilder.transformNormal(pose_normal, normal[0]), startColor);
+                        helper1.vertex(real_position[3], VertexBuilder.transformNormal(pose_normal, normal[3].mul(-1.0f)), finalColor);
+                        helper2.vertex(real_position[2], VertexBuilder.transformNormal(pose_normal, normal[2].mul(-1.0f)), finalColor);
+                        helper3.vertex(real_position[1], VertexBuilder.transformNormal(pose_normal, normal[1].mul(-1.0f)), startColor);
+                        helper4.vertex(real_position[0], VertexBuilder.transformNormal(pose_normal, normal[0].mul(-1.0f)), startColor);
                     }
                 }
                 startColor = finalColor;

@@ -35,9 +35,11 @@ public class TickEvents{
         }
     }
 
+    public static int clientTicks = 0;
     public static int BulletMount = 0;
     @SubscribeEvent
     public static void clientTick(TickEvent.ClientTickEvent event){
+        clientTicks++;
         //System.out.print(LuaThread.coroutine_count+"\n");
         BulletMount = 0;
         ClientLevel level = Minecraft.getInstance().level;
