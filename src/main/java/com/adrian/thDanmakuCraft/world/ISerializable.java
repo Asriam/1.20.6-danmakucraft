@@ -24,7 +24,7 @@ public interface ISerializable{
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
     public static @interface Serializable {
-        @Nullable Class<? extends Codec<?>> codec();
+        //@Nullable Class<? extends Codec<?>> codec();
     }
 
     private static List<Field> getAnnotatedFieldNames(Class<? super ISerializable> clazz) {

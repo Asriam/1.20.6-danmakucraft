@@ -1,11 +1,14 @@
 package com.adrian.thDanmakuCraft.events;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
+import com.adrian.thDanmakuCraft.client.renderer.MyRenderTypes;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.entity.EntityTHSpellCardRenderer;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
@@ -19,6 +22,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.compress.utils.Lists;
 import org.joml.Matrix4f;
+import org.lwjgl.opengl.GL44;
+import org.lwjgl.opengl.GL46;
 
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +48,10 @@ public class RenderEvents {
             }
         }
 
+        //System.out.println(RenderSystem.getProjectionMatrix().get(3,2));
+        //RenderSystem.getProjectionMatrix().set(3,2,-0.3f);
+        //GL46.glClearDepthf(0.999f);
+
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES){
 
         }
@@ -50,10 +59,13 @@ public class RenderEvents {
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_WEATHER){
             ModelViewMatrix = new Matrix4f(RenderSystem.getModelViewMatrix());
             ProjectionMatrix = new Matrix4f(RenderSystem.getProjectionMatrix());
+            RenderTarget target = Minecraft.getInstance().getMainRenderTarget();
+            MyRenderTypes.DEPTH_BUFFER_TARGET.copyDepthFrom(target);
+            target.bindWrite(false);
         }
 
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_WEATHER){
-            afterRenderLevel(event.getLevelRenderer(),partialTick);
+            afterRenderWeather(event.getLevelRenderer(),partialTick);
         }
     }
 
@@ -85,8 +97,12 @@ public class RenderEvents {
         //THObjectContainerRenderer.afterRenderEntities(levelRenderer,partialTick);
     }
 
-    public static void afterRenderLevel(LevelRenderer levelRenderer, float partialTick){
+    public static void afterRenderWeather(LevelRenderer levelRenderer, float partialTick){
         EntityTHSpellCardRenderer.afterRenderLevel(levelRenderer,partialTick);
+    }
+
+    public static void afterRenderLevel(LevelRenderer levelRenderer, float partialTick){
+        //EntityTHSpellCardRenderer.afterRenderLevel(levelRenderer,partialTick);
     }
 
 

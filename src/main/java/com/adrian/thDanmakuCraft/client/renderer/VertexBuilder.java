@@ -1,6 +1,7 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
 import com.adrian.thDanmakuCraft.util.Color;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
@@ -9,22 +10,29 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
+import static com.mojang.blaze3d.vertex.BufferVertexConsumer.normalIntValue;
+
 @OnlyIn(Dist.CLIENT)
 public class VertexBuilder {
 
-    private final VertexConsumer builder;
+    private final BufferBuilder builder;
 
     public VertexBuilder(VertexConsumer builder){
-        this.builder = builder;
+        this.builder = (BufferBuilder) builder;
     }
 
     public VertexBuilder vertex(double x, double y, double z){
-        builder.vertex(x,y,z);
+        //builder.vertex(x,y,z);
+        builder.putFloat(0, (float)x);
+        builder.putFloat(4, (float)y);
+        builder.putFloat(8, (float)z);
+        builder.nextElement();
         return this;
     }
 
     public VertexBuilder vertex(Matrix4f pose, float x, float y, float z){
         Vector3f pos = pose.transformPosition(x, y, z, new Vector3f());
+        //Vector3f pos = new Vector3f(x,y,z);
         return this.vertex(pos.x, pos.y, pos.z);
     }
 
@@ -41,7 +49,12 @@ public class VertexBuilder {
     }
 
     public VertexBuilder color(int r, int g, int b, int a){
-        builder.color(r,g,b,a);
+        //builder.color(r,g,b,a);
+        builder.putByte(0, (byte)r);
+        builder.putByte(1, (byte)g);
+        builder.putByte(2, (byte)b);
+        builder.putByte(3, (byte)a);
+        builder.nextElement();
         return this;
     }
 
@@ -55,12 +68,19 @@ public class VertexBuilder {
     }
 
     public VertexBuilder uv(float u, float v){
-        builder.uv(u,v);
+        //builder.uv(u,v);
+        builder.putFloat(0, u);
+        builder.putFloat(4, v);
+        builder.nextElement();
         return this;
     }
 
     public VertexBuilder normal(float nx, float ny, float nz){
-        builder.normal(nx,ny,nz);
+        //builder.normal(nx,ny,nz);
+        builder.putByte(0, normalIntValue(nx));
+        builder.putByte(1, normalIntValue(ny));
+        builder.putByte(2, normalIntValue(nz));
+        builder.nextElement();
         return this;
     }
 
@@ -75,11 +95,12 @@ public class VertexBuilder {
 
     public VertexBuilder normal(Matrix3f pose_normal, Vector3f normal){
         Vector3f nom = transformNormal(pose_normal, normal);
+        //Vector3f nom = new Vector3f(normal);
         return this.normal(nom.x,nom.y,nom.z);
     }
 
     public void endVertex(){
-        this.builder.endVertex();
+        builder.endVertex();
     }
     public void positionColor(
             Matrix4f pose, float x, float y, float z,

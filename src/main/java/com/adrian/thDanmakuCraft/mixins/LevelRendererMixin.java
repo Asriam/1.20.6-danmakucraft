@@ -46,4 +46,18 @@ public class LevelRendererMixin {
                                     CallbackInfo callback){
         RenderEvents.afterRenderEntities(self(), partialTick);
     }
+
+    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;renderDebug(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/client/Camera;)V"
+            ,shift = At.Shift.BEFORE))
+    private void afterRenderLevel(float partialTick,
+                                   long p_109602_,
+                                   boolean p_109603_,
+                                   Camera camera,
+                                   GameRenderer gameRenderer,
+                                   LightTexture lightTexture,
+                                   Matrix4f pose,
+                                   Matrix4f p_330527_,
+                                   CallbackInfo callback){
+        RenderEvents.afterRenderLevel(self(), partialTick);
+    }
 }

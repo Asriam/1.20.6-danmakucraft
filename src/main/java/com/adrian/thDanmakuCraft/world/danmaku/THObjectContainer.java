@@ -65,6 +65,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
 
     public boolean shouldRenderMagicAura = true;
     public boolean shouldRenderLineAura = true;
+    public boolean shouldApplyBackgroundWarpEffect = true;
 
     public THObjectContainer(Entity hostEntity) {
         this.hostEntity = hostEntity;

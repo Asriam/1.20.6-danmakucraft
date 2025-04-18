@@ -174,7 +174,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
             poseStack.popPose();
         }
 
-        if(true){
+        if(container.shouldApplyBackgroundWarpEffect){
             open = timer > time ? 1.0f : (float) Math.pow(Math.min(timer / time,1.0f),0.5f);
             renderBackgroundWarpEffect(spellCard,container, poseStack, pos, partialTicks,40.0f*open*close*Mth.lerp(timeLeft,0.4f,1.0f),open*close);
         }
@@ -247,7 +247,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         RenderType bg_warp_ef_rt = MyRenderTypes.RENDER_TYPE_BACKGROUND_WARP_EFFECT;
         bg_warp_ef_rt.setupRenderState();
         RenderSystem.enableCull();
-        ShaderInstance shader = RenderSystem.getShader();
+        //ShaderInstance shader = RenderSystem.getShader();
         //shader.getUniform("ProjMat").set(new Matrix4f());
         //shader.getUniform("ModelViewMat").set(new Matrix4f());
         //RenderSystem.getProjectionMatrix().set(RenderEvents.ProjectionMatrix);
@@ -256,11 +256,13 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         RenderSystem.disableDepthTest();
         TEST_RENDER_TARGET.bindWrite(true);
         BufferUploader.drawWithShader(BACKGROUND_WARP_EFFECT_BUFFER.end());
+        TEST_RENDER_TARGET.unbindWrite();
         bg_warp_ef_rt.clearRenderState();
 
         target.bindWrite(false);
         GlStateManager._enableBlend();
         RenderSystem.getModelViewMatrix().set(modelViewMat);
         TEST_RENDER_TARGET.blitToScreen(window[0],window[1],false);
+        target.bindWrite(true);
     }
 }

@@ -35,13 +35,14 @@ public class MyRenderTypes extends RenderStateShard{
 
     public static final ShaderStateShard DANMAKU_DEPTH_OUTLINE_SHADER = new ShaderStateShard(() -> ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER);
     public static RenderTarget TEST_RENDER_TARGET = new TextureTarget(2000,2000,true,true);
+    public static RenderTarget DEPTH_BUFFER_TARGET = new TextureTarget(2000,2000,true,true);
     public static final ShaderStateShard BACKGROUND_WARP_EFFECT_SHADER = new ShaderStateShard(() -> {
         RenderTarget target = Minecraft.getInstance().getMainRenderTarget();
         ShaderInstance shader = ShaderLoader.BACKGROUND_WARP_EFFECT;
         float timer = TickEvents.clientTicks+Minecraft.getInstance().getPartialTick();
         shader.safeGetUniform("Timer").set(timer);
         //System.out.println(timer);
-        shader.setSampler("DepthBuffer",target.getDepthTextureId());
+        shader.setSampler("DepthBuffer",DEPTH_BUFFER_TARGET.getDepthTextureId());
         shader.setSampler("ScreenBuffer",target.getColorTextureId());
         return shader;
     });

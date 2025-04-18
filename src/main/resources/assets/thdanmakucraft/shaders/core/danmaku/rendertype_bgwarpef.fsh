@@ -90,13 +90,13 @@ void main() {
     }
 
     float distance = abs(aruaDepth-senceDepth);
-    float threshold = 2.6f+sin(Timer/60.0f);
+    float threshold = 2.5f+sin(Timer/60.0f);
     float normalizedDistance = clamp(distance / threshold, 0.0, 1.0);
     vec4 intersection = mix(vec4(1), vec4(0), pow(normalizedDistance,3)); // white to transparent gradient
 
     float a = normalizedDistance;
     vec2 warp = vec2(sin(Timer/40.0f),cos(Timer/36.0f));
-    vec2 uv2 = uvWarp(texCoord,(-normal.rg+0.2*warp)*rim*0.6*sin(Timer/120.0f)/ (vertexDistance/10.0f)*(1.0f-intersection.r)*0.4f);
+    vec2 uv2 = uvWarp(texCoord,(-normal.rg+0.2*warp)*rim*0.6*sin(Timer/120.0f)/ (vertexDistance/10.0f) *(1.0f-intersection.r)*0.4f);
     float depth = texture(DepthBuffer, uv2).r;
 
     vec4 screen_color = texture(ScreenBuffer, uv2);
