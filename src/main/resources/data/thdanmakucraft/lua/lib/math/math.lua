@@ -6,6 +6,7 @@
 
 core.doFile("lib/math/vec2.lua")
 core.doFile("lib/math/vec3.lua")
+core.doFile("lib/math/matrix4x4.lua")
 
 local m = math
 
@@ -23,4 +24,13 @@ end
 ---@return number
 function m.clamp(number, min, max)
     return math.max(math.min(number, max), min);
+end
+
+---Fused multiply-add
+---@param a number
+---@param b number
+---@param c number
+---@return number
+function m.fma(a,b,c)
+    return a*b+c
 end

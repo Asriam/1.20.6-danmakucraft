@@ -34,6 +34,7 @@ end
 ---@param x number
 ---@param y number
 ---@param z number
+---@overload fun()
 ---@return math.Vec3
 function vec3.new(x, y, z)
     local v = {
@@ -50,6 +51,10 @@ math.vec3 = vec3
 
 vec3.zero = vec3.new(0, 0, 0)
 vec3.one = vec3.new(1, 1, 1)
+
+function vec3:_type()
+    return "math.Vec3"
+end
 
 ---@param _vec3 math.Vec3
 ---@return math.Vec3
@@ -169,4 +174,35 @@ function vec3:lerp(_vec3,t)
     local y = math.lerp(self.y,_vec3.y,t)
     local z = math.lerp(self.z,_vec3.z,t)
     return vec3.new(x,y,z)
+end
+
+---@param a math.Vec3
+---@param b math.Vec3
+metatable.__add = function(a, b)
+    return vec3.add(a, b)
+end
+
+---@param a math.Vec3
+---@param b math.Vec3
+metatable.__sub = function(a, b)
+    return vec3.subtract(a, b)
+end
+
+---@param a math.Vec3
+---@param b math.Vec3
+---@overload fun(a:math.Vec3,b:number)
+---@overload fun(b:number,a:math.Vec3)
+metatable.__mul = function(a, b)
+    if mytype.isNumber(a) then
+        return vec3.scale(b, a)
+    elseif mytype.isNumber(b) then
+        return vec3.scale(a, b)
+    else
+        return vec3.multiply(a, b)
+    end
+end
+
+---@param a math.Vec3
+metatable.__len = function(a)
+    return a:length()
 end

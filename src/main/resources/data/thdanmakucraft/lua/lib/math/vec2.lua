@@ -27,6 +27,9 @@ function vec2.of(_vec2)
     return v
 end
 
+---@param x number
+---@param y number
+---@overload fun()
 ---@return math.Vec2
 function vec2.new(x, y)
     local v = {
@@ -38,6 +41,10 @@ function vec2.new(x, y)
 end
 --util.vec2 = vec2
 math.vec2 = vec2
+
+function vec2:_type()
+    return "math.Vec2"
+end
 
 ---@param _vec2 math.Vec2
 ---@return math.Vec2
@@ -131,4 +138,27 @@ function vec2:lerp(_vec2, t)
     local x = math.lerp(self.x, _vec2.x,t)
     local y = math.lerp(self.y, _vec2.y,t)
     return vec2.new(x,y)
+end
+
+metatable.__add = function(a, b)
+    return vec2.add(a, b)
+end
+
+metatable.__sub = function(a, b)
+    return vec2.subtract(a, b)
+end
+
+metatable.__mul = function(a, b)
+    if mytype.isNumber(a) then
+        return vec2.scale(b, a)
+    elseif mytype.isNumber(b) then
+        return vec2.scale(a, b)
+    else
+        return vec2.multiply(a, b)
+    end
+end
+
+---@param a math.Vec2
+metatable.__len = function(a)
+    return a:length()
 end
