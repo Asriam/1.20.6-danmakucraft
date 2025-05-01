@@ -33,7 +33,7 @@ function c.vec2(x, y) end
 ---@param x number
 ---@param y number
 ---@param z number
----@return util.Vec3
+---@return math.Vec3
 function c.vec3(x, y, z) end
 
 ---@generic T:Class

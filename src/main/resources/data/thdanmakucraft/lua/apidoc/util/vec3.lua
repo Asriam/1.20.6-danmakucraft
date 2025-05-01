@@ -10,71 +10,71 @@
 ---@field z number
 local Vec3 = {}
 
----@param vec3 util.Vec3
----@return util.Vec3
+---@param vec3 math.Vec3
+---@return math.Vec3
 function Vec3:vectorTo(vec3) end
 
----@param vec3 util.Vec3
----@return util.Vec3
+---@param vec3 math.Vec3
+---@return math.Vec3
 function Vec3:normalize(vec3) end
 
----@param vec3 util.Vec3
----@return util.Vec3
+---@param vec3 math.Vec3
+---@return math.Vec3
 function Vec3:dot(vec3) end
 
----@param vec3 util.Vec3
----@return util.Vec3
+---@param vec3 math.Vec3
+---@return math.Vec3
 function Vec3:cross(vec3) end
 
 ---@overload fun(x:number,y:number,z:number)
----@param vec3 util.Vec3
----@return util.Vec3
+---@param vec3 math.Vec3
+---@return math.Vec3
 function Vec3:subtract(vec3) end
 
 ---@overload fun(x:number,y:number,z:number)
----@param vec3 util.Vec3
----@return util.Vec3
+---@param vec3 math.Vec3
+---@return math.Vec3
 function Vec3:add(vec3) end
 
----@param vec3 util.Vec3
+---@param vec3 math.Vec3
 ---@return number
 function Vec3:distanceTo(vec3) end
 
 ---@overload fun(x:number,y:number,z:number)
----@param vec3 util.Vec3
+---@param vec3 math.Vec3
 ---@return number
 function Vec3:distanceToSqr(vec3) end
 
 ---@param number number
----@return util.Vec3
+---@return math.Vec3
 function Vec3:scale(number) end
 
----@return util.Vec3
+---@return math.Vec3
 function Vec3:reverse() end
 
 ---@overload fun(x:number,y:number,z:number)
----@param vec3 util.Vec3
----@return util.Vec3
+---@param vec3 math.Vec3
+---@return math.Vec3
 function Vec3:multiply(vec3) end
 
----@param vec3 util.Vec3
+---@param vec3 math.Vec3
 ---@return boolean
 function Vec3:equals(vec3) end
 
 ---@param number number
----@return util.Vec3
+---@return math.Vec3
 function Vec3:xRot(number) end
 
 ---@param number number
----@return util.Vec3
+---@return math.Vec3
 function Vec3:yRot(number) end
 
 ---@param number number
----@return util.Vec3
+---@return math.Vec3
 function Vec3:zRot(number) end
 
 ---@param vec2 core.Vec2
----@return util.Vec3
+---@return math.Vec3
 function Vec3:directionFromRotation(vec2) end
 
 ---@return number

@@ -35,9 +35,9 @@ function laser:setLength(length) end
 ---@param duration number
 function laser:grow(width, length, duration) end
 
----@param vec3 util.Vec3
+---@param vec3 math.Vec3
 ---@param duration number
 function laser:growVector(vec3, duration) end
 
----@param vec3 util.Vec3
+---@param vec3 math.Vec3
 function laser:vectorTo(vec3) end

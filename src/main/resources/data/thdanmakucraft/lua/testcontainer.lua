@@ -3,7 +3,7 @@ local num = 3
 ---@type Class|THBullet
 local testBullet = core.defineClass()
 function testBullet:onInit(i)
-    self:setVelocity(util.vec3.new(0.2,0.0,0.0):yRot(Mth.PI*2/32*i),true)
+    self:setVelocity(math.vec3.new(0.2,0.0,0.0):yRot(Mth.PI*2/32*i),true)
     self:setNavi(true)
 end
 
@@ -17,7 +17,7 @@ local testBullet2 = core.defineClass(testBullet)
 function testBullet2:onRegisterTasks(taskManager)
     ---@param target THBullet
     taskManager:registerTask("test", function(target, timer, lifetime)
-        target:move(util.vec3.new(0.0,-0.1,0.0))
+        target:move(math.vec3.new(0.0,-0.1,0.0))
     end)
     --print("onRegisterTasks")
 end
@@ -55,7 +55,7 @@ function testLaser:onTick()
     local userRot = self.container.userRot
     local angle = self.params.angle
     self:setVelocityFromRotation(0.2,
-            util.vec2.new(
+            math.vec2.new(
                     0.0,
                     angle + 60 * Mth.sin(self.timer * 0.1) + userRot
             ),
@@ -129,8 +129,8 @@ end
 function container2:onTick()
     local timer = self:getTimer()
 
-    ---@param _pos util.Vec3
-    ---@param _angle util.Vec3
+    ---@param _pos math.Vec3
+    ---@param _angle math.Vec3
     local bbb = function(_pos,_angle)
         local bullet2 = self:createTHBullet(nil, {}, _pos,"grain_a",3)
         bullet2:setPosition(_pos:add(_angle:scale(2.0)))
@@ -142,9 +142,9 @@ function container2:onTick()
 
     if timer < 300 then
         local pos = self:getPosition()
-        local rotation = util.vec3.new(0.0,0.0,1.0)
+        local rotation = math.vec3.new(0.0,0.0,1.0)
         local way = 6
-        local rotate = util.vec2.new(
+        local rotate = math.vec2.new(
                 Mth.DEG_TO_RAD*(math.pow(timer*0.1,2)+360/way),
                 -Mth.DEG_TO_RAD*(math.pow(timer*0.08,2)+360/way))
 
@@ -172,7 +172,7 @@ function container3:onInit()
     for key, style in pairs(bullet_styles) do
         for _i=1,16 do
             local bullet = self:createTHBullet(nil, {}, self:getPosition(), style, _i)
-            bullet:setPosition(self:getPosition():add(util.vec3.new(_i*2,0,_s*2)))
+            bullet:setPosition(self:getPosition():add(math.vec3.new(_i*2,0,_s*2)))
             bullet:setLifetime(300)
             bullet:setBlend("add")
         end

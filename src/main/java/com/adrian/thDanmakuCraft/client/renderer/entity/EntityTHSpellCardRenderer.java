@@ -175,8 +175,9 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         }
 
         if(container.shouldApplyBackgroundWarpEffect){
-            open = timer > time ? 1.0f : (float) Math.pow(Math.min(timer / time,1.0f),0.5f);
-            renderBackgroundWarpEffect(spellCard,container, poseStack, pos, partialTicks,40.0f*open*close*Mth.lerp(timeLeft,0.4f,1.0f),open*close);
+            time = 30.0f;
+            float open2 = timer > time ? 1.0f : (float) Math.pow(Math.min(timer / time,1.0f),0.2f);
+            renderBackgroundWarpEffect(spellCard,container, poseStack, pos, partialTicks,40.0f*open2*close*Mth.lerp((float)Math.pow(Math.max(timeLeft,0.0f),1),0.4f,1.0f),open*close);
         }
     }
 

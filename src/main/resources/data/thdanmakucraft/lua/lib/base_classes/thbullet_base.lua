@@ -9,7 +9,7 @@ THBulletBase = core.defineClass("THBullet_Base",THObjectBase)
 local bullet = THBulletBase
 bullet.thobject_type = core.thobject_types.bullet
 
----@param position util.Vec3
+---@param position math.Vec3
 ---@param style string
 ---@param colorIndex number
 function bullet:onInit(position,style,colorIndex)

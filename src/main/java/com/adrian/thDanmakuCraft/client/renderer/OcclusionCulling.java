@@ -1,5 +1,7 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
+import org.joml.Matrix4f;
+
 public class OcclusionCulling {
     private final double camX;
     private final double camY;
@@ -11,7 +13,6 @@ public class OcclusionCulling {
         this.camZ = camZ;
     }
     public boolean isVisible(RenderUtil.Quad quad) {
-
 
         return false;
     }

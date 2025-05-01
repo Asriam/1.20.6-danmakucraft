@@ -4,6 +4,8 @@
 --- DateTime: 2025/2/16 上午 02:55
 ---
 
+core.doFile("lib/math/vec2.lua")
+core.doFile("lib/math/vec3.lua")
 
 local m = math
 
@@ -22,4 +24,3 @@ end
 function m.clamp(number, min, max)
     return math.max(math.min(number, max), min);
 end
-

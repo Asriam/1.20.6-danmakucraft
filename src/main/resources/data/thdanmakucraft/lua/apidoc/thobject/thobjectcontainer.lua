@@ -11,7 +11,7 @@ local container = {}
 ---@return number
 function container:getMaxObjectAmount() end
 
----@return util.Vec3
+---@return math.Vec3
 function container:getPosition() end
 
 --[[
@@ -32,13 +32,13 @@ function container:clearObjects() end
 
 ---@param class Class
 ---@param args table
----@param position util.Vec3
+---@param position math.Vec3
 ---@return THObject
 function container:createTHObject(class, args, position) end
 
 ---@param class Class
 ---@param args table
----@param position util.Vec3
+---@param position math.Vec3
 ---@param style string
 ---@param colorIndex number
 ---@return THBullet
@@ -48,7 +48,7 @@ function container:createTHBullet(class, args, position, style, colorIndex) end
 
 ---@param class Class
 ---@param args table
----@param position util.Vec3
+---@param position math.Vec3
 ---@param colorIndex number
 ---@param length number
 ---@param width number
@@ -57,7 +57,7 @@ function container:createTHCurvedLaser(class, args, position, colorIndex, length
 
 ---@param class Class
 ---@param args table
----@param position util.Vec3
+---@param position math.Vec3
 ---@param colorIndex number
 ---@param length number
 ---@param width number

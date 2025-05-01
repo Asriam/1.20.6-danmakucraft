@@ -13,13 +13,14 @@ local abstractVec3 = {}
 ---@field x number
 ---@field y number
 ---@field z number
----@class util.Vec3:abstractVec3
+---@class math.Vec3:abstractVec3
 local vec3 = {}
+
 local metatable = {__index = vec3 }
 core.registerMetaTable("util.vec3",metatable)
 core.setupVec3Lib(vec3,metatable)
----@param vec3 table
----@return util.Vec3
+---@param _vec3 table
+---@return math.Vec3
 function vec3.of(_vec3)
     local v = {
         x = _vec3.x or 0,
@@ -33,7 +34,7 @@ end
 ---@param x number
 ---@param y number
 ---@param z number
----@return util.Vec3
+---@return math.Vec3
 function vec3.new(x, y, z)
     local v = {
         x = x or 0,
@@ -44,85 +45,86 @@ function vec3.new(x, y, z)
     return v
 end
 
-util.vec3 = vec3
+--util.vec3 = vec3
+math.vec3 = vec3
 
 vec3.zero = vec3.new(0, 0, 0)
 vec3.one = vec3.new(1, 1, 1)
 
----@param _vec3 util.Vec3
----@return util.Vec3
+---@param _vec3 math.Vec3
+---@return math.Vec3
 function vec3:vectorTo(_vec3)
     return vec3.new(_vec3.x - self.x, _vec3.y - self.y, _vec3.z - self.z)
 end
 
----@param _vec3 util.Vec3
----@return util.Vec3
+---@param _vec3 math.Vec3
+---@return math.Vec3
 function vec3:normalize()
     local length = self:length()
     return vec3.new(self.x / length, self.y / length, self.z / length)
 end
 
----@param _vec3 util.Vec3
----@return util.Vec3
+---@param _vec3 math.Vec3
+---@return math.Vec3
 function vec3:dot(_vec3)
     return vec3.new(self.x * _vec3.x, self.y * _vec3.y, self.z * _vec3.z)
 end
 
----@param _vec3 util.Vec3
----@return util.Vec3
+---@param _vec3 math.Vec3
+---@return math.Vec3
 function vec3:cross(_vec3)
     return vec3.new(self.y * _vec3.z - self.z * _vec3.y, self.z * _vec3.x - self.x * _vec3.z, self.x * _vec3.y - self.y * _vec3.x)
 end
 
----@param _vec3 util.Vec3
----@return util.Vec3
+---@param _vec3 math.Vec3
+---@return math.Vec3
 function vec3:subtract(_vec3)
     return vec3.new(self.x - _vec3.x, self.y - _vec3.y, self.z - _vec3.z)
 end
 
----@param _vec3 util.Vec3
----@return util.Vec3
+---@param _vec3 math.Vec3
+---@return math.Vec3
 function vec3:add(_vec3)
     return vec3.new(self.x + _vec3.x, self.y + _vec3.y, self.z + _vec3.z)
 end
 
----@param _vec3 util.Vec3
----@return util.Vec3
+---@param _vec3 math.Vec3
+---@return math.Vec3
 function vec3:distanceTo(_vec3)
     return math.sqrt((self.x - _vec3.x) ^ 2 + (self.y - _vec3.y) ^ 2 + (self.z - _vec3.z) ^ 2)
 end
 
----@param _vec3 util.Vec3
----@return util.Vec3
+---@param _vec3 math.Vec3
+---@return math.Vec3
 function vec3:distanceToSqr(_vec3)
     return (self.x - _vec3.x) ^ 2 + (self.y - _vec3.y) ^ 2 + (self.z - _vec3.z) ^ 2
 end
 
 ---@param _number number
----@return util.Vec3
+---@return math.Vec3
 function vec3:scale(_number)
     return vec3.new(self.x * _number, self.y * _number, self.z * _number)
 end
 
----@return util.Vec3
+---@return math.Vec3
 function vec3:reverse()
     return vec3.new(-self.x, -self.y, -self.z)
 end
 
----@param _vec3 util.Vec3
----@return util.Vec3
+---@param _vec3 math.Vec3
+---@return math.Vec3
 function vec3:multiply(_vec3)
     return vec3.new(self.x * _vec3.x, self.y * _vec3.y, self.z * _vec3.z)
 end
 
----@param _vec3 util.Vec3
+---@param _vec3 math.Vec3
 ---@return boolean
 function vec3:equals(_vec3)
     return self.x == _vec3.x and self.y == _vec3.y and self.z == _vec3.z
 end
 
 ---@param _number number
----@return util.Vec3
+---@return math.Vec3
 function vec3:xRot(_number)
     local cos = math.cos(_number)
     local sin = math.sin(_number)
@@ -130,7 +132,7 @@ function vec3:xRot(_number)
 end
 
 ---@param _number number
----@return util.Vec3
+---@return math.Vec3
 function vec3:yRot(_number)
     local cos = math.cos(_number)
     local sin = math.sin(_number)
@@ -138,7 +140,7 @@ function vec3:yRot(_number)
 end
 
 ---@param _number number
----@return util.Vec3
+---@return math.Vec3
 function vec3:zRot(_number)
     local cos = math.cos(_number)
     local sin = math.sin(_number)
@@ -149,19 +151,19 @@ function vec3:rotateXYZ(xRot,yRot,zRot)
     return vec3.of(self):yRot(yRot):xRot(xRot):zRot(zRot)
 end
 
----@return util.Vec3
+---@return math.Vec3
 function vec3:length()
     return math.sqrt(self.x ^ 2 + self.y ^ 2 + self.z ^ 2)
 end
 
----@return util.Vec3
+---@return math.Vec3
 function vec3:lengthSquared()
     return self.x ^ 2 + self.y ^ 2 + self.z ^ 2
 end
 
----@param _vec3 util.Vec3
+---@param _vec3 math.Vec3
 ---@param t number
----@return util.Vec3
+---@return math.Vec3
 function vec3:lerp(_vec3,t)
     local x = math.lerp(self.x,_vec3.x,t)
     local y = math.lerp(self.y,_vec3.y,t)

@@ -16,6 +16,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.joml.Matrix4f;
 
 @OnlyIn(Dist.CLIENT)
 public class EntityExampleRenderer extends EntityRenderer<EntityExample> {
@@ -48,7 +49,6 @@ public class EntityExampleRenderer extends EntityRenderer<EntityExample> {
         vertex(vertexconsumer, posestack$pose, p_114710_, 1.0F, 0, 1, 1.0f/16*index);
         vertex(vertexconsumer, posestack$pose, p_114710_, 1.0F, 1, 1, 1.0f/16*(index-1));
         vertex(vertexconsumer, posestack$pose, p_114710_, 0.0F, 1, 0, 1.0f/16*(index-1));
-
         /*
         vertex(vertexconsumer, matrix4f, matrix3f, p_114710_, 0.0F, 0, 0, 1.0f/16);
         vertex(vertexconsumer, matrix4f, matrix3f, p_114710_, 1.0F, 0, 2, 1.0f/16);

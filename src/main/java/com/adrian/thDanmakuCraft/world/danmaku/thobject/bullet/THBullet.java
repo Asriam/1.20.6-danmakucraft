@@ -171,6 +171,14 @@ public class THBullet extends THObject {
         }
     }
 
+    public enum BulletDeathEffectType{
+        NONE, SHRINK, SWELL;
+    }
+
+    public enum BulletSpawnEffectType{
+        NONE, BALL, SHRINK;
+    }
+
     public static final IImage.Image IMAGE_WHITE = new IImage.Image(TEXTURE_WHITE,0.0f,0.0f,1.0f,1.0f);
     public static final IImage.Image.ImageGroup IMAGE_BALL_MID = new IImage.Image.ImageGroup(ResourceLocationUtil.thdanmakucraft("textures/danmaku/ball_mid.png"),
             0.0f,0.0f,1.0f,1.0f/16,1,16);

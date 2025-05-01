@@ -50,7 +50,8 @@ public class RenderEvents {
 
         //System.out.println(RenderSystem.getProjectionMatrix().get(3,2));
         //RenderSystem.getProjectionMatrix().set(3,2,-0.3f);
-        //GL46.glClearDepthf(0.999f);
+        //GL46.glDepthFunc(GL46.GL_LESS);
+        //GL46.glDepthRange(0.1f,0.5f);
 
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES){
 

@@ -73,10 +73,10 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
             }
 
         } else {
-            //Vec2 rotation = THObject.VectorAngleToRadAngle(this.getRenderDispatcher().camera.getPosition().vectorTo(bulletPos));
-            //poseStack.mulPose(new Quaternionf().rotateY(rotation.y).rotateX(-rotation.x));
-            poseStack.mulPose(this.getRenderDispatcher().cameraOrientation());
-            poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
+            Vec2 rotation = THObject.VectorAngleToRadAngle(this.getRenderDispatcher().camera.getPosition().vectorTo(bulletPos));
+            poseStack.mulPose(new Quaternionf().rotateY(rotation.y-Mth.PI).rotateX(rotation.x));
+            //poseStack.mulPose(this.getRenderDispatcher().cameraOrientation());
+            //poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
             THBulletRenderers.render2DBullet(this, bullet, poseStack, vertexConsumer, partialTicks);
         }
         //poseStack.popPose();

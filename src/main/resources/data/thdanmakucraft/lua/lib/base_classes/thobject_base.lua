@@ -13,7 +13,7 @@ function object:onConstruct()
 end
 
 ---此函數會在THObject第一次添加到THObjectContainer時調用
----@param position util.Vec3
+---@param position math.Vec3
 function object:onInit(position)
     self:initPosition(position)
 end

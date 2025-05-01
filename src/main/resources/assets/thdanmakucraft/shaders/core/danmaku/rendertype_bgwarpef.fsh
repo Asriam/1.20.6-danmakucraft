@@ -85,7 +85,7 @@ void main() {
     vec2 texCoord = gl_FragCoord.xy/ScreenSize;
     float senceDepth = LinearizeDepth(texture(DepthBuffer, texCoord).r);
     float aruaDepth = LinearizeDepth(gl_FragCoord.z);
-    if(senceDepth < aruaDepth ){
+    if(senceDepth < aruaDepth){
         discard;
     }
 
@@ -94,13 +94,15 @@ void main() {
     float normalizedDistance = clamp(distance / threshold, 0.0, 1.0);
     vec4 intersection = mix(vec4(1), vec4(0), pow(normalizedDistance,3)); // white to transparent gradient
 
-    float a = normalizedDistance;
     vec2 warp = vec2(sin(Timer/40.0f),cos(Timer/36.0f));
     vec2 uv2 = uvWarp(texCoord,(-normal.rg+0.2*warp)*rim*0.6*sin(Timer/120.0f)/ (vertexDistance/10.0f) *(1.0f-intersection.r)*0.4f);
-    float depth = texture(DepthBuffer, uv2).r;
-
+    float WarpedSenceDepth = LinearizeDepth(texture(DepthBuffer, uv2).r);
+    /*if(WarpedSenceDepth < aruaDepth){
+        discard;
+    }*/
     vec4 screen_color = texture(ScreenBuffer, uv2);
-    vec4 outColor = overlay(FogColor,screen_color)/*max(linear_fog(screen_color, LinearizeDepth(depth), FogStart, FogEnd, FogColor),0)*/ + vec4(vertexColor.rgb*vertexColor.a*rim*(1.0f-intersection.r),rim*(1.0f*intersection.r));
+    intersection = mix(vec4(1), vec4(0), pow(clamp(abs(aruaDepth-WarpedSenceDepth) / threshold, 0.0, 1.0),3));
+    vec4 outColor = overlay(FogColor,screen_color) + vec4(vertexColor.rgb*vertexColor.a*rim*(1.0f-intersection.r),rim*(1.0f-intersection.r));
     //fragColor = linear_fog(outColor, depth, FogStart, FogEnd, FogColor);
     fragColor = outColor;
     //fragColor = intersection;
