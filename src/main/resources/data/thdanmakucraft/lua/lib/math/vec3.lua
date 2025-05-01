@@ -46,13 +46,33 @@ function vec3.new(x, y, z)
     return v
 end
 
+local metatable2 = {
+    __call = function(...)
+        local args = {...}
+        table.remove(args,1)
+        if #args == 0 then
+            return vec3.new(0,0,0)
+        elseif mytype.type(args[1]) == vec3._type() then
+            return vec3.of(args[1])
+        else
+            return vec3.new(args[1], args[2], args[3])
+        end
+    end
+}
+setmetatable(vec3, metatable2)
 --util.vec3 = vec3
+---@param x number
+---@param y number
+---@param z number
+---@overload fun(vec3:math.Vec3)
+---@return math.Vec3
+function math.vec3(x,y,z) end
 math.vec3 = vec3
 
 vec3.zero = vec3.new(0, 0, 0)
 vec3.one = vec3.new(1, 1, 1)
 
-function vec3:_type()
+function vec3._type()
     return "math.Vec3"
 end
 

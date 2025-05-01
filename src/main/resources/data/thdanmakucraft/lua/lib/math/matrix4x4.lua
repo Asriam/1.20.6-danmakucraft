@@ -32,12 +32,6 @@ function m4x4.new(m11, m12, m13, m14,
                   m21, m22, m23, m24,
                   m31, m32, m33, m34,
                   m41, m42, m43, m44)
-    --[[local m = {
-        { 1, 0, 0, 0 },
-        { 0, 1, 0, 0 },
-        { 0, 0, 1, 0 },
-        { 0, 0, 0, 1 }
-    }]]
     local m = {
         { m11 or 1, m12 or 0, m13 or 0, m14 or 0 },
         { m21 or 0, m22 or 1, m23 or 0, m24 or 0 },
@@ -58,6 +52,21 @@ function m4x4.of(mat4)
             mat4[4][1], mat4[4][2], mat4[4][3], mat4[4][4]
     )
 end
+
+local metatble2 = {
+    __call = function(...)
+        local args = {...}
+        table.remove(args,1)
+        if #args == 0 then
+            return m4x4.new()
+        elseif mytype.type(args[1]) == m4x4._type() then
+            return m4x4.of(args[1])
+        else
+            return m4x4.new(table.unpack(args))
+        end
+    end
+}
+setmetatable(m4x4, metatble2)
 
 function m4x4:_type()
     return "math.Matrix4x4"

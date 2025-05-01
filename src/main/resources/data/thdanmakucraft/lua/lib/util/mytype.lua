@@ -9,7 +9,7 @@ mytype = {}
 ---@param o any
 ---@return string
 mytype.type = function(o)
-    if o._type ~= nil then
+    if mytype.isTable(o) and o._type ~= nil then
         if mytype.isString(o._type) then
             return o._type
         elseif mytype.isFunction(o._type) then

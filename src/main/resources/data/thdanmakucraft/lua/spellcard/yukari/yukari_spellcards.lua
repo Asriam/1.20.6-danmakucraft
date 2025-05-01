@@ -38,12 +38,12 @@ function yukari_spellcrad_1:onTick()
     ---@return THBullet
     local bbb = function(_pos,_angle,offset)
         local bullet = self:createTHBullet(nil,
-                {_pos:add(_angle:scale(math.min(timer/120,1)^0.4*1.6)),_angle,offset},
+                {_pos + _angle * (math.min(timer/120,1)^0.4*1.6),_angle,offset},
                 _pos,bullet_styles.grain_a,3)
-        local p = _pos:add(_angle:scale(math.min(timer/120,1)^0.4*1.6))
+        local p = _pos + _angle*(math.min(timer/120,1)^0.4*1.6)
         local acceleration = 0.026
-        local velocity = _angle:scale(0.2 - acceleration*offset)
-        bullet:setPosition(p:add(velocity:scale(-offset)))
+        local velocity = _angle*(0.2 - acceleration*offset)
+        bullet:setPosition(p + velocity*(-offset))
         bullet:setVelocity(velocity,true)
         bullet:setAccelerationFromDirection(acceleration,_angle)
         bullet:setLifetime(120)
@@ -106,7 +106,7 @@ function yukari_spellcrad_2_laser_1:onTick()
     local pos0 = self.data.pos0
     local pos1 = self.data.pos1
     local pos2 = self.data.pos2
-    self:setPosition(pos0:add(pos1:yRot(-angle)))
+    self:setPosition(pos0+pos1:yRot(-angle))
     self:vectorTo(pos2:yRot(angle))
 
     local mod = (self.timer+240)%240
@@ -147,7 +147,7 @@ function yukari_spellcrad_2_laser_2:onTick()
     local pos0 = self.data.pos0
     local pos1 = self.data.pos1
     local pos2 = self.data.pos2
-    self:setPosition(pos0:add(pos1:yRot(-angle)))
+    self:setPosition(pos0+pos1:yRot(-angle))
     self:vectorTo(pos2:yRot(angle))
 
     local mod = (self.timer+240)%240
@@ -175,7 +175,7 @@ function yukari_spellcrad_2:onInit()
     self.data.angle = 0
     for i=0,3 do
         local pos0 = self:getPosition()
-        local pos = math.vec3.new(10,0,0):yRot(-Mth.DEG_TO_RAD*90*i)
+        local pos = math.vec3(10,0,0):yRot(-Mth.DEG_TO_RAD*90*i)
         self:createTHLaser(yukari_spellcrad_2_laser_1,
                 {pos0,math.vec3.zero,pos,2.0}
         )

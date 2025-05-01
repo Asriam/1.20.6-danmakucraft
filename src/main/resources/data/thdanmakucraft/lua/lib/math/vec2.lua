@@ -39,10 +39,25 @@ function vec2.new(x, y)
     setmetatable(v, metatable)
     return v
 end
+
+local metatable2 = {
+    __call = function(...)
+        local args = {...}
+        table.remove(args,1)
+        if #args == 0 then
+            return vec2.new(0,0)
+        elseif mytype.type(args[1]) == vec2._type() then
+            return vec2.of(args[1])
+        else
+            return vec2.new(args[1], args[2])
+        end
+    end
+}
+setmetatable(vec2, metatable2)
 --util.vec2 = vec2
 math.vec2 = vec2
 
-function vec2:_type()
+function vec2._type()
     return "math.Vec2"
 end
 
