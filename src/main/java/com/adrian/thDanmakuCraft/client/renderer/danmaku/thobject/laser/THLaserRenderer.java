@@ -48,33 +48,42 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
         Color laserColor = laser.getLaserColor().multiply(laserCoreColor);
         int edgeA = 12;
         int edgeB = 8;
-        RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 2,
-                ConstantUtil.VECTOR3F_ZERO,
-                scale,
-                edgeA, edgeB, false,
-                new Vec2(0.5f, 3.0f),
-                new Vec2(0.5f, 1.0f),
-                laserColor.multiply(0.8f),
-                laserColor.multiply(0.1f),
-                laserCoreColor,false,false);
-        /*RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 2,
-                ConstantUtil.VECTOR3F_ZERO,
-                scale.mul(0.6f,0.8f,0.6f,new Vector3f()),
-                edgeA, edgeB, false,
-                new Vec2(0.0f, 1.0f),
-                new Vec2(0.3f, 1.0f),
-                laserCoreColor.multiply(0.8f),
-                laserCoreColor.multiply(0.5f),
-                laserCoreColor);
-        RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 2,
-                ConstantUtil.VECTOR3F_ZERO,
-                scale,
-                edgeA, edgeB, false,
-                new Vec2(0.0f, 1.0f),
-                new Vec2(0.3f, 1.0f),
-                laserColor.multiply(0.6f),
-                laserColor.multiply(0.3f),
-                laserCoreColor,false,true);*/
+        int style = 2;
+        switch (style) {
+            case 1: {
+                RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 0.02f,
+                        ConstantUtil.VECTOR3F_ZERO,
+                        scale,
+                        edgeA, edgeB, false,
+                        new Vec2(0.5f, 3.0f),
+                        new Vec2(0.5f, 1.0f),
+                        laserColor.multiply(0.8f),
+                        laserColor.multiply(0.1f),
+                        laserCoreColor, false, true);
+            }
+            case 2: {
+                RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 2,
+                        ConstantUtil.VECTOR3F_ZERO,
+                        scale.mul(0.6f, 0.8f, 0.6f, new Vector3f()),
+                        edgeA, edgeB, false,
+                        new Vec2(0.0f, 1.0f),
+                        new Vec2(0.3f, 1.0f),
+                        laserCoreColor.multiply(0.8f),
+                        laserCoreColor.multiply(0.5f),
+                        laserCoreColor);
+                RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 2,
+                        ConstantUtil.VECTOR3F_ZERO,
+                        scale,
+                        edgeA, edgeB, false,
+                        new Vec2(0.0f, 1.0f),
+                        new Vec2(0.3f, 1.0f),
+                        laserColor.multiply(0.6f),
+                        laserColor.multiply(0.3f),
+                        laserCoreColor, false, true);
+            }
+            case 3: {
+            }
+        }
         poseStack.popPose();
     }
 

@@ -5,7 +5,9 @@ import org.joml.Vector3f;
 
 public interface ShapeVertexHelper {
 
-    void vertex(VertexHelper helper);
+    default void vertex(VertexHelper helper){
+        this.vertexs(helper, helper, helper, helper);
+    };
 
     void vertexs(
             ShapeVertexHelper.VertexHelper helper1,
@@ -13,7 +15,7 @@ public interface ShapeVertexHelper {
             ShapeVertexHelper.VertexHelper helper3,
             ShapeVertexHelper.VertexHelper helper4);
 
-    public interface VertexHelper {
+    interface VertexHelper {
         void vertex(Vector3f vertexPos, Vector3f normal, Color color);
     }
 }

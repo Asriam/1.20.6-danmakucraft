@@ -176,6 +176,14 @@ public class RenderUtil {
         // 判斷夾角是否是銳角
         return dotProduct > 0.0f;
     }
+
+    public static boolean isVisible(Vector3f normal, Vector3f cameraPosition,
+                                     Vector3f vertex1, Vector3f vertex2, Vector3f vertex3, Vector3f vertex4){
+        return isAngleAcute(vertex1,normal,cameraPosition) &&
+               isAngleAcute(vertex2,normal,cameraPosition) &&
+               isAngleAcute(vertex3,normal,cameraPosition) &&
+               isAngleAcute(vertex4,normal,cameraPosition);
+    }
     public static Vector3f multiply(Matrix3f mat3, Vector3f vec3) {
         float x = vec3.x * mat3.m00 + vec3.y * mat3.m10 + vec3.z * mat3.m20;
         float y = vec3.x * mat3.m01 + vec3.y * mat3.m11 + vec3.z * mat3.m21;
