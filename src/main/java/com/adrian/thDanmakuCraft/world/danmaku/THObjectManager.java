@@ -144,28 +144,28 @@ public class THObjectManager implements IDataStorage {
         }
     };
     public void encode(FriendlyByteBuf buffer) {
-        //buffer.writeCollection(this.getTHObjects(),codec);
-        ByteBufOutputStream bos = new ByteBufOutputStream(buffer);
+        buffer.writeCollection(this.getTHObjects(),THOBJECT_CODEC);
+        /*ByteBufOutputStream bos = new ByteBufOutputStream(buffer);
         try (GZIPOutputStream gzip = new GZIPOutputStream(bos)) {
             FriendlyByteBuf tempBuffer = new FriendlyByteBuf(Unpooled.buffer());
             tempBuffer.writeCollection(this.getTHObjects(), THOBJECT_CODEC);
             gzip.write(tempBuffer.array());
         } catch (IOException e) {
-            throw new RuntimeException("壓縮失敗!", e);
-        }
+            throw new RuntimeException("Compressing failed!", e);
+        }*/
     }
 
     public void decode(FriendlyByteBuf buffer) {
-        /*List<THObject> objects = buffer.readCollection(ArrayList::new,codec);
-        this.recreate(objects);*/
-        ByteBufInputStream bis = new ByteBufInputStream(buffer);
+        List<THObject> objects = buffer.readCollection(ArrayList::new,THOBJECT_CODEC);
+        this.recreate(objects);
+        /*ByteBufInputStream bis = new ByteBufInputStream(buffer);
         try (GZIPInputStream gzip = new GZIPInputStream(bis)) {
             FriendlyByteBuf tempBuffer = new FriendlyByteBuf(Unpooled.wrappedBuffer(gzip.readAllBytes()));
             List<THObject> objects = tempBuffer.readCollection(ArrayList::new, THOBJECT_CODEC);
             this.recreate(objects);
         } catch (IOException e) {
-            throw new RuntimeException("解壓失敗!",e);
-        }
+            throw new RuntimeException("Decompressing failed!",e);
+        }*/
     }
 
     public static CompoundTag THObjectListToTag(CompoundTag tag, List<THObject> objects) {

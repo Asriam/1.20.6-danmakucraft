@@ -27,5 +27,7 @@ public interface ITHObjectContainer extends ILuaValue{
 
     AABB getContainerBound();
 
-    <T extends THObject> T getObjectFromUUID(UUID uuid);
+    <T extends THObject> T getObjectByUUID(UUID uuid);
+
+    <T extends THObject> T getObjectByIndex(int index);
 }

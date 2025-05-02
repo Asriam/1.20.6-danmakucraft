@@ -213,6 +213,8 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         this.setBound(this.position(),this.bound);
         this.entitiesInBound = this.level().getEntities(this.hostEntity,this.getContainerBound()).stream().filter((entity -> !(entity.equals(this.hostEntity)) && !(entity instanceof EntityTHObjectContainer))).toList();
 
+        this.objectManager.tickTHObjects();
+
         if (this.timer > this.lifetime){
             if(this.timer > this.lifetime+20){
                 for (THObject object : this.objectManager.getTHObjects()) {
@@ -227,7 +229,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
             this.taskManager.tickTasks();
         }
 
-        this.objectManager.tickTHObjects();
+        //this.objectManager.tickTHObjects();
 
         if(this.autoRemove) {
             if (this.objectManager.isEmpty() && --this.autoRemoveLife < 0) {
@@ -366,7 +368,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         this.hostEntity.remove(Entity.RemovalReason.DISCARDED);
     }
 
-    public <T extends THObject> T getObjectFromUUID(UUID uuid) {
+    public <T extends THObject> T getObjectByUUID(UUID uuid) {
         for(THObject object:this.getObjectManager().getTHObjects()){
             if (object.getUUID().equals(uuid)){
                 return (T) object;
@@ -376,7 +378,14 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     }
 
     public <T extends THObject> T getObjectFromUUID(String uuid) {
-        return this.getObjectFromUUID(UUID.fromString(uuid));
+        return this.getObjectByUUID(UUID.fromString(uuid));
+    }
+
+    public <T extends THObject> T getObjectByIndex(int index){
+        if (index >= this.getObjectManager().getTHObjects().size()){
+            return null;
+        }
+        return (T) this.getObjectManager().getTHObject(index);
     }
 
     public void encode(FriendlyByteBuf buffer) {
@@ -388,9 +397,10 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         buffer.writeBoolean(this.isInited);
         this.targetUserManager.encode(buffer);
         //this.luaValueStorageHelper.encodeLuaTable(buffer, this.ofLuaValue().get("params").checktable());
+        this.objectManager.encode(buffer);
         this.luaValueAutoSaveDataManager.encode(buffer);
         this.taskManager.encode(buffer);
-        this.objectManager.encode(buffer);
+        //buffer.writeInt(2666);
         //this.scriptManager.encode(buffer);
         //this.parameterManager.encode(buffer);
         //this.taskerManager.writeData(buffer);
@@ -405,9 +415,10 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         this.isInited = buffer.readBoolean();
         this.targetUserManager.decode(buffer);
         //this.ofLuaValue().set("params", luaValueStorageHelper.decodeLuaTable(buffer));
+        this.objectManager.decode(buffer);
         this.luaValueAutoSaveDataManager.decode(buffer);
         this.taskManager.decode(buffer);
-        this.objectManager.decode(buffer);
+        //System.out.println(buffer.readInt());
         //this.scriptManager.decode(buffer);
         //this.parameterManager.decode(buffer);
         //this.taskerManager.readData(additionalData);

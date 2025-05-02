@@ -50,7 +50,7 @@ function yukari_spellcrad_1:onTick()
         bullet:setBlend("normal")
         bullet:setDamage(4.0)
         bullet:setColor(255,255,255,120)
-        bullet:setCollision(false)
+        --bullet:setCollision(false)
     end
 
     if timer2 < 600 then
@@ -202,12 +202,13 @@ end
 local test_spellcard_1 = core.defineSpellCardClass("test_spellcard_1")
 function test_spellcard_1:onInit()
     self:setLifetime(3000)
-    self.data = {}
-    self.autosave:register("data")
-    self.data.laser = self:createTHLaser(nil,{})
-    self.data.laser:setWidth(1.0)
-    self.data.laser:vectorTo(math.vec3(10,0,0))
-    self.data.laser:setLifetime(3000)
+    ---@type THLaser
+    self.laser = self:createTHLaser(nil,{})
+    self.laser:setWidth(1.0)
+    self.laser:vectorTo(math.vec3(10,0,0))
+    self.laser:setLifetime(3000)
+    self.autosave:register("laser")
+    print(self.laser.uuid)
 end
 
 function test_spellcard_1:onTick()
@@ -215,5 +216,7 @@ function test_spellcard_1:onTick()
     --print(table.unpack(mat4x4))
     --self.data.laser:vectorTo(mat4x4:transformPositionVec3(math.vec3(10,0,0)))
     --self.data.laser:vectorTo(math.vec3(10,self.timer/20,0))
-    self.data.laser:vectorTo(math.vec3(10,0,0):yRot(self.timer/20))
+    --self.data.laser:setPosition(self.data.laser:getPosition()+math.vec3(0,0.3,0))
+    self.laser:vectorTo(math.vec3(10,0,0):yRot(self.timer/20))
+    --print(self.laser.index)
 end

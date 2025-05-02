@@ -78,7 +78,7 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
 
     public THObject getTHObject(String key){
         UUID uuid = (UUID) this.parameterMap.get(key).getValue();
-        return this.container.getObjectFromUUID(uuid);
+        return this.container.getObjectByUUID(uuid);
     }
 
     /*
@@ -460,7 +460,7 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
             Parameter<?> parameter = parameterManager.parameterMap.get(key);
             Type type = parameter.type;
             switch (type){
-                case THObject -> outValue = parameterManager.container.getObjectFromUUID((UUID)parameter.value).ofLuaValue();
+                case THObject -> outValue = parameterManager.container.getObjectByUUID((UUID)parameter.value).ofLuaValue();
                 case String -> outValue = LuaValue.valueOf((String) parameter.value);
                 case Integer -> outValue = LuaValue.valueOf((int) parameter.value);
                 case Float -> outValue = LuaValue.valueOf((float) parameter.value);

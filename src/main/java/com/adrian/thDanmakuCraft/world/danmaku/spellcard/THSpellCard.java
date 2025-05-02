@@ -23,14 +23,14 @@ public class THSpellCard extends THObjectContainer {
 
     @Override
     public void encode(FriendlyByteBuf buffer) {
-        super.encode(buffer);
         buffer.writeUtf(spellCardName);
+        super.encode(buffer);
     }
 
     @Override
     public void decode(FriendlyByteBuf buffer) {
-        super.decode(buffer);
         this.spellCardName = buffer.readUtf();
+        super.decode(buffer);
     }
 
     @Override

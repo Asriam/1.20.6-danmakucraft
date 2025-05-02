@@ -107,7 +107,12 @@ public class EntitySingleTHObject extends Entity implements IEntityAdditionalSpa
     }
 
     @Override
-    public <T extends THObject> T getObjectFromUUID(UUID uuid) {
+    public <T extends THObject> T getObjectByUUID(UUID uuid) {
+        return null;
+    }
+
+    @Override
+    public <T extends THObject> T getObjectByIndex(int index) {
         return null;
     }
 

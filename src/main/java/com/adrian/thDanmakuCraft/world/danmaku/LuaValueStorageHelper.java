@@ -1,6 +1,5 @@
 package com.adrian.thDanmakuCraft.world.danmaku;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import net.minecraft.nbt.CompoundTag;
@@ -22,10 +21,14 @@ public class LuaValueStorageHelper {
 
     public void encodeTHObject(FriendlyByteBuf byteBuf, THObject object){
         byteBuf.writeUUID(object.getUUID());
+        //System.out.println("UUID:"+object.getUUID());*/
+        //byteBuf.writeInt(object.getIndex());
     }
 
     public LuaTable decodeTHObject(FriendlyByteBuf byteBuf){
-        THObject object = this.getContainer().getObjectFromUUID(byteBuf.readUUID());
+        THObject object = this.getContainer().getObjectByUUID(byteBuf.readUUID());
+        //THObject object = this.getContainer().getObjectByIndex(byteBuf.readInt());
+        //System.out.println("object:"+object);
         return object == null ? LuaValue.tableOf() : object.ofLuaValue().checktable();
     }
 
@@ -68,6 +71,7 @@ public class LuaValueStorageHelper {
                 if (THObject.LuaAPI.isTHObject(luaValue)) {
                     byteBuf.writeEnum(TableType.THOBJECT);
                     encodeTHObject(byteBuf, THObject.LuaAPI.checkTHObject(luaValue));
+                    //System.out.println("THObject");
                 }else {
                     byteBuf.writeEnum(TableType.TABLE);
                     encodeLuaTable(byteBuf, luaValue.checktable());
@@ -118,7 +122,7 @@ public class LuaValueStorageHelper {
     }
 
     public LuaTable loadTHObject(CompoundTag tag){
-        THObject object = this.getContainer().getObjectFromUUID(tag.getUUID("uuid"));
+        THObject object = this.getContainer().getObjectByUUID(tag.getUUID("uuid"));
         return object == null ? LuaValue.tableOf() : object.ofLuaValue().checktable();
     }
     public CompoundTag saveLuaTable(LuaValue table) {

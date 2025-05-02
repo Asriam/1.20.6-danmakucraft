@@ -39,7 +39,7 @@ public class LuaValueAutoSaveDataManager implements IDataStorage, ILuaValue {
 
     @Override
     public void encode(FriendlyByteBuf buffer) {
-        buffer.writeShort(keys.size());
+        buffer.writeByte(keys.size());
         for(String key: keys) {
             buffer.writeUtf(key);
             luaValueStorageHelper.encodeLuaValue(buffer, target.ofLuaValue().get(key));
@@ -49,7 +49,7 @@ public class LuaValueAutoSaveDataManager implements IDataStorage, ILuaValue {
     @Override
     public void decode(FriendlyByteBuf buffer) {
         keys.clear();
-        int size = buffer.readShort();
+        int size = buffer.readByte();
         for (int i=0;i<size;i++){
             String key = buffer.readUtf();
             LuaValue value = luaValueStorageHelper.decodeLuaValue(buffer);

@@ -90,6 +90,7 @@ public class THObject implements ILuaValue, IGetContainer, ISerializable {
     protected LuaValue luaValueForm;
 
     public THObject(THObjectType<? extends THObject> type, ITHObjectContainer container) {
+        //this.index = container.getObjectManager().getTHObjects().size()-1;
         this.type = type;
         this.container = container;
         this.uuid = Mth.createInsecureUUID(this.random);
@@ -581,7 +582,7 @@ public class THObject implements ILuaValue, IGetContainer, ISerializable {
         this.invokeScriptEvent("onTick", this.ofLuaValue());
         this.taskManager.tickTasks();
 
-        if (this.shouldCollision()) {
+        if (this.shouldCollision() && this.level().isClientSide) {
             this.collisionLogic();
         }
 
@@ -1332,6 +1333,7 @@ public class THObject implements ILuaValue, IGetContainer, ISerializable {
         library.set("autosave", this.luaValueAutoSaveDataManager.ofLuaValue());
         library.set("taskManager", this.taskManager.ofLuaValue());
         library.set("timer",this.timer);
+        library.set("index",this.index);
         //library.set("params", LuaValue.tableOf());
         return library;
     }
