@@ -23,20 +23,36 @@ import java.util.zip.GZIPOutputStream;
 
 public class MyEntityDataSerializers {
 
-    /*private static final EntityDataSerializer<THObjectContainer> THOBJECT_CONTAINER = EntityDataSerializer.forValueType(new StreamCodec<FriendlyByteBuf, THObjectContainer>() {
+    public static final EntityDataSerializer<THObjectContainer> THOBJECT_CONTAINER = EntityDataSerializer.forValueType(new StreamCodec<FriendlyByteBuf, THObjectContainer>() {
         public void encode(@NotNull FriendlyByteBuf byteBuf, @NotNull THObjectContainer container) {
-            container.encode(byteBuf);
+            //container.encode(byteBuf);
+            ByteBufOutputStream bos = new ByteBufOutputStream(byteBuf);
+            try (GZIPOutputStream gzip = new GZIPOutputStream(bos)) {
+                FriendlyByteBuf tempBuffer = new FriendlyByteBuf(Unpooled.buffer());
+                container.encode(tempBuffer);
+                gzip.write(tempBuffer.array());
+            } catch (IOException e) {
+                throw new RuntimeException("Compressing failed!", e);
+            }
         }
         public @NotNull THObjectContainer decode(@NotNull FriendlyByteBuf byteBuf) {
+            System.out.println("asdasssfafsafasasdasdsadasdasda");
             THObjectContainer container = new THObjectContainer(null);
-            container.decode(byteBuf);
+            //container.decode(byteBuf);
+            ByteBufInputStream bis = new ByteBufInputStream(byteBuf);
+            try (GZIPInputStream gzip = new GZIPInputStream(bis)) {
+                FriendlyByteBuf tempBuffer = new FriendlyByteBuf(Unpooled.wrappedBuffer(gzip.readAllBytes()));
+                container.decode(tempBuffer);
+            } catch (IOException e) {
+                throw new RuntimeException("Decompressing failed!", e);
+            }
             return container;
         }
-    });*/
+    });
 
-    private static final EntityDataSerializer<THObjectContainer> THOBJECT_CONTAINER = new EntityDataSerializer<THObjectContainer>() {
+    /*private static final EntityDataSerializer<THObjectContainer> THOBJECT_CONTAINER = new EntityDataSerializer<>() {
         @Override
-        public StreamCodec<? super RegistryFriendlyByteBuf, THObjectContainer> codec() {
+        public @NotNull StreamCodec<? super RegistryFriendlyByteBuf, THObjectContainer> codec() {
             return new StreamCodec<FriendlyByteBuf, THObjectContainer>() {
                 public void encode(@NotNull FriendlyByteBuf byteBuf, @NotNull THObjectContainer container) {
                     //container.encode(byteBuf);
@@ -48,7 +64,9 @@ public class MyEntityDataSerializers {
                     } catch (IOException e) {
                         throw new RuntimeException("Compressing failed!", e);
                     }
+                    System.out.println("ffffffffffffffff");
                 }
+
                 public @NotNull THObjectContainer decode(@NotNull FriendlyByteBuf byteBuf) {
                     THObjectContainer container = new THObjectContainer(null);
                     //container.decode(byteBuf);
@@ -57,7 +75,7 @@ public class MyEntityDataSerializers {
                         FriendlyByteBuf tempBuffer = new FriendlyByteBuf(Unpooled.wrappedBuffer(gzip.readAllBytes()));
                         container.decode(tempBuffer);
                     } catch (IOException e) {
-                        throw new RuntimeException("Decompressing failed!",e);
+                        throw new RuntimeException("Decompressing failed!", e);
                     }
                     return container;
                 }
@@ -65,10 +83,14 @@ public class MyEntityDataSerializers {
         }
 
         @Override
-        public THObjectContainer copy(THObjectContainer container) {
-            return container;
+        public @NotNull THObjectContainer copy(THObjectContainer container) {
+            FriendlyByteBuf tempBuffer = new FriendlyByteBuf(Unpooled.buffer());
+            container.encode(tempBuffer);
+            THObjectContainer container_new = new THObjectContainer(container.getHostEntity());
+            container_new.decode(tempBuffer);
+            return container_new;
         }
-    };
+    };*/
 
     private static final EntityDataSerializer<THObject> THOBJECT = EntityDataSerializer.forValueType(new StreamCodec<FriendlyByteBuf, THObject>() {
         public void encode(@NotNull FriendlyByteBuf byteBuf, @NotNull THObject object) {

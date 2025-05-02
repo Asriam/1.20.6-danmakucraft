@@ -582,7 +582,7 @@ public class THObject implements ILuaValue, IGetContainer, ISerializable {
         this.invokeScriptEvent("onTick", this.ofLuaValue());
         this.taskManager.tickTasks();
 
-        if (this.shouldCollision() && this.level().isClientSide) {
+        if (this.shouldCollision() && !this.level().isClientSide) {
             this.collisionLogic();
         }
 

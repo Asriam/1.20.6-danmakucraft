@@ -4,6 +4,7 @@ import com.adrian.thDanmakuCraft.events.GuiEvents;
 import com.adrian.thDanmakuCraft.init.*;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.lua.LuaLoader;
+import com.adrian.thDanmakuCraft.network.syncher.MyEntityDataSerializers;
 import com.adrian.thDanmakuCraft.util.ResourceLoader;
 import com.mojang.logging.LogUtils;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -35,6 +36,7 @@ public class THDanmakuCraftMod
         BlockInit.BLOCKS.register(modEventBus);
         ItemInit.ITEMS.register(modEventBus);
         EntityInit.ENTITIES.register(modEventBus);
+        MyEntityDataSerializers.ENTITY_DATA_SERIALIZERS.register(modEventBus);
         CreativeModeTabInit.CREATIVE_MODE_TABS.register(modEventBus);
         THObjectInit.TH_OBJECTS.register(modEventBus);
         MinecraftForge.EVENT_BUS.register(this);

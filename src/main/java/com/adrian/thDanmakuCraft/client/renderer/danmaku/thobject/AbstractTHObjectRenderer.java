@@ -68,25 +68,25 @@ public abstract class AbstractTHObjectRenderer<T extends THObject>{
         }else if(object.getCollisionType() == CollisionType.SPHERE){
             Color color = THObject.Color(0,255,255,255);
             float size = (float) object.getSize().x;
-            RenderUtil.renderSphere(vertexConsumer,poseStack.last(),1,
+            /*RenderUtil.renderSphere(vertexConsumer,poseStack.last(),1,
                     ConstantUtil.VECTOR3F_ZERO,
                     new Vector3f(size,size,size),
                     6,6,false,
                     Vec2.ZERO,
                     Vec2.ONE,
-                    color,color,color);
+                    color,color,color);*/
         }else if(object.getCollisionType() == CollisionType.ELLIPSOID){
             poseStack.pushPose();
             Vector3f rotation = object.getRotation();
             poseStack.mulPose(new Quaternionf().rotationYXZ(rotation.y,-rotation.x,rotation.z));
             Color color = THObject.Color(0,255,255,255);
-            RenderUtil.renderSphere(vertexConsumer,poseStack.last(),1,
+            /*RenderUtil.renderSphere(vertexConsumer,poseStack.last(),1,
                     ConstantUtil.VECTOR3F_ZERO,
                     object.getSize().toVector3f(),
                     6,6,false,
                     Vec2.ZERO,
                     Vec2.ONE,
-                    color,color,color);
+                    color,color,color);*/
             poseStack.popPose();
 
 
