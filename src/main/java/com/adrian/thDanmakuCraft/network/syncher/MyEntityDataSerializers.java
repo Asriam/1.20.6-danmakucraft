@@ -4,6 +4,9 @@ import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
+import io.netty.buffer.ByteBufInputStream;
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.buffer.Unpooled;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -13,6 +16,10 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.NotNull;
+
+import java.io.IOException;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 public class MyEntityDataSerializers {
 
@@ -32,11 +39,26 @@ public class MyEntityDataSerializers {
         public StreamCodec<? super RegistryFriendlyByteBuf, THObjectContainer> codec() {
             return new StreamCodec<FriendlyByteBuf, THObjectContainer>() {
                 public void encode(@NotNull FriendlyByteBuf byteBuf, @NotNull THObjectContainer container) {
-                    container.encode(byteBuf);
+                    //container.encode(byteBuf);
+                    ByteBufOutputStream bos = new ByteBufOutputStream(byteBuf);
+                    try (GZIPOutputStream gzip = new GZIPOutputStream(bos)) {
+                        FriendlyByteBuf tempBuffer = new FriendlyByteBuf(Unpooled.buffer());
+                        container.encode(tempBuffer);
+                        gzip.write(tempBuffer.array());
+                    } catch (IOException e) {
+                        throw new RuntimeException("Compressing failed!", e);
+                    }
                 }
                 public @NotNull THObjectContainer decode(@NotNull FriendlyByteBuf byteBuf) {
                     THObjectContainer container = new THObjectContainer(null);
-                    container.decode(byteBuf);
+                    //container.decode(byteBuf);
+                    ByteBufInputStream bis = new ByteBufInputStream(byteBuf);
+                    try (GZIPInputStream gzip = new GZIPInputStream(bis)) {
+                        FriendlyByteBuf tempBuffer = new FriendlyByteBuf(Unpooled.wrappedBuffer(gzip.readAllBytes()));
+                        container.decode(tempBuffer);
+                    } catch (IOException e) {
+                        throw new RuntimeException("Decompressing failed!",e);
+                    }
                     return container;
                 }
             };
