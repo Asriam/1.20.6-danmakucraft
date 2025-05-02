@@ -65,6 +65,7 @@ setmetatable(vec3, metatable2)
 ---@param y number
 ---@param z number
 ---@overload fun(vec3:math.Vec3)
+---@overload fun()
 ---@return math.Vec3
 function math.vec3(x,y,z) end
 math.vec3 = vec3
@@ -199,13 +200,29 @@ end
 ---@param a math.Vec3
 ---@param b math.Vec3
 metatable.__add = function(a, b)
-    return vec3.add(a, b)
+    if mytype.isNumber(a) then
+        return vec3.add(vec3.new(a,a,a),b)
+    elseif mytype.isNumber(b) then
+        return vec3.add(a, vec3.new(b,b,b))
+    else
+        return vec3.add(a, b)
+    end
 end
 
 ---@param a math.Vec3
 ---@param b math.Vec3
 metatable.__sub = function(a, b)
-    return vec3.subtract(a, b)
+    if mytype.isNumber(a) then
+        return vec3.subtract(vec3.new(a,a,a),b)
+    elseif mytype.isNumber(b) then
+        return vec3.subtract(a, vec3.new(b,b,b))
+    else
+        return vec3.subtract(a, b)
+    end
+end
+
+metatable.__unm = function(a)
+    return vec3.reverse(a)
 end
 
 ---@param a math.Vec3

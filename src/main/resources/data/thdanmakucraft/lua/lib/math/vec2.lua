@@ -54,7 +54,12 @@ local metatable2 = {
     end
 }
 setmetatable(vec2, metatable2)
---util.vec2 = vec2
+---@param x number
+---@param y number
+---@overload fun(vec2:math.Vec2)
+---@overload fun()
+---@return math.Vec3
+function math.vec2(x,y) end
 math.vec2 = vec2
 
 function vec2._type()
@@ -75,9 +80,15 @@ function vec2:normalize(_vec2)
 end
 
 ---@param _vec2 math.Vec2
----@return math.Vec2
+---@return number
 function vec2:dot(_vec2)
-    return vec2.new(self.x * _vec2.x, self.y * _vec2.y)
+    return self.x * _vec2.x + self.y * _vec2.y
+end
+
+---@param _vec2 math.Vec2
+---@return number
+function vec2:cross(_vec2)
+    return self.x*_vec2.y-self.y*_vec2.x
 end
 
 ---@param _vec2 math.Vec2
@@ -136,7 +147,7 @@ function vec2:rotate(_number)
 end
 
 
----@return math.Vec2
+---@return number
 function vec2:length()
     return math.sqrt(self.x ^ 2 + self.y ^ 2)
 end
@@ -156,11 +167,27 @@ function vec2:lerp(_vec2, t)
 end
 
 metatable.__add = function(a, b)
-    return vec2.add(a, b)
+    if mytype.isNumber(a) then
+        return vec2.add(vec2.new(a,a),b)
+    elseif mytype.isNumber(b) then
+        return vec2.add(a, vec2.new(b,b))
+    else
+        return vec2.add(a, b)
+    end
 end
 
 metatable.__sub = function(a, b)
-    return vec2.subtract(a, b)
+    if mytype.isNumber(a) then
+        return vec2.subtract(vec2.new(a,a),b)
+    elseif mytype.isNumber(b) then
+        return vec2.subtract(a, vec2.new(b,b))
+    else
+        return vec2.subtract(a, b)
+    end
+end
+
+metatable.__unm = function(a)
+    return vec2.reverse(a)
 end
 
 metatable.__mul = function(a, b)

@@ -3,8 +3,10 @@ package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.laser;
 import com.adrian.thDanmakuCraft.client.renderer.MyRenderTypes;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.THBlendMode;
+import com.adrian.thDanmakuCraft.client.renderer.VertexBuilder;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRendererProvider;
+import com.adrian.thDanmakuCraft.client.renderer.shape.SphereVertexHelper;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THLaser;
@@ -109,13 +111,27 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
         Color color = new  Color(0,255,255,255);
         float width = laser.getOffsetWidth(partialTicks)/2;
         float length = laser.getOffsetLength(partialTicks)/2;
-        RenderUtil.renderSphere(vertexConsumer,poseStack.last(),1,
+        /*RenderUtil.renderSphere(vertexConsumer,poseStack.last(),1,
                 ConstantUtil.VECTOR3F_ZERO,
                 new Vector3f(width*0.6f,width*0.6f,length),
                 6,8,false,
                 Vec2.ZERO,
                 Vec2.ONE,
-                color,color,color);
+                color,color,color);*/
+        /*VertexBuilder builder = new VertexBuilder(vertexConsumer);
+        new SphereVertexHelper(
+                poseStack.last().pose(), poseStack.last().normal(),
+                ConstantUtil.VECTOR3F_ZERO,new Vector3f(width*0.6f,width*0.6f,length),
+                6,8,1,color,color
+        ).vertexs((pos1,normal1,color1)->{
+            builder.vertex(pos1).color(color1).normal(normal1);
+        },(pos1,normal1,color1)->{
+            builder.vertex(pos1).color(color1).normal(normal1);
+        },(pos1,normal1,color1)->{
+            //builder.vertex(pos1).color(color1).normal(normal1);
+        },(pos1,normal1,color1)->{
+            //builder.vertex(pos1).color(color1).normal(normal1);
+        });*/
         poseStack.popPose();
     }
 }

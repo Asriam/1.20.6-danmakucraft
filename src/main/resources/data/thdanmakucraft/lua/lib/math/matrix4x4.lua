@@ -8,6 +8,14 @@
 local m4x4 = {}
 local metatable = {__index = m4x4}
 core.registerMetaTable("math.matrix4x4",metatable)
+
+---@overload fun(mat4x4:math.Matrix4x4)
+---@overload fun()
+---@return math.Vec3
+function math.matrix4x4(m11, m12, m13, m14,
+                        m21, m22, m23, m24,
+                        m31, m32, m33, m34,
+                        m41, m42, m43, m44) end
 math.matrix4x4 = m4x4
 
 ---@param m11 number
@@ -58,7 +66,12 @@ local metatble2 = {
         local args = {...}
         table.remove(args,1)
         if #args == 0 then
-            return m4x4.new()
+            return m4x4.new(
+                    1,0,0,0,
+                    0,1,0,0,
+                    0,0,1,0,
+                    0,0,0,1
+            )
         elseif mytype.type(args[1]) == m4x4._type() then
             return m4x4.of(args[1])
         else
@@ -131,19 +144,40 @@ end
 ---@param mat4x4 math.Matrix4x4
 ---@return math.Matrix4x4
 function m4x4:multiply(mat4x4)
-    return multiply(self, mat4x4)
+    --return multiply(self, mat4x4)
+    for i = 1, 4 do
+        for j = 1, 4 do
+            self[i][j] = self[i][1] * mat4x4[1][j] +
+                         self[i][2] * mat4x4[2][j] +
+                         self[i][3] * mat4x4[3][j] +
+                         self[i][4] * mat4x4[4][j]
+        end
+    end
+    return self
 end
 
 ---@param mat4x4 math.Matrix4x4
 ---@return math.Matrix4x4
 function m4x4:add(mat4x4)
-    return add(self, mat4x4)
+    --return add(self, mat4x4)
+    for i = 1, 4 do
+        for j = 1, 4 do
+            self[i][j] = self[i][j] + mat4x4[i][j]
+        end
+    end
+    return self
 end
 
 ---@param mat4x4 math.Matrix4x4
 ---@return math.Matrix4x4
 function m4x4:subtract(mat4x4)
-    return sub(self, mat4x4)
+    --return subtract(self, mat4x4)
+    for i = 1, 4 do
+        for j = 1, 4 do
+            self[i][j] = self[i][j] - mat4x4[i][j]
+        end
+    end
+    return self
 end
 
 ---@param x number

@@ -4,10 +4,6 @@
 --- DateTime: 2025/2/16 上午 02:55
 ---
 
-core.doFile("lib/math/vec2.lua")
-core.doFile("lib/math/vec3.lua")
-core.doFile("lib/math/matrix4x4.lua")
-
 local m = math
 
 ---@param t number
@@ -34,3 +30,7 @@ end
 function m.fma(a,b,c)
     return a*b+c
 end
+
+core.doFile("lib/math/vec2.lua")
+core.doFile("lib/math/vec3.lua")
+core.doFile("lib/math/matrix4x4.lua")

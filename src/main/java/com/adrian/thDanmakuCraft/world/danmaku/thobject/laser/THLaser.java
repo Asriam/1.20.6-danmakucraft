@@ -96,7 +96,7 @@ public class THLaser extends THObject {
 
     public void vectorTo(Vec3 vec3){
         this.length = (float) vec3.length();
-        this.setRotationByDirectionalVector(vec3);
+        this.setRotationByDirectionalVector(new Vec3(-vec3.x,-vec3.y,+vec3.z));
     }
 
     public Vec3 getVector(){

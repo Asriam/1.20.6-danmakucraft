@@ -140,7 +140,7 @@ public class THObjectContainerRenderer {
         RenderSystem.enableBlend();
         if (!objectList.isEmpty()) {
             boolean shouldRenderHitBox = entityRenderDispatcher.shouldRenderHitBoxes();
-            RenderType renderTypeLines = RenderType.lines();
+            RenderType renderTypeLines = RenderType.lineStrip();
             ///Batching
             final Map<RenderType, List<THObject>> map = new HashMap<>();
             for (THObject object : objectList) {
@@ -164,12 +164,12 @@ public class THObjectContainerRenderer {
                             poseStack.pushPose();
                             Vec3 objectPos = object.getOffsetPosition(partialTicks);
                             poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
-                            poseStack.pushPose();
-                            renderer.render(object, objectPos, partialTicks, poseStack, builder);
-                            poseStack.popPose();
-                            if (shouldRenderHitBox && object.collision) {
-                                renderer.renderHitBox(object, objectPos, partialTicks, poseStack, HIT_BOX_BUFFER);
-                            }
+                            //poseStack.pushPose();
+                                renderer.render(object, objectPos, partialTicks, poseStack, builder);
+                            //poseStack.popPose();
+                                if (shouldRenderHitBox && object.collision) {
+                                    renderer.renderHitBox(object, objectPos, partialTicks, poseStack, HIT_BOX_BUFFER);
+                                }
                             poseStack.popPose();
                         }
                     }

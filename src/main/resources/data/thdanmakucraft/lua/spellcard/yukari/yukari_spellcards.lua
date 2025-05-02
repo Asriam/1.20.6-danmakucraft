@@ -58,9 +58,9 @@ function yukari_spellcrad_1:onTick()
         for g=0,(num-1) do
             timer = math.lerp(timer2,timer2+1,g/num)
             local pos = self:getPosition()
-            local rotation = math.vec3.new(0.0,0.0,1.0)
+            local rotation = math.vec3(0.0,0.0,1.0)
             local way = 6
-            local rotate = math.vec2.new(
+            local rotate = math.vec2(
                     Mth.DEG_TO_RAD*(math.pow(timer*0.1,2)+360/way),
                     -Mth.DEG_TO_RAD*(math.pow(timer*0.08,2)+360/way)
             )
@@ -106,7 +106,7 @@ function yukari_spellcrad_2_laser_1:onTick()
     local pos0 = self.data.pos0
     local pos1 = self.data.pos1
     local pos2 = self.data.pos2
-    self:setPosition(pos0+pos1:yRot(-angle))
+    self:setPosition(pos0+pos1:yRot(angle))
     self:vectorTo(pos2:yRot(angle))
 
     local mod = (self.timer+240)%240
@@ -147,7 +147,7 @@ function yukari_spellcrad_2_laser_2:onTick()
     local pos0 = self.data.pos0
     local pos1 = self.data.pos1
     local pos2 = self.data.pos2
-    self:setPosition(pos0+pos1:yRot(-angle))
+    self:setPosition(pos0+pos1:yRot(angle))
     self:vectorTo(pos2:yRot(angle))
 
     local mod = (self.timer+240)%240
@@ -181,16 +181,16 @@ function yukari_spellcrad_2:onInit()
         )
 
         self:createTHLaser(yukari_spellcrad_2_laser_1,
-                {pos0,pos:yRot(-Mth.DEG_TO_RAD*90 * ((i+3)%2-0.5)*2), pos,2.0}
+                {pos0,pos:yRot(Mth.DEG_TO_RAD*90),pos,2.0}
         )
 
-        local pos2 = math.vec3.new(20,0,0):yRot(-Mth.DEG_TO_RAD*90*i)
+        local pos2 = math.vec3(20,0,0):yRot(-Mth.DEG_TO_RAD*90*i)
         self:createTHLaser(yukari_spellcrad_2_laser_2,
                 {pos0,math.vec3.zero,pos2,2.0}
         )
 
         self:createTHLaser(yukari_spellcrad_2_laser_2,
-                {pos0,pos2:yRot(-Mth.DEG_TO_RAD*90 * ((i+3)%2-0.5)*2), pos2,2.0}
+                {pos0,pos2:yRot(Mth.DEG_TO_RAD*90), pos2,2.0}
         )
     end
 end
@@ -199,3 +199,21 @@ function yukari_spellcrad_2:onTick()
     self.data.angle = self.timer/60
 end
 --------------------------------------------------------------------------------------------------
+local test_spellcard_1 = core.defineSpellCardClass("test_spellcard_1")
+function test_spellcard_1:onInit()
+    self:setLifetime(3000)
+    self.data = {}
+    self.autosave:register("data")
+    self.data.laser = self:createTHLaser(nil,{})
+    self.data.laser:setWidth(1.0)
+    self.data.laser:vectorTo(math.vec3(10,0,0))
+    self.data.laser:setLifetime(3000)
+end
+
+function test_spellcard_1:onTick()
+    local mat4x4 = math.matrix4x4():translate(0,0,0):rotateY(self.timer/20)
+    --print(table.unpack(mat4x4))
+    --self.data.laser:vectorTo(mat4x4:transformPositionVec3(math.vec3(10,0,0)))
+    --self.data.laser:vectorTo(math.vec3(10,self.timer/20,0))
+    self.data.laser:vectorTo(math.vec3(10,0,0):yRot(self.timer/20))
+end
