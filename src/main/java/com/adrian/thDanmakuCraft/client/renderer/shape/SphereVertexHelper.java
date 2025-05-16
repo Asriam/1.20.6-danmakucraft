@@ -122,16 +122,16 @@ public class SphereVertexHelper implements ShapeVertexHelper{
                                 RenderUtil.isAngleAcute(real_position[2],QuadNormal,camaraPos) &&
                                 RenderUtil.isAngleAcute(real_position[3],QuadNormal,camaraPos)
                 )) {
-                    if (!inverse) {
-                        helper1.vertex(real_position[0], VertexBuilder.transformNormal(this.normal, normal[0]), startColor);
-                        helper2.vertex(real_position[1], VertexBuilder.transformNormal(this.normal, normal[1]), startColor);
-                        helper3.vertex(real_position[2], VertexBuilder.transformNormal(this.normal, normal[2]), finalColor);
-                        helper4.vertex(real_position[3], VertexBuilder.transformNormal(this.normal, normal[3]), finalColor);
-                    }else{
+                    if (inverse) {
                         helper1.vertex(real_position[3], VertexBuilder.transformNormal(this.normal, normal[3].mul(-1.0f)), finalColor);
                         helper2.vertex(real_position[2], VertexBuilder.transformNormal(this.normal, normal[2].mul(-1.0f)), finalColor);
                         helper3.vertex(real_position[1], VertexBuilder.transformNormal(this.normal, normal[1].mul(-1.0f)), startColor);
                         helper4.vertex(real_position[0], VertexBuilder.transformNormal(this.normal, normal[0].mul(-1.0f)), startColor);
+                    } else {
+                        helper1.vertex(real_position[0], VertexBuilder.transformNormal(this.normal, normal[0]), startColor);
+                        helper2.vertex(real_position[1], VertexBuilder.transformNormal(this.normal, normal[1]), startColor);
+                        helper3.vertex(real_position[2], VertexBuilder.transformNormal(this.normal, normal[2]), finalColor);
+                        helper4.vertex(real_position[3], VertexBuilder.transformNormal(this.normal, normal[3]), finalColor);
                     }
                 }
                 startColor = finalColor;

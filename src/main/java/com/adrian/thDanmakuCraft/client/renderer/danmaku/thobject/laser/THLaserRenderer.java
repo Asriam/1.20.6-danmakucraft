@@ -6,6 +6,7 @@ import com.adrian.thDanmakuCraft.client.renderer.THBlendMode;
 import com.adrian.thDanmakuCraft.client.renderer.VertexBuilder;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRendererProvider;
+import com.adrian.thDanmakuCraft.client.renderer.shape.CylinderVertexHelper;
 import com.adrian.thDanmakuCraft.client.renderer.shape.SphereVertexHelper;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.ConstantUtil;
@@ -49,9 +50,10 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
         int edgeA = 12;
         int edgeB = 8;
         int style = 2;
+        VertexBuilder builder = new VertexBuilder(vertexConsumer);
         switch (style) {
             case 1: {
-                RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 0.02f,
+                RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 2,
                         ConstantUtil.VECTOR3F_ZERO,
                         scale,
                         edgeA, edgeB, false,
@@ -59,7 +61,8 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
                         new Vec2(0.5f, 1.0f),
                         laserColor.multiply(0.8f),
                         laserColor.multiply(0.1f),
-                        laserCoreColor, false, true);
+                        laserCoreColor, false, false);
+                break;
             }
             case 2: {
                 RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 2,
@@ -79,9 +82,35 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
                         new Vec2(0.3f, 1.0f),
                         laserColor.multiply(0.6f),
                         laserColor.multiply(0.3f),
-                        laserCoreColor, false, true);
+                        laserCoreColor, false, false);
+                break;
             }
             case 3: {
+                new CylinderVertexHelper(poseStack.last().pose(),  poseStack.last().normal(),
+                        ConstantUtil.VECTOR3F_ZERO, scale.x*0.6f, scale.y , edgeA, true,
+                        laserCoreColor.multiply(0.6f), laserCoreColor, false)
+                        .vertex((position, normal, color)->{
+                            builder.vertex(position.x, position.y, position.z)
+                                    .color(color.multiply(0.9f))
+                                    .color(color.multiply(0.8f))
+                                    .uv(0.6f, 1.0f)
+                                    .uv(0.6f,1.0f)
+                                    .normal(normal)
+                                    .endVertex();
+                        });
+                new CylinderVertexHelper(poseStack.last().pose(),  poseStack.last().normal(),
+                        ConstantUtil.VECTOR3F_ZERO, scale.x, scale.y , edgeA, true,
+                        laserColor.multiply(0.8f), laserColor, false)
+                        .vertex((position, normal, color)->{
+                            builder.vertex(position.x, position.y, position.z)
+                                    .color(color.multiply(0.8f))
+                                    .color(color.multiply(0.6f))
+                                    .uv(0.0f, 1.0f)
+                                    .uv(0.6f,1.0f)
+                                    .normal(normal)
+                                    .endVertex();
+                });
+                break;
             }
         }
         poseStack.popPose();
