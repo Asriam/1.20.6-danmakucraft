@@ -155,7 +155,7 @@ public class THLaser extends THObject {
 
                 if (CollisionType.Ellipsoid(
                         this.getPosition().add(this.getLaserCenter()),
-                        new Vector3f(width/2*0.6f, width/2*0.6f, length/2*0.9f),
+                        new Vec3(width/2*0.6f, width/2*0.6f, length/2*0.9f),
                         new Vector3f(-r.x, -r.y, -r.z),
                         entity.getBoundingBox())) {
                     this.shouldSetDeadWhenCollision = false;
