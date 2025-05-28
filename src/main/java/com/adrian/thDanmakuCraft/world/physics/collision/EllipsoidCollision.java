@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.world.physics.collision;
 
+import com.adrian.thDanmakuCraft.util.CollisionHelper;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
@@ -18,11 +19,15 @@ public class EllipsoidCollision extends Collision{
         return false;
     }
 
-    public CollisionResult intersectOBB(OBBCollision other) {
+    public CollisionResult intersectWithEllipsoid(EllipsoidCollision other){
         return MISSED;
     }
 
-    public CollisionResult intersectAABB(AABBCollision other) {
+    public CollisionResult intersectWithOBB(OBBCollision other) {
+        return MISSED;
+    }
+
+    public CollisionResult intersectWithAABB(AABBCollision other) {
         return MISSED;
     }
 }

@@ -1,47 +1,45 @@
 package com.adrian.thDanmakuCraft.network;
 
+import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
+import com.adrian.thDanmakuCraft.network.packets.THObjectContainerPacket;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.ChannelBuilder;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.SimpleChannel;
 
 public class PacketHandler {
+
     private static final int PROTOCOL_VERSION = 1;
-    public static final SimpleChannel INSTANCE = ChannelBuilder.named(
-            ResourceLocationUtil.thdanmakucraft("main"))
-            .serverAcceptedVersions((status, version) -> true)
-            .clientAcceptedVersions((status, version) -> true)
+    private static int id = 1;
+    public static final SimpleChannel SIMPLE_CHANNEL = ChannelBuilder
+            .named(ResourceLocationUtil.location(THDanmakuCraftMod.MOD_ID,"main"))
+            .serverAcceptedVersions((status,version) -> true)
+            .clientAcceptedVersions((status,version) -> true)
             .networkProtocolVersion(PROTOCOL_VERSION)
             .simpleChannel();
 
+    public static int id(){
+        return id++;
+    }
     public static void register() {
-        /*
-        INSTANCE.messageBuilder(ServerboundUpdateTHObjectsPacket.class, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(ServerboundUpdateTHObjectsPacket::encode)
-                .decoder(ServerboundUpdateTHObjectsPacket::new)
-                .consumerMainThread(ServerboundUpdateTHObjectsPacket::handle)
+        SIMPLE_CHANNEL.messageBuilder(THObjectContainerPacket.class, id(), NetworkDirection.PLAY_TO_SERVER)
+                .encoder(THObjectContainerPacket::encode)
+                .decoder(THObjectContainerPacket::decode)
+                .consumerMainThread(THObjectContainerPacket::handle)
                 .add();
-        INSTANCE.messageBuilder(ClientboundUpdateTHObjectsPacket.class, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(ClientboundUpdateTHObjectsPacket::encode)
-                .decoder(ClientboundUpdateTHObjectsPacket::new)
-                .consumerMainThread(ClientboundUpdateTHObjectsPacket::handle)
-                .add();
-
-         */
     }
 
     public static void sendToServer(Object msg){
-        INSTANCE.send(msg, PacketDistributor.SERVER.noArg());
+        SIMPLE_CHANNEL.send(msg, PacketDistributor.SERVER.noArg());
     }
 
     public static void sendToPlayer(Object msg, ServerPlayer player){
-        INSTANCE.send(msg, PacketDistributor.PLAYER.with(player));
+        SIMPLE_CHANNEL.send(msg, PacketDistributor.PLAYER.with(player));
     }
 
     public static void sendToAllClient(Object msg){
-        INSTANCE.send(msg, PacketDistributor.ALL.noArg());
+        SIMPLE_CHANNEL.send(msg, PacketDistributor.ALL.noArg());
     }
-
-
 }

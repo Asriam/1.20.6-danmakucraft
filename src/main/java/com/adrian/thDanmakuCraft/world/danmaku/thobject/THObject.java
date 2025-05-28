@@ -582,7 +582,7 @@ public class THObject implements ILuaValue, IGetContainer, ISerializable {
         this.invokeScriptEvent("onTick", this.ofLuaValue());
         this.taskManager.tickTasks();
 
-        if (this.shouldCollision() && !this.level().isClientSide) {
+        if (this.shouldCollision() && !this.isClientSide()) {
             this.collisionLogic();
         }
 
@@ -904,8 +904,8 @@ public class THObject implements ILuaValue, IGetContainer, ISerializable {
         return this.image;
     }
 
-    public static boolean IsValid(THObject object) {
-        return object != null;
+    public boolean isClientSide(){
+        return this.level().isClientSide();
     }
 
     public static Color Color(int r, int g, int b, int a) {

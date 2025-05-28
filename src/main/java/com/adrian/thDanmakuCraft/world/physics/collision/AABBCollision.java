@@ -20,19 +20,21 @@ public class AABBCollision extends Collision{
     @Override
     public CollisionResult intersects(Collision other) {
         if(other instanceof AABBCollision) {
-            return intersects((AABBCollision) other);
+            return new CollisionResult(intersects((AABBCollision) other),null,0.0f);
         }
         return MISSED;
     }
 
     @Override
     public boolean intersectsLite(Collision other) {
+        if(other instanceof AABBCollision) {
+            return intersects((AABBCollision) other);
+        }
         return false;
     }
 
     public CollisionResult intersectsAABB(AABBCollision other) {
         boolean intersects = this.intersects(other.minX(), other.minY(), other.minZ(), other.maxX(), other.maxY(), other.maxZ());
-
         return MISSED;
     }
 
@@ -43,6 +45,10 @@ public class AABBCollision extends Collision{
                 && this.maxY() > minY
                 && this.minZ() < maxZ
                 && this.maxZ() > minZ;
+    }
+
+    public boolean intersects(AABBCollision other){
+        return this.intersects(other.minX(), other.minY(), other.minZ(), other.maxX(), other.maxY(), other.maxZ());
     }
 
     public double minX(){

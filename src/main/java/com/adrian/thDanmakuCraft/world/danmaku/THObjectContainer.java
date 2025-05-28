@@ -2,6 +2,8 @@ package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
+import com.adrian.thDanmakuCraft.network.PacketHandler;
+import com.adrian.thDanmakuCraft.network.packets.THObjectContainerPacket;
 import com.adrian.thDanmakuCraft.script.IScript;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.lua.LuaManager;
@@ -24,6 +26,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.fml.DistExecutor;
 import org.apache.commons.compress.utils.Lists;
 import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaValue;
@@ -239,6 +242,10 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         }
         this.timer++;
         this.ofLuaValue().set("timer",this.timer);
+
+        /*if (this.level().isClientSide()) {
+            PacketHandler.sendToServer(new THObjectContainerPacket(this));
+        }*/
     }
 
     public void setSpellCardName(String name){
@@ -270,7 +277,10 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     }
 
     public Level level(){
-        Level level = this.hostEntity.level();
+        if(this.getHostEntity() == null){
+            return null;
+        }
+        Level level = this.getHostEntity().level();
         if (level == null){
             this.discard();
         }

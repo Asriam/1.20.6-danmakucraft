@@ -4,8 +4,11 @@ import com.adrian.thDanmakuCraft.events.GuiEvents;
 import com.adrian.thDanmakuCraft.init.*;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.lua.LuaLoader;
+import com.adrian.thDanmakuCraft.network.PacketHandler;
 import com.adrian.thDanmakuCraft.network.syncher.MyEntityDataSerializers;
 import com.adrian.thDanmakuCraft.util.ResourceLoader;
+import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
+import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.mojang.logging.LogUtils;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraftforge.common.MinecraftForge;
@@ -15,6 +18,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.network.ChannelBuilder;
+import net.minecraftforge.network.SimpleChannel;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
@@ -27,7 +32,7 @@ public class THDanmakuCraftMod
     // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
     //public static JSLoader JSLOADER;
-    public static ResourceManager RESOURCE_MANAGER;
+    //public static ResourceManager RESOURCE_MANAGER;
 
     public THDanmakuCraftMod(@NotNull FMLJavaModLoadingContext context) {
         IEventBus modEventBus = context.getModEventBus();
@@ -49,6 +54,7 @@ public class THDanmakuCraftMod
     private void commonSetup(final FMLCommonSetupEvent event) {
         //LuaLoader.init();
         //LuaCore.init();
+        //PacketHandler.register();
     }
 
     @SubscribeEvent
