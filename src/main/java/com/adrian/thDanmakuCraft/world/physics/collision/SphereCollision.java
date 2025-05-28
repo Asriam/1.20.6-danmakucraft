@@ -4,21 +4,21 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix3f;
 import org.joml.Vector3f;
 
-public class SphereCollision extends Collision{
+public class SphereCollision extends PositionCollision {
     protected float radius;
     
     public SphereCollision(Vec3 center, float radius) {
-        this.center = center;
+        super(center);
         this.radius = radius;
     }
 
     @Override
-    public CollisionResult intersects(Collision other) {
+    public CollisionResult intersects(BaseCollision other) {
         return MISSED;
     }
 
     @Override
-    public boolean intersectsLite(Collision other) {
+    public boolean intersectsLite(BaseCollision other) {
         return false;
     }
 
@@ -68,8 +68,10 @@ public class SphereCollision extends Collision{
         // Check if the point lies inside the ellipsoid
         double distanceSquared = x * x + y * y + z * z;
         if (distanceSquared <= 1.0) {
+            double distance = Math.sqrt(distanceSquared);
+            double collisionDepth = this.radius - distance * ellipsoidRadii.length();
             Vector3f collisionNormal = transformedSphereCenter.normalize();
-            return new CollisionResult(true, collisionNormal, 0.0f);
+            return new CollisionResult(true, collisionNormal, (float) collisionDepth);
         }
 
         return MISSED;
@@ -80,6 +82,25 @@ public class SphereCollision extends Collision{
     }
 
     public CollisionResult intersectWithAABB(AABBCollision other) {
+        Vec3 boxMin = other.getMin();
+        Vec3 boxMax = other.getMax();
+
+        // Calculate the closest point on the AABB to the sphere's center
+        double closestX = Math.max(boxMin.x(), Math.min(this.center.x(), boxMax.x()));
+        double closestY = Math.max(boxMin.y(), Math.min(this.center.y(), boxMax.y()));
+        double closestZ = Math.max(boxMin.z(), Math.min(this.center.z(), boxMax.z()));
+
+        // Compute the squared distance between the sphere's center and the closest point
+        double distanceSquared = this.center.distanceToSqr(closestX, closestY, closestZ);
+
+        // Check if the sphere intersects the AABB
+        if (distanceSquared <= this.radius * this.radius) {
+            Vec3 closestPoint = new Vec3(closestX, closestY, closestZ);
+            Vector3f collisionNormal = this.center.vectorTo(closestPoint).normalize().toVector3f();
+            double collisionDepth = this.radius - Math.sqrt(distanceSquared);
+            return new CollisionResult(true, collisionNormal, (float) collisionDepth);
+        }
+
         return MISSED;
     }
 

@@ -1,21 +1,20 @@
 package com.adrian.thDanmakuCraft.world.physics.collision;
 
-import com.adrian.thDanmakuCraft.util.CollisionHelper;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
-public class EllipsoidCollision extends Collision{
+public class EllipsoidCollision extends RotatableCollision {
     public EllipsoidCollision(Vec3 center, Vector3f axis, Vector3f size) {
         super(center, axis, size);
     }
 
     @Override
-    public CollisionResult intersects(Collision other) {
+    public CollisionResult intersects(BaseCollision other) {
         return MISSED;
     }
 
     @Override
-    public boolean intersectsLite(Collision other) {
+    public boolean intersectsLite(BaseCollision other) {
         return false;
     }
 

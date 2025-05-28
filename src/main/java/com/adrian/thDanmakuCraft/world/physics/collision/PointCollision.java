@@ -1,13 +1,20 @@
 package com.adrian.thDanmakuCraft.world.physics.collision;
 
-public class PointCollision extends Collision{
+import net.minecraft.world.phys.Vec3;
+
+public class PointCollision extends PositionCollision {
+
+    public PointCollision(Vec3 center) {
+        super(center);
+    }
+
     @Override
-    public CollisionResult intersects(Collision other) {
+    public CollisionResult intersects(BaseCollision other) {
         return null;
     }
 
     @Override
-    public boolean intersectsLite(Collision other) {
+    public boolean intersectsLite(BaseCollision other) {
         return false;
     }
 }
