@@ -1,6 +1,7 @@
 package com.adrian.thDanmakuCraft.world.physics.collision;
 
 import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
 
 public abstract class PositionCollision extends BaseCollision{
 
@@ -20,5 +21,9 @@ public abstract class PositionCollision extends BaseCollision{
 
     public Vec3 getCenter(){
         return center;
+    }
+
+    public Vector3f getCenterVector3f(){
+        return center.toVector3f();
     }
 }

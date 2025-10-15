@@ -31,8 +31,8 @@ public class AABBCollision extends BaseCollision {
         return false;
     }
 
-    public CollisionResult intersectsAABB(AABBCollision other) {
-        boolean intersects = this.intersects(other.minX(), other.minY(), other.minZ(), other.maxX(), other.maxY(), other.maxZ());
+    public CollisionResult intersectsWithAABB(AABBCollision other) {
+        
         return MISSED;
     }
 

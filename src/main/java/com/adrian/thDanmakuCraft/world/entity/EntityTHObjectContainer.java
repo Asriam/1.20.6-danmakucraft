@@ -1,6 +1,8 @@
 package com.adrian.thDanmakuCraft.world.entity;
 
 import com.adrian.thDanmakuCraft.init.EntityInit;
+import com.adrian.thDanmakuCraft.network.PacketHandler;
+import com.adrian.thDanmakuCraft.network.packets.THObjectContainerPacket;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.ByteBufOutputStream;
@@ -13,7 +15,10 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -59,6 +64,9 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     public void tick(){
         this.getContainer().tick();
         //this.setBoundingBox(this.getContainer().getContainerBound());
+        if(FMLEnvironment.dist == Dist.CLIENT) {
+            PacketHandler.sendToServer(new THObjectContainerPacket(this.getContainer()));
+        }
     }
 
     @NotNull

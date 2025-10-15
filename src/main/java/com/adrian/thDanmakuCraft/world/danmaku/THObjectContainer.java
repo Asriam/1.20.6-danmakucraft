@@ -18,11 +18,13 @@ import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THCurvyLaser;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THLaser;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.google.common.collect.Maps;
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.vehicle.Minecart;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -273,18 +275,22 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     }
 
     public Vec3 position() {
-        return this.hostEntity.position();
+        if(this.hostEntity != null) {
+            return this.hostEntity.position();
+        }
+        return Vec3.ZERO;
     }
 
     public Level level(){
-        if(this.getHostEntity() == null){
-            return null;
+        if(this.hostEntity == null){
+            return Minecraft.getInstance().level;
+        }else {
+            Level level = this.hostEntity.level();
+            if (level != null) {
+                return level;
+            }
         }
-        Level level = this.getHostEntity().level();
-        if (level == null){
-            this.discard();
-        }
-        return level;
+        return Minecraft.getInstance().level;
     }
 
     public final void setBound(AABB boundingBox) {

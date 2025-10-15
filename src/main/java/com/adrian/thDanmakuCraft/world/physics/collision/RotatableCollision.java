@@ -1,25 +1,19 @@
 package com.adrian.thDanmakuCraft.world.physics.collision;
 
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public abstract class RotatableCollision extends PositionCollision {
 
-    protected Vector3f eulerAngles;
+    protected Matrix3f rotateMatrix;
     protected Vector3f size; ///半长
 
     public RotatableCollision(Vec3 center, Vector3f axis, Vector3f size) {
         super(center);
         this.update(center, axis, size);
-    }
-    public void rotate(Vector3f rotate){
-        this.eulerAngles.add(rotate);
-    }
-
-    public void setRotation(Vector3f rotate){
-        this.eulerAngles = rotate;
     }
 
     public void scale(float scale){
@@ -34,23 +28,35 @@ public abstract class RotatableCollision extends PositionCollision {
         this.size = size;
     }
 
-    public void update(Vec3 center, Vector3f axis, Vector3f size){
+    public Vector3f getSize(){
+        return size;
+    }
+
+    public void rorate(Vector3f angles){
+        this.rotateMatrix.rotateYXZ(angles.y, angles.x, angles.z);
+    }
+
+    public void setRotation(Vector3f angles){
+        this.rotateMatrix = new Matrix3f().rotateYXZ(angles.y, angles.x, angles.z);
+    }
+
+    public void setRotateMatrix(Matrix3f rotateMatrix){
+        this.rotateMatrix = rotateMatrix;
+    }
+
+    public Matrix3f getRotateMatrix(){
+        return this.rotateMatrix;
+    }
+
+    public void update(Vec3 center, Vector3f angles, Vector3f size){
         this.center = center;
-        this.eulerAngles = axis;
+        this.setRotation(angles);
         this.size = size;
     }
 
-    public Matrix4f getTransformationMatrix() {
-        Matrix4f transformationMatrix = new Matrix4f();
-        transformationMatrix.rotate(new Quaternionf().rotateYXZ(eulerAngles.y, eulerAngles.x, eulerAngles.z)).scale(size);
-        return transformationMatrix;
-    }
-
-    public Vector3f getEulerAngles(){
-        return eulerAngles;
-    }
-
-    public Vector3f getSize(){
-        return size;
+    public void update(Vec3 center, Matrix3f rotateMatrix, Vector3f size){
+        this.center = center;
+        this.rotateMatrix = rotateMatrix;
+        this.size = size;
     }
 }

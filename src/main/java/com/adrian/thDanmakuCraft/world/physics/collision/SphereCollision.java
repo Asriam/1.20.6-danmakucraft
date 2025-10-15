@@ -51,10 +51,9 @@ public class SphereCollision extends PositionCollision {
         // Extract ellipsoid properties
         Vec3 ellipsoidCenter = other.getCenter();
         Vector3f ellipsoidRadii = other.getSize();
-        Vector3f eulerAngles = other.getEulerAngles();
 
         // Compute rotation matrix from Euler angles
-        Matrix3f rotationMatrix = computeRotationMatrixFromEulerAngles(eulerAngles);
+        Matrix3f rotationMatrix = other.getRotateMatrix();
 
         // Transform sphere center into ellipsoid's local space
         Vec3 sphereCenterLocal = this.center.subtract(ellipsoidCenter);
