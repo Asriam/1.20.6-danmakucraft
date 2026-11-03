@@ -25,6 +25,7 @@ import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -89,6 +90,8 @@ public class THObject implements ILuaValue, IGetContainer, ISerializable {
     protected CollisionType collisionType = CollisionType.AABB;
     protected LuaValue luaValueForm;
 
+    private List<String> invalidFuncions =  new ArrayList<>();
+
     public THObject(THObjectType<? extends THObject> type, ITHObjectContainer container) {
         //this.index = container.getObjectManager().getTHObjects().size()-1;
         this.type = type;
@@ -121,6 +124,9 @@ public class THObject implements ILuaValue, IGetContainer, ISerializable {
     public void registerLuaTasks(){
         this.taskManager.canRegister = true;
         this.invokeScriptEvent("onRegisterTasks", this.ofLuaValue(), this.taskManager.ofLuaValue());
+        this.taskManager.registerTask("DeathAnimation",new TaskManager.Task<>((task, target)->{
+            float t = (float) task.lifetime /task.timer;
+        }));
         this.taskManager.canRegister = false;
         this.taskManager.restartLazyTasks();
     }
@@ -174,20 +180,10 @@ public class THObject implements ILuaValue, IGetContainer, ISerializable {
         return this.isSpawned;
     }
 
-    /*public void copyFrom(THObject object){
-        this.positionX = object.positionX;
-        this.positionY = object.positionY;
-        this.positionZ = object.positionZ;
-        this.lastPosition = object.lastPosition;
-        this.prePosition = object.prePosition;
-        this.xRot = object.xRot;
-        this.yRot = object.yRot;
-        this.zRot = object.zRot;
-    }*/
-
     public float getDamage(){
         return this.damage * (1.0f + this.level().getDifficulty().getId() * 0.11f);
     }
+
     public void setDead() {
         this.isDead = true;
         //this.onDead();
@@ -527,19 +523,29 @@ public class THObject implements ILuaValue, IGetContainer, ISerializable {
 
     public void invokeScriptEvent(String eventName, Varargs args) {
         LuaValue luaClass = this.getLuaClass();
+        /*
+        if (!this.invalidFuncions.isEmpty() && this.invalidFuncions.contains(eventName)) {
+            //THDanmakuCraftMod.LOGGER.warn("AtTempted to invoke a script that is probably invalid!");
+            return;
+        }*/
 
         if(luaClass == null || luaClass.isnil()) {
+            //this.invalidFuncions.add(eventName);
             return;
         }
 
         LuaFunction event = null;
-        if (THObjectContainer.scriptEventCache.containsKey(eventName)) {
-            event = THObjectContainer.scriptEventCache.get(eventName);
+        String cacheKey = this.getLuaClassName()+"$"+eventName;
+        if (MyCaches.scriptEventCache.containsKey(cacheKey)) {
+            event = MyCaches.scriptEventCache.get(cacheKey);
         } else {
             LuaValue value = luaClass.get(eventName);
             if(value.isfunction()){
                 event = value.checkfunction();
-                THObjectContainer.scriptEventCache.put(this.getLuaClassName()+"$"+eventName, event);
+                MyCaches.scriptEventCache.put(cacheKey, event);
+            }else {
+                THDanmakuCraftMod.LOGGER.warn(eventName + " is not a valid function!");
+                this.invalidFuncions.add(eventName);
             }
         }
 
@@ -582,7 +588,7 @@ public class THObject implements ILuaValue, IGetContainer, ISerializable {
         this.invokeScriptEvent("onTick", this.ofLuaValue());
         this.taskManager.tickTasks();
 
-        if (this.shouldCollision() && !this.isClientSide()) {
+        if (this.shouldCollide()) {
             this.collisionLogic();
         }
 
@@ -606,31 +612,31 @@ public class THObject implements ILuaValue, IGetContainer, ISerializable {
         return this.container.level();
     }
 
-    public boolean shouldCollision(){
+    public boolean shouldCollide(){
         return this.collision;
     }
+
     public void collisionLogic() {
         List<Entity> entitiesInBound = this.container.getEntitiesInBound();
-        if (entitiesInBound.isEmpty()) {
-            return;
-        }
+        if (!entitiesInBound.isEmpty()) {
+            for (Entity entity : entitiesInBound) {
+                if (!this.canHitUser && entity.equals(this.getContainer().getUser())) {
+                    continue;
+                }
 
-        for (Entity entity : entitiesInBound) {
-            if (!this.canHitUser && entity.equals(this.getContainer().getUser())) {
-                continue;
-            }
-
-            if (this.collisionType == CollisionType.AABB) {
-                AABB aabb = this.getBoundingBox();
-                if (entity.getBoundingBox().intersects(aabb)) {
+                if (this.collisionType == CollisionType.AABB) {
+                    AABB aabb = this.getBoundingBox();
+                    if (entity.getBoundingBox().intersects(aabb)) {
+                        onHit(new EntityHitResult(entity, this.getPosition()));
+                    }
+                } else if (this.collisionType.collisionEntity(this, entity)) {
                     onHit(new EntityHitResult(entity, this.getPosition()));
                 }
-            } else if (this.collisionType.collisionEntity(this, entity)) {
-                onHit(new EntityHitResult(entity, this.getPosition()));
             }
         }
 
         if (this.shouldCollingWithBlock) {
+            //THDanmakuCraftMod.LOGGER.warn("sad"+this.isClientSide());
             if (this.collisionType == CollisionType.AABB) {
                 AABB aabb = this.getBoundingBox();
                 BlockHitResult result = this.level().clip(new ClipContext(
@@ -660,6 +666,8 @@ public class THObject implements ILuaValue, IGetContainer, ISerializable {
                                             new Vec3(box.maxX, box.maxY, box.maxZ),
                                             Direction.getNearest(new Vec3(box.minX, box.minY, box.minZ)),
                                             pos, true);
+                                    //THDanmakuCraftMod.LOGGER.warn("safasfsafafasfas "+this.isClientSide());
+                                    this.setDead();
                                     this.onHit(result);
                                 }
                             }

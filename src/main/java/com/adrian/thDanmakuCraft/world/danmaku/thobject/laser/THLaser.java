@@ -136,8 +136,8 @@ public class THLaser extends THObject {
     }
 
     @Override
-    public boolean shouldCollision(){
-        return this.width > 0.1f && super.shouldCollision();
+    public boolean shouldCollide(){
+        return this.width > 0.1f && super.shouldCollide();
     }
 
     @Override

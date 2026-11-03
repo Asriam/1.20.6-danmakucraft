@@ -1,5 +1,7 @@
 package com.adrian.thDanmakuCraft.client.renderer.entity;
 
+import com.mojang.blaze3d.vertex.MeshData;
+import com.adrian.thDanmakuCraft.client.renderer.compat.LegacyBufferBuilder;
 import com.adrian.thDanmakuCraft.client.renderer.*;
 import com.adrian.thDanmakuCraft.client.renderer.shape.ShapeVertexHelper;
 import com.adrian.thDanmakuCraft.client.renderer.shape.SphereVertexHelper;
@@ -48,9 +50,9 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         }
     }
 
-    private static final BufferBuilder MAGIC_SQUARE_BUFFER = new BufferBuilder(250);
-    private static final BufferBuilder AURA_BUFFER = new BufferBuilder(251);
-    private static final BufferBuilder BACKGROUND_WARP_EFFECT_BUFFER = new BufferBuilder(252);
+    private static final LegacyBufferBuilder MAGIC_SQUARE_BUFFER = new LegacyBufferBuilder(4096);
+    private static final LegacyBufferBuilder AURA_BUFFER = new LegacyBufferBuilder(4096);
+    private static final LegacyBufferBuilder BACKGROUND_WARP_EFFECT_BUFFER = new LegacyBufferBuilder(4096);
 
     private static final IImage.Image spellCardAura = new IImage.Image(ResourceLocationUtil.thdanmakucraft("textures/spellcard/eff_line.png"), 0.0f, 0.0f, 1.0f, 1.0f);
     private static final IImage.Image SPELLCARD_MAGIC_SQUARE = new IImage.Image(ResourceLocationUtil.thdanmakucraft("textures/spellcard/eff_magicsquare.png"), 0.0f, 0.0f, 1.0f, 1.0f);
@@ -73,7 +75,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
             {
                 poseStack.pushPose();
                 PoseStack.Pose pose = poseStack.last();
-                Vec2 rot = THObject.VectorAngleToRadAngle(spellCard.paramsForRender.lastMagicSquareRotation.lerp(spellCard.paramsForRender.magicSquareRotation,Minecraft.getInstance().getPartialTick()));
+                Vec2 rot = THObject.VectorAngleToRadAngle(spellCard.paramsForRender.lastMagicSquareRotation.lerp(spellCard.paramsForRender.magicSquareRotation,Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false)));
                 /*poseStack.mulPose(this.getRenderDispatcher().cameraOrientation()
                         .rotateZ(rotate));*/
                 poseStack.mulPose(new Quaternionf()
@@ -82,10 +84,10 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
                         .rotateZ(rotate));
                 //poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
                 VertexBuilder vertexBuilder = new VertexBuilder(MAGIC_SQUARE_BUFFER);
-                vertexBuilder.positionColorUV(pose.pose(), -scale.x, -scale.y, 0.0f, color, uvStart.x, uvEnd.y);
-                vertexBuilder.positionColorUV(pose.pose(), scale.x, -scale.y, 0.0f, color, uvStart.x, uvStart.y);
-                vertexBuilder.positionColorUV(pose.pose(), scale.x, scale.y, 0.0f, color, uvEnd.x, uvStart.y);
-                vertexBuilder.positionColorUV(pose.pose(), -scale.x, scale.y, 0.0f, color, uvEnd.x, uvEnd.y);
+                vertexBuilder.positionUVColor(pose.pose(), -scale.x, -scale.y, 0.0f, uvStart.x, uvEnd.y, color);
+                vertexBuilder.positionUVColor(pose.pose(), scale.x, -scale.y, 0.0f, uvStart.x, uvStart.y, color);
+                vertexBuilder.positionUVColor(pose.pose(), scale.x, scale.y, 0.0f, uvEnd.x, uvStart.y, color);
+                vertexBuilder.positionUVColor(pose.pose(), -scale.x, scale.y, 0.0f, uvEnd.x, uvEnd.y, color);
                 poseStack.popPose();
             }
         }
@@ -117,10 +119,10 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
                     float v1 = i / (sample / num);
                     float v2 = (i + 1) / (sample / num);
                     VertexBuilder vertexBuilder = new VertexBuilder(AURA_BUFFER);
-                    vertexBuilder.positionColorUV(pose2.pose(), rotation, color, uvStart.x, v1);
-                    vertexBuilder.positionColorUV(pose2.pose(), rotation2, color, uvStart.x, v2);
-                    vertexBuilder.positionColorUV(pose2.pose(), rotation3, color, uvEnd.x, v2);
-                    vertexBuilder.positionColorUV(pose2.pose(), rotation4, color, uvEnd.x, v1);
+                    vertexBuilder.positionUVColor(pose2.pose(), rotation, uvStart.x, v1, color);
+                    vertexBuilder.positionUVColor(pose2.pose(), rotation2, uvStart.x, v2, color);
+                    vertexBuilder.positionUVColor(pose2.pose(), rotation3, uvEnd.x, v2, color);
+                    vertexBuilder.positionUVColor(pose2.pose(), rotation4, uvEnd.x, v1, color);
                 }
             poseStack.popPose();
 
@@ -163,10 +165,10 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
                         Vector3f pos2 = add1.rotateZ(rot2, new Vector3f());
                         Vector3f pos3 = add2.rotateZ(rot2, new Vector3f());
                         Vector3f pos4 = add2.rotateZ(rot1, new Vector3f());
-                        vertexBuilder.positionColorUV(pose.pose(), pos1,  color, uvStart.x, v1);
-                        vertexBuilder.positionColorUV(pose.pose(), pos2, color, uvStart.x, v2);
-                        vertexBuilder.positionColorUV(pose.pose(), pos3, color, uvEnd.x, v2);
-                        vertexBuilder.positionColorUV(pose.pose(), pos4, color, uvEnd.x, v1);
+                        vertexBuilder.positionUVColor(pose.pose(), pos1, uvStart.x, v1, color);
+                        vertexBuilder.positionUVColor(pose.pose(), pos2, uvStart.x, v2, color);
+                        vertexBuilder.positionUVColor(pose.pose(), pos3, uvEnd.x, v2, color);
+                        vertexBuilder.positionUVColor(pose.pose(), pos4, uvEnd.x, v1, color);
                     }
                 }
                 poseStack.popPose();
@@ -176,8 +178,9 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
 
         if(container.shouldApplyBackgroundWarpEffect){
             time = 30.0f;
+            float radius = 20.0f;
             float open2 = timer > time ? 1.0f : (float) Math.pow(Math.min(timer / time,1.0f),0.2f);
-            renderBackgroundWarpEffect(spellCard,container, poseStack, pos, partialTicks,40.0f*open2*close*Mth.lerp((float)Math.pow(Math.max(timeLeft,0.0f),1),0.4f,1.0f),open*close);
+            renderBackgroundWarpEffect(spellCard,container, poseStack, pos, partialTicks,radius*open2*close*Mth.lerp((float)Math.pow(Math.max(timeLeft,0.0f),1),0.4f,1.0f),open*close);
         }
     }
 
@@ -211,8 +214,8 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
     }
 
     public static void beforeRenderEntities(LevelRenderer levelRenderer, float partialTick){
-        MAGIC_SQUARE_BUFFER.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
-        AURA_BUFFER.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
+        MAGIC_SQUARE_BUFFER.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        AURA_BUFFER.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         BACKGROUND_WARP_EFFECT_BUFFER.begin(VertexFormat.Mode.QUADS, MyVertexFormats.POSITION_NORMAL_COLOR);
         BACKGROUND_WARP_EFFECT_BUFFER.color(0,0,0,255);
         //BACKGROUND_WARP_EFFECT_BUFFER.clear();
@@ -222,6 +225,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         RenderType renderType = MyRenderTypes.RENDER_TYPE_SPELLCARD_AURA.apply(
                 new MyRenderTypes.RENDER_TYPE_2D_DANMAKU_CONTEXT(SPELLCARD_MAGIC_SQUARE.getTextureLocation(), THBlendMode.getBlendMode(Blend.add))
         );
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         renderType.setupRenderState();
         RenderSystem.setShaderTexture(0, spellCardAura.getTextureLocation());
         RenderSystem.enableCull();
@@ -259,7 +263,6 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         BufferUploader.drawWithShader(BACKGROUND_WARP_EFFECT_BUFFER.end());
         TEST_RENDER_TARGET.unbindWrite();
         bg_warp_ef_rt.clearRenderState();
-
         target.bindWrite(false);
         GlStateManager._enableBlend();
         RenderSystem.getModelViewMatrix().set(modelViewMat);

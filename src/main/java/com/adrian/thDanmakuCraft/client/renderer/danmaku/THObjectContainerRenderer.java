@@ -1,5 +1,7 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku;
 
+import com.mojang.blaze3d.vertex.MeshData;
+import com.adrian.thDanmakuCraft.client.renderer.compat.LegacyBufferBuilder;
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.client.renderer.*;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
@@ -101,16 +103,17 @@ public class THObjectContainerRenderer {
         return false;
     };
 
-    private static final Map<RenderType,BufferBuilder> buffers = new HashMap<>();
-    private static final BufferBuilder HIT_BOX_BUFFER = new BufferBuilder(896);
-    public static BufferBuilder BUFFER_2 = new BufferBuilder(897);
+    private static final Map<RenderType,LegacyBufferBuilder> buffers = new HashMap<>();
+    private static final LegacyBufferBuilder HIT_BOX_BUFFER = new LegacyBufferBuilder(4096);
+    public static final LegacyBufferBuilder BUFFER_2 = new LegacyBufferBuilder(4096);
+    private static long lastDebugLog = 0L;
 
-    private static BufferBuilder getBuffer(RenderType renderType){
+    private static LegacyBufferBuilder getBuffer(RenderType renderType){
         if (buffers.containsKey(renderType)){
             return buffers.get(renderType);
         }
         return buffers.computeIfAbsent(renderType, (key) -> {
-            BufferBuilder builder = new BufferBuilder(899+buffers.size());
+            LegacyBufferBuilder builder = new LegacyBufferBuilder(899+buffers.size());
             builder.begin(renderType.mode(), renderType.format());
             return builder;
         });
@@ -138,6 +141,10 @@ public class THObjectContainerRenderer {
         }
 
         RenderSystem.enableBlend();
+        if (objectList.isEmpty() && System.currentTimeMillis() - lastDebugLog > 2000L) {
+            lastDebugLog = System.currentTimeMillis();
+            THDanmakuCraftMod.LOGGER.info("[thobject-debug] objectList is EMPTY (nothing to render this frame)");
+        }
         if (!objectList.isEmpty()) {
             boolean shouldRenderHitBox = entityRenderDispatcher.shouldRenderHitBoxes();
             RenderType renderTypeLines = RenderType.lineStrip();
@@ -150,8 +157,8 @@ public class THObjectContainerRenderer {
             for (Map.Entry<RenderType, List<THObject>> entry : map.entrySet()) {
                 var renderType = entry.getKey();
                 var list = entry.getValue();
-                List<THObject> sortedList = sortObjects(list, camX, camY, camZ);
-                BufferBuilder builder = RenderSystem.renderThreadTesselator().getBuilder();
+                List<THObject> sortedList = sortObjects(list, cameraPosition);
+                LegacyBufferBuilder builder = LegacyBufferBuilder.threadBuilder();
                 builder.begin(renderType.mode(), renderType.format());
                 if (shouldRenderHitBox) {
                     HIT_BOX_BUFFER.begin(renderTypeLines.mode(), renderTypeLines.format());
@@ -164,12 +171,12 @@ public class THObjectContainerRenderer {
                             poseStack.pushPose();
                             Vec3 objectPos = object.getOffsetPosition(partialTicks);
                             poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
-                            //poseStack.pushPose();
-                                renderer.render(object, objectPos, partialTicks, poseStack, builder);
-                            //poseStack.popPose();
-                                if (shouldRenderHitBox && object.collision) {
-                                    renderer.renderHitBox(object, objectPos, partialTicks, poseStack, HIT_BOX_BUFFER);
-                                }
+                            //渲染THObject
+                            renderer.render(object, objectPos, partialTicks, poseStack, builder);
+                            //渲染碰撞箱
+                            if (shouldRenderHitBox && object.collision) {
+                                renderer.renderHitBox(object, objectPos, partialTicks, poseStack, HIT_BOX_BUFFER);
+                            }
                             poseStack.popPose();
                         }
                     }
@@ -182,10 +189,22 @@ public class THObjectContainerRenderer {
                 if (shouldApplyEffect()) {
                     THObjectContainerRenderer.TEST_RENDER_TARGET.bindWrite(true);
                 }
+                int buffer2Verts = BUFFER_2.vertexCount();
+                int mainVerts = builder.vertexCount();
                 renderType.setupRenderState();
                 BufferUploader.drawWithShader(BUFFER_2.end());
                 BufferUploader.drawWithShader(builder.end());
                 renderType.clearRenderState();
+                if (System.currentTimeMillis() - lastDebugLog > 2000L) {
+                    lastDebugLog = System.currentTimeMillis();
+                    THDanmakuCraftMod.LOGGER.info("[thobject-debug] objects=" + objectList.size()
+                            + " renderType=" + renderType
+                            + " format=" + (renderType.format() == null ? "null" : renderType.format().getElementMapping().keySet())
+                            + " mode=" + renderType.mode()
+                            + " vertsMain=" + mainVerts
+                            + " vertsBuffer2=" + buffer2Verts
+                            + " depthShader=" + (shader != null));
+                }
                 if (shouldApplyEffect()) {
                     THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
                 }
@@ -246,7 +265,7 @@ public class THObjectContainerRenderer {
         }
     }
 
-    public static List<THObject> sortObjects(List<THObject> list, double camX, double camY, double camZ){
+    public static List<THObject> sortObjects(List<THObject> list, Vec3 cam){
         if (list == null || list.size() <= 1) {
             return list;
         }
@@ -256,7 +275,7 @@ public class THObjectContainerRenderer {
                 if (o1 == null || o2 == null) {
                     return 0;
                 }
-                Vec3 cam = new Vec3(camX, camY, camZ);
+                //Vec3 cam = new Vec3(camX, camY, camZ);
                 return Double.compare(
                         o2.getPosition().distanceToSqr(cam),
                         o1.getPosition().distanceToSqr(cam)
@@ -309,7 +328,7 @@ public class THObjectContainerRenderer {
     }
 
     public static void drawOnScreen(float screenWidth, float screenHeight){
-        BufferBuilder bufferbuilder = RenderSystem.renderThreadTesselator().getBuilder();
+        LegacyBufferBuilder bufferbuilder = LegacyBufferBuilder.threadBuilder();
         bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
         bufferbuilder.vertex(0.0, 0.0, 0.0).endVertex();
         bufferbuilder.vertex(screenWidth, 0.0, 0.0).endVertex();

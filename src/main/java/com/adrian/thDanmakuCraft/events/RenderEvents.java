@@ -54,7 +54,7 @@ public class RenderEvents {
         //GL46.glDepthRange(0.1f,0.5f);
 
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES){
-
+            //THObjectContainerRenderer.beforeRenderEntities(levelRenderer,partialTick);
         }
 
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_WEATHER){
@@ -71,12 +71,13 @@ public class RenderEvents {
     }
 
     public static void beforeRenderEntities(LevelRenderer levelRenderer, float partialTick){
-        //THObjectContainerRenderer.beforeRenderEntities(levelRenderer,partialTick);
         PoseStack poseStack = new PoseStack();
         List<THObject> objects = Lists.newArrayList();
-        for(Entity entity : minecraft.level.entitiesForRendering()){
-            if (entity instanceof EntityTHObjectContainer container){
-                objects.addAll(container.getContainer().getObjectManager().getTHObjects());
+        if (minecraft.level != null) {
+            for(Entity entity : minecraft.level.entitiesForRendering()){
+                if (entity instanceof EntityTHObjectContainer container){
+                    objects.addAll(container.getContainer().getObjectManager().getTHObjects());
+                }
             }
         }
         poseStack.pushPose();
@@ -99,11 +100,11 @@ public class RenderEvents {
     }
 
     public static void afterRenderWeather(LevelRenderer levelRenderer, float partialTick){
-        EntityTHSpellCardRenderer.afterRenderLevel(levelRenderer,partialTick);
+        //EntityTHSpellCardRenderer.afterRenderLevel(levelRenderer,partialTick);
     }
 
     public static void afterRenderLevel(LevelRenderer levelRenderer, float partialTick){
-        //EntityTHSpellCardRenderer.afterRenderLevel(levelRenderer,partialTick);
+        EntityTHSpellCardRenderer.afterRenderLevel(levelRenderer,partialTick);
     }
 
 

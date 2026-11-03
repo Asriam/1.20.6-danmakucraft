@@ -3,6 +3,7 @@ package com.adrian.thDanmakuCraft.lua;
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
+import com.adrian.thDanmakuCraft.world.danmaku.MyCaches;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
@@ -47,7 +48,7 @@ public class LuaCore {
     public LuaCore() {
         //GLOBALS = JsePlatform.standardGlobals();
         this.putAPI();
-        THObjectContainer.scriptEventCache.clear();
+        MyCaches.scriptEventCache.clear();
         luaLoader = LuaLoader.instance;
     }
 

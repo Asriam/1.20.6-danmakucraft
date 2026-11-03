@@ -5,7 +5,7 @@
 ---
 
 core.doFile("spellcard/yukari/yukari_spellcards.lua")
-
+core.doFile("spellcard/test_curved_laser.lua")
 
 function onRegisterItemSpellCard()
 

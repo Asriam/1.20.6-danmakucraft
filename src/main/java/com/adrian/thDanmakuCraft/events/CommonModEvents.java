@@ -7,12 +7,15 @@ import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.registries.THDanmakuCraftRegistries;
 import com.adrian.thDanmakuCraft.util.ResourceLoader;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
+import com.adrian.thDanmakuCraft.world.danmaku.MyCaches;
+import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.event.entity.SpawnPlacementRegisterEvent;
@@ -21,6 +24,8 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.registries.NewRegistryEvent;
 import net.minecraftforge.registries.RegistryBuilder;
+
+import java.util.concurrent.CompletableFuture;
 
 @Mod.EventBusSubscriber(modid = THDanmakuCraftMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class CommonModEvents {

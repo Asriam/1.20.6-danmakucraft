@@ -1,7 +1,7 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
 import com.adrian.thDanmakuCraft.util.Color;
-import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.adrian.thDanmakuCraft.client.renderer.compat.LegacyBufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
@@ -10,15 +10,15 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-import static com.mojang.blaze3d.vertex.BufferVertexConsumer.normalIntValue;
+import static com.adrian.thDanmakuCraft.client.renderer.compat.LegacyBufferBuilder.normalIntValue;
 
 @OnlyIn(Dist.CLIENT)
 public class VertexBuilder {
 
-    private final BufferBuilder builder;
+    private final LegacyBufferBuilder builder;
 
     public VertexBuilder(VertexConsumer builder){
-        this.builder = (BufferBuilder) builder;
+        this.builder = (LegacyBufferBuilder) builder;
     }
 
     public VertexBuilder vertex(double x, double y, double z){

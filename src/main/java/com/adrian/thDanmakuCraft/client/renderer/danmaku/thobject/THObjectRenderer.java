@@ -46,10 +46,10 @@ public class THObjectRenderer extends AbstractTHObjectRenderer<THObject> {
         Vec2 _scale = Vec2.ONE.scale(0.5f);
 
         VertexBuilder builder = new VertexBuilder(vertexConsumer);
-        builder.positionColorUV(posestack$pose.pose(), -_scale.x, -_scale.y, 0.0f, color, uvStart.x, uvEnd.y);
-        builder.positionColorUV(posestack$pose.pose(), _scale.x, -_scale.y, 0.0f, color, uvStart.x, uvStart.y);
-        builder.positionColorUV(posestack$pose.pose(), _scale.x, _scale.y, 0.0f, color, uvEnd.x, uvStart.y);
-        builder.positionColorUV(posestack$pose.pose(), -_scale.x, _scale.y, 0.0f, color, uvEnd.x, uvEnd.y);
+        builder.positionUVColor(posestack$pose.pose(), -_scale.x, -_scale.y, 0.0f, uvStart.x, uvEnd.y, color);
+        builder.positionUVColor(posestack$pose.pose(), _scale.x, -_scale.y, 0.0f, uvStart.x, uvStart.y, color);
+        builder.positionUVColor(posestack$pose.pose(), _scale.x, _scale.y, 0.0f, uvEnd.x, uvStart.y, color);
+        builder.positionUVColor(posestack$pose.pose(), -_scale.x, _scale.y, 0.0f, uvEnd.x, uvEnd.y, color);
         poseStack.popPose();
     }
 }

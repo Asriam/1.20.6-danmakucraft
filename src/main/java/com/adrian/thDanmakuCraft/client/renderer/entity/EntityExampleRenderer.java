@@ -22,7 +22,6 @@ import org.joml.Matrix4f;
 public class EntityExampleRenderer extends EntityRenderer<EntityExample> {
     private static final ResourceLocation TEXTURE_LOCATION = ResourceLocationUtil.thdanmakucraft("textures/danmaku/ball_mid.png");
     private static final ResourceLocation TEXTURE_LOCATION2 = ResourceLocationUtil.thdanmakucraft("textures/danmaku/arrow_big.png");
-    //private static final ResourceLocation TEXTURE_LOCATION = new ResourceLocation("textures/entity/fishing_hook.png");
     private static final RenderType RENDER_TYPE = RenderType.entityCutout(TEXTURE_LOCATION);
 
     public EntityExampleRenderer(EntityRendererProvider.Context context) {
@@ -60,12 +59,12 @@ public class EntityExampleRenderer extends EntityRenderer<EntityExample> {
     }
 
     private static void vertex(VertexConsumer consumer, PoseStack.Pose poseStack, int p_254296_, float p_253632_, int p_254132_, float u, float v) {
-        consumer.vertex(poseStack.pose(), p_253632_ - 0.5F, (float)p_254132_ - 0.5F, 0.0F)
-                .color(255, 255, 255, 255)
-                .uv(u, v)
-                .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(p_254296_)
-                .normal(poseStack, 0.0F, 1.0F, 0.0F)
-                .endVertex();
+        consumer.addVertex(poseStack, p_253632_ - 0.5F, (float)p_254132_ - 0.5F, 0.0F)
+                .setColor(255, 255, 255, 255)
+                .setUv(u, v)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setLight(p_254296_)
+                .setNormal(poseStack, 0.0F, 1.0F, 0.0F);
     }
 
     @Override

@@ -33,10 +33,10 @@ public class PlayerEvents {
         //MyPlayer.onPlayerClone(event);
     }
 
-    @SubscribeEvent
+    /*@SubscribeEvent
     public static void onRegisterCapabilities(RegisterCapabilitiesEvent event) {
         //event.register(THObjectContainer.class);
-    }
+    }*/
 
     //private static final EntityDataAccessor<THObjectContainer> PLAYER_DATA_THOBJECT_CONTAINER = SynchedEntityData.defineId(Player.class, MyEntityDataSerializers.THOBJECT_CONTAINER);
     /*

@@ -92,11 +92,12 @@ public abstract class AbstractTHObjectRenderer<T extends THObject>{
 
         }
 
-        Vec3 vec31 = object.getMotionDirection();
+        //Vec3 vec31 = object.getMotionDirection();
+        Vec3 vec31 = object.getVelocity();
         Matrix4f matrix4f = poseStack.last().pose();
         //Matrix3f matrix3f = poseStack.last().normal();
-        vertexConsumer.vertex(matrix4f, 0.0F, 0.0F, 0.0F).color(0, 0, 255, 255).normal(poseStack.last(), (float)vec31.x, (float)vec31.y, (float)vec31.z).endVertex();
-        vertexConsumer.vertex(matrix4f, (float)(vec31.x * 2.0D), (float)((vec31.y * 2.0D)), (float)(vec31.z * 2.0D)).color(0, 0, 255, 255).normal(poseStack.last(), (float)vec31.x, (float)vec31.y, (float)vec31.z).endVertex();
+        //vertexConsumer.vertex(matrix4f, 0.0F, 0.0F, 0.0F).color(0, 0, 255, 255).normal(poseStack.last(), (float)vec31.x, (float)vec31.y, (float)vec31.z).endVertex();
+        //vertexConsumer.vertex(matrix4f, (float)(vec31.x), (float)((vec31.y)), (float)(vec31.z)).color(0, 0, 255, 255).normal(poseStack.last(), (float)vec31.x, (float)vec31.y, (float)vec31.z).endVertex();
     }
 
 

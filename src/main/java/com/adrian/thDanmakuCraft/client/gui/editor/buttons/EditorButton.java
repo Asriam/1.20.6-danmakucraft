@@ -5,7 +5,8 @@ import com.adrian.thDanmakuCraft.client.renderer.VertexBuilder;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.adrian.thDanmakuCraft.client.renderer.compat.LegacyBufferBuilder;
+import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -36,7 +37,7 @@ public class EditorButton {
     }
 
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick){
-        BufferBuilder builder = EditorScreen.getBufferBuilder();
+        LegacyBufferBuilder builder = EditorScreen.getBufferBuilder();
         builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
         VertexBuilder vertexBuilder = new VertexBuilder(builder);
         Color color = isMouseOver(mouseX,mouseY) ? new Color(200,200,200,255) : new Color(100,100,100,255);
@@ -44,7 +45,7 @@ public class EditorButton {
         vertexBuilder.vertex(xPos+width,yPos,0)          .color(color).endVertex();
         vertexBuilder.vertex(xPos+width,yPos+height,0).color(color).endVertex();
         vertexBuilder.vertex(xPos,yPos+height,0)         .color(color).endVertex();
-        BufferBuilder.RenderedBuffer buffer = builder.end();
+        MeshData buffer = builder.end();
 
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         RenderSystem.disableCull();

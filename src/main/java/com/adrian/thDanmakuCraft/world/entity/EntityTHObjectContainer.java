@@ -64,8 +64,8 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     public void tick(){
         this.getContainer().tick();
         //this.setBoundingBox(this.getContainer().getContainerBound());
-        if(FMLEnvironment.dist == Dist.CLIENT) {
-            PacketHandler.sendToServer(new THObjectContainerPacket(this.getContainer()));
+        if(this.getContainer() != null && FMLEnvironment.dist == Dist.DEDICATED_SERVER) {
+            PacketHandler.sendToAllClient(new THObjectContainerPacket(this.getContainer()));
         }
     }
 

@@ -25,7 +25,7 @@ public class BroomMountRenderer extends EntityRenderer<BroomMount> {
        super.render(entity, xRot, partailTicks, poseStack, bufferSource, combinedOverlay);
        RenderType renderType = this.model.renderType(this.getTextureLocation(entity));
        VertexConsumer vertexconsumer = bufferSource.getBuffer(renderType);
-       this.model.renderToBuffer(poseStack,vertexconsumer,0,combinedOverlay,1.0f,1.0f,1.0f,1.0f);
+       this.model.renderToBuffer(poseStack, vertexconsumer, 0, combinedOverlay, -1);
    }
 
     @Override

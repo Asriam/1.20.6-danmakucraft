@@ -24,7 +24,7 @@ public class PacketHandler {
         return id++;
     }
     public static void register() {
-        SIMPLE_CHANNEL.messageBuilder(THObjectContainerPacket.class, id(), NetworkDirection.PLAY_TO_SERVER)
+        SIMPLE_CHANNEL.messageBuilder(THObjectContainerPacket.class, id(), NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(THObjectContainerPacket::encode)
                 .decoder(THObjectContainerPacket::decode)
                 .consumerMainThread(THObjectContainerPacket::handle)

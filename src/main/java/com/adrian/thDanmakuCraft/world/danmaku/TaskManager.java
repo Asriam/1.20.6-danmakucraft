@@ -43,22 +43,6 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         if(this.tickingTasks.isEmpty()){
             return;
         }
-
-        /*List<LazyTask> removeLazy = Lists.newArrayList();
-        for (LazyTask lazyTask : lazyTasks){
-            AbstractTask<T> task = this.getRegisteredTask(lazyTask.taskName);
-            if (task != null) {
-                task.timer = lazyTask.timer;
-                task.lifetime = lazyTask.lifetime;
-                task.delay = lazyTask.delay;
-                tickingTasks.add(task);
-                removeLazy.add(lazyTask);
-            }
-        }
-        for (LazyTask t : removeLazy){
-            lazyTasks.remove(t);
-        }*/
-
         List<AbstractTask<T>> removeList = Lists.newArrayList();
         for(AbstractTask<T> task : tickingTasks){
             if(task.isAlive()) {
@@ -70,13 +54,13 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
                 removeList.add(task);
             }
         }
-        //THDanmakuCraftMod.LOGGER.warn("ticking tasks!" + tickingTasks);
         for (AbstractTask<T> task : removeList){
             tickingTasks.remove(task);
         }
         removeList.clear();
     }
 
+    /// 注册Task
     public void registerTask(String taskName, AbstractTask<T> task){
         if(!canRegister){
             try {
@@ -101,6 +85,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
     public boolean hasRegisteredTask(String taskName){
         return registryTasks.containsKey(taskName);
     }
+
     public void startTask(String taskName, int lifetime, int startTime){
         if(this.tickingTasks.size() > MAX_TASK_SIZE){
             THDanmakuCraftMod.LOGGER.warn("task list is full! you cannot simultaneously run more than {} tasks!",MAX_TASK_SIZE);
@@ -112,7 +97,6 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
             task.lifetime = lifetime;
             task.startTime = startTime;
             tickingTasks.add(task);
-            //THDanmakuCraftMod.LOGGER.warn("task started! task name:{}",taskName);
         }else {
             THDanmakuCraftMod.LOGGER.warn("Attempted to start a unregistered task! task name:{}",taskName);
         }
@@ -160,6 +144,13 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         }
     }
 
+    public boolean checkIsTaskRunning(String taskName){
+        for(AbstractTask<T> task:this.tickingTasks){
+            return task.taskName.equals(taskName);
+        }
+        return false;
+    }
+
     @Override
     public void encode(FriendlyByteBuf buffer) {
         /// write task list size
@@ -199,7 +190,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         ListTag listtag = new ListTag();
         for (AbstractTask<T> task : this.tickingTasks){
             CompoundTag taskTag = new CompoundTag();
-            taskTag.putString("task_name", task.taskName);
+            taskTag.putString("taskName", task.taskName);
             taskTag.putInt("timer", task.timer);
             taskTag.putInt("lifetime", task.lifetime);
             taskTag.putInt("delay", task.startTime);
@@ -207,7 +198,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         }
         for (LazyTask lazyTask : this.lazyTasks){
             CompoundTag taskTag = new CompoundTag();
-            taskTag.putString("task_name", lazyTask.taskName);
+            taskTag.putString("taskName", lazyTask.taskName);
             taskTag.putInt("timer", lazyTask.timer);
             taskTag.putInt("lifetime", lazyTask.lifetime);
             taskTag.putInt("delay", lazyTask.delay);
@@ -222,7 +213,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         ListTag listtag = compoundTag.getList("Tasks", Tag.TAG_COMPOUND);
         for (Tag _tag : listtag){
             if(_tag instanceof CompoundTag tag){
-                String taskName = tag.getString("task_name");
+                String taskName = tag.getString("taskName");
                 int timer = tag.getInt("timer");
                 int lifetime = tag.getInt("lifetime");
                 int delay = tag.getInt("delay");
@@ -238,7 +229,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         public int timer = 0;
         public int lifetime = 0;
         public int startTime = 0;
-        public String taskName;
+        protected String taskName;
 
         public AbstractTask(){
         }
@@ -249,6 +240,10 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         }
 
         abstract AbstractTask<T> copy();
+
+        public String getTaskName(){
+            return this.taskName;
+        }
     }
 
     public static class Task<T> extends AbstractTask<T> {

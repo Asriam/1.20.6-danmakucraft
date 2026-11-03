@@ -100,7 +100,8 @@ void main() {
     /*if(WarpedSenceDepth < aruaDepth){
         discard;
     }*/
-    vec4 screen_color = texture(ScreenBuffer, uv2);
+    //vec4 screen_color = texture(ScreenBuffer, uv2);
+    vec4 screen_color = texture(ScreenBuffer, mix(texCoord,uv2,gl_FragCoord.z));
     intersection = mix(vec4(1), vec4(0), pow(clamp(abs(aruaDepth-WarpedSenceDepth) / threshold, 0.0, 1.0),3));
     vec4 outColor = overlay(FogColor,screen_color) + vec4(vertexColor.rgb*vertexColor.a*rim*(1.0f-intersection.r),rim*(1.0f-intersection.r));
     //fragColor = linear_fog(outColor, depth, FogStart, FogEnd, FogColor);

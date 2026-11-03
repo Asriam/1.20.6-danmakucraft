@@ -3,7 +3,7 @@ package com.adrian.thDanmakuCraft.client.gui.editor;
 import com.adrian.thDanmakuCraft.client.gui.editor.buttons.EditorButton;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.adrian.thDanmakuCraft.client.renderer.compat.LegacyBufferBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -17,7 +17,7 @@ import java.util.Map;
 @OnlyIn(Dist.CLIENT)
 public class EditorScreen extends Screen {
 
-    private static final BufferBuilder EDITOR_BUFFER_BUILDER = new BufferBuilder(223);
+    private static final LegacyBufferBuilder EDITOR_BUFFER_BUILDER = new LegacyBufferBuilder(223);
     private final Map<String,List<EditorButton>> BUTTON_LISTS = Maps.newHashMap();
 
     public EditorScreen() {
@@ -69,7 +69,7 @@ public class EditorScreen extends Screen {
         this.addButton("main", lastButton);
     }
 
-    public static BufferBuilder getBufferBuilder(){
+    public static LegacyBufferBuilder getBufferBuilder(){
         return EDITOR_BUFFER_BUILDER;
     }
 }

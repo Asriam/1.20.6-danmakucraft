@@ -76,7 +76,7 @@ end
 
 
 ---@type Class|THObjectContainer
-local container = core.defineClass("testContainer")
+local container = core.defineSpellCardClass("testContainer")
 function container:onConstruct()
     --self.autosave:register("sad")
     --self.autosave:register("userRot")
@@ -117,7 +117,7 @@ function testBullet3:onInit()
 end
 
 ---@type Class|THObjectContainer
-local container2 = core.defineClass("testContainer2")
+local container2 = core.defineSpellCardClass("testContainer2")
 function container2:onInit()
     self:setSpellCardName("境符「波與粒的境界」")
     self:getMaxObjectAmount(10)
@@ -165,7 +165,7 @@ function container2:onTick()
 end
 
 ---@type Class|THObjectContainer
-local container3 = core.defineClass("testContainer3")
+local container3 = core.defineSpellCardClass("testContainer3")
 function container3:onInit()
     self:setSpellCardName("test")
     local _s = 0

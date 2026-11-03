@@ -2,7 +2,7 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '[6.0.19,)'
+    id 'net.minecraftforge.gradle' version '[6.0.24,6.2)'
     id 'org.spongepowered.mixin' version '0.7.+'
 }
 
@@ -78,12 +78,12 @@ repositories {
 dependencies {
 
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
     minecraftLibrary 'org.luaj:luaj-jse:3.0.1'
     jarJar(group: 'org.luaj', name: 'luaj-jse', version: '[2.0,3.0)') {
         // Includes examplelib 2.8.0
         jarJar.pin(it, '3.0.1')
     }
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 
 tasks.named('processResources', ProcessResources).configure {
@@ -114,6 +114,17 @@ tasks.named('jar', Jar).configure {
     }
 }
 
+// 1.21.1 的 ForgeGradle 在自訂 sourceSets 輸出目錄（見檔案後段）之後，
+// addMixinsToJar 不會把編譯期產生的 refmap 併進成品，導致正式環境（混淆名稱）
+// 下 mixin 找不到 renderLevel。這裡明確把 refmap 補進 jar 與 jarJar。
+tasks.withType(Jar).configureEach {
+    if (name == 'jar' || name == 'jarJar') {
+        from(layout.buildDirectory.dir('tmp/compileJava')) {
+            include 'mixins.thdanmakucraft.refmap.json'
+        }
+    }
+}
+
 publishing {
     publications {
         register('mavenJava', MavenPublication) {
@@ -129,6 +140,10 @@ publishing {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+    // 1.21.1 的 Mixin 註解處理 + 完整 classpath 需要較大的編譯器記憶體，
+    // 否則 javac 錯誤恢復階段會 OutOfMemoryError 並讓建置卡住。
+    options.forkOptions.memoryMaximumSize = '3g'
+    options.forkOptions.memoryInitialSize = '1g'
 }
 
 eclipse {

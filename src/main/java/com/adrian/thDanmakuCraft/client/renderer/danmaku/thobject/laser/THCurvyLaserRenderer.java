@@ -194,10 +194,6 @@ public class THCurvyLaserRenderer extends AbstractTHObjectRenderer<THCurvyLaser>
                         builder.positionColorColorUvUvNormal(pose_, calculatedPos4_1, coreColor, GRAY, 0.5f, 2.0f, 0.0f, 2.0f, pose.normal(), normal4_1);
                         builder.positionColorColorUvUvNormal(pose_, calculatedPos4_2, coreColor, GRAY, 0.5f, 2.0f, 0.0f, 2.0f, pose.normal(), normal4_2);
                         builder.positionColorColorUvUvNormal(pose_, calculatedPos3_2, coreColor, GRAY, 0.5f, 2.0f, 0.0f, 2.0f, pose.normal(), normal3_2);
-                        /*builder.vertex(pose_,calculatedPos3_1).color(coreColor).color(GRAY).uv(0.5f,2.0f).uv(0.0f,2.0f).normal(pose.normal(), normal3_1).endVertex();
-                        builder.vertex(pose_,calculatedPos4_1).color(coreColor).color(GRAY).uv(0.5f,2.0f).uv(0.0f,2.0f).normal(pose.normal(), normal4_1).endVertex();
-                        builder.vertex(pose_,calculatedPos4_2).color(coreColor).color(GRAY).uv(0.5f,2.0f).uv(0.0f,2.0f).normal(pose.normal(), normal4_2).endVertex();
-                        builder.vertex(pose_,calculatedPos3_2).color(coreColor).color(GRAY).uv(0.5f,2.0f).uv(0.0f,2.0f).normal(pose.normal(), normal3_2).endVertex();*/
 
                         //external render
                         Vector3f calculatedPos1_1 = lastNodePos_1[i] == null ? aaa1.scale(posA).add(_pos1).toVector3f() : lastNodePos_1[i];
@@ -209,15 +205,11 @@ public class THCurvyLaserRenderer extends AbstractTHObjectRenderer<THCurvyLaser>
                         lastNodePos_1[i] = calculatedPos2_1;
                         lastNodePos_2[i] = calculatedPos2_2;
 
-                        builder = new VertexBuilder(vertexConsumer);
+                        //builder = new VertexBuilder(vertexConsumer);
                         builder.positionColorColorUvUvNormal(pose_, calculatedPos1_1, laserColor, coreColor2, 0.4f, 2.0f, -0.1f, 2.0f, pose.normal(), normal3_1);
                         builder.positionColorColorUvUvNormal(pose_, calculatedPos2_1, laserColor, coreColor2, 0.4f, 2.0f, -0.1f, 2.0f, pose.normal(), normal4_1);
                         builder.positionColorColorUvUvNormal(pose_, calculatedPos2_2, laserColor, coreColor2, 0.4f, 2.0f, -0.1f, 2.0f, pose.normal(), normal4_2);
                         builder.positionColorColorUvUvNormal(pose_, calculatedPos1_2, laserColor, coreColor2, 0.4f, 2.0f, -0.1f, 2.0f, pose.normal(), normal3_2);
-                        /*builder.vertex(pose_,calculatedPos1_1).color(laserColor).color(coreColor2).uv(0.4f,2.0f).uv(-0.1f,2.0f).normal(pose.normal(), normal3_1).endVertex();
-                        builder.vertex(pose_,calculatedPos2_1).color(laserColor).color(coreColor2).uv(0.4f,2.0f).uv(-0.1f,2.0f).normal(pose.normal(), normal4_1).endVertex();
-                        builder.vertex(pose_,calculatedPos2_2).color(laserColor).color(coreColor2).uv(0.4f,2.0f).uv(-0.1f,2.0f).normal(pose.normal(), normal4_2).endVertex();
-                        builder.vertex(pose_,calculatedPos1_2).color(laserColor).color(coreColor2).uv(0.4f,2.0f).uv(-0.1f,2.0f).normal(pose.normal(), normal3_2).endVertex();*/
 
                     }
                 }

@@ -24,26 +24,26 @@ public class THObjectContainerPacket {
 
     public static void encode(THObjectContainerPacket packet, FriendlyByteBuf byteBuf){
         //packet.container.encode(byteBuf);
-        /*ByteBufOutputStream bos = new ByteBufOutputStream(byteBuf);
+        ByteBufOutputStream bos = new ByteBufOutputStream(byteBuf);
         try (GZIPOutputStream gzip = new GZIPOutputStream(bos)) {
             FriendlyByteBuf tempBuffer = new FriendlyByteBuf(Unpooled.buffer());
             packet.container.encode(tempBuffer);
             gzip.write(tempBuffer.array());
         } catch (IOException e) {
             throw new RuntimeException("Compressing failed!", e);
-        }*/
+        }
     }
 
     public static THObjectContainerPacket decode(FriendlyByteBuf byteBuf){
         THObjectContainer container = new THObjectContainer(null);
         //container.decode(byteBuf);
-        /*ByteBufInputStream bis = new ByteBufInputStream(byteBuf);
+        ByteBufInputStream bis = new ByteBufInputStream(byteBuf);
         try (GZIPInputStream gzip = new GZIPInputStream(bis)) {
             FriendlyByteBuf tempBuffer = new FriendlyByteBuf(Unpooled.wrappedBuffer(gzip.readAllBytes()));
             container.decode(tempBuffer);
         } catch (IOException e) {
             throw new RuntimeException("Decompressing failed!",e);
-        }*/
+        }
         return new THObjectContainerPacket(container);
     }
 

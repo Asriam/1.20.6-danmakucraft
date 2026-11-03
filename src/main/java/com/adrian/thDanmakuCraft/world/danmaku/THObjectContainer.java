@@ -164,7 +164,6 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         return this.luaClass;
     }
 
-    public static final Map<String, LuaFunction> scriptEventCache = Maps.newHashMap();
     //private final Map<String,LuaValue> scriptEventCache = Maps.newHashMap();
     public void invokeScriptEvent(String eventName, LuaValue... args){
         if(LuaValueUtil.isNotValid(this.luaClass)) {
@@ -174,24 +173,16 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
             }
             this.luaClass = luaClass1;
         }
-        //LuaValue event = this.luaClass.get(eventName);
-        /*if(!event.isnil() && event.isfunction()){
-            try {
-                event.checkfunction().invoke(args);
-            }catch (Exception e){
-                THDanmakuCraftMod.LOGGER.error("Failed invoke script!", e);
-                this.discard();
-            }
-        }*/
 
         LuaFunction event = null;
-        if (THObjectContainer.scriptEventCache.containsKey(eventName)) {
-            event = THObjectContainer.scriptEventCache.get(eventName);
+        String cacheKey = this.getLuaClassName()+"$"+eventName;
+        if (MyCaches.scriptEventCache.containsKey(cacheKey)) {
+            event = MyCaches.scriptEventCache.get(cacheKey);
         } else {
             LuaValue value = luaClass.get(eventName);
             if(value.isfunction()){
                 event = value.checkfunction();
-                THObjectContainer.scriptEventCache.put(this.getLuaClassName()+"$"+eventName, event);
+                MyCaches.scriptEventCache.put(cacheKey, event);
             }
         }
         if (event != null) {
