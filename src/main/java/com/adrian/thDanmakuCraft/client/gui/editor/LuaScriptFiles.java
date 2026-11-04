@@ -42,7 +42,8 @@ public final class LuaScriptFiles {
     /** 唯讀來源，順序決定檔案管理器裡的分類順序。 */
     public static final List<BuiltinRoot> BUILTIN_ROOTS = List.of(
             new BuiltinRoot("apidoc", "data/thdanmakucraft/lua/apidoc"),
-            new BuiltinRoot("lib", "data/thdanmakucraft/lua/lib")
+            new BuiltinRoot("lib", "data/thdanmakucraft/lua/lib"),
+            new BuiltinRoot("lua53", "data/thdanmakucraft/lua/Lua53")
     );
 
     private static List<String> cachedBuiltinFiles;

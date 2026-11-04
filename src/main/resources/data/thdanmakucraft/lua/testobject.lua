@@ -16,4 +16,3 @@ function object:onTick()
 end
 
 return object
-

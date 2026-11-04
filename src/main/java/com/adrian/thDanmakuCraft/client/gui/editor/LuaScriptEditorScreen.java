@@ -156,6 +156,10 @@ public class LuaScriptEditorScreen extends Screen {
         boolean readOnly;
     }
 
+    /** 目前緩衝裡解析出來的自訂符號（local / 全域 / 參數…），依內容雜湊快取。 */
+    private int symbolCacheHash = Integer.MIN_VALUE;
+    private List<LuaSymbolIndex.Symbol> symbolCache = List.of();
+
     /** 已開啟過的檔案緩衝（key = 顯示路徑）。 */
     private final Map<String, Buffer> buffers = new HashMap<>();
 
@@ -652,6 +656,7 @@ public class LuaScriptEditorScreen extends Screen {
         return switch (category) {
             case "apidoc" -> "內建 API";
             case "lib" -> "內建工具庫";
+            case "lua53" -> "Lua 5.3 標準庫";
             default -> category;
         };
     }
@@ -2025,6 +2030,17 @@ public class LuaScriptEditorScreen extends Screen {
         this.completionSelected = 0;
     }
 
+    /** 目前緩衝的自訂符號；內容沒變就直接用快取。 */
+    private List<LuaSymbolIndex.Symbol> documentSymbols() {
+        String source = this.content();
+        int hash = source.hashCode();
+        if (hash != this.symbolCacheHash) {
+            this.symbolCacheHash = hash;
+            this.symbolCache = LuaSymbolIndex.parse(source);
+        }
+        return this.symbolCache;
+    }
+
     /** 依游標前的識別字重新篩選；沒有前綴且不是手動開啟時自動關閉。 */
     private void updateCompletion() {
         if (!this.completionActive && !this.completionShowAll) {
@@ -2055,6 +2071,17 @@ public class LuaScriptEditorScreen extends Screen {
             return;
         }
         List<LuaApiIndex.Entry> matches = new ArrayList<>();
+        if (this.completionReceiver.isEmpty()) {
+            // 自己寫的 local / 全域 / 參數優先，排在最前面
+            for (LuaSymbolIndex.Symbol symbol : this.documentSymbols()) {
+                if (prefix.isEmpty() || symbol.name().startsWith(prefix)) {
+                    matches.add(new LuaApiIndex.Entry(symbol.name(), symbol.detail(), "", ""));
+                    if (matches.size() >= COMPLETION_ROWS) {
+                        break;
+                    }
+                }
+            }
+        }
         List<LuaApiIndex.Entry> candidates = this.completionReceiver.isEmpty()
                 ? LuaApiIndex.entries()
                 : LuaApiIndex.entriesFor(this.completionReceiver);
