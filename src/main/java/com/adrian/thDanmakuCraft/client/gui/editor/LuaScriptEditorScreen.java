@@ -145,8 +145,12 @@ public class LuaScriptEditorScreen extends Screen {
 
     /** 分成「腳本」與「內建 API」兩個分類，標題列插在中間。 */
     private List<BrowserRow> browserRows = new ArrayList<>();
-    /** 已收合的資料夾（apidoc / lib）。 */
+    /** 已收合的分類標題（腳本 / 內建 API / 內建工具庫），預設展開。 */
     private final Set<String> collapsedGroups = new HashSet<>();
+    /** 已展開的資料夾（預設收合，所以記錄的是「展開」而不是「收合」）。 */
+    private final Set<String> expandedDirs = new HashSet<>();
+    /** 開檔後要自動展開的路徑（只生效一次，避免使用者手動收合又被拉開）。 */
+    private String revealPath;
     /** 檔案管理器的第一列（獨立於選取項，滑鼠滾輪／拖曳捲軸時改變）。 */
     private int browserScroll;
     private int browserSelected;
@@ -236,6 +240,7 @@ public class LuaScriptEditorScreen extends Screen {
 
     private void openFile(String name) {
         this.readOnly = false;
+        this.revealPath = name;
         this.fileName = name;
         this.filePath = scriptsDir().resolve(this.fileName);
         this.undoStack.clear();
@@ -284,6 +289,7 @@ public class LuaScriptEditorScreen extends Screen {
     private void openBuiltin(String displayPath) {
         this.readOnly = true;
         this.fileName = displayPath;
+        this.revealPath = displayPath;
         this.filePath = null;
         this.undoStack.clear();
         this.redoStack.clear();
@@ -343,6 +349,10 @@ public class LuaScriptEditorScreen extends Screen {
     /** 重新掃描：內建資料夾在最上，腳本（含子資料夾）在最後。 */
     /** 重新掃描：內建資料夾在最上，腳本（含子資料夾）在最後。 */
     private void refreshFileList() {
+        if (this.revealPath != null) {
+            this.reveal(this.revealPath);
+            this.revealPath = null;
+        }
         String previousKey = this.pendingSelectionKey != null ? this.pendingSelectionKey : this.selectedKey();
         this.pendingSelectionKey = null;
 
@@ -373,6 +383,25 @@ public class LuaScriptEditorScreen extends Screen {
 
         this.browserRows = rows;
         this.restoreSelection(previousKey);
+    }
+
+    /** 展開某個檔案的所有上層資料夾，讓它出現在清單裡（資料夾鍵含 apidoc/ 這類前綴）。 */
+    private void reveal(String path) {
+        if (path == null) {
+            return;
+        }
+        String normalized = path.replace('\\', '/');
+        for (LuaScriptFiles.BuiltinRoot root : LuaScriptFiles.BUILTIN_ROOTS) {
+            if (normalized.equals(root.name()) || normalized.startsWith(root.name() + "/")) {
+                this.collapsedGroups.remove(root.name());
+                break;
+            }
+        }
+        int slash = normalized.indexOf('/');
+        while (slash > 0) {
+            this.expandedDirs.add(normalized.substring(0, slash));
+            slash = normalized.indexOf('/', slash + 1);
+        }
     }
 
     private String selectedKey() {
@@ -443,10 +472,10 @@ public class LuaScriptEditorScreen extends Screen {
         for (String dir : childDirs.getOrDefault(parentDir, List.of())) {
             String relative = dir.substring(parentDir.isEmpty() ? 0 : parentDir.length() + 1);
             String full = pathPrefix + dir;
-            boolean collapsed = this.collapsedGroups.contains(collapsePrefix + dir);
-            String marker = collapsed ? "\u25B6 " : "\u25BC ";
+            boolean expanded = this.expandedDirs.contains(full);
+            String marker = expanded ? "\u25BC " : "\u25B6 ";
             rows.add(new BrowserRow(marker + relative + "/", null, null, full, depth, null));
-            if (!collapsed) {
+            if (expanded) {
                 this.addNode(rows, dir, pathPrefix, collapsePrefix, childDirs, childFiles, childNames, depth + 1);
             }
         }
@@ -465,6 +494,14 @@ public class LuaScriptEditorScreen extends Screen {
     private void toggleGroup(String group) {
         if (!this.collapsedGroups.remove(group)) {
             this.collapsedGroups.add(group);
+        }
+        this.refreshFileList();
+    }
+
+    /** 資料夾預設收合，所以這裡切換的是「展開」狀態。 */
+    private void toggleFolder(String directory) {
+        if (!this.expandedDirs.remove(directory)) {
+            this.expandedDirs.add(directory);
         }
         this.refreshFileList();
     }
@@ -1094,7 +1131,7 @@ public class LuaScriptEditorScreen extends Screen {
                 }
             } else if (row.isFolder()) {
                 this.browserSelected = index;
-                this.toggleGroup(row.collapseKey());
+                this.toggleFolder(row.directory());
             } else {
                 this.browserSelected = index;
                 if (!row.entry().builtin()) {
