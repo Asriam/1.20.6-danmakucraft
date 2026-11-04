@@ -118,6 +118,8 @@ public class LuaScriptEditorScreen extends Screen {
     private List<BrowserRow> browserRows = new ArrayList<>();
     /** 已收合的資料夾（apidoc / lib）。 */
     private final Set<String> collapsedGroups = new HashSet<>();
+    /** 檔案管理器的第一列（獨立於選取項，滑鼠滾輪／拖曳捲軸時改變）。 */
+    private int browserScroll;
     private int browserSelected;
     /** 是否已嘗試補做 init()，避免每幀重試。 */
     private boolean reinitRequested;
@@ -125,6 +127,13 @@ public class LuaScriptEditorScreen extends Screen {
 
     /** 目前開的是不是 jar 內的唯讀 apidoc。 */
     private boolean readOnly;
+
+    // ---- 捲軸 ----
+    private static final int SCROLLBAR_WIDTH = 4;
+    private static final int DRAG_NONE = -1;
+    private static final int DRAG_EDITOR = 0;
+    private static final int DRAG_BROWSER = 1;
+    private int scrollbarDrag = DRAG_NONE;
 
     /** 存檔時檢查到的語法錯誤行（1 起算，0 = 沒有錯誤）。 */
     private int syntaxErrorLine;
@@ -487,6 +496,10 @@ public class LuaScriptEditorScreen extends Screen {
         }
         graphics.disableScissor();
 
+        Scrollbar editorBar = this.editorScrollbar();
+        this.drawScrollbar(graphics, editorBar, this.scrollbarDrag == DRAG_EDITOR
+                || this.hitScrollbar(editorBar, mouseX, mouseY));
+
         this.drawCursor(graphics, textLeft, visibleLines, statusTop);
         this.renderCompletion(graphics, textLeft);
         if (this.browserOpen) {
@@ -521,9 +534,16 @@ public class LuaScriptEditorScreen extends Screen {
         return Math.max(1, (browserActionTop() - (browserTop() + 20)) / (LINE_HEIGHT + 1));
     }
 
+    /** 讓選取項保持在可視範圍內，並回傳實際的第一列。 */
     private int browserListStart(int rows) {
-        return Math.max(0, Math.min(this.browserSelected - rows + 1,
-                Math.max(0, this.browserRows.size() - rows)));
+        if (this.browserSelected < this.browserScroll) {
+            this.browserScroll = this.browserSelected;
+        } else if (this.browserSelected >= this.browserScroll + rows) {
+            this.browserScroll = this.browserSelected - rows + 1;
+        }
+        int max = Math.max(0, this.browserRows.size() - rows);
+        this.browserScroll = Math.max(0, Math.min(this.browserScroll, max));
+        return this.browserScroll;
     }
 
     private void renderBrowser(GuiGraphics graphics, int mouseX, int mouseY) {
@@ -572,6 +592,10 @@ public class LuaScriptEditorScreen extends Screen {
                     x + 4, rowY, rowColor, false);
         }
 
+
+        Scrollbar browserBar = this.browserScrollbar();
+        this.drawScrollbar(graphics, browserBar, this.scrollbarDrag == DRAG_BROWSER
+                || this.hitScrollbar(browserBar, mouseX, mouseY));
 
         graphics.fill(x + 1, actionTop - 3, x + w - 1, actionTop - 2, 0xFF3B4252);
         for (int i = 0; i < BROWSER_ACTIONS.length; i++) {
@@ -759,6 +783,21 @@ public class LuaScriptEditorScreen extends Screen {
         if (this.dialog != Dialog.NONE) {
             return true;
         }
+        Scrollbar editorBar = this.editorScrollbar();
+        if (editorBar.maxScroll() > 0 && this.hitScrollbar(editorBar, mouseX, mouseY)) {
+            this.scrollbarDrag = DRAG_EDITOR;
+            this.scroll = this.scrollForMouse(editorBar, mouseY);
+            return true;
+        }
+        if (this.browserOpen) {
+            Scrollbar bar = this.browserScrollbar();
+            if (bar.maxScroll() > 0 && this.hitScrollbar(bar, mouseX, mouseY)) {
+                this.scrollbarDrag = DRAG_BROWSER;
+                this.browserScroll = this.scrollForMouse(bar, mouseY);
+                return true;
+            }
+        }
+
         if (this.handleTopBarClick(mouseX, mouseY)) {
             return true;
         }
@@ -924,6 +963,14 @@ public class LuaScriptEditorScreen extends Screen {
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         if (this.font == null) {
             return false;
+        }
+        if (this.browserOpen && mouseX >= PADDING && mouseX <= PADDING + BROWSER_WIDTH
+                && mouseY >= browserTop() && mouseY <= browserActionTop()) {
+            int visible = browserListRows();
+            int max = Math.max(0, this.browserRows.size() - visible);
+            this.browserScroll = Math.max(0, Math.min(max,
+                    this.browserScroll - (int) Math.signum(scrollY) * 2));
+            return true;
         }
         int statusTop = this.height - STATUS_HEIGHT;
         int visibleLines = Math.max(1, (statusTop - TEXT_TOP) / LINE_HEIGHT);
@@ -1730,6 +1777,84 @@ public class LuaScriptEditorScreen extends Screen {
         this.cursorLine = target;
         this.cursorColumn = 0;
         this.ensureCursorVisible();
+    }
+
+    // ------------------------------------------------------------------ 捲軸
+
+    private record Scrollbar(int left, int top, int height, int thumbTop, int thumbHeight, int maxScroll) {
+    }
+
+    private Scrollbar editorScrollbar() {
+        int statusTop = this.height - STATUS_HEIGHT;
+        int visible = Math.max(1, (statusTop - TEXT_TOP) / LINE_HEIGHT);
+        return this.computeScrollbar(this.width - PADDING - SCROLLBAR_WIDTH, TEXT_TOP,
+                Math.max(1, statusTop - TEXT_TOP), this.lines.size(), visible, this.scroll);
+    }
+
+    private Scrollbar browserScrollbar() {
+        int rowTop = browserTop() + 20;
+        int height = Math.max(1, browserActionTop() - rowTop - 6);
+        return this.computeScrollbar(PADDING + BROWSER_WIDTH - SCROLLBAR_WIDTH - 1, rowTop,
+                height, this.browserRows.size(), browserListRows(), this.browserScroll);
+    }
+
+    private Scrollbar computeScrollbar(int left, int top, int height, int total, int visible, int scroll) {
+        if (total <= visible || height <= 0) {
+            return new Scrollbar(left, top, height, top, height, 0);
+        }
+        int maxScroll = total - visible;
+        int thumbHeight = Math.max(10, (int) ((long) height * visible / total));
+        int travel = Math.max(1, height - thumbHeight);
+        int clamped = Math.max(0, Math.min(scroll, maxScroll));
+        int thumbTop = top + (int) ((long) travel * clamped / maxScroll);
+        return new Scrollbar(left, top, height, thumbTop, thumbHeight, maxScroll);
+    }
+
+    private boolean hitScrollbar(Scrollbar bar, double mouseX, double mouseY) {
+        return mouseX >= bar.left() - 2 && mouseX <= bar.left() + SCROLLBAR_WIDTH + 2
+                && mouseY >= bar.top() && mouseY <= bar.top() + bar.height();
+    }
+
+    private int scrollForMouse(Scrollbar bar, double mouseY) {
+        if (bar.maxScroll() <= 0) {
+            return 0;
+        }
+        int travel = bar.height() - bar.thumbHeight();
+        if (travel <= 0) {
+            return 0;
+        }
+        double offset = mouseY - bar.top() - bar.thumbHeight() / 2.0;
+        offset = Math.max(0, Math.min(offset, travel));
+        return (int) Math.round(offset * bar.maxScroll() / travel);
+    }
+
+    private void drawScrollbar(GuiGraphics graphics, Scrollbar bar, boolean highlighted) {
+        if (bar.maxScroll() <= 0) {
+            return;
+        }
+        graphics.fill(bar.left(), bar.top(), bar.left() + SCROLLBAR_WIDTH, bar.top() + bar.height(),
+                0x40000000);
+        graphics.fill(bar.left(), bar.thumbTop(), bar.left() + SCROLLBAR_WIDTH,
+                bar.thumbTop() + bar.thumbHeight(), highlighted ? 0xFFB8C2D4 : 0xFF7C8798);
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (this.scrollbarDrag == DRAG_EDITOR) {
+            this.scroll = this.scrollForMouse(this.editorScrollbar(), mouseY);
+            return true;
+        }
+        if (this.scrollbarDrag == DRAG_BROWSER) {
+            this.browserScroll = this.scrollForMouse(this.browserScrollbar(), mouseY);
+            return true;
+        }
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        this.scrollbarDrag = DRAG_NONE;
+        return super.mouseReleased(mouseX, mouseY, button);
     }
 
     private void setStatus(String message, int color) {
