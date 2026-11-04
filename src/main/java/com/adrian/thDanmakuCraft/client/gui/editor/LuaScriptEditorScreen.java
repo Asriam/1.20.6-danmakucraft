@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -139,6 +140,25 @@ public class LuaScriptEditorScreen extends Screen {
     private int browserSelected;
     /** 使用者刻意取消選取（點「腳本」分類標題）；重新整理時保持 -1，讓新增落在根目錄。 */
     private boolean noSelection;
+    /**
+     * 每個檔案的編輯緩衝：切換檔案時整組換掉，切回來就恢復原本的內容、游標、選取與 undo 堆疊。
+     */
+    private static final class Buffer {
+        List<StringBuilder> lines = new ArrayList<>();
+        Deque<Snapshot> undo = new ArrayDeque<>();
+        Deque<Snapshot> redo = new ArrayDeque<>();
+        int cursorLine;
+        int cursorColumn;
+        int selectionLine = -1;
+        int selectionColumn;
+        int scroll;
+        boolean dirty;
+        boolean readOnly;
+    }
+
+    /** 已開啟過的檔案緩衝（key = 顯示路徑）。 */
+    private final Map<String, Buffer> buffers = new HashMap<>();
+
     /** 是否已嘗試補做 init()，避免每幀重試。 */
     private boolean reinitRequested;
     private boolean dirty;
@@ -187,7 +207,7 @@ public class LuaScriptEditorScreen extends Screen {
     private String dialogSource = "";
 
     // ---- 編輯狀態 ----
-    private final List<StringBuilder> lines = new ArrayList<>();
+    private List<StringBuilder> lines = new ArrayList<>();
     private int cursorLine;
     private int cursorColumn;
     private int selectionLine = -1;
@@ -203,8 +223,8 @@ public class LuaScriptEditorScreen extends Screen {
     // ---- 復原／重做 ----
     private static final int MAX_UNDO = 200;
     private static final long TYPING_COALESCE_MS = 600L;
-    private final Deque<Snapshot> undoStack = new ArrayDeque<>();
-    private final Deque<Snapshot> redoStack = new ArrayDeque<>();
+    private Deque<Snapshot> undoStack = new ArrayDeque<>();
+    private Deque<Snapshot> redoStack = new ArrayDeque<>();
     private long lastUndoAt;
 
     // ---- 自動完成（來源：data/thdanmakucraft/lua/apidoc） ----
@@ -231,42 +251,7 @@ public class LuaScriptEditorScreen extends Screen {
 
 
     private void openFile(String name) {
-        this.readOnly = false;
-        this.noSelection = false;
-        this.revealPath = name;
-        this.fileName = name;
-        this.filePath = scriptsDir().resolve(this.fileName);
-        this.undoStack.clear();
-        this.redoStack.clear();
-        this.closeCompletion();
-        this.lines.clear();
-        try {
-            if (Files.exists(this.filePath)) {
-                String content = LuaScriptFiles.read(this.filePath);
-                for (String line : content.split("\n", -1)) {
-                    this.lines.add(new StringBuilder(line));
-                }
-                this.setStatus("已載入 " + this.fileName, STATUS_TEXT);
-            } else {
-                for (String line : TEMPLATE.split("\n", -1)) {
-                    this.lines.add(new StringBuilder(line));
-                }
-                this.setStatus("新檔案：" + this.fileName, STATUS_TEXT);
-            }
-        } catch (IOException exception) {
-            for (String line : TEMPLATE.split("\n", -1)) {
-                this.lines.add(new StringBuilder(line));
-            }
-            this.setStatus("讀取失敗：" + exception.getMessage(), 0xFFFF6B6B);
-        }
-        if (this.lines.isEmpty()) {
-            this.lines.add(new StringBuilder());
-        }
-        this.cursorLine = 0;
-        this.cursorColumn = 0;
-        this.scroll = 0;
-        this.selectionLine = -1;
-        this.dirty = false;
+        this.switchTo(name, false);
     }
 
     /** 依檔案管理器的一列開檔（內建文件走 classpath、唯讀）。 */
@@ -280,33 +265,128 @@ public class LuaScriptEditorScreen extends Screen {
 
     /** 載入 jar 內的 apidoc：只能閱讀，Ctrl+S 會被拒絕。 */
     private void openBuiltin(String displayPath) {
-        this.readOnly = true;
-        this.noSelection = false;
-        this.fileName = displayPath;
-        this.revealPath = displayPath;
-        this.filePath = null;
-        this.undoStack.clear();
-        this.redoStack.clear();
-        this.closeCompletion();
-        this.lines.clear();
-        try {
-            for (String line : LuaScriptFiles.readBuiltin(displayPath).split("\n", -1)) {
-                this.lines.add(new StringBuilder(line));
+        this.switchTo(displayPath, true);
+    }
+
+    /** 把目前的編輯狀態存回緩衝（切換檔案前呼叫）。 */
+    private void stash() {
+        if (this.fileName == null) {
+            return;
+        }
+        Buffer buffer = this.buffers.computeIfAbsent(this.fileName, key -> new Buffer());
+        buffer.lines = this.lines;
+        buffer.undo = this.undoStack;
+        buffer.redo = this.redoStack;
+        buffer.cursorLine = this.cursorLine;
+        buffer.cursorColumn = this.cursorColumn;
+        buffer.selectionLine = this.selectionLine;
+        buffer.selectionColumn = this.selectionColumn;
+        buffer.scroll = this.scroll;
+        buffer.dirty = this.dirty;
+        buffer.readOnly = this.readOnly;
+    }
+
+    /** 切換到某個檔案；有緩衝就恢復原狀，沒有才從磁碟／jar 載入。 */
+    private void switchTo(String path, boolean builtin) {
+        if (path != null && path.equals(this.fileName) && !this.lines.isEmpty()) {
+            this.noSelection = false;
+            this.revealPath = path;
+            return;
+        }
+        this.stash();
+
+        Buffer buffer = this.buffers.get(path);
+        if (buffer == null) {
+            buffer = new Buffer();
+            buffer.readOnly = builtin;
+            String content = null;
+            try {
+                if (builtin) {
+                    content = LuaScriptFiles.readBuiltin(path);
+                } else {
+                    java.nio.file.Path file = scriptsDir().resolve(path);
+                    content = Files.exists(file) ? LuaScriptFiles.read(file) : TEMPLATE;
+                }
+            } catch (IOException exception) {
+                this.setStatus("讀取失敗：" + exception.getMessage(), 0xFFFF6B6B);
+                content = TEMPLATE;
             }
-            this.setStatus("內建 API 文件（唯讀，不能修改或儲存）", 0xFF7BD88F);
-        } catch (IOException exception) {
-            this.lines.add(new StringBuilder());
-            this.setStatus("讀取內建文件失敗：" + exception.getMessage(), 0xFFFF6B6B);
+            for (String line : content.split("\n", -1)) {
+                buffer.lines.add(new StringBuilder(line));
+            }
+            if (buffer.lines.isEmpty()) {
+                buffer.lines.add(new StringBuilder());
+            }
+            this.buffers.put(path, buffer);
         }
-        if (this.lines.isEmpty()) {
-            this.lines.add(new StringBuilder());
-        }
-        this.cursorLine = 0;
-        this.cursorColumn = 0;
-        this.scroll = 0;
-        this.selectionLine = -1;
-        this.dirty = false;
+
+        this.fileName = path;
+        this.filePath = builtin ? null : scriptsDir().resolve(path);
+        this.readOnly = buffer.readOnly;
+        this.noSelection = false;
+        this.revealPath = path;
+        this.closeCompletion();
         this.clearSyntaxError();
+        this.lines = buffer.lines;
+        this.undoStack = buffer.undo;
+        this.redoStack = buffer.redo;
+        this.cursorLine = buffer.cursorLine;
+        this.cursorColumn = buffer.cursorColumn;
+        this.selectionLine = buffer.selectionLine;
+        this.selectionColumn = buffer.selectionColumn;
+        this.scroll = buffer.scroll;
+        this.dirty = buffer.dirty;
+        this.ensureCursorVisible();
+        if (buffer.dirty) {
+            this.setStatus(path + "（未儲存的變更已保留）", 0xFFFFD479);
+        } else {
+            this.setStatus((builtin ? "內建文件（唯讀）：" : "已載入 ") + path, STATUS_TEXT);
+        }
+    }
+
+    /** 某個檔案是否有未儲存的變更（含目前未切換出去的緩衝）。 */
+    private boolean isDirty(String path) {
+        if (path != null && path.equals(this.fileName)) {
+            return this.dirty;
+        }
+        Buffer buffer = this.buffers.get(path);
+        return buffer != null && buffer.dirty;
+    }
+
+    /** 儲存所有有變更的緩衝。 */
+    private void saveAll() {
+        this.stash();
+        int saved = 0;
+        int failed = 0;
+        for (Map.Entry<String, Buffer> entry : this.buffers.entrySet()) {
+            Buffer buffer = entry.getValue();
+            if (buffer.readOnly || !buffer.dirty) {
+                continue;
+            }
+            try {
+                StringBuilder text = new StringBuilder();
+                for (int i = 0; i < buffer.lines.size(); i++) {
+                    if (i > 0) {
+                        text.append('\n');
+                    }
+                    text.append(buffer.lines.get(i));
+                }
+                LuaScriptFiles.write(scriptsDir().resolve(entry.getKey()), text.toString());
+                buffer.dirty = false;
+                saved++;
+            } catch (IOException exception) {
+                failed++;
+            }
+        }
+        this.dirty = false;
+        this.refreshFileList();
+        if (failed > 0) {
+            this.setStatus("已儲存 " + saved + " 個檔案，" + failed + " 個失敗", 0xFFFF6B6B);
+        } else if (saved == 0) {
+            this.setStatus("沒有需要儲存的變更", LINE_NO);
+        } else {
+            this.setStatus("已儲存全部 " + saved + " 個檔案", 0xFF7BD88F);
+        }
     }
 
     private void save() {
@@ -830,7 +910,7 @@ public class LuaScriptEditorScreen extends Screen {
             } else if (hovered) {
                 graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT, 0x333B82F6);
             }
-            boolean dirtyHere = current && this.dirty;
+            boolean dirtyHere = this.isDirty(entry.path());
             int rowColor = dirtyHere ? 0xFFFFD479
                     : (current ? 0xFF7BD88F : (entry.builtin() ? 0xFF7A8699 : 0xFFD4D4D4));
             String label = row.label() == null ? entry.path() : row.label();
@@ -982,8 +1062,7 @@ public class LuaScriptEditorScreen extends Screen {
     private String taskLabel(int index) {
         String path = this.taskBar.get(index);
         String name = path.substring(path.lastIndexOf('/') + 1);
-        boolean active = path.equals(this.relativeName());
-        return name + (active && this.dirty ? " *" : "");
+        return name + (this.isDirty(path) ? " *" : "");
     }
 
     private int taskWidth(int index) {
@@ -1276,9 +1355,9 @@ public class LuaScriptEditorScreen extends Screen {
                 }
                 if (doubleClick) {
                     this.addTask(path);
+                    this.openEntry(row.entry());
+                    this.refreshFileList();
                 }
-                this.openEntry(row.entry());
-                this.refreshFileList();
             }
         }
         return true;
@@ -1371,6 +1450,10 @@ public class LuaScriptEditorScreen extends Screen {
                 this.setStatus("改名失敗：目標已存在 " + target, 0xFFFF6B6B);
                 return;
             }
+            Buffer moved = this.buffers.remove(this.dialogSource);
+            if (moved != null) {
+                this.buffers.put(target, moved);
+            }
             if (renamingCurrent) {
                 this.fileName = target;
                 this.filePath = to;
@@ -1391,6 +1474,7 @@ public class LuaScriptEditorScreen extends Screen {
                     this.setStatus("資料夾不存在：" + folder, 0xFFFF6B6B);
                     return;
                 }
+                this.buffers.keySet().removeIf(key -> key.equals(folder) || key.startsWith(folder + "/"));
                 this.refreshFileList();
                 this.setStatus("已刪除資料夾 " + folder, 0xFF7BD88F);
                 return;
@@ -1401,10 +1485,11 @@ public class LuaScriptEditorScreen extends Screen {
                 return;
             }
             boolean deletingCurrent = this.dialogSource.equals(this.relativeName());
-            this.refreshFileList();
             if (deletingCurrent) {
                 this.openFile("untitled.lua");
             }
+            this.buffers.remove(this.dialogSource);
+            this.refreshFileList();
             this.setStatus("已刪除 " + this.dialogSource, 0xFF7BD88F);
         } catch (IOException exception) {
             this.setStatus("刪除失敗：" + exception.getMessage(), 0xFFFF6B6B);
@@ -1547,6 +1632,10 @@ public class LuaScriptEditorScreen extends Screen {
             }
         }
 
+        if (control && shift && keyCode == GLFW.GLFW_KEY_S) {
+            this.saveAll();
+            return true;
+        }
         if (control && keyCode == GLFW.GLFW_KEY_S) {
             this.save();
             return true;
