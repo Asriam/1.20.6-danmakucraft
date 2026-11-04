@@ -1,6 +1,8 @@
 package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.world.IDataStorage;
+import com.adrian.thDanmakuCraft.world.LuaFunctions;
+import com.adrian.thDanmakuCraft.world.LuaBridge;
 import com.adrian.thDanmakuCraft.world.LuaKeys;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
 import net.minecraft.nbt.CompoundTag;
@@ -91,11 +93,7 @@ public class LuaTaskManager implements IDataStorage, ILuaValue{
     }
 
     public static LuaTaskManager checkLuaTaskManager(LuaValue luaValue) {
-        if (luaValue.get(LuaKeys.SOURCE).checkuserdata() instanceof LuaTaskManager luaTaskManager){
-            return luaTaskManager;
-        }
-        throw new NullPointerException();
-        //return null;
+        return LuaBridge.target(luaValue, LuaTaskManager.class);
     }
 
     private static final LibFunction addTask = new TwoArgFunction() {
@@ -147,20 +145,16 @@ public class LuaTaskManager implements IDataStorage, ILuaValue{
     }
     @Override
     public LuaValue ofLuaClass() {
-        LuaValue library = LuaValue.tableOf();
-        library.setmetatable(this.getMeta());
-        //Params
-        library.set("source", LuaValue.userdataOf(this));
-        return library;
+        return LuaBridge.proxy(this);
     }
 
     public static LuaValue functions(){
-        LuaValue library = LuaValue.tableOf();
-        library.set("addTask",    addTask);
-        library.set("removeTask", removeTask);
-        library.set("doTasks",    doTasks);
-        library.set("clear",      clear);
-        return library;
+        return LuaFunctions.create()
+                .add("addTask", addTask)
+                .add("removeTask", removeTask)
+                .add("doTasks", doTasks)
+                .add("clear", clear)
+                .build();
     }
 
     @Override

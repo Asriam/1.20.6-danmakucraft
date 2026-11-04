@@ -43,6 +43,10 @@ public class LegacyBufferBuilder implements VertexConsumer {
     private int vertexStart;
     private int elementIndex;
     private int elementCount;
+    /** 目前是否有一個「已開始、尚未結束」的頂點（1.21.1 的 addVertex 是隱式結束上一顆）。 */
+    private boolean vertexOpen;
+    /** 這個頂點已寫入的元素 bitmap，用來只補零「真的沒寫到」的元素。 */
+    private int writtenMask;
 
     public LegacyBufferBuilder(int initialCapacityBytes) {
         this.capacity = Math.max(256, initialCapacityBytes);
@@ -74,6 +78,8 @@ public class LegacyBufferBuilder implements VertexConsumer {
         this.vertexCount = 0;
         this.vertexStart = 0;
         this.elementIndex = 0;
+        this.vertexOpen = false;
+        this.writtenMask = 0;
         this.data.clear();
     }
 
@@ -101,16 +107,35 @@ public class LegacyBufferBuilder implements VertexConsumer {
         return this.elementOffsets[index];
     }
 
-    private int offsetOf(VertexFormatElement element) {
+    private int elementIndexOf(VertexFormatElement element) {
         if (this.elements == null) {
-            return 0;
+            return -1;
         }
         for (int i = 0; i < this.elements.size(); i++) {
             if (this.elements.get(i).equals(element)) {
-                return this.elementOffsets[i];
+                return i;
             }
         }
-        return 0;
+        return -1;
+    }
+
+    private int offsetOf(VertexFormatElement element) {
+        int index = elementIndexOf(element);
+        return index < 0 ? -1 : this.elementOffsets[index];
+    }
+
+    private void ensureVertexOpen() {
+        if (!this.vertexOpen) {
+            this.vertexOpen = true;
+            this.elementIndex = 0;
+            this.writtenMask = 0;
+        }
+    }
+
+    private void markWritten(int index) {
+        if (index >= 0 && index < 32) {
+            this.writtenMask |= (1 << index);
+        }
     }
 
     private void ensureVertex() {
@@ -134,6 +159,8 @@ public class LegacyBufferBuilder implements VertexConsumer {
             warnOverrun();
             return this;
         }
+        ensureVertexOpen();
+        markWritten(this.elementIndex);
         putFloatAt(this.vertexStart + elementOffset(this.elementIndex) + index, value);
         return this;
     }
@@ -143,6 +170,8 @@ public class LegacyBufferBuilder implements VertexConsumer {
             warnOverrun();
             return this;
         }
+        ensureVertexOpen();
+        markWritten(this.elementIndex);
         putByteAt(this.vertexStart + elementOffset(this.elementIndex) + index, value);
         return this;
     }
@@ -154,21 +183,32 @@ public class LegacyBufferBuilder implements VertexConsumer {
     }
 
     /**
-     * 結束一個頂點：把「這個格式有、但呼叫端沒寫到」的元素補成 0。
-     * 緩衝是跨幀重複使用的，不補零會把上一顆子彈殘留的位元組（例如 UV）留在顏色通道裡。
+     * 結束目前頂點：只把「這個格式有、但呼叫端沒寫到」的元素補成 0。
+     * 緩衝跨幀重用，不補零會把上一顆子彈殘留的位元組（例如 UV）留在顏色通道裡；
+     * 但不能整段清，因為 1.21.1 的寫法會用 setColor/setUv 直接寫入元素、不推進 elementIndex。
      */
-    public void endVertex() {
-        if (this.elementIndex < this.elementCount) {
-            int from = this.vertexStart + elementOffset(this.elementIndex);
-            int to = this.vertexStart + this.vertexSize;
-            for (int i = from; i < to; i++) {
-                this.data.put(i, (byte) 0);
+    private void finalizeVertex() {
+        if (!this.vertexOpen) {
+            return;
+        }
+        for (int i = 0; i < this.elementCount; i++) {
+            if ((this.writtenMask & (1 << i)) == 0) {
+                int from = this.vertexStart + this.elementOffsets[i];
+                int to = from + this.elements.get(i).byteSize();
+                for (int b = from; b < to; b++) {
+                    this.data.put(b, (byte) 0);
+                }
             }
-            this.elementIndex = this.elementCount;
         }
         this.vertexCount++;
         this.vertexStart += this.vertexSize;
         this.elementIndex = 0;
+        this.writtenMask = 0;
+        this.vertexOpen = false;
+    }
+
+    public void endVertex() {
+        finalizeVertex();
     }
 
     private static boolean warnedOverrun;
@@ -182,6 +222,8 @@ public class LegacyBufferBuilder implements VertexConsumer {
     }
 
     public LegacyBufferBuilder vertex(double x, double y, double z) {
+        finalizeVertex();
+        ensureVertexOpen();
         putFloat(0, (float) x);
         putFloat(4, (float) y);
         putFloat(8, (float) z);
@@ -240,6 +282,8 @@ public class LegacyBufferBuilder implements VertexConsumer {
 
     @Override
     public VertexConsumer addVertex(float x, float y, float z) {
+        finalizeVertex();
+        ensureVertexOpen();
         putFloat(0, x);
         putFloat(4, y);
         putFloat(8, z);
@@ -259,7 +303,13 @@ public class LegacyBufferBuilder implements VertexConsumer {
 
     @Override
     public VertexConsumer setColor(int r, int g, int b, int a) {
-        int offset = this.vertexStart + offsetOf(VertexFormatElement.COLOR);
+        int index = elementIndexOf(VertexFormatElement.COLOR);
+        if (index < 0) {
+            return this;
+        }
+        ensureVertexOpen();
+        markWritten(index);
+        int offset = this.vertexStart + this.elementOffsets[index];
         putByteAt(offset, (byte) r);
         putByteAt(offset + 1, (byte) g);
         putByteAt(offset + 2, (byte) b);
@@ -274,7 +324,13 @@ public class LegacyBufferBuilder implements VertexConsumer {
 
     @Override
     public VertexConsumer setUv(float u, float v) {
-        int offset = this.vertexStart + offsetOf(VertexFormatElement.UV0);
+        int index = elementIndexOf(VertexFormatElement.UV0);
+        if (index < 0) {
+            return this;
+        }
+        ensureVertexOpen();
+        markWritten(index);
+        int offset = this.vertexStart + this.elementOffsets[index];
         putFloatAt(offset, u);
         putFloatAt(offset + 4, v);
         return this;
@@ -282,7 +338,13 @@ public class LegacyBufferBuilder implements VertexConsumer {
 
     @Override
     public VertexConsumer setUv1(int u, int v) {
-        int offset = this.vertexStart + offsetOf(VertexFormatElement.UV1);
+        int index = elementIndexOf(VertexFormatElement.UV1);
+        if (index < 0) {
+            return this;
+        }
+        ensureVertexOpen();
+        markWritten(index);
+        int offset = this.vertexStart + this.elementOffsets[index];
         putByteAt(offset, (byte) u);
         putByteAt(offset + 1, (byte) (u >> 8));
         putByteAt(offset + 2, (byte) v);
@@ -292,7 +354,13 @@ public class LegacyBufferBuilder implements VertexConsumer {
 
     @Override
     public VertexConsumer setUv2(int u, int v) {
-        int offset = this.vertexStart + offsetOf(VertexFormatElement.UV2);
+        int index = elementIndexOf(VertexFormatElement.UV2);
+        if (index < 0) {
+            return this;
+        }
+        ensureVertexOpen();
+        markWritten(index);
+        int offset = this.vertexStart + this.elementOffsets[index];
         putByteAt(offset, (byte) u);
         putByteAt(offset + 1, (byte) (u >> 8));
         putByteAt(offset + 2, (byte) v);
@@ -302,7 +370,13 @@ public class LegacyBufferBuilder implements VertexConsumer {
 
     @Override
     public VertexConsumer setNormal(float x, float y, float z) {
-        int offset = this.vertexStart + offsetOf(VertexFormatElement.NORMAL);
+        int index = elementIndexOf(VertexFormatElement.NORMAL);
+        if (index < 0) {
+            return this;
+        }
+        ensureVertexOpen();
+        markWritten(index);
+        int offset = this.vertexStart + this.elementOffsets[index];
         putByteAt(offset, normalIntValue(x));
         putByteAt(offset + 1, normalIntValue(y));
         putByteAt(offset + 2, normalIntValue(z));
@@ -328,6 +402,7 @@ public class LegacyBufferBuilder implements VertexConsumer {
 
     /** 對應舊版 {@code end()}：把目前的頂點資料封裝成可直接上傳的 {@link MeshData}。 */
     public MeshData end() {
+        finalizeVertex();
         int bytes = this.vertexCount * this.vertexSize;
         ByteBufferBuilder builder = new ByteBufferBuilder(Math.max(bytes, 256));
         if (bytes > 0) {
@@ -343,8 +418,13 @@ public class LegacyBufferBuilder implements VertexConsumer {
             // 空批次（例如整批被視錐剔除）在這裡保留一個頂點的空間，讓它變成合法但不繪製的空網格。
             builder.reserve(Math.max(4, this.vertexSize));
         }
+        // 注意：1.21.1 的 Mode.indexCount() 對 LINES 會回傳 0（只有 QUADS 會換算成 6 個索引）。
+        // 這裡自行計算，讓線段（碰撞箱）也能正確繪製。
+        int indexCount = (this.mode == VertexFormat.Mode.QUADS)
+                ? (this.vertexCount / 4) * 6
+                : this.vertexCount;
         MeshData.DrawState state = new MeshData.DrawState(this.format, this.vertexCount,
-                this.mode.indexCount(this.vertexCount), this.mode, VertexFormat.IndexType.least(this.vertexCount));
+                indexCount, this.mode, VertexFormat.IndexType.least(this.vertexCount));
         return new MeshData(builder.build(), state);
     }
 }

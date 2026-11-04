@@ -21,10 +21,7 @@ public class LuaValueHelper {
 
     public static class LuaEntityClass {
         public static Entity checkEntity(LuaValue luaValue){
-            if (luaValue.get(LuaKeys.SOURCE).checkuserdata() instanceof Entity entity){
-                return entity;
-            }
-            throw new NullPointerException();
+            return LuaBridge.target(luaValue, Entity.class);
         }
 
         public static final LibFunction getPosition = new OneArgFunction() {
@@ -67,12 +64,12 @@ public class LuaValueHelper {
         };
 
         private static LuaValue functions(){
-            LuaTable library = LuaValue.tableOf();
-            library.set("getPosition", LuaEntityClass.getPosition);
-            library.set("getLastPosition", LuaEntityClass.getLastPosition);
-            library.set("getRotation", LuaEntityClass.getRotation);
-            library.set("getName", LuaEntityClass.getName);
-            return library;
+            return LuaFunctions.create()
+                    .add("getPosition", LuaEntityClass.getPosition)
+                    .add("getLastPosition", LuaEntityClass.getLastPosition)
+                    .add("getRotation", LuaEntityClass.getRotation)
+                    .add("getName", LuaEntityClass.getName)
+                    .build();
         }
 
         public static LuaValue meta = new LuaTable();

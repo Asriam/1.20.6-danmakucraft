@@ -1,6 +1,8 @@
 package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.world.IDataStorage;
+import com.adrian.thDanmakuCraft.world.LuaFunctions;
+import com.adrian.thDanmakuCraft.world.LuaBridge;
 import com.adrian.thDanmakuCraft.world.LuaKeys;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
@@ -387,11 +389,7 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
     }
 
     public static AdditionalParameterManager checkParameterManager(LuaValue luaValue) {
-        if (luaValue.get(LuaKeys.SOURCE).checkuserdata() instanceof AdditionalParameterManager parameterManager){
-            return parameterManager;
-        }
-        throw new NullPointerException();
-        //return null;
+        return LuaBridge.target(luaValue, AdditionalParameterManager.class);
     }
 
     private static final LibFunction register = new VarArgFunction() {
@@ -541,10 +539,7 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
 
     @Override
     public LuaValue ofLuaClass() {
-        LuaValue library = LuaValue.tableOf();
-        library.setmetatable(this.getMeta());
-        library.set("source", LuaValue.userdataOf(this));
-        return library;
+        return LuaBridge.proxy(this);
     }
 
     /*private static final LuaValue meta = LuaValue.tableOf();
@@ -559,19 +554,19 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
     }
 
     public static LuaValue functions(){
-        LuaValue library = LuaValue.tableOf();
-        library.set("define", register);
-        library.set("set", setValue);
-        library.set("get", getValue);
-        library.set("getString", getString);
-        library.set("getInteger", getInteger);
-        library.set("getFloat", getFloat);
-        library.set("getDouble", getDouble);
-        library.set("getBoolean", getBoolean);
-        library.set("getTHObject", getTHObject);
-        library.set("getTHBullet", getTHBullet);
-        library.set("getTHCurvedLaser", getTHCurvedLaser);
-        return library;
+        return LuaFunctions.create()
+                .add("define", register)
+                .add("set", setValue)
+                .add("get", getValue)
+                .add("getString", getString)
+                .add("getInteger", getInteger)
+                .add("getFloat", getFloat)
+                .add("getDouble", getDouble)
+                .add("getBoolean", getBoolean)
+                .add("getTHObject", getTHObject)
+                .add("getTHBullet", getTHBullet)
+                .add("getTHCurvedLaser", getTHCurvedLaser)
+                .build();
     }
 
     @Override

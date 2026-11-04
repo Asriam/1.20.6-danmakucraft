@@ -18,6 +18,20 @@ public class CollisionHelper {
         return box1.intersects(new AABB(center, scale));
     }
 
+    /**
+     * 不建立 AABB 的版本：命中判定在每個彈幕、每個實體、每個 tick 都會跑，
+     * 原本每次呼叫都會 new 一個 AABB（含 2 個 Vec3），是碰撞路徑最大的配置來源。
+     * {@code hx/hy/hz} 是半長（等於 size/2）。
+     */
+    public static boolean isCollidingAABB(double cx, double cy, double cz,
+                                          double hx, double hy, double hz,
+                                          double minX, double minY, double minZ,
+                                          double maxX, double maxY, double maxZ) {
+        return cx + hx >= minX && cx - hx <= maxX
+                && cy + hy >= minY && cy - hy <= maxY
+                && cz + hz >= minZ && cz - hz <= maxZ;
+    }
+
     public static boolean isCollidingSphereBox(Vec3 center, double radius, AABB box) {
         // 獲取球到盒子的最近點
         double nearestX = Mth.clamp(center.x, box.minX, box.maxX);
@@ -28,6 +42,19 @@ public class CollisionHelper {
         double distanceSquared = distanceSquared(center.x, center.y, center.z, nearestX, nearestY, nearestZ);
         // 比較距離平方 (避免使用 Math.sqrt, 提升性能)
         return distanceSquared <= (radius * radius);
+    }
+
+    /** 不建立任何物件的球 vs 盒版本（夾取寫成 inline，省掉 Mth.clamp 的呼叫與 Vec3）。 */
+    public static boolean isCollidingSphereBox(double cx, double cy, double cz, double radius,
+                                               double minX, double minY, double minZ,
+                                               double maxX, double maxY, double maxZ) {
+        double nearestX = cx < minX ? minX : (cx > maxX ? maxX : cx);
+        double nearestY = cy < minY ? minY : (cy > maxY ? maxY : cy);
+        double nearestZ = cz < minZ ? minZ : (cz > maxZ ? maxZ : cz);
+        double dx = cx - nearestX;
+        double dy = cy - nearestY;
+        double dz = cz - nearestZ;
+        return dx * dx + dy * dy + dz * dz <= radius * radius;
     }
 
     public static boolean isCollidingEllipsoidBox(Vec3 center, Vec3 scale, AABB box) {
@@ -61,6 +88,61 @@ public class CollisionHelper {
 
         // 如果没有顶点在椭球内，检查椭球中心到盒子最近点
         return checkClosestPointOnBoxToEllipsoid(center, scale, rotationMatrix, box);
+    }
+
+    /**
+     * 不建立任何物件的版本（雷射每 tick、每個實體都會呼叫）。
+     * 旋轉矩陣與 8 個角點全部 inline 計算，數學與 {@link #isCollidingOrientedEllipsoidBox} 完全一致。
+     */
+    public static boolean isCollidingOrientedEllipsoidBox(double cx, double cy, double cz,
+                                                          double sx, double sy, double sz,
+                                                          float rotX, float rotY, float rotZ,
+                                                          double minX, double minY, double minZ,
+                                                          double maxX, double maxY, double maxZ) {
+        if (sx <= 1.0E-6 || sy <= 1.0E-6 || sz <= 1.0E-6) {
+            return false;
+        }
+        // 與 createRotationMatrix(new Vector3f(x, -y, z)) 相同：M = Rz * Rx * Ry
+        float ax = rotX, ay = -rotY, az = rotZ;
+        double cosX = Mth.cos(ax), sinX = Mth.sin(ax);
+        double cosY = Mth.cos(ay), sinY = Mth.sin(ay);
+        double cosZ = Mth.cos(az), sinZ = Mth.sin(az);
+
+        double m00 = cosZ * cosY - sinZ * sinX * sinY;
+        double m01 = -sinZ * cosX;
+        double m02 = cosZ * sinY + sinZ * sinX * cosY;
+        double m10 = sinZ * cosY + cosZ * sinX * sinY;
+        double m11 = cosZ * cosX;
+        double m12 = sinZ * sinY - cosZ * sinX * cosY;
+        double m20 = -cosX * sinY;
+        double m21 = sinX;
+        double m22 = cosX * cosY;
+
+        double invX = 1.0 / sx, invY = 1.0 / sy, invZ = 1.0 / sz;
+
+        // 8 個角點
+        for (int i = 0; i < 8; i++) {
+            double px = ((i & 1) == 0 ? minX : maxX) - cx;
+            double py = ((i & 2) == 0 ? minY : maxY) - cy;
+            double pz = ((i & 4) == 0 ? minZ : maxZ) - cz;
+            double lx = px * m00 + py * m01 + pz * m02;
+            double ly = px * m10 + py * m11 + pz * m12;
+            double lz = px * m20 + py * m21 + pz * m22;
+            double nx = lx * invX, ny = ly * invY, nz = lz * invZ;
+            if (nx * nx + ny * ny + nz * nz <= 1.0) {
+                return true;
+            }
+        }
+
+        // 盒子上最接近中心的一點
+        double qx = (cx < minX ? minX : (cx > maxX ? maxX : cx)) - cx;
+        double qy = (cy < minY ? minY : (cy > maxY ? maxY : cy)) - cy;
+        double qz = (cz < minZ ? minZ : (cz > maxZ ? maxZ : cz)) - cz;
+        double lx = qx * m00 + qy * m01 + qz * m02;
+        double ly = qx * m10 + qy * m11 + qz * m12;
+        double lz = qx * m20 + qy * m21 + qz * m22;
+        double nx = lx * invX, ny = ly * invY, nz = lz * invZ;
+        return nx * nx + ny * ny + nz * nz <= 1.0;
     }
 
     // 创建旋转矩阵 (基于 x, y, z 的欧拉角)

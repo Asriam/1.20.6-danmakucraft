@@ -1,6 +1,8 @@
 package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
+import com.adrian.thDanmakuCraft.world.LuaFunctions;
+import com.adrian.thDanmakuCraft.world.LuaBridge;
 import com.adrian.thDanmakuCraft.world.LuaKeys;
 import com.adrian.thDanmakuCraft.world.IDataStorage;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
@@ -317,10 +319,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
 
     @Override
     public LuaValue ofLuaClass() {
-        LuaValue library = LuaValue.tableOf();
-        library.setmetatable(this.getMeta());
-        library.set("source", LuaValue.userdataOf(this));
-        return library;
+        return LuaBridge.proxy(this);
     }
 
     @Override
@@ -335,10 +334,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
 
     private static class LuaAPI {
         private static TaskManager<ILuaValue> checkTaskManager(LuaValue luaValue) {
-            if (luaValue.get(LuaKeys.SOURCE).checkuserdata() instanceof TaskManager<?> taskManager){
-                return (TaskManager<ILuaValue>) taskManager;
-            }
-            throw new NullPointerException();
+            return LuaBridge.target(luaValue, (Class<TaskManager<ILuaValue>>) (Class<?>) TaskManager.class);
         }
 
         private static final LibFunction registerTask = new VarArgFunction() {
@@ -378,12 +374,12 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
         };
 
         public static LuaValue functions() {
-            LuaValue library = LuaValue.tableOf();
-            library.set("registerTask", registerTask);
-            library.set("startTask", startTask);
-            library.set("removeTask", removeTask);
-            library.set("clearTasks", clearTasks);
-            return library;
+            return LuaFunctions.create()
+                    .add("registerTask", registerTask)
+                    .add("startTask", startTask)
+                    .add("removeTask", removeTask)
+                    .add("clearTasks", clearTasks)
+                    .build();
         }
         public static final LuaValue meta = ILuaValue.setMeta(functions());
     }

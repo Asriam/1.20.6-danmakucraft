@@ -2,6 +2,7 @@ package com.adrian.thDanmakuCraft.world.danmaku.thobject.laser;
 
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.world.LuaKeys;
+import com.adrian.thDanmakuCraft.util.CollisionHelper;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.CompoundTagUtil;
 import com.adrian.thDanmakuCraft.util.FriendlyByteBufUtil;
@@ -19,6 +20,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
@@ -148,22 +150,27 @@ public class THLaser extends THObject {
             return;
         }
 
+        // 只算一次：原本每個實體都會重建旋轉、中心與尺寸（3 個物件/次）
+        final Vector3f r = this.getRotation();
+        final Vec3 center = this.getPosition().add(this.getLaserCenter());
+        final double cx = center.x, cy = center.y, cz = center.z;
+        final double ex = width / 2 * 0.6f;
+        final double ey = ex;
+        final double ez = length / 2 * 0.9f;
+        final Entity user = this.getContainer().getUser();
+
         for (Entity entity : entitiesInBound) {
-                if (!this.canHitUser && entity.equals(this.getContainer().getUser())) {
+                if (!this.canHitUser && entity.equals(user)) {
                     continue;
                 }
-                Vector3f r = this.getRotation();
+                AABB entityBox = entity.getBoundingBox();
 
-                if (CollisionType.Ellipsoid(
-                        this.getPosition().add(this.getLaserCenter()),
-                        new Vec3(width/2*0.6f, width/2*0.6f, length/2*0.9f),
-                        new Vector3f(-r.x, -r.y, -r.z),
-                        entity.getBoundingBox())) {
+                if (CollisionHelper.isCollidingOrientedEllipsoidBox(cx, cy, cz, ex, ey, ez,
+                        -r.x, -r.y, -r.z,
+                        entityBox.minX, entityBox.minY, entityBox.minZ,
+                        entityBox.maxX, entityBox.maxY, entityBox.maxZ)) {
                     this.shouldSetDeadWhenCollision = false;
                     this.onHit(new EntityHitResult(entity, entity.position()));
-                    /*THBullet bullet = new THBullet((THObjectContainer) this.getContainer(), THBullet.DefaultBulletStyle.arrow_mid, THBullet.BULLET_INDEX_COLOR.COLOR_BLUE);
-                    bullet.initPosition(entity.position().add(0.0f, 2.0f, 0.0f));
-                    bullet.spawn();*/
                 }
             }
     }

@@ -11,6 +11,7 @@ import com.adrian.thDanmakuCraft.util.LuaValueUtil;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
 import com.adrian.thDanmakuCraft.world.LuaKeys;
+import com.adrian.thDanmakuCraft.world.LuaBridge;
 import com.adrian.thDanmakuCraft.world.ISerializable;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
@@ -527,11 +528,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
 
     public static class LuaAPI {
         private static THObjectContainer checkTHObjectContainer(LuaValue luaValue) {
-            if (luaValue.get(LuaKeys.SOURCE).checkuserdata() instanceof THObjectContainer container){
-                return container;
-            }
-            throw new NullPointerException();
-            //return null;
+            return LuaBridge.target(luaValue, THObjectContainer.class);
         }
         private static void initTHObject(THObject object, String luaClassKey, Varargs args) {
             object.setLuaClass(luaClassKey);

@@ -106,7 +106,6 @@ public class THObjectContainerRenderer {
     private static final Map<RenderType,LegacyBufferBuilder> buffers = new HashMap<>();
     private static final LegacyBufferBuilder HIT_BOX_BUFFER = new LegacyBufferBuilder(4096);
     public static final LegacyBufferBuilder BUFFER_2 = new LegacyBufferBuilder(4096);
-    private static long lastDebugLog = 0L;
 
     private static LegacyBufferBuilder getBuffer(RenderType renderType){
         if (buffers.containsKey(renderType)){
@@ -141,13 +140,9 @@ public class THObjectContainerRenderer {
         }
 
         RenderSystem.enableBlend();
-        if (objectList.isEmpty() && System.currentTimeMillis() - lastDebugLog > 2000L) {
-            lastDebugLog = System.currentTimeMillis();
-            THDanmakuCraftMod.LOGGER.info("[thobject-debug] objectList is EMPTY (nothing to render this frame)");
-        }
         if (!objectList.isEmpty()) {
             boolean shouldRenderHitBox = entityRenderDispatcher.shouldRenderHitBoxes();
-            RenderType renderTypeLines = RenderType.lineStrip();
+            RenderType renderTypeLines = RenderType.lines();
             ///Batching
             final Map<RenderType, List<THObject>> map = new HashMap<>();
             for (THObject object : objectList) {
@@ -189,22 +184,10 @@ public class THObjectContainerRenderer {
                 if (shouldApplyEffect()) {
                     THObjectContainerRenderer.TEST_RENDER_TARGET.bindWrite(true);
                 }
-                int buffer2Verts = BUFFER_2.vertexCount();
-                int mainVerts = builder.vertexCount();
                 renderType.setupRenderState();
                 BufferUploader.drawWithShader(BUFFER_2.end());
                 BufferUploader.drawWithShader(builder.end());
                 renderType.clearRenderState();
-                if (System.currentTimeMillis() - lastDebugLog > 2000L) {
-                    lastDebugLog = System.currentTimeMillis();
-                    THDanmakuCraftMod.LOGGER.info("[thobject-debug] objects=" + objectList.size()
-                            + " renderType=" + renderType
-                            + " format=" + (renderType.format() == null ? "null" : renderType.format().getElementMapping().keySet())
-                            + " mode=" + renderType.mode()
-                            + " vertsMain=" + mainVerts
-                            + " vertsBuffer2=" + buffer2Verts
-                            + " depthShader=" + (shader != null));
-                }
                 if (shouldApplyEffect()) {
                     THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
                 }

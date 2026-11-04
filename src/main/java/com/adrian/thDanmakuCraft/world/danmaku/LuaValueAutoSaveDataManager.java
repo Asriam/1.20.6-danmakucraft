@@ -1,6 +1,8 @@
 package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.world.IDataStorage;
+import com.adrian.thDanmakuCraft.world.LuaFunctions;
+import com.adrian.thDanmakuCraft.world.LuaBridge;
 import com.adrian.thDanmakuCraft.world.LuaKeys;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
 import net.minecraft.nbt.CompoundTag;
@@ -88,10 +90,7 @@ public class LuaValueAutoSaveDataManager implements IDataStorage, ILuaValue {
 
     private static class LuaAPI{
         private static LuaValueAutoSaveDataManager checkLuaValueAutoSaveDataManager(LuaValue value){
-            if(value.get(LuaKeys.SOURCE).checkuserdata() instanceof LuaValueAutoSaveDataManager manager){
-                return manager;
-            }
-            throw new NullPointerException();
+            return LuaBridge.target(value, LuaValueAutoSaveDataManager.class);
         }
         private static final LibFunction register = new VarArgFunction() {
             @Override
@@ -108,10 +107,10 @@ public class LuaValueAutoSaveDataManager implements IDataStorage, ILuaValue {
             }
         };
         public static LuaValue functions(){
-            LuaValue library = LuaValue.tableOf();
-            library.set("register",register);
-            library.set("unregister",unregister);
-            return library;
+            return LuaFunctions.create()
+                    .add("register", register)
+                    .add("unregister", unregister)
+                    .build();
         }
 
         public static final LuaValue meta = ILuaValue.setMeta(functions());
@@ -119,10 +118,7 @@ public class LuaValueAutoSaveDataManager implements IDataStorage, ILuaValue {
 
     @Override
     public LuaValue ofLuaClass(){
-        LuaValue library = LuaValue.tableOf();
-        library.setmetatable(this.getMeta());
-        library.set("source", LuaValue.userdataOf(this));
-        return library;
+        return LuaBridge.proxy(this);
     }
 
     @Override

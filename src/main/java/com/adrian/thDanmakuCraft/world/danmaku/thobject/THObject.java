@@ -6,6 +6,7 @@ import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.util.*;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
 import com.adrian.thDanmakuCraft.world.LuaKeys;
+import com.adrian.thDanmakuCraft.world.LuaBridge;
 import com.adrian.thDanmakuCraft.world.ISerializable;
 import com.adrian.thDanmakuCraft.world.danmaku.*;
 import net.minecraft.core.BlockPos;
@@ -645,31 +646,42 @@ public class THObject implements ILuaValue, IGetContainer, ISerializable {
     }
 
     public void collisionLogic() {
+        // 每個 tick 只取一次：原本在實體迴圈內反覆呼叫 getPosition()/getRotation()，
+        // 每顆子彈每個實體都會多配置一個 Vec3 與 Vector3f。
+        final double px = this.positionX;
+        final double py = this.positionY;
+        final double pz = this.positionZ;
+        final Vec3 size = this.getSize();
+        final Vector3f rotation = this.getRotation();
+        final AABB box = this.getBoundingBox();
+        final CollisionType type = this.collisionType;
+
         List<Entity> entitiesInBound = this.container.getEntitiesInBound();
         if (!entitiesInBound.isEmpty()) {
+            final Entity user = this.getContainer().getUser();
             for (Entity entity : entitiesInBound) {
-                if (!this.canHitUser && entity.equals(this.getContainer().getUser())) {
+                if (!this.canHitUser && entity.equals(user)) {
                     continue;
                 }
 
-                if (this.collisionType == CollisionType.AABB) {
-                    AABB aabb = this.getBoundingBox();
-                    if (entity.getBoundingBox().intersects(aabb)) {
-                        onHit(new EntityHitResult(entity, this.getPosition()));
-                    }
-                } else if (this.collisionType.collisionEntity(this, entity)) {
-                    onHit(new EntityHitResult(entity, this.getPosition()));
+                AABB entityBox = entity.getBoundingBox();
+                boolean hit = (type == CollisionType.AABB)
+                        ? entityBox.intersects(box)
+                        : type.collision(px, py, pz, size.x, size.y, size.z,
+                                rotation.x, rotation.y, rotation.z,
+                                entityBox.minX, entityBox.minY, entityBox.minZ,
+                                entityBox.maxX, entityBox.maxY, entityBox.maxZ);
+                if (hit) {
+                    onHit(new EntityHitResult(entity, new Vec3(px, py, pz)));
                 }
             }
         }
 
         if (this.shouldCollingWithBlock) {
-            //THDanmakuCraftMod.LOGGER.warn("sad"+this.isClientSide());
-            if (this.collisionType == CollisionType.AABB) {
-                AABB aabb = this.getBoundingBox();
+            if (type == CollisionType.AABB) {
                 BlockHitResult result = this.level().clip(new ClipContext(
-                        new Vec3(aabb.minX, aabb.minY, aabb.minZ),
-                        new Vec3(aabb.maxX, aabb.maxY, aabb.maxZ),
+                        new Vec3(box.minX, box.minY, box.minZ),
+                        new Vec3(box.maxX, box.maxY, box.maxZ),
                         ClipContext.Block.COLLIDER,
                         ClipContext.Fluid.NONE,
                         this.container.getHostEntity()));
@@ -679,22 +691,22 @@ public class THObject implements ILuaValue, IGetContainer, ISerializable {
                 }
             } else {
                 double length = Mth.absMax(Mth.absMax(size.x, size.y), size.z);
-                AABB box = new AABB(
-                        this.getPosition().subtract(length, length, length),
-                        this.getPosition().add(length, length, length)
-                );
-                for (double z = box.minZ; z <= box.maxZ; z += 1) {
-                    for (double y = box.minY; y <= box.maxY; y += 1) {
-                        for (double x = box.minX; x <= box.maxX; x += 1) {
-                            BlockPos pos = new BlockPos(Mth.floor(x), Mth.floor(y), Mth.floor(z));
+                double minX = px - length, minY = py - length, minZ = pz - length;
+                double maxX = px + length, maxY = py + length, maxZ = pz + length;
+                BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+                for (double z = minZ; z <= maxZ; z += 1) {
+                    for (double y = minY; y <= maxY; y += 1) {
+                        for (double x = minX; x <= maxX; x += 1) {
+                            pos.set(Mth.floor(x), Mth.floor(y), Mth.floor(z));
                             BlockState blockState = this.level().getBlockState(pos);
                             if (!blockState.isAir() && blockState.isCollisionShapeFullBlock(this.level(), pos)) {
-                                if (this.collisionType.collisionBlock(this, pos)) {
+                                if (type.collisionBlock(px, py, pz, size.x, size.y, size.z,
+                                        rotation.x, rotation.y, rotation.z,
+                                        pos.getX(), pos.getY(), pos.getZ())) {
                                     BlockHitResult result = new BlockHitResult(
-                                            new Vec3(box.maxX, box.maxY, box.maxZ),
-                                            Direction.getNearest(new Vec3(box.minX, box.minY, box.minZ)),
-                                            pos, true);
-                                    //THDanmakuCraftMod.LOGGER.warn("safasfsafafasfas "+this.isClientSide());
+                                            new Vec3(maxX, maxY, maxZ),
+                                            Direction.getNearest(new Vec3(minX, minY, minZ)),
+                                            pos.immutable(), true);
                                     this.setDead();
                                     this.onHit(result);
                                 }
@@ -954,15 +966,11 @@ public class THObject implements ILuaValue, IGetContainer, ISerializable {
 
     public static class LuaAPI {
         public static THObject checkTHObject(LuaValue luaValue) {
-            /*if (luaValue.get("source").checkuserdata() instanceof THObject object) {
-                return object;
-            }
-            throw new NullPointerException();*/
-            return (THObject) luaValue.get("source").checkuserdata(THObject.class);
+            return LuaBridge.target(luaValue, THObject.class);
         }
 
         public static boolean isTHObject(LuaValue luaValue){
-            LuaValue source = luaValue.get("source");
+            LuaValue source = luaValue.get(LuaKeys.SOURCE);
             if(source.isnil()){
                 return false;
             }

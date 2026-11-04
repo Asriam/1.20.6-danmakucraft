@@ -212,17 +212,24 @@ public class THCurvyLaser extends THLaser {
             if(entitiesInBound.isEmpty()){
                 return;
             }
-            for(var node:nodeList){
-                if(node.isValid()) {
-                    entitiesInBound.forEach((entity -> {
-                        if (!entity.equals(laser.getContainer().getUser()) && entity.getBoundingBox().intersects(node.getBoundingBox())) {
-                            laser.onHit(new EntityHitResult(entity, node.getPosition()));
-                            if (laser.breakable)
-                                node.isValid = false;
-                        }
-                    }));
+            final Entity user = laser.getContainer().getUser();
+            for (LaserNode node : nodeList) {
+                if (!node.isValid()) {
+                    continue;
                 }
-            };
+                // 每個節點只取一次（原本每個實體都取一次，且用 forEach lambda 走訪）
+                final AABB nodeBox = node.getBoundingBox();
+                final Vec3 nodePos = node.getPosition();
+                for (Entity entity : entitiesInBound) {
+                    if (entity.equals(user) || !entity.getBoundingBox().intersects(nodeBox)) {
+                        continue;
+                    }
+                    laser.onHit(new EntityHitResult(entity, nodePos));
+                    if (laser.breakable) {
+                        node.isValid = false;
+                    }
+                }
+            }
         }
 
         public void writeData(@NotNull FriendlyByteBuf buffer){
