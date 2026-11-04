@@ -127,8 +127,8 @@ public class LuaScriptEditorScreen extends Screen {
 
     /** 分成「腳本」與「內建 API」兩個分類，標題列插在中間。 */
     private List<BrowserRow> browserRows = new ArrayList<>();
-    /** 已收合的分類標題（腳本 / 內建 API / 內建工具庫），預設展開。 */
-    private final Set<String> collapsedGroups = new HashSet<>();
+    /** 已展開的分類標題（內建 API / 內建工具庫 / Lua 5.3 標準庫），預設收合。 */
+    private final Set<String> expandedSections = new HashSet<>();
     /** 工作欄：使用者用 Ctrl+T 加入的檔案（顯示路徑，內建檔案帶 apidoc/ 或 lib/ 前綴）。 */
     private final List<String> taskBar = new ArrayList<>();
     /** 已展開的資料夾（預設收合，所以記錄的是「展開」而不是「收合」）。 */
@@ -205,6 +205,10 @@ public class LuaScriptEditorScreen extends Screen {
     private int lastMouseX;
     private int lastMouseY;
     private int fileButtonX;
+    /** 頂部列的動作按鈕（保存 / 保存全部 / 復原 / 重做）。 */
+    private static final String[] TOP_ACTIONS = { "保存", "保存全部", "復原", "重做" };
+    private final int[] topActionX = new int[TOP_ACTIONS.length];
+    private final int[] topActionW = new int[TOP_ACTIONS.length];
     private int fileButtonW;
     private String dialogInput = "";
     /** 對話框開啟時的原始檔名（改名／刪除的來源，不受輸入內容影響）。 */
@@ -447,11 +451,11 @@ public class LuaScriptEditorScreen extends Screen {
         List<BrowserRow> rows = new ArrayList<>();
         for (LuaScriptFiles.BuiltinRoot root : LuaScriptFiles.BUILTIN_ROOTS) {
             List<LuaScriptFiles.Entry> entries = byRoot.getOrDefault(root.name(), List.of());
-            boolean collapsed = this.collapsedGroups.contains(root.name());
-            String marker = collapsed ? "▶ " : "▼ ";
+            boolean expanded = this.expandedSections.contains(root.name());
+            String marker = expanded ? "▼ " : "▶ ";
             rows.add(new BrowserRow(marker + this.builtinTitle(root.name()) + " (" + entries.size()
                     + ") · 唯讀", null, root.name(), null, 0, null));
-            if (!collapsed) {
+            if (expanded) {
                 this.addTree(rows, entries, root.name() + "/", "dir:" + root.name() + "/", 1, List.of());
             }
         }
@@ -471,7 +475,7 @@ public class LuaScriptEditorScreen extends Screen {
         String normalized = path.replace('\\', '/');
         for (LuaScriptFiles.BuiltinRoot root : LuaScriptFiles.BUILTIN_ROOTS) {
             if (normalized.equals(root.name()) || normalized.startsWith(root.name() + "/")) {
-                this.collapsedGroups.remove(root.name());
+                this.expandedSections.add(root.name());
                 break;
             }
         }
@@ -573,9 +577,10 @@ public class LuaScriptEditorScreen extends Screen {
 
 
 
+    /** 分類標題預設收合，所以這裡切換的是「展開」狀態。 */
     private void toggleGroup(String group) {
-        if (!this.collapsedGroups.remove(group)) {
-            this.collapsedGroups.add(group);
+        if (!this.expandedSections.remove(group)) {
+            this.expandedSections.add(group);
         }
         this.refreshFileList();
     }
@@ -981,30 +986,77 @@ public class LuaScriptEditorScreen extends Screen {
         graphics.fill(0, 0, this.width, TOP_BAR_HEIGHT, BAR_BG);
         graphics.drawString(this.font, "Lua Script Editor", PADDING, PADDING + 1, 0xFFFFFFFF, false);
 
-        // 「檔案」按鈕（讓檔案管理器看得到，不必先知道 Ctrl+O）
+        // 「檔案」按鈕
         int titleWidth = this.font.width("Lua Script Editor");
         this.fileButtonX = PADDING + titleWidth + 12;
         this.fileButtonW = this.font.width("檔案") + 10;
-        boolean hover = this.lastMouseX >= this.fileButtonX && this.lastMouseX <= this.fileButtonX + this.fileButtonW
-                && this.lastMouseY >= PADDING && this.lastMouseY <= PADDING + LINE_HEIGHT + 2;
-        if (this.browserOpen || hover) {
+        boolean fileHover = this.inRect(this.lastMouseX, this.lastMouseY,
+                this.fileButtonX, PADDING, this.fileButtonW, LINE_HEIGHT + 2);
+        if (this.browserOpen || fileHover) {
             graphics.fill(this.fileButtonX, PADDING, this.fileButtonX + this.fileButtonW, PADDING + LINE_HEIGHT + 2,
                     this.browserOpen ? 0xFF2D6CDF : 0x553B82F6);
         }
         graphics.drawString(this.font, "檔案", this.fileButtonX + 5, PADDING + 2, 0xFFFFFFFF, false);
 
+        // 動作按鈕：保存 / 保存全部 / 復原 / 重做
+        int bx = this.fileButtonX + this.fileButtonW + 6;
+        for (int i = 0; i < TOP_ACTIONS.length; i++) {
+            int width = this.font.width(TOP_ACTIONS[i]) + 10;
+            this.topActionX[i] = bx;
+            this.topActionW[i] = width;
+            boolean enabled = this.topActionEnabled(i);
+            boolean hover = enabled && this.inRect(this.lastMouseX, this.lastMouseY,
+                    bx, PADDING, width, LINE_HEIGHT + 2);
+            if (hover) {
+                graphics.fill(bx, PADDING, bx + width, PADDING + LINE_HEIGHT + 2, 0x553B82F6);
+            }
+            graphics.drawString(this.font, TOP_ACTIONS[i], bx + 5, PADDING + 2,
+                    !enabled ? 0xFF5A6478 : (hover ? 0xFFFFFFFF : 0xFFD4D4D4), false);
+            bx += width + 4;
+        }
+
+        // 檔名（空間不夠就截斷）
         String name = this.fileName + (this.dirty ? " *" : "") + (this.readOnly ? "  [唯讀]" : "");
-        graphics.drawString(this.font, name, this.fileButtonX + this.fileButtonW + 10, PADDING + 2,
+        int hintWidth = this.font.width("Ctrl+O");
+        int nameX = bx + 8;
+        int nameMax = Math.max(40, this.width - PADDING - hintWidth - 24 - nameX);
+        graphics.drawString(this.font, this.font.plainSubstrByWidth(name, nameMax), nameX, PADDING + 2,
                 this.dirty ? 0xFFFFD479 : STATUS_TEXT, false);
+
         if (this.syntaxErrorLine > 0) {
             String badge = "⚠ 第 " + this.syntaxErrorLine + " 行";
-            int hintY = PADDING + 2;
-            int hintX = this.width - PADDING - this.font.width("Ctrl+O 檔案 · Ctrl+S 儲存 · Esc 關閉");
-            graphics.drawString(this.font, badge, hintX - this.font.width(badge) - 10, hintY,
-                    0xFFFF6B6B, false);
+            graphics.drawString(this.font, badge, this.width - PADDING - hintWidth - this.font.width(badge) - 10,
+                    PADDING + 2, 0xFFFF6B6B, false);
         }
-        String hint = "Ctrl+O 檔案 · Ctrl+S 儲存 · Esc 關閉";
-        graphics.drawString(this.font, hint, this.width - PADDING - this.font.width(hint), PADDING + 1, LINE_NO, false);
+        String hint = "Ctrl+O";
+        graphics.drawString(this.font, hint, this.width - PADDING - hintWidth, PADDING + 1, LINE_NO, false);
+    }
+
+    private boolean inRect(double x, double y, int rx, int ry, int rw, int rh) {
+        return x >= rx && x <= rx + rw && y >= ry && y <= ry + rh;
+    }
+
+    /** 按鈕是否可用（沒有可做的事就變灰且點不動）。 */
+    private boolean topActionEnabled(int index) {
+        return switch (index) {
+            case 0 -> !this.readOnly;
+            case 1 -> this.anyDirtyBuffer();
+            case 2 -> !this.undoStack.isEmpty();
+            case 3 -> !this.redoStack.isEmpty();
+            default -> false;
+        };
+    }
+
+    private boolean anyDirtyBuffer() {
+        if (this.dirty) {
+            return true;
+        }
+        for (Buffer buffer : this.buffers.values()) {
+            if (buffer.dirty && !buffer.readOnly) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** 工作欄：一排分頁，點擊切換、右端 x 或右鍵關閉。 */
@@ -2566,9 +2618,29 @@ public class LuaScriptEditorScreen extends Screen {
     }
 
     private boolean handleTopBarClick(double mouseX, double mouseY) {
-        if (mouseY >= PADDING && mouseY <= PADDING + LINE_HEIGHT + 2
-                && mouseX >= this.fileButtonX && mouseX <= this.fileButtonX + this.fileButtonW) {
+        if (this.inRect(mouseX, mouseY, this.fileButtonX, PADDING, this.fileButtonW, LINE_HEIGHT + 2)) {
             this.toggleBrowser();
+            return true;
+        }
+        for (int i = 0; i < TOP_ACTIONS.length; i++) {
+            if (this.topActionW[i] <= 0) {
+                continue;
+            }
+            if (!this.inRect(mouseX, mouseY, this.topActionX[i], PADDING, this.topActionW[i], LINE_HEIGHT + 2)) {
+                continue;
+            }
+            if (!this.topActionEnabled(i)) {
+                this.setStatus("目前沒有可執行的動作", LINE_NO);
+                return true;
+            }
+            switch (i) {
+                case 0 -> this.save();
+                case 1 -> this.saveAll();
+                case 2 -> this.undo();
+                case 3 -> this.redo();
+                default -> {
+                }
+            }
             return true;
         }
         return false;
