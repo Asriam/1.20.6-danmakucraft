@@ -1,0 +1,422 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1720" height="1356" viewBox="0 0 1720 1356">
+<defs><linearGradient id="paper" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e7ecf5"/></linearGradient><linearGradient id="hdr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0f1829"/><stop offset="1" stop-color="#1e2b47"/></linearGradient></defs>
+<rect x="0.0" y="0.0" width="1720.0" height="1356.0" rx="0" fill="#eef1f7"/>
+<rect x="0.0" y="0.0" width="1720.0" height="1356.0" rx="0" fill="url(#paper)"/>
+<rect x="0.0" y="0.0" width="1720.0" height="150.0" rx="0" fill="url(#hdr)"/>
+<rect x="0.0" y="146.0" width="1720.0" height="4.0" rx="0" fill="#6366f1" opacity="0.95"/>
+<text x="40.0" y="46.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.5" font-weight="700" fill="#a5b4fc" letter-spacing="2.4">THDANMAKUCRAFT</text>
+<rect x="216.0" y="33.0" width="1.0" height="18.0" rx="0" fill="#34436b"/>
+<text x="230.0" y="46.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.5" font-weight="500" fill="#8ea0c4">Minecraft Forge Mod · 彈幕 / 符卡引擎</text>
+<text x="40.0" y="99.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="30" font-weight="700" fill="#ffffff">Touhou Danmaku Craft 專案結構規範圖</text>
+<text x="40.0" y="123.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="11.2" font-weight="400" fill="#93a4c7">Minecraft 1.20.6 · Forge 50.1.48 · Java 21 · luaj-jse 3.0.1 ｜ 127 個 Java 類別 / 13,689 行 ｜ 封包即分層</text>
+<rect x="1176.0" y="58.0" width="9.0" height="9.0" rx="2.5" fill="#818cf8"/>
+<text x="1191.0" y="66.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.2" font-weight="500" fill="#c7d2e6">入口與事件</text>
+<rect x="1261.0" y="58.0" width="9.0" height="9.0" rx="2.5" fill="#38bdf8"/>
+<text x="1276.0" y="66.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.2" font-weight="500" fill="#c7d2e6">註冊與資料</text>
+<rect x="1346.0" y="58.0" width="9.0" height="9.0" rx="2.5" fill="#fb923c"/>
+<text x="1361.0" y="66.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.2" font-weight="500" fill="#c7d2e6">彈幕領域</text>
+<rect x="1420.8" y="58.0" width="9.0" height="9.0" rx="2.5" fill="#c084fc"/>
+<text x="1435.8" y="66.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.2" font-weight="500" fill="#c7d2e6">腳本層</text>
+<rect x="1485.4" y="58.0" width="9.0" height="9.0" rx="2.5" fill="#2dd4bf"/>
+<text x="1500.4" y="66.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.2" font-weight="500" fill="#c7d2e6">呈現層</text>
+<rect x="1550.0" y="58.0" width="9.0" height="9.0" rx="2.5" fill="#fbbf24"/>
+<text x="1565.0" y="66.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.2" font-weight="500" fill="#c7d2e6">網路</text>
+<rect x="1604.4" y="58.0" width="9.0" height="9.0" rx="2.5" fill="#94a3b8"/>
+<text x="1619.4" y="66.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.2" font-weight="500" fill="#c7d2e6">基礎設施</text>
+<rect x="40.0" y="160.0" width="1140.0" height="114.0" rx="12" fill="#eef0fe"/>
+<rect x="40.0" y="160.0" width="1140.0" height="114.0" rx="12" fill="none" stroke="#6366f1" stroke-width="1" opacity="0.2"/>
+<rect x="40.0" y="160.0" width="200.0" height="114.0" rx="12" fill="#ffffff" opacity="0.75"/>
+<text x="58.0" y="193.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="20" font-weight="800" fill="#6366f1">L0</text>
+<text x="58.0" y="217.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="14.6" font-weight="700" fill="#0f172a">入口與事件</text>
+<text x="58.0" y="232.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="8.2" font-weight="600" fill="#94a3b8" letter-spacing="1.1">ENTRY &amp; WIRING</text>
+<text x="58.0" y="245.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.5" font-weight="400" fill="#64748b">Forge 進入點、事件匯流排</text>
+<rect x="250.0" y="172.0" width="219.5" height="84.0" rx="9" fill="#6366f1"/>
+<rect x="255.5" y="172.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="250.0" y="172.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="265.0" y="196.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">THDanmakuCraftMod</text>
+<rect x="429.1" y="184.5" width="31.4" height="16.0" rx="8" fill="#eef0fe"/>
+<text x="444.8" y="196.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#6366f1" text-anchor="middle">入口</text>
+<text x="265.0" y="218.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">@Mod 入口：掛載 DeferredRegister、</text>
+<text x="265.0" y="232.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">啟動 Lua、伺服器啟動回呼</text>
+<rect x="481.5" y="172.0" width="219.5" height="84.0" rx="9" fill="#6366f1"/>
+<rect x="487.0" y="172.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="481.5" y="172.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="496.5" y="196.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">events</text>
+<rect x="674.0" y="184.5" width="18.0" height="16.0" rx="8" fill="#eef0fe"/>
+<text x="683.0" y="196.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#6366f1" text-anchor="middle">7</text>
+<text x="496.5" y="218.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">Common / Client / Render / Gui /</text>
+<text x="496.5" y="232.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">Tick / Player 七個事件監聽器</text>
+<rect x="713.0" y="172.0" width="219.5" height="84.0" rx="9" fill="#6366f1"/>
+<rect x="718.5" y="172.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="713.0" y="172.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="728.0" y="196.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">mixins</text>
+<rect x="905.5" y="184.5" width="18.0" height="16.0" rx="8" fill="#eef0fe"/>
+<text x="914.5" y="196.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#6366f1" text-anchor="middle">1</text>
+<text x="728.0" y="218.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">LevelRendererMixin：於關卡渲染階段</text>
+<text x="728.0" y="232.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">插入自訂繪製</text>
+<rect x="944.5" y="172.0" width="219.5" height="84.0" rx="9" fill="#6366f1"/>
+<rect x="950.0" y="172.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="944.5" y="172.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="959.5" y="196.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">handler</text>
+<rect x="1137.0" y="184.5" width="18.0" height="16.0" rx="8" fill="#eef0fe"/>
+<text x="1146.0" y="196.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#6366f1" text-anchor="middle">2</text>
+<text x="959.5" y="218.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">客戶端處理器佔位，保留 Forge 事件擴</text>
+<text x="959.5" y="232.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">充點</text>
+<path d="M 135.0 275.0 L 140.0 280.0 L 145.0 275.0" fill="none" stroke="#c3ccdb" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="40.0" y="286.0" width="1140.0" height="114.0" rx="12" fill="#e8f4fc"/>
+<rect x="40.0" y="286.0" width="1140.0" height="114.0" rx="12" fill="none" stroke="#0284c7" stroke-width="1" opacity="0.2"/>
+<rect x="40.0" y="286.0" width="200.0" height="114.0" rx="12" fill="#ffffff" opacity="0.75"/>
+<text x="58.0" y="319.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="20" font-weight="800" fill="#0284c7">L1</text>
+<text x="58.0" y="343.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="14.6" font-weight="700" fill="#0f172a">註冊與資料</text>
+<text x="58.0" y="358.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="8.2" font-weight="600" fill="#94a3b8" letter-spacing="1.1">REGISTRY &amp; DATA</text>
+<text x="58.0" y="371.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.5" font-weight="400" fill="#64748b">DeferredRegister 與型別註冊表</text>
+<rect x="250.0" y="298.0" width="219.5" height="84.0" rx="9" fill="#0284c7"/>
+<rect x="255.5" y="298.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="250.0" y="298.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="265.0" y="322.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">init</text>
+<rect x="442.5" y="310.5" width="18.0" height="16.0" rx="8" fill="#e8f4fc"/>
+<text x="451.5" y="322.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#0284c7" text-anchor="middle">5</text>
+<text x="265.0" y="344.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">BLOCKS / ITEMS / ENTITIES / TABS</text>
+<text x="265.0" y="358.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">/ TH_OBJECTS 五組註冊</text>
+<rect x="481.5" y="298.0" width="219.5" height="84.0" rx="9" fill="#0284c7"/>
+<rect x="487.0" y="298.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="481.5" y="298.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="496.5" y="322.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">registries</text>
+<rect x="674.0" y="310.5" width="18.0" height="16.0" rx="8" fill="#e8f4fc"/>
+<text x="683.0" y="322.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#0284c7" text-anchor="middle">2</text>
+<text x="496.5" y="344.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">THObjectRegistry：彈幕型別 → 建構</text>
+<text x="496.5" y="358.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">子映射表</text>
+<rect x="713.0" y="298.0" width="219.5" height="84.0" rx="9" fill="#0284c7"/>
+<rect x="718.5" y="298.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="713.0" y="298.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="728.0" y="322.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">network.syncher</text>
+<rect x="905.5" y="310.5" width="18.0" height="16.0" rx="8" fill="#e8f4fc"/>
+<text x="914.5" y="322.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#0284c7" text-anchor="middle">1</text>
+<text x="728.0" y="344.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">MyEntityDataSerializers：自訂實體</text>
+<text x="728.0" y="358.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">資料同步序列化</text>
+<rect x="944.5" y="298.0" width="219.5" height="84.0" rx="9" fill="#0284c7"/>
+<rect x="950.0" y="298.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="944.5" y="298.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="959.5" y="322.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">registry 契約</text>
+<rect x="1123.6" y="310.5" width="31.4" height="16.0" rx="8" fill="#e8f4fc"/>
+<text x="1139.3" y="322.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#0284c7" text-anchor="middle">規範</text>
+<text x="959.5" y="344.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">新增內容一律經 DeferredRegister 登</text>
+<text x="959.5" y="358.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">記，Registry 為唯一事實來源</text>
+<path d="M 135.0 401.0 L 140.0 406.0 L 145.0 401.0" fill="none" stroke="#c3ccdb" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="40.0" y="412.0" width="1140.0" height="208.0" rx="12" fill="#fdf0e6"/>
+<rect x="40.0" y="412.0" width="1140.0" height="208.0" rx="12" fill="none" stroke="#ea6a12" stroke-width="1" opacity="0.2"/>
+<rect x="40.0" y="412.0" width="200.0" height="208.0" rx="12" fill="#ffffff" opacity="0.75"/>
+<text x="58.0" y="445.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="20" font-weight="800" fill="#ea6a12">L2</text>
+<text x="58.0" y="469.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="14.6" font-weight="700" fill="#0f172a">領域：彈幕核心</text>
+<text x="58.0" y="484.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="8.2" font-weight="600" fill="#94a3b8" letter-spacing="1.1">DANMAKU DOMAIN</text>
+<text x="58.0" y="497.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.5" font-weight="400" fill="#64748b">容器 → 管理器 → 物件的狀態模擬</text>
+<text x="58.0" y="508.5" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.5" font-weight="400" fill="#64748b">與碰撞</text>
+<rect x="250.0" y="424.0" width="219.5" height="84.0" rx="9" fill="#ea6a12"/>
+<rect x="255.5" y="424.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="250.0" y="424.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="265.0" y="448.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">world.danmaku</text>
+<rect x="437.5" y="436.5" width="23.0" height="16.0" rx="8" fill="#fdf0e6"/>
+<text x="449.0" y="448.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#ea6a12" text-anchor="middle">14</text>
+<text x="265.0" y="470.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">THObjectContainer：物件池、任務、</text>
+<text x="265.0" y="484.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">目標、符卡狀態</text>
+<rect x="481.5" y="424.0" width="219.5" height="84.0" rx="9" fill="#ea6a12"/>
+<rect x="487.0" y="424.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="481.5" y="424.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="496.5" y="448.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">danmaku.thobject</text>
+<rect x="674.0" y="436.5" width="18.0" height="16.0" rx="8" fill="#fdf0e6"/>
+<text x="683.0" y="448.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#ea6a12" text-anchor="middle">5</text>
+<text x="496.5" y="470.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">THObject 基底：運動、生命週期、命</text>
+<text x="496.5" y="484.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">中盒、渲染資料</text>
+<rect x="713.0" y="424.0" width="219.5" height="84.0" rx="9" fill="#ea6a12"/>
+<rect x="718.5" y="424.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="713.0" y="424.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="728.0" y="448.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">thobject.bullet</text>
+<rect x="905.5" y="436.5" width="18.0" height="16.0" rx="8" fill="#fdf0e6"/>
+<text x="914.5" y="448.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#ea6a12" text-anchor="middle">1</text>
+<text x="728.0" y="475.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">THBullet：彈型、發射、命中判定</text>
+<rect x="944.5" y="424.0" width="219.5" height="84.0" rx="9" fill="#ea6a12"/>
+<rect x="950.0" y="424.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="944.5" y="424.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="959.5" y="448.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">thobject.laser</text>
+<rect x="1137.0" y="436.5" width="18.0" height="16.0" rx="8" fill="#fdf0e6"/>
+<text x="1146.0" y="448.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#ea6a12" text-anchor="middle">2</text>
+<text x="959.5" y="470.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">THLaser / THCurvyLaser：線段與曲</text>
+<text x="959.5" y="484.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">線雷射</text>
+<rect x="250.0" y="518.0" width="219.5" height="84.0" rx="9" fill="#ea6a12"/>
+<rect x="255.5" y="518.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="250.0" y="518.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="265.0" y="542.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">physics.collision</text>
+<rect x="442.5" y="530.5" width="18.0" height="16.0" rx="8" fill="#fdf0e6"/>
+<text x="451.5" y="542.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#ea6a12" text-anchor="middle">8</text>
+<text x="265.0" y="564.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">8 種碰撞體：AABB / OBB / 球 / 點</text>
+<text x="265.0" y="578.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">/ 位置</text>
+<rect x="481.5" y="518.0" width="219.5" height="84.0" rx="9" fill="#ea6a12"/>
+<rect x="487.0" y="518.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="481.5" y="518.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="496.5" y="542.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">world.entity</text>
+<rect x="674.0" y="530.5" width="18.0" height="16.0" rx="8" fill="#fdf0e6"/>
+<text x="683.0" y="542.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#ea6a12" text-anchor="middle">6</text>
+<text x="496.5" y="569.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">載體實體、Boss、坐騎、符卡實體</text>
+<rect x="713.0" y="518.0" width="219.5" height="84.0" rx="9" fill="#ea6a12"/>
+<rect x="718.5" y="518.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="713.0" y="518.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="728.0" y="542.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">world.item</text>
+<rect x="905.5" y="530.5" width="18.0" height="16.0" rx="8" fill="#fdf0e6"/>
+<text x="914.5" y="542.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#ea6a12" text-anchor="middle">4</text>
+<text x="728.0" y="569.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">符卡與測試物品：玩家的操作入口</text>
+<rect x="944.5" y="518.0" width="219.5" height="84.0" rx="9" fill="#ea6a12"/>
+<rect x="950.0" y="518.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="944.5" y="518.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="959.5" y="542.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">world</text>
+<rect x="1137.0" y="530.5" width="18.0" height="16.0" rx="8" fill="#fdf0e6"/>
+<text x="1146.0" y="542.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#ea6a12" text-anchor="middle">6</text>
+<text x="959.5" y="564.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">IDataStorage / ILuaValue /</text>
+<text x="959.5" y="578.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">ISerializable 契約</text>
+<path d="M 135.0 621.0 L 140.0 626.0 L 145.0 621.0" fill="none" stroke="#c3ccdb" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="40.0" y="632.0" width="1140.0" height="114.0" rx="12" fill="#f5ebfe"/>
+<rect x="40.0" y="632.0" width="1140.0" height="114.0" rx="12" fill="none" stroke="#9333ea" stroke-width="1" opacity="0.2"/>
+<rect x="40.0" y="632.0" width="200.0" height="114.0" rx="12" fill="#ffffff" opacity="0.75"/>
+<text x="58.0" y="665.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="20" font-weight="800" fill="#9333ea">L3</text>
+<text x="58.0" y="689.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="14.6" font-weight="700" fill="#0f172a">腳本層</text>
+<text x="58.0" y="704.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="8.2" font-weight="600" fill="#94a3b8" letter-spacing="1.1">LUA SCRIPTING</text>
+<text x="58.0" y="717.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.5" font-weight="400" fill="#64748b">luaj 3.0.1 嵌入 · Java ↔ Lua</text>
+<rect x="250.0" y="644.0" width="219.5" height="84.0" rx="9" fill="#9333ea"/>
+<rect x="255.5" y="644.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="250.0" y="644.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="265.0" y="668.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">lua</text>
+<rect x="442.5" y="656.5" width="18.0" height="16.0" rx="8" fill="#f5ebfe"/>
+<text x="451.5" y="668.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#9333ea" text-anchor="middle">3</text>
+<text x="265.0" y="690.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">LuaCore：API 全域註冊；LuaLoader：</text>
+<text x="265.0" y="704.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">腳本載入</text>
+<rect x="481.5" y="644.0" width="219.5" height="84.0" rx="9" fill="#9333ea"/>
+<rect x="487.0" y="644.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="481.5" y="644.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="496.5" y="668.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">script</text>
+<rect x="674.0" y="656.5" width="18.0" height="16.0" rx="8" fill="#f5ebfe"/>
+<text x="683.0" y="668.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#9333ea" text-anchor="middle">2</text>
+<text x="496.5" y="690.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">IScript / ScriptManager：腳本生命</text>
+<text x="496.5" y="704.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">週期契約</text>
+<rect x="713.0" y="644.0" width="219.5" height="84.0" rx="9" fill="#9333ea"/>
+<rect x="718.5" y="644.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="713.0" y="644.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="728.0" y="668.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">LuaValue*</text>
+<rect x="905.5" y="656.5" width="18.0" height="16.0" rx="8" fill="#f5ebfe"/>
+<text x="914.5" y="668.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#9333ea" text-anchor="middle">3</text>
+<text x="728.0" y="690.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">型別轉換、自動存檔資料、Lua 值輔助</text>
+<text x="728.0" y="704.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">（world / util）</text>
+<rect x="944.5" y="644.0" width="219.5" height="84.0" rx="9" fill="#9333ea"/>
+<rect x="950.0" y="644.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="944.5" y="644.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="959.5" y="668.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">data … /lua</text>
+<rect x="1132.0" y="656.5" width="23.0" height="16.0" rx="8" fill="#f5ebfe"/>
+<text x="1143.5" y="668.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#9333ea" text-anchor="middle">36</text>
+<text x="959.5" y="690.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">資料包腳本：lib、spellcard、apidoc，</text>
+<text x="959.5" y="704.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">由 ResourceLoader 掃描</text>
+<path d="M 135.0 747.0 L 140.0 752.0 L 145.0 747.0" fill="none" stroke="#c3ccdb" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="40.0" y="758.0" width="1140.0" height="208.0" rx="12" fill="#e6f6f4"/>
+<rect x="40.0" y="758.0" width="1140.0" height="208.0" rx="12" fill="none" stroke="#0d9488" stroke-width="1" opacity="0.2"/>
+<rect x="40.0" y="758.0" width="200.0" height="208.0" rx="12" fill="#ffffff" opacity="0.75"/>
+<text x="58.0" y="791.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="20" font-weight="800" fill="#0d9488">L4</text>
+<text x="58.0" y="815.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="14.6" font-weight="700" fill="#0f172a">呈現層</text>
+<text x="58.0" y="830.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="8.2" font-weight="600" fill="#94a3b8" letter-spacing="1.1">CLIENT PRESENTATION</text>
+<text x="58.0" y="843.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.5" font-weight="400" fill="#64748b">批次頂點、自訂 Shader、編輯器</text>
+<text x="58.0" y="854.5" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.5" font-weight="400" fill="#64748b">GUI</text>
+<rect x="250.0" y="770.0" width="219.5" height="84.0" rx="9" fill="#0d9488"/>
+<rect x="255.5" y="770.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="250.0" y="770.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="265.0" y="794.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">client.renderer</text>
+<rect x="442.5" y="782.5" width="18.0" height="16.0" rx="8" fill="#e6f6f4"/>
+<text x="451.5" y="794.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#0d9488" text-anchor="middle">9</text>
+<text x="265.0" y="816.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">VertexBuilder / MyRenderTypes /</text>
+<text x="265.0" y="830.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">ShaderLoader / 遮蔽剔除</text>
+<rect x="481.5" y="770.0" width="219.5" height="84.0" rx="9" fill="#0d9488"/>
+<rect x="487.0" y="770.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="481.5" y="770.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="496.5" y="794.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">renderer.danmaku</text>
+<rect x="674.0" y="782.5" width="18.0" height="16.0" rx="8" fill="#e6f6f4"/>
+<text x="683.0" y="794.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#0d9488" text-anchor="middle">5</text>
+<text x="496.5" y="816.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">容器與物件渲染器 Provider 註冊與分</text>
+<text x="496.5" y="830.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">派</text>
+<rect x="713.0" y="770.0" width="219.5" height="84.0" rx="9" fill="#0d9488"/>
+<rect x="718.5" y="770.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="713.0" y="770.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="728.0" y="794.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">renderer.thobject</text>
+<rect x="905.5" y="782.5" width="18.0" height="16.0" rx="8" fill="#e6f6f4"/>
+<text x="914.5" y="794.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#0d9488" text-anchor="middle">4</text>
+<text x="728.0" y="816.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">THObjectRenderer 基礎類與多型渲染</text>
+<text x="728.0" y="830.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">（danmaku 之下）</text>
+<rect x="944.5" y="770.0" width="219.5" height="84.0" rx="9" fill="#0d9488"/>
+<rect x="950.0" y="770.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="944.5" y="770.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="959.5" y="794.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">renderer.bullet·laser</text>
+<rect x="1137.0" y="782.5" width="18.0" height="16.0" rx="8" fill="#e6f6f4"/>
+<text x="1146.0" y="794.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#0d9488" text-anchor="middle">4</text>
+<text x="959.5" y="821.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">子彈與雷射的批次繪製（danmaku 之下）</text>
+<rect x="250.0" y="864.0" width="219.5" height="84.0" rx="9" fill="#0d9488"/>
+<rect x="255.5" y="864.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="250.0" y="864.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="265.0" y="888.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">renderer.shape</text>
+<rect x="442.5" y="876.5" width="18.0" height="16.0" rx="8" fill="#e6f6f4"/>
+<text x="451.5" y="888.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#0d9488" text-anchor="middle">4</text>
+<text x="265.0" y="915.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">球 / 柱 / 立方 / 通用形狀頂點產生</text>
+<rect x="481.5" y="864.0" width="219.5" height="84.0" rx="9" fill="#0d9488"/>
+<rect x="487.0" y="864.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="481.5" y="864.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="496.5" y="888.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">renderer.entity</text>
+<rect x="674.0" y="876.5" width="18.0" height="16.0" rx="8" fill="#e6f6f4"/>
+<text x="683.0" y="888.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#0d9488" text-anchor="middle">4</text>
+<text x="496.5" y="910.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">實體、坐騎、符卡模型與渲染（含</text>
+<text x="496.5" y="924.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">model）</text>
+<rect x="713.0" y="864.0" width="219.5" height="84.0" rx="9" fill="#0d9488"/>
+<rect x="718.5" y="864.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="713.0" y="864.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="728.0" y="888.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">gui.editor</text>
+<rect x="905.5" y="876.5" width="18.0" height="16.0" rx="8" fill="#e6f6f4"/>
+<text x="914.5" y="888.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#0d9488" text-anchor="middle">4</text>
+<text x="728.0" y="915.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">節點式彈幕編輯器（EditorScreen）</text>
+<rect x="944.5" y="864.0" width="219.5" height="84.0" rx="9" fill="#0d9488"/>
+<rect x="950.0" y="864.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="944.5" y="864.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="959.5" y="888.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">gui.components</text>
+<rect x="1137.0" y="876.5" width="18.0" height="16.0" rx="8" fill="#e6f6f4"/>
+<text x="1146.0" y="888.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#0d9488" text-anchor="middle">3</text>
+<text x="959.5" y="915.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">HUD overlay、符卡名稱、分層繪製</text>
+<path d="M 135.0 967.0 L 140.0 972.0 L 145.0 967.0" fill="none" stroke="#c3ccdb" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="40.0" y="978.0" width="1140.0" height="114.0" rx="12" fill="#eef1f5"/>
+<rect x="40.0" y="978.0" width="1140.0" height="114.0" rx="12" fill="none" stroke="#475569" stroke-width="1" opacity="0.2"/>
+<rect x="40.0" y="978.0" width="200.0" height="114.0" rx="12" fill="#ffffff" opacity="0.75"/>
+<text x="58.0" y="1011.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="20" font-weight="800" fill="#475569">L5</text>
+<text x="58.0" y="1035.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="14.6" font-weight="700" fill="#0f172a">基礎設施</text>
+<text x="58.0" y="1050.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="8.2" font-weight="600" fill="#94a3b8" letter-spacing="1.1">FOUNDATION</text>
+<text x="58.0" y="1063.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.5" font-weight="400" fill="#64748b">無狀態工具、建置設定與資源</text>
+<rect x="250.0" y="990.0" width="219.5" height="84.0" rx="9" fill="#475569"/>
+<rect x="255.5" y="990.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="250.0" y="990.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="265.0" y="1014.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">util</text>
+<rect x="437.5" y="1002.5" width="23.0" height="16.0" rx="8" fill="#eef1f5"/>
+<text x="449.0" y="1014.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#475569" text-anchor="middle">18</text>
+<text x="265.0" y="1036.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">數學、OBB、GZIP、序列化、資源載入、</text>
+<text x="265.0" y="1050.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">基數排序</text>
+<rect x="481.5" y="990.0" width="219.5" height="84.0" rx="9" fill="#475569"/>
+<rect x="487.0" y="990.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="481.5" y="990.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="496.5" y="1014.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">assets · data</text>
+<rect x="660.6" y="1002.5" width="31.4" height="16.0" rx="8" fill="#eef1f5"/>
+<text x="676.3" y="1014.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#475569" text-anchor="middle">資源</text>
+<text x="496.5" y="1036.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">shaders / textures / lang / Lua</text>
+<text x="496.5" y="1050.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">腳本庫</text>
+<rect x="713.0" y="990.0" width="219.5" height="84.0" rx="9" fill="#475569"/>
+<rect x="718.5" y="990.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="713.0" y="990.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="728.0" y="1014.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">gradle · 建置</text>
+<rect x="892.1" y="1002.5" width="31.4" height="16.0" rx="8" fill="#eef1f5"/>
+<text x="907.8" y="1014.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#475569" text-anchor="middle">設定</text>
+<text x="728.0" y="1036.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">ForgeGradle 6 · Java 21</text>
+<text x="728.0" y="1050.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">toolchain · Mixin AP …</text>
+<rect x="944.5" y="990.0" width="219.5" height="84.0" rx="9" fill="#475569"/>
+<rect x="950.0" y="990.6" width="214.0" height="82.8" rx="8.5" fill="#ffffff"/>
+<rect x="944.5" y="990.0" width="219.5" height="84.0" rx="9" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+<text x="959.5" y="1014.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="12.4" font-weight="700" fill="#0f172a">META-INF</text>
+<rect x="1137.0" y="1002.5" width="18.0" height="16.0" rx="8" fill="#eef1f5"/>
+<text x="1146.0" y="1014.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.2" font-weight="700" fill="#475569" text-anchor="middle">3</text>
+<text x="959.5" y="1036.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">mods.toml 變數展開 ·</text>
+<text x="959.5" y="1050.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.6" font-weight="400" fill="#64748b">accesstransformer.cfg · mixin …</text>
+<rect x="1204.0" y="160.0" width="476.0" height="200.0" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+<rect x="1204.0" y="160.0" width="476.0" height="4.5" rx="2" fill="#d97706"/>
+<text x="1220.0" y="190.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="14.2" font-weight="700" fill="#0f172a">網路與同步</text>
+<text x="1220.0" y="207.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="8.4" font-weight="600" fill="#94a3b8" letter-spacing="1.3">NETWORK · SIMPLE CHANNEL</text>
+<line x1="1220.0" y1="216.0" x2="1664.0" y2="216.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="1220.0" y="238.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.8" font-weight="700" fill="#d97706">通道</text>
+<text x="1256.0" y="238.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.2" font-weight="400" fill="#1e293b">thdanmakucraft:main · protocol v1 · 雙向相容</text>
+<text x="1220.0" y="257.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.8" font-weight="700" fill="#d97706">封包</text>
+<text x="1256.0" y="257.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.2" font-weight="400" fill="#1e293b">THObjectContainerPacket（PLAY_TO_CLIENT）</text>
+<text x="1220.0" y="276.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.8" font-weight="700" fill="#d97706">同步</text>
+<text x="1256.0" y="276.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.2" font-weight="400" fill="#1e293b">MyEntityDataSerializers：實體附掛狀態</text>
+<text x="1220.0" y="295.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.8" font-weight="700" fill="#d97706">出口</text>
+<text x="1256.0" y="295.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.2" font-weight="400" fill="#1e293b">sendToServer / sendToPlayer / sendToAllClient</text>
+<text x="1220.0" y="314.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.8" font-weight="700" fill="#d97706">規範</text>
+<text x="1256.0" y="314.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.2" font-weight="400" fill="#1e293b">payload 一律 encode / decode 至 FriendlyByteBuf</text>
+<rect x="1204.0" y="370.0" width="476.0" height="350.0" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+<rect x="1204.0" y="370.0" width="476.0" height="4.5" rx="2" fill="#6366f1"/>
+<text x="1220.0" y="400.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="14.2" font-weight="700" fill="#0f172a">分層依賴規則</text>
+<text x="1220.0" y="417.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="8.4" font-weight="600" fill="#94a3b8" letter-spacing="1.3">DEPENDENCY RULES · 單向，不得反向</text>
+<line x1="1220.0" y1="426.0" x2="1664.0" y2="426.0" stroke="#e2e8f0" stroke-width="1"/>
+<rect x="1220.0" y="439.5" width="3.0" height="12.0" rx="1.5" fill="#6366f1"/>
+<text x="1230.0" y="448.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.4" font-weight="700" fill="#0f172a">R1 單向依賴</text>
+<text x="1230.0" y="461.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.8" font-weight="400" fill="#64748b">L0 → L5 逐層向下；util 不得反向 import 領域或 client</text>
+<rect x="1220.0" y="479.5" width="3.0" height="12.0" rx="1.5" fill="#6366f1"/>
+<text x="1230.0" y="488.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.4" font-weight="700" fill="#0f172a">R2 客戶端隔離</text>
+<text x="1230.0" y="501.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.8" font-weight="400" fill="#64748b">client.* 集中客戶端；領域層不得註冊 renderer 或讀客戶端狀態</text>
+<rect x="1220.0" y="519.5" width="3.0" height="12.0" rx="1.5" fill="#6366f1"/>
+<text x="1230.0" y="528.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.4" font-weight="700" fill="#0f172a">R3 狀態可序列化</text>
+<text x="1230.0" y="541.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.8" font-weight="400" fill="#64748b">領域物件須實作 ISerializable / IDataStorage（NBT + ByteBuf）</text>
+<rect x="1220.0" y="559.5" width="3.0" height="12.0" rx="1.5" fill="#6366f1"/>
+<text x="1230.0" y="568.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.4" font-weight="700" fill="#0f172a">R4 Lua 邊界</text>
+<text x="1230.0" y="581.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.8" font-weight="400" fill="#64748b">跨語言僅經 ILuaValue / LuaValueHelper，不外洩實作類</text>
+<rect x="1220.0" y="599.5" width="3.0" height="12.0" rx="1.5" fill="#6366f1"/>
+<text x="1230.0" y="608.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.4" font-weight="700" fill="#0f172a">R5 註冊集中</text>
+<text x="1230.0" y="621.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.8" font-weight="400" fill="#64748b">新型別一律於 init/* 的 DeferredRegister 登記</text>
+<rect x="1220.0" y="639.5" width="3.0" height="12.0" rx="1.5" fill="#6366f1"/>
+<text x="1230.0" y="648.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="10.4" font-weight="700" fill="#0f172a">R6 資源定位</text>
+<text x="1230.0" y="661.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.8" font-weight="400" fill="#64748b">路徑統一由 ResourceLocationUtil.thdanmakucraft(...) 產生</text>
+<text x="1220.0" y="706.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="8.8" font-weight="400" fill="#b45309">※ 現況仍有少數違例：util.Color → THObject、world.item → client.gui</text>
+<rect x="1204.0" y="730.0" width="476.0" height="370.0" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+<rect x="1204.0" y="730.0" width="476.0" height="4.5" rx="2" fill="#0d9488"/>
+<text x="1220.0" y="760.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="14.2" font-weight="700" fill="#0f172a">執行流</text>
+<text x="1220.0" y="777.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="8.4" font-weight="600" fill="#94a3b8" letter-spacing="1.3">RUNTIME FLOW · SERVER ⇄ CLIENT</text>
+<line x1="1220.0" y1="786.0" x2="1664.0" y2="786.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="1220.0" y="800.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.6" font-weight="700" fill="#0d9488" letter-spacing="0.6">伺服器端 · SERVER</text>
+<rect x="1220.0" y="810.0" width="444.0" height="23.0" rx="7" fill="#f4f6fb"/>
+<text x="1230.0" y="825.5" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.6" font-weight="400" fill="#1e293b">EntityTHObjectContainer.tick()</text>
+<rect x="1220.0" y="839.0" width="444.0" height="23.0" rx="7" fill="#f4f6fb"/>
+<text x="1230.0" y="854.5" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.6" font-weight="400" fill="#1e293b">THObjectContainer.tick() → TaskManager 排程</text>
+<rect x="1220.0" y="868.0" width="444.0" height="23.0" rx="7" fill="#f4f6fb"/>
+<text x="1230.0" y="883.5" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.6" font-weight="400" fill="#1e293b">THObject.tick() → 碰撞 / 命中 / 死亡</text>
+<rect x="1220.0" y="897.0" width="444.0" height="23.0" rx="7" fill="#f4f6fb"/>
+<text x="1230.0" y="912.5" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.6" font-weight="400" fill="#1e293b">PacketHandler.sendToAllClient() 快照同步</text>
+<text x="1220.0" y="942.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.6" font-weight="700" fill="#0284c7" letter-spacing="0.6">客戶端 · CLIENT</text>
+<rect x="1220.0" y="952.0" width="444.0" height="23.0" rx="7" fill="#f4f6fb"/>
+<text x="1230.0" y="967.5" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.6" font-weight="400" fill="#1e293b">封包 → THObjectContainer 重建與插值</text>
+<rect x="1220.0" y="981.0" width="444.0" height="23.0" rx="7" fill="#f4f6fb"/>
+<text x="1230.0" y="996.5" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.6" font-weight="400" fill="#1e293b">同構 tick 模擬（預測 + 校正）</text>
+<rect x="1220.0" y="1010.0" width="444.0" height="23.0" rx="7" fill="#f4f6fb"/>
+<text x="1230.0" y="1025.5" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.6" font-weight="400" fill="#1e293b">LevelRendererMixin 攔截關卡渲染</text>
+<rect x="1220.0" y="1039.0" width="444.0" height="23.0" rx="7" fill="#f4f6fb"/>
+<text x="1230.0" y="1054.5" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.6" font-weight="400" fill="#1e293b">ShaderLoader → VertexBuilder → 遮蔽剔除</text>
+<rect x="40.0" y="1120.0" width="900.0" height="206.0" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+<rect x="40.0" y="1120.0" width="3.5" height="206.0" rx="2" fill="#ea6a12"/>
+<text x="58.0" y="1152.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="13.6" font-weight="700" fill="#0f172a">資源結構</text>
+<text x="58.0" y="1168.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="8.4" font-weight="600" fill="#94a3b8" letter-spacing="1.3">RESOURCE LAYOUT</text>
+<rect x="58.0" y="1190.5" width="5.0" height="5.0" rx="1.5" fill="#ea6a12"/>
+<text x="72.0" y="1198.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="10.0" font-weight="600" fill="#0f172a">src/main/java/…/thDanmakuCraft/</text>
+<text x="300.0" y="1198.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.6" font-weight="400" fill="#64748b">封包即分層，對應左表 L0–L5</text>
+<rect x="58.0" y="1213.5" width="5.0" height="5.0" rx="1.5" fill="#ea6a12"/>
+<text x="72.0" y="1221.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="10.0" font-weight="600" fill="#0f172a">resources/META-INF/</text>
+<text x="300.0" y="1221.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.6" font-weight="400" fill="#64748b">mods.toml · accesstransformer.cfg · mixins.*.json</text>
+<rect x="58.0" y="1236.5" width="5.0" height="5.0" rx="1.5" fill="#ea6a12"/>
+<text x="72.0" y="1244.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="10.0" font-weight="600" fill="#0f172a">assets/thdanmakucraft/shaders/</text>
+<text x="300.0" y="1244.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.6" font-weight="400" fill="#64748b">core · danmaku · include（glsl + json）</text>
+<rect x="58.0" y="1259.5" width="5.0" height="5.0" rx="1.5" fill="#ea6a12"/>
+<text x="72.0" y="1267.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="10.0" font-weight="600" fill="#0f172a">assets/thdanmakucraft/textures/</text>
+<text x="300.0" y="1267.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.6" font-weight="400" fill="#64748b">danmaku · gui/editor/images(184) · spellcard · entity</text>
+<rect x="58.0" y="1282.5" width="5.0" height="5.0" rx="1.5" fill="#ea6a12"/>
+<text x="72.0" y="1290.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="10.0" font-weight="600" fill="#0f172a">data/thdanmakucraft/lua/</text>
+<text x="300.0" y="1290.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.6" font-weight="400" fill="#64748b">lib · spellcard · apidoc（36 個 .lua）</text>
+<rect x="58.0" y="1305.5" width="5.0" height="5.0" rx="1.5" fill="#ea6a12"/>
+<text x="72.0" y="1313.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="10.0" font-weight="600" fill="#0f172a">src/test/java/</text>
+<text x="300.0" y="1313.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.6" font-weight="400" fill="#64748b">jsTest · tsasda：Lua / 序列化實驗沙盒</text>
+<rect x="960.0" y="1120.0" width="720.0" height="206.0" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+<rect x="960.0" y="1120.0" width="3.5" height="206.0" rx="2" fill="#0d9488"/>
+<text x="978.0" y="1152.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="13.6" font-weight="700" fill="#0f172a">放置規範</text>
+<text x="978.0" y="1168.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="8.4" font-weight="600" fill="#94a3b8" letter-spacing="1.3">WHERE TO PUT NEW CODE</text>
+<text x="978.0" y="1202.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.6" font-weight="700" fill="#ea6a12">新彈幕型別</text>
+<text x="990.0" y="1215.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.5" font-weight="400" fill="#64748b">world/danmaku/thobject/** ＋ init/THObjectInit ＋ client/renderer 對應 Renderer</text>
+<text x="978.0" y="1232.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.6" font-weight="700" fill="#ea6a12">新封包</text>
+<text x="990.0" y="1245.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.5" font-weight="400" fill="#64748b">network/packets/** ＋ PacketHandler.register() 指派 id</text>
+<text x="978.0" y="1262.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.6" font-weight="700" fill="#ea6a12">新 Lua API</text>
+<text x="990.0" y="1275.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.5" font-weight="400" fill="#64748b">lua/LuaCore 註冊 ＋ data/…/lua/apidoc/*.lua 同步維護</text>
+<text x="978.0" y="1292.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.6" font-weight="700" fill="#ea6a12">新 GUI</text>
+<text x="990.0" y="1305.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.5" font-weight="400" fill="#64748b">client/gui/{editor,components}；狀態不沉入領域層</text>
+<text x="40.0" y="1342.0" font-family="'Segoe UI','Microsoft YaHei UI','Microsoft YaHei',sans-serif" font-size="9.6" font-weight="400" fill="#94a3b8">結構規範圖 · 由原始碼樹自動彙整（封包後數字＝類別數）</text>
+<text x="1680.0" y="1342.0" font-family="'Cascadia Mono','Consolas',monospace" font-size="9.6" font-weight="600" fill="#94a3b8" text-anchor="end">thdanmakucraft 0.0.6</text>
+</svg>

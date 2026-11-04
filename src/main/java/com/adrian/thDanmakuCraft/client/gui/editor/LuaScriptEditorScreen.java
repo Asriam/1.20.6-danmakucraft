@@ -23,7 +23,9 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -101,14 +103,21 @@ public class LuaScriptEditorScreen extends Screen {
     private static final int BROWSER_WIDTH = 156;
     private boolean browserOpen;
     /** 檔案管理器的一列：header 非 null 代表分類標題。 */
-    private record BrowserRow(String header, LuaScriptFiles.Entry entry) {
+    private record BrowserRow(String header, LuaScriptFiles.Entry entry, String group) {
         boolean isHeader() {
             return this.entry == null;
+        }
+
+        /** 只有內建來源的資料夾可以收合。 */
+        boolean isCollapsible() {
+            return this.isHeader() && this.group != null;
         }
     }
 
     /** 分成「腳本」與「內建 API」兩個分類，標題列插在中間。 */
     private List<BrowserRow> browserRows = new ArrayList<>();
+    /** 已收合的資料夾（apidoc / lib）。 */
+    private final Set<String> collapsedGroups = new HashSet<>();
     private int browserSelected;
     /** 是否已嘗試補做 init()，避免每幀重試。 */
     private boolean reinitRequested;
@@ -280,43 +289,48 @@ public class LuaScriptEditorScreen extends Screen {
         return this.fileName.replace('\\', '/');
     }
 
-    /** 掃描 scripts 目錄（最多兩層）列出 *.lua。 */
-    /** 重新掃描，並把腳本與內建 API 分成兩個分類。 */
+    /** 重新掃描：內建資料夾在最上，腳本在最後。 */
     private void refreshFileList() {
         List<LuaScriptFiles.Entry> scripts = new ArrayList<>();
-        List<LuaScriptFiles.Entry> builtins = new ArrayList<>();
+        Map<String, List<LuaScriptFiles.Entry>> groups = new LinkedHashMap<>();
         for (LuaScriptFiles.Entry entry : LuaScriptFiles.listAll()) {
             if (entry.builtin()) {
-                builtins.add(entry);
+                groups.computeIfAbsent(entry.category(), key -> new ArrayList<>()).add(entry);
             } else {
                 scripts.add(entry);
             }
         }
+
         List<BrowserRow> rows = new ArrayList<>();
-        rows.add(new BrowserRow("腳本 (" + scripts.size() + ")", null));
-        for (LuaScriptFiles.Entry entry : scripts) {
-            rows.add(new BrowserRow(null, entry));
-        }
-        // 唯讀來源各自一個分類（apidoc / lib）
         for (LuaScriptFiles.BuiltinRoot root : LuaScriptFiles.BUILTIN_ROOTS) {
-            int count = 0;
-            for (LuaScriptFiles.Entry entry : builtins) {
-                if (entry.category().equals(root.name())) {
-                    count++;
-                }
-            }
-            rows.add(new BrowserRow(this.builtinTitle(root.name()) + " (" + count + ") · 唯讀", null));
-            for (LuaScriptFiles.Entry entry : builtins) {
-                if (entry.category().equals(root.name())) {
-                    rows.add(new BrowserRow(null, entry));
+            List<LuaScriptFiles.Entry> entries = groups.getOrDefault(root.name(), List.of());
+            boolean collapsed = this.collapsedGroups.contains(root.name());
+            String marker = collapsed ? "\u25B6 " : "\u25BC ";
+            rows.add(new BrowserRow(marker + this.builtinTitle(root.name()) + " (" + entries.size()
+                    + ") \u00B7 \u552F\u8B80", null, root.name()));
+            if (collapsed) {
+                for (LuaScriptFiles.Entry entry : entries) {
+                    rows.add(new BrowserRow(null, entry, null));
                 }
             }
         }
+
+        rows.add(new BrowserRow("\u811A\u672C (" + scripts.size() + ")", null, null));
+        for (LuaScriptFiles.Entry entry : scripts) {
+            rows.add(new BrowserRow(null, entry, null));
+        }
+
         this.browserRows = rows;
         this.browserSelected = this.firstSelectableRow();
     }
 
-    /** 游標預設停在目前開啟的檔案，找不到就停在第一個可選列。 */
+    private void toggleGroup(String group) {
+        if (!this.collapsedGroups.remove(group)) {
+            this.collapsedGroups.add(group);
+        }
+        this.refreshFileList();
+    }
+
     private int firstSelectableRow() {
         String current = this.relativeName();
         for (int i = 0; i < this.browserRows.size(); i++) {
@@ -393,7 +407,7 @@ public class LuaScriptEditorScreen extends Screen {
         }
         if (Files.exists(scriptsDir().resolve(normalized))) {
             this.openFile(normalized);
-            this.browserOpen = false;
+            //this.browserOpen = false;
             this.setStatus("檔案已存在，已開啟 " + normalized, 0xFFFFD479);
             return;
         }
@@ -407,7 +421,7 @@ public class LuaScriptEditorScreen extends Screen {
         this.scroll = 0;
         this.selectionLine = -1;
         this.dirty = true;
-        this.browserOpen = false;
+        //this.browserOpen = false;
         this.setStatus("新腳本 " + this.fileName + "（Ctrl+S 儲存）", 0xFF7BD88F);
     }
 
@@ -534,9 +548,15 @@ public class LuaScriptEditorScreen extends Screen {
             BrowserRow row = this.browserRows.get(start + i);
             int rowY = rowTop + i * (LINE_HEIGHT + 1);
             if (row.isHeader()) {
+                boolean collapsible = row.isCollapsible();
+                boolean hovered = collapsible && hoverInside
+                        && mouseY >= rowY - 1 && mouseY < rowY + LINE_HEIGHT;
                 graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT, 0x40000000);
+                if (hovered) {
+                    graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT, 0x333B82F6);
+                }
                 graphics.drawString(this.font, row.header(), x + 4, rowY,
-                        row.header().startsWith("內建") ? 0xFF8A93A6 : 0xFFCFD8E6, false);
+                        collapsible ? 0xFF8A93A6 : 0xFFCFD8E6, false);
                 continue;
             }
             LuaScriptFiles.Entry entry = row.entry();
@@ -552,9 +572,6 @@ public class LuaScriptEditorScreen extends Screen {
                     x + 4, rowY, rowColor, false);
         }
 
-        if (this.countEntries(false) == 0) {
-            graphics.drawString(this.font, "（尚無腳本）", x + 4, rowTop + LINE_HEIGHT + 1, LINE_NO, false);
-        }
 
         graphics.fill(x + 1, actionTop - 3, x + w - 1, actionTop - 2, 0xFF3B4252);
         for (int i = 0; i < BROWSER_ACTIONS.length; i++) {
@@ -815,7 +832,9 @@ public class LuaScriptEditorScreen extends Screen {
         int index = start + (int) ((mouseY - rowTop) / (LINE_HEIGHT + 1));
         if (mouseY >= rowTop && index >= 0 && index < this.browserRows.size()) {
             BrowserRow row = this.browserRows.get(index);
-            if (!row.isHeader()) {
+            if (row.isCollapsible()) {
+                this.toggleGroup(row.group());
+            } else if (!row.isHeader()) {
                 this.browserSelected = index;
                 this.openEntry(row.entry());
                 this.refreshFileList();
@@ -984,7 +1003,7 @@ public class LuaScriptEditorScreen extends Screen {
                 }
                 return true;
             }
-            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+            /*if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
                 LuaScriptFiles.Entry entry = this.currentSelection();
                 if (entry != null) {
                     this.openEntry(entry);
@@ -992,7 +1011,7 @@ public class LuaScriptEditorScreen extends Screen {
                     this.browserOpen = false;
                 }
                 return true;
-            }
+            }*/
         }
 
         if (this.completionActive) {
