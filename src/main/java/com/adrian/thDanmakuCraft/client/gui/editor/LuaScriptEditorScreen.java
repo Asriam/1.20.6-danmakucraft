@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.loading.FMLPaths;
@@ -81,7 +82,8 @@ public class LuaScriptEditorScreen extends Screen {
 
     // ---- 檔案瀏覽 ----
     private static final int BROWSER_WIDTH = 156;
-    private boolean browserOpen;
+    /** 檔案管理器預設就打開。 */
+    private boolean browserOpen = true;
     /** 焦點是否在檔案管理器（決定 Delete 鍵要刪檔案還是刪字元）。 */
     private boolean browserFocused;
     /** 檔案管理器的一列：header 非 null 代表分類標題。 */
@@ -205,10 +207,54 @@ public class LuaScriptEditorScreen extends Screen {
     private int lastMouseX;
     private int lastMouseY;
     private int fileButtonX;
-    /** 頂部列的動作按鈕（保存 / 保存全部 / 復原 / 重做）。 */
-    private static final String[] TOP_ACTIONS = { "保存", "保存全部", "復原", "重做" };
-    private final int[] topActionX = new int[TOP_ACTIONS.length];
-    private final int[] topActionW = new int[TOP_ACTIONS.length];
+    /** 頂部工具列：圖示按鈕（| 分隔線）。 */
+    private enum TopAction {
+        OPEN("open.png", "檔案", "Ctrl+O"),
+        SAVE("save.png", "保存", "Ctrl+S"),
+        SAVE_ALL("save_all.png", "保存全部", "Ctrl+Shift+S"),
+        SEPARATOR1(null, null, null),
+        UNDO("undo.png", "復原", "Ctrl+Z"),
+        REDO("redo.png", "重做", "Ctrl+Y"),
+        SEPARATOR2(null, null, null),
+        CUT("cut.png", "剪下", "Ctrl+X"),
+        COPY("copy.png", "複製", "Ctrl+C"),
+        PASTE("paste.png", "貼上", "Ctrl+V");
+
+        private final String icon;
+        private final String label;
+        private final String hotkey;
+
+        TopAction(String icon, String label, String hotkey) {
+            this.icon = icon;
+            this.label = label;
+            this.hotkey = hotkey;
+        }
+
+        boolean isSeparator() {
+            return this.icon == null;
+        }
+
+        ResourceLocation texture() {
+            return ICONS.get(this);
+        }
+    }
+
+    private static final int ICON_SIZE = 16;
+    private static final Map<TopAction, ResourceLocation> ICONS = new java.util.EnumMap<>(TopAction.class);
+
+    static {
+        for (TopAction action : TopAction.values()) {
+            if (!action.isSeparator()) {
+                ICONS.put(action, ResourceLocation.fromNamespaceAndPath("thdanmakucraft",
+                        "textures/gui/editor/icons/" + action.icon));
+            }
+        }
+    }
+
+    private final int[] actionX = new int[TopAction.values().length];
+    private final int[] actionW = new int[TopAction.values().length];
+    private int hoveredAction = -1;
+    private long hoverActionSince;
     private int fileButtonW;
     private String dialogInput = "";
     /** 對話框開啟時的原始檔名（改名／刪除的來源，不受輸入內容影響）。 */
@@ -831,6 +877,7 @@ public class LuaScriptEditorScreen extends Screen {
             this.renderDialog(graphics);
         }
         this.drawStatusBar(graphics, statusTop);
+        this.renderActionTooltip(graphics);
     }
 
     // ---- 檔案管理器版面 ----
@@ -984,52 +1031,109 @@ public class LuaScriptEditorScreen extends Screen {
     }
     private void drawTopBar(GuiGraphics graphics, int gutter) {
         graphics.fill(0, 0, this.width, TOP_BAR_HEIGHT, BAR_BG);
-        graphics.drawString(this.font, "Lua Script Editor", PADDING, PADDING + 1, 0xFFFFFFFF, false);
 
-        // 「檔案」按鈕
-        int titleWidth = this.font.width("Lua Script Editor");
-        this.fileButtonX = PADDING + titleWidth + 12;
-        this.fileButtonW = this.font.width("檔案") + 10;
-        boolean fileHover = this.inRect(this.lastMouseX, this.lastMouseY,
-                this.fileButtonX, PADDING, this.fileButtonW, LINE_HEIGHT + 2);
-        if (this.browserOpen || fileHover) {
-            graphics.fill(this.fileButtonX, PADDING, this.fileButtonX + this.fileButtonW, PADDING + LINE_HEIGHT + 2,
-                    this.browserOpen ? 0xFF2D6CDF : 0x553B82F6);
-        }
-        graphics.drawString(this.font, "檔案", this.fileButtonX + 5, PADDING + 2, 0xFFFFFFFF, false);
+        // 標題
+        String title = "Lua Script Editor";
+        graphics.drawString(this.font, title, PADDING, PADDING + 4, 0xFFFFFFFF, false);
 
-        // 動作按鈕：保存 / 保存全部 / 復原 / 重做
-        int bx = this.fileButtonX + this.fileButtonW + 6;
-        for (int i = 0; i < TOP_ACTIONS.length; i++) {
-            int width = this.font.width(TOP_ACTIONS[i]) + 10;
-            this.topActionX[i] = bx;
-            this.topActionW[i] = width;
-            boolean enabled = this.topActionEnabled(i);
-            boolean hover = enabled && this.inRect(this.lastMouseX, this.lastMouseY,
-                    bx, PADDING, width, LINE_HEIGHT + 2);
-            if (hover) {
-                graphics.fill(bx, PADDING, bx + width, PADDING + LINE_HEIGHT + 2, 0x553B82F6);
+        int x = PADDING + this.font.width(title) + 10;
+        int hovered = -1;
+        TopAction[] actions = TopAction.values();
+        for (int i = 0; i < actions.length; i++) {
+            TopAction action = actions[i];
+            if (action.isSeparator()) {
+                graphics.drawString(this.font, "|", x + 2, PADDING + 4, 0xFF4A5568, false);
+                this.actionX[i] = x;
+                this.actionW[i] = 6;
+                x += 6;
+                continue;
             }
-            graphics.drawString(this.font, TOP_ACTIONS[i], bx + 5, PADDING + 2,
-                    !enabled ? 0xFF5A6478 : (hover ? 0xFFFFFFFF : 0xFFD4D4D4), false);
-            bx += width + 4;
+            boolean enabled = this.topActionEnabled(action);
+            boolean hover = enabled && this.inRect(this.lastMouseX, this.lastMouseY, x, 2, ICON_SIZE, ICON_SIZE);
+            if (hover) {
+                graphics.fill(x, 2, x + ICON_SIZE, 2 + ICON_SIZE, 0x553B82F6);
+                hovered = i;
+            } else if (action == TopAction.OPEN && this.browserOpen) {
+                graphics.fill(x, 2, x + ICON_SIZE, 2 + ICON_SIZE, 0xFF2D6CDF);
+            }
+            graphics.blit(action.texture(), x, 2, ICON_SIZE, ICON_SIZE, 0.0F, 0.0F, 24, 24, 24, 24);
+            if (!enabled) {
+                graphics.fill(x, 2, x + ICON_SIZE, 2 + ICON_SIZE, 0x99000000);
+            }
+            this.actionX[i] = x;
+            this.actionW[i] = ICON_SIZE;
+            x += ICON_SIZE + 1;
         }
 
-        // 檔名（空間不夠就截斷）
+        long now = System.currentTimeMillis();
+        if (hovered != this.hoveredAction) {
+            this.hoveredAction = hovered;
+            this.hoverActionSince = now;
+        }
+
+        // 檔名貼齊最右邊（空間不足時截斷）
         String name = this.fileName + (this.dirty ? " *" : "") + (this.readOnly ? "  [唯讀]" : "");
-        int hintWidth = this.font.width("Ctrl+O");
-        int nameX = bx + 8;
-        int nameMax = Math.max(40, this.width - PADDING - hintWidth - 24 - nameX);
-        graphics.drawString(this.font, this.font.plainSubstrByWidth(name, nameMax), nameX, PADDING + 2,
+        int nameMax = Math.max(40, this.width - PADDING - x - 8);
+        String shownName = this.font.plainSubstrByWidth(name, nameMax);
+        int nameX = this.width - PADDING - this.font.width(shownName);
+        graphics.drawString(this.font, shownName, nameX, PADDING + 4,
                 this.dirty ? 0xFFFFD479 : STATUS_TEXT, false);
 
         if (this.syntaxErrorLine > 0) {
             String badge = "⚠ 第 " + this.syntaxErrorLine + " 行";
-            graphics.drawString(this.font, badge, this.width - PADDING - hintWidth - this.font.width(badge) - 10,
-                    PADDING + 2, 0xFFFF6B6B, false);
+            graphics.drawString(this.font, badge, nameX - this.font.width(badge) - 8,
+                    PADDING + 4, 0xFFFF6B6B, false);
         }
-        String hint = "Ctrl+O";
-        graphics.drawString(this.font, hint, this.width - PADDING - hintWidth, PADDING + 1, LINE_NO, false);
+    }
+
+    private boolean topActionEnabled(TopAction action) {
+        return switch (action) {
+            case OPEN -> true;
+            case SAVE -> !this.readOnly;
+            case SAVE_ALL -> this.anyDirtyBuffer();
+            case UNDO -> !this.undoStack.isEmpty();
+            case REDO -> !this.redoStack.isEmpty();
+            case CUT, COPY -> this.hasSelection();
+            case PASTE -> !this.readOnly;
+            default -> false;
+        };
+    }
+
+    private void runTopAction(TopAction action) {
+        switch (action) {
+            case OPEN -> this.toggleBrowser();
+            case SAVE -> this.save();
+            case SAVE_ALL -> this.saveAll();
+            case UNDO -> this.undo();
+            case REDO -> this.redo();
+            case CUT -> this.cutSelection();
+            case COPY -> this.copySelection();
+            case PASTE -> this.pasteFromClipboard();
+            default -> {
+            }
+        }
+    }
+
+    /** 滑鼠停留 1 秒後顯示的說明（含快捷鍵）。 */
+    private void renderActionTooltip(GuiGraphics graphics) {
+        TopAction[] actions = TopAction.values();
+        if (this.hoveredAction < 0 || this.hoveredAction >= actions.length) {
+            return;
+        }
+        TopAction action = actions[this.hoveredAction];
+        if (action.isSeparator()) {
+            return;
+        }
+        if (System.currentTimeMillis() - this.hoverActionSince < 1000L) {
+            return;
+        }
+        String text = action.label + "   " + action.hotkey;
+        int width = this.font.width(text) + 8;
+        int x = Math.min(Math.max(PADDING, this.actionX[this.hoveredAction]), this.width - width - PADDING);
+        int y = TOP_BAR_HEIGHT + 2;
+        graphics.fill(x - 1, y - 1, x + width + 1, y + LINE_HEIGHT + 3, 0xFF3B4252);
+        graphics.fill(x, y, x + width, y + LINE_HEIGHT + 2, 0xF01B1F2A);
+        graphics.drawString(this.font, text, x + 4, y + 2, 0xFFD4D4D4, false);
     }
 
     private boolean inRect(double x, double y, int rx, int ry, int rw, int rh) {
@@ -1704,23 +1808,15 @@ public class LuaScriptEditorScreen extends Screen {
             return true;
         }
         if (control && keyCode == GLFW.GLFW_KEY_C) {
-            String selected = this.selectedText();
-            if (!selected.isEmpty()) {
-                Minecraft.getInstance().keyboardHandler.setClipboard(selected);
-            }
+            this.copySelection();
             return true;
         }
         if (control && keyCode == GLFW.GLFW_KEY_X) {
-            String selected = this.selectedText();
-            if (!selected.isEmpty()) {
-                Minecraft.getInstance().keyboardHandler.setClipboard(selected);
-                this.recordUndo(false);
-                this.deleteSelection();
-            }
+            this.cutSelection();
             return true;
         }
         if (control && keyCode == GLFW.GLFW_KEY_V) {
-            this.insert(Minecraft.getInstance().keyboardHandler.getClipboard());
+            this.pasteFromClipboard();
             return true;
         }
 
@@ -2618,32 +2714,55 @@ public class LuaScriptEditorScreen extends Screen {
     }
 
     private boolean handleTopBarClick(double mouseX, double mouseY) {
-        if (this.inRect(mouseX, mouseY, this.fileButtonX, PADDING, this.fileButtonW, LINE_HEIGHT + 2)) {
-            this.toggleBrowser();
-            return true;
-        }
-        for (int i = 0; i < TOP_ACTIONS.length; i++) {
-            if (this.topActionW[i] <= 0) {
+        TopAction[] actions = TopAction.values();
+        for (int i = 0; i < actions.length; i++) {
+            TopAction action = actions[i];
+            if (action.isSeparator() || this.actionW[i] <= 0) {
                 continue;
             }
-            if (!this.inRect(mouseX, mouseY, this.topActionX[i], PADDING, this.topActionW[i], LINE_HEIGHT + 2)) {
+            if (!this.inRect(mouseX, mouseY, this.actionX[i], 2, ICON_SIZE, ICON_SIZE)) {
                 continue;
             }
-            if (!this.topActionEnabled(i)) {
-                this.setStatus("目前沒有可執行的動作", LINE_NO);
+            if (!this.topActionEnabled(action)) {
+                this.setStatus(action.label + " 目前不可用", LINE_NO);
                 return true;
             }
-            switch (i) {
-                case 0 -> this.save();
-                case 1 -> this.saveAll();
-                case 2 -> this.undo();
-                case 3 -> this.redo();
-                default -> {
-                }
-            }
+            this.runTopAction(action);
             return true;
         }
         return false;
+    }
+
+    private void copySelection() {
+        String selected = this.selectedText();
+        if (selected.isEmpty()) {
+            return;
+        }
+        Minecraft.getInstance().keyboardHandler.setClipboard(selected);
+        this.setStatus("已複製 " + selected.length() + " 個字元", STATUS_TEXT);
+    }
+
+    private void cutSelection() {
+        if (this.readOnly) {
+            this.setStatus("內建 API 文件是唯讀的", 0xFFFFD479);
+            return;
+        }
+        String selected = this.selectedText();
+        if (selected.isEmpty()) {
+            return;
+        }
+        Minecraft.getInstance().keyboardHandler.setClipboard(selected);
+        this.recordUndo(false);
+        this.deleteSelection();
+        this.setStatus("已剪下 " + selected.length() + " 個字元", STATUS_TEXT);
+    }
+
+    private void pasteFromClipboard() {
+        if (this.readOnly) {
+            this.setStatus("內建 API 文件是唯讀的", 0xFFFFD479);
+            return;
+        }
+        this.insert(Minecraft.getInstance().keyboardHandler.getClipboard());
     }
 
     @Override
