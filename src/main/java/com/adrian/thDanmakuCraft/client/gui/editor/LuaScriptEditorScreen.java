@@ -71,31 +71,7 @@ public class LuaScriptEditorScreen extends Screen {
             "if", "in", "local", "nil", "not", "or", "repeat", "return", "then", "true",
             "until", "while");
 
-    private static final String TEMPLATE = """
-            ---@type Class|THObjectContainer
-            local container = core.defineSpellCardClass("test1")
-            function container:onInit()
-                for i = 1,60 do
-                    self:createTHBullet(testBullet2, {i}, self:getPosition(),bullet_styles.ball_big,1)
-                end
-            end
-
-            function container:onTick()
-            end
-            
-            function container:onRegisterTasks(taskManager)
-            end
-            
-            ---@type Class|THBullet
-            local testBullet = core.defineClass()
-            function testBullet:onInit(i)
-                self:setVelocity(math.vec3.new(0.2,0.0,0.0):yRot(Mth.PI*2/32*i),true)
-                self:setNavi(true)
-            end
-            
-            function testBullet:onTick()
-                self:move(0.0,0.1,0.0)
-            end
+    private static final String TEMPLATE =  """
             """;
 
     // ---- 檔案 ----
@@ -161,6 +137,8 @@ public class LuaScriptEditorScreen extends Screen {
     /** 檔案管理器的第一列（獨立於選取項，滑鼠滾輪／拖曳捲軸時改變）。 */
     private int browserScroll;
     private int browserSelected;
+    /** 使用者刻意取消選取（點「腳本」分類標題）；重新整理時保持 -1，讓新增落在根目錄。 */
+    private boolean noSelection;
     /** 是否已嘗試補做 init()，避免每幀重試。 */
     private boolean reinitRequested;
     private boolean dirty;
@@ -250,6 +228,7 @@ public class LuaScriptEditorScreen extends Screen {
 
     private void openFile(String name) {
         this.readOnly = false;
+        this.noSelection = false;
         this.revealPath = name;
         this.fileName = name;
         this.filePath = scriptsDir().resolve(this.fileName);
@@ -298,6 +277,7 @@ public class LuaScriptEditorScreen extends Screen {
     /** 載入 jar 內的 apidoc：只能閱讀，Ctrl+S 會被拒絕。 */
     private void openBuiltin(String displayPath) {
         this.readOnly = true;
+        this.noSelection = false;
         this.fileName = displayPath;
         this.revealPath = displayPath;
         this.filePath = null;
@@ -380,15 +360,15 @@ public class LuaScriptEditorScreen extends Screen {
         for (LuaScriptFiles.BuiltinRoot root : LuaScriptFiles.BUILTIN_ROOTS) {
             List<LuaScriptFiles.Entry> entries = byRoot.getOrDefault(root.name(), List.of());
             boolean collapsed = this.collapsedGroups.contains(root.name());
-            String marker = collapsed ? "\u25B6 " : "\u25BC ";
+            String marker = collapsed ? "▶ " : "▼ ";
             rows.add(new BrowserRow(marker + this.builtinTitle(root.name()) + " (" + entries.size()
-                    + ") \u00B7 \u552F\u8B80", null, root.name(), null, 0, null));
+                    + ") · 唯讀", null, root.name(), null, 0, null));
             if (!collapsed) {
                 this.addTree(rows, entries, root.name() + "/", "dir:" + root.name() + "/", 1, List.of());
             }
         }
 
-        rows.add(new BrowserRow("\u811A\u672C (" + scripts.size() + ")", null, null, null, 0, null));
+        rows.add(new BrowserRow("脚本 (" + scripts.size() + ")", null, null, null, 0, null));
         this.addTree(rows, scripts, "", "dir:", 1, LuaScriptFiles.listDirs(LuaScriptFiles.scriptsDir()));
 
         this.browserRows = rows;
@@ -422,6 +402,10 @@ public class LuaScriptEditorScreen extends Screen {
     }
 
     private void restoreSelection(String key) {
+        if (this.noSelection && (key == null || key.isEmpty())) {
+            this.browserSelected = -1;
+            return;
+        }
         if (key != null && !key.isEmpty()) {
             for (int i = 0; i < this.browserRows.size(); i++) {
                 if (key.equals(this.browserRows.get(i).selectionKey())) {
@@ -1253,9 +1237,15 @@ public class LuaScriptEditorScreen extends Screen {
             if (row.isSection()) {
                 if (row.isCollapsible()) {
                     this.toggleGroup(row.group());
+                } else {
+                    // 「腳本」標題：取消選取，新增就會落在 scripts/ 根目錄
+                    this.browserSelected = -1;
+                    this.noSelection = true;
+                    this.setStatus("已取消選取：新增的檔案會建在 scripts/ 根目錄", STATUS_TEXT);
                 }
             } else if (row.isFolder()) {
                 this.browserSelected = index;
+                this.noSelection = false;
                 this.toggleFolder(row.directory());
             } else {
                 String path = row.entry().path();
@@ -1264,6 +1254,7 @@ public class LuaScriptEditorScreen extends Screen {
                 this.lastClickedPath = path;
                 this.lastClickAt = System.currentTimeMillis();
                 this.browserSelected = index;
+                this.noSelection = false;
                 if (!row.entry().builtin()) {
                     this.dragCandidate = path;
                     this.dragStartX = mouseX;
@@ -1489,6 +1480,7 @@ public class LuaScriptEditorScreen extends Screen {
             if (keyCode == GLFW.GLFW_KEY_DOWN || keyCode == GLFW.GLFW_KEY_UP
                     || keyCode == GLFW.GLFW_KEY_DELETE) {
                 this.browserFocused = true;
+                this.noSelection = false;
             }
             if (keyCode == GLFW.GLFW_KEY_DELETE) {
                 this.openDeleteDialog();
