@@ -253,6 +253,14 @@ public class LuaScriptEditorScreen extends Screen {
         }
     }
 
+    /** 檔案管理器的列高（比文字行高一些，才放得下 12px 圖示）。 */
+    private static final int BROWSER_ROW_HEIGHT = LINE_HEIGHT;
+    private static final int BROWSER_ICON_SIZE = 10;
+    private static final ResourceLocation ICON_FOLDER = ResourceLocation.fromNamespaceAndPath(
+            "thdanmakucraft", "textures/gui/editor/icons/folder.png");
+    private static final ResourceLocation ICON_CODE = ResourceLocation.fromNamespaceAndPath(
+            "thdanmakucraft", "textures/gui/editor/icons/code.png");
+
     private final int[] actionX = new int[TopAction.values().length];
     private final int[] actionW = new int[TopAction.values().length];
     private int hoveredAction = -1;
@@ -857,7 +865,8 @@ public class LuaScriptEditorScreen extends Screen {
                 graphics.fill(PADDING, y, this.width - PADDING, y + LINE_HEIGHT, 0x33FF5555);
             }
             String number = String.valueOf(lineIndex + 1);
-            graphics.drawString(this.font, number, PADDING + gutter - 4 - this.font.width(number),
+
+            graphics.drawString(this.font, number, /*PADDING +*/ taskBarLeft() - taskBarOffset + gutter - 4 - this.font.width(number),
                     y + 1, errorLine ? 0xFFFF6B6B : LINE_NO, false);
 
             this.drawSelection(graphics, lineIndex, y, textLeft);
@@ -912,7 +921,7 @@ public class LuaScriptEditorScreen extends Screen {
     }
 
     private int browserListRows() {
-        return Math.max(1, (browserActionTop() - (browserTop() + 20)) / (LINE_HEIGHT + 1));
+        return Math.max(1, (browserActionTop() - (browserTop() + 20)) / BROWSER_ROW_HEIGHT);
     }
 
     /** 讓選取項保持在可視範圍內，並回傳實際的第一列。 */
@@ -949,17 +958,17 @@ public class LuaScriptEditorScreen extends Screen {
         int start = browserListStart(rows);
         for (int i = 0; i < rows && start + i < this.browserRows.size(); i++) {
             BrowserRow row = this.browserRows.get(start + i);
-            int rowY = rowTop + i * (LINE_HEIGHT + 1);
+            int rowY = rowTop + i * (BROWSER_ROW_HEIGHT);
             int indent = x + 4 + Math.max(0, row.depth()) * 8;
             boolean hovered = hoverInside && mouseY >= rowY - 1 && mouseY < rowY + LINE_HEIGHT;
             if (this.draggingFile && row.isFolder() && row.directory().equals(this.dropTargetDir)) {
-                graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT, 0x6640C074);
+                graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT-1, 0x6640C074);
             }
             if (row.isSection()) {
                 boolean collapsible = row.isCollapsible();
-                graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT, 0x40000000);
+                graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT-1, 0x40000000);
                 if (collapsible && hovered) {
-                    graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT, 0x333B82F6);
+                    graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT-1, 0x333B82F6);
                 }
                 graphics.drawString(this.font, row.header(), x + 4, rowY,
                         collapsible ? 0xFF8A93A6 : 0xFFCFD8E6, false);
@@ -967,20 +976,29 @@ public class LuaScriptEditorScreen extends Screen {
             }
             if (row.isFolder()) {
                 if (start + i == this.browserSelected) {
-                    graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT, 0x663B82F6);
+                    graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT-1, 0x663B82F6);
                 } else if (hovered) {
-                    graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT, 0x333B82F6);
+                    graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT-1, 0x333B82F6);
                 }
-                graphics.drawString(this.font, this.font.plainSubstrByWidth(row.header(), w - (indent - x) - 4),
-                        indent, rowY, 0xFFFFD479, false);
+                String header = row.header() == null ? "" : row.header();
+                String marker = header.length() >= 2 ? header.substring(0, 2) : "";
+                String folderName = header.substring(marker.length());
+                int textY = rowY + (BROWSER_ROW_HEIGHT - 8) / 2;
+                graphics.drawString(this.font, marker, indent, textY, 0xFF8A93A6, false);
+                int iconX = indent + this.font.width(marker) + 2;
+                this.drawBrowserIcon(graphics, ICON_FOLDER, iconX, rowY + (BROWSER_ROW_HEIGHT - BROWSER_ICON_SIZE) / 2);
+                int textX = iconX + BROWSER_ICON_SIZE + 3;
+                graphics.drawString(this.font,
+                        this.font.plainSubstrByWidth(folderName, w - (textX - x) - 4),
+                        textX, textY, 0xFFFFD479, false);
                 continue;
             }
             LuaScriptFiles.Entry entry = row.entry();
             boolean current = entry.path().equals(this.relativeName());
             if (start + i == this.browserSelected) {
-                graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT, 0x663B82F6);
+                graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT-1, 0x663B82F6);
             } else if (hovered) {
-                graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT, 0x333B82F6);
+                graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT-1, 0x333B82F6);
             }
             boolean dirtyHere = this.isDirty(entry.path());
             int rowColor = dirtyHere ? 0xFFFFD479
@@ -989,8 +1007,11 @@ public class LuaScriptEditorScreen extends Screen {
             if (dirtyHere) {
                 label = label + " *";
             }
-            graphics.drawString(this.font, this.font.plainSubstrByWidth(label, w - (indent - x) - 4),
-                    indent, rowY, rowColor, false);
+            this.drawBrowserIcon(graphics, ICON_CODE, indent,
+                    rowY + (BROWSER_ROW_HEIGHT - BROWSER_ICON_SIZE) / 2);
+            int labelX = indent + BROWSER_ICON_SIZE + 3;
+            graphics.drawString(this.font, this.font.plainSubstrByWidth(label, w - (labelX - x) - 4),
+                    labelX, rowY + (BROWSER_ROW_HEIGHT - 8) / 2, rowColor, false);
         }
 
 
@@ -1417,6 +1438,12 @@ public class LuaScriptEditorScreen extends Screen {
         return column;
     }
 
+    /** 畫管理器列上的小圖示（來源 24x24，縮到 12x12）。 */
+    private void drawBrowserIcon(GuiGraphics graphics, ResourceLocation icon, int x, int y) {
+        graphics.blit(icon, x, y, BROWSER_ICON_SIZE, BROWSER_ICON_SIZE,
+                0.0F, 0.0F, 24, 24, 24, 24);
+    }
+
     private int gutterWidth() {
         int digits = String.valueOf(Math.max(1, this.lines.size())).length();
         return 10 + digits * 6;
@@ -1539,7 +1566,7 @@ public class LuaScriptEditorScreen extends Screen {
         int rowTop = y + rowTopOffset;
         int rows = browserListRows();
         int start = browserListStart(rows);
-        int index = start + (int) ((mouseY - rowTop) / (LINE_HEIGHT + 1));
+        int index = start + (int) ((mouseY - rowTop) / BROWSER_ROW_HEIGHT);
         if (mouseY >= rowTop && index >= 0 && index < this.browserRows.size()) {
             BrowserRow row = this.browserRows.get(index);
             if (row.isSection()) {
@@ -2704,7 +2731,7 @@ public class LuaScriptEditorScreen extends Screen {
         int rowTop = y + 20;
         int rows = browserListRows();
         int start = this.browserScroll;
-        int index = start + (int) ((mouseY - rowTop) / (LINE_HEIGHT + 1));
+        int index = start + (int) ((mouseY - rowTop) / BROWSER_ROW_HEIGHT);
         if (index < 0 || index >= this.browserRows.size()) {
             return null;
         }
