@@ -192,6 +192,10 @@ public class LuaScriptEditorScreen extends Screen {
     private int cursorColumn;
     private int selectionLine = -1;
     private int selectionColumn;
+    /** 滑鼠拖曳選取文字。 */
+    private boolean textSelecting;
+    private int textAnchorLine;
+    private int textAnchorColumn;
     private int scroll;
     private String status = "";
     private int statusColor = STATUS_TEXT;
@@ -1111,6 +1115,18 @@ public class LuaScriptEditorScreen extends Screen {
         }
     }
 
+    /** 滑鼠 x 對應到某一行的第幾個字元。 */
+    private int columnAt(int lineIndex, double mouseX) {
+        String line = this.lines.get(lineIndex).toString();
+        int textLeft = this.contentLeft();
+        int target = (int) mouseX - textLeft;
+        int column = 0;
+        while (column < line.length() && this.font.width(line.substring(0, column + 1)) <= target) {
+            column++;
+        }
+        return column;
+    }
+
     private int gutterWidth() {
         int digits = String.valueOf(Math.max(1, this.lines.size())).length();
         return 10 + digits * 6;
@@ -1170,13 +1186,7 @@ public class LuaScriptEditorScreen extends Screen {
         this.browserFocused = false;
         int lineIndex = this.scroll + (int) ((mouseY - TEXT_TOP) / LINE_HEIGHT);
         lineIndex = Math.max(0, Math.min(lineIndex, this.lines.size() - 1));
-        String line = this.lines.get(lineIndex).toString();
-        int textLeft = this.contentLeft();
-        int column = 0;
-        int target = (int) mouseX - textLeft;
-        while (column < line.length() && this.font.width(line.substring(0, column + 1)) <= target) {
-            column++;
-        }
+        int column = this.columnAt(lineIndex, mouseX);
         if (hasShiftDown()) {
             if (this.selectionLine < 0) {
                 this.selectionLine = this.cursorLine;
@@ -1186,6 +1196,10 @@ public class LuaScriptEditorScreen extends Screen {
             this.selectionLine = -1;
         }
         this.setCursor(lineIndex, column);
+        // 準備拖曳選取：錨點記在按下的位置
+        this.textSelecting = true;
+        this.textAnchorLine = lineIndex;
+        this.textAnchorColumn = column;
         return true;
     }
 
@@ -2299,6 +2313,25 @@ public class LuaScriptEditorScreen extends Screen {
                 return true;
             }
         }
+        if (this.textSelecting) {
+            int statusTop = this.height - STATUS_HEIGHT;
+            // 拖出文字區時自動捲動
+            if (mouseY < TEXT_TOP) {
+                this.scroll = Math.max(0, this.scroll - 1);
+            } else if (mouseY > statusTop) {
+                int max = Math.max(0, this.lines.size() - this.visibleLines());
+                this.scroll = Math.min(max, this.scroll + 1);
+            }
+            int lineIndex = this.scroll + (int) ((mouseY - TEXT_TOP) / LINE_HEIGHT);
+            lineIndex = Math.max(0, Math.min(lineIndex, this.lines.size() - 1));
+            int column = this.columnAt(lineIndex, mouseX);
+            if (this.selectionLine < 0) {
+                this.selectionLine = this.textAnchorLine;
+                this.selectionColumn = this.textAnchorColumn;
+            }
+            this.setCursor(lineIndex, column, true);
+            return true;
+        }
         if (this.scrollbarDrag == DRAG_EDITOR) {
             this.scroll = this.scrollForMouse(this.editorScrollbar(), mouseY);
             return true;
@@ -2322,6 +2355,7 @@ public class LuaScriptEditorScreen extends Screen {
             return true;
         }
         this.resetDrag();
+        this.textSelecting = false;
         this.scrollbarDrag = DRAG_NONE;
         return super.mouseReleased(mouseX, mouseY, button);
     }
