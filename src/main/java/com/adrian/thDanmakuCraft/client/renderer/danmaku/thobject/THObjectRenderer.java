@@ -17,6 +17,8 @@ import org.joml.Vector3f;
 @OnlyIn(value = Dist.CLIENT)
 public class THObjectRenderer extends AbstractTHObjectRenderer<THObject> {
 
+    private static final Vec2 HALF_UNIT = new Vec2(0.5f, 0.5f);
+
     public THObjectRenderer(THObjectRendererProvider.Context context) {
         super(context);
     }
@@ -43,7 +45,7 @@ public class THObjectRenderer extends AbstractTHObjectRenderer<THObject> {
         Color color = object.getColor();
         Vec2 uvStart = image.getUVStart();
         Vec2 uvEnd =   image.getUVEnd();
-        Vec2 _scale = Vec2.ONE.scale(0.5f);
+        Vec2 _scale = HALF_UNIT;
 
         VertexBuilder builder = new VertexBuilder(vertexConsumer);
         builder.positionUVColor(posestack$pose.pose(), -_scale.x, -_scale.y, 0.0f, uvStart.x, uvEnd.y, color);

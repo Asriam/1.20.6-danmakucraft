@@ -23,6 +23,8 @@ import java.util.EnumMap;
 @OnlyIn(Dist.CLIENT)
 public class THBulletRenderers {
 
+    private static final Vec2 HALF_UNIT = new Vec2(0.5f, 0.5f);
+
     public static void render2DBullet(THBulletRenderer renderer, THBullet bullet, PoseStack poseStack, VertexConsumer vertexConsumer, float partialTicks) {
         poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
         PoseStack.Pose pose = poseStack.last();
@@ -32,7 +34,7 @@ public class THBulletRenderers {
         Color bulletColor = bullet.getBulletColor();
         Vec2 uvStart = image.getUVStart();
         Vec2 uvEnd =   image.getUVEnd();
-        Vec2 scale = Vec2.ONE.scale(0.5f);
+        Vec2 scale = HALF_UNIT;
 
         VertexBuilder builder = new VertexBuilder(vertexConsumer);
         builder.positionColorColorUV(pose.pose(), -scale.x, -scale.y, 0.0f, color, bulletColor, uvStart.x, uvEnd.y);

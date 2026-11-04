@@ -104,6 +104,8 @@ public class THObjectContainerRenderer {
     };
 
     private static final Map<RenderType,LegacyBufferBuilder> buffers = new HashMap<>();
+    /** 每幀重用的批次表（key = RenderType，value = 該批次的物件清單）。 */
+    private static final Map<RenderType, List<THObject>> BATCHES = new HashMap<>();
     private static final LegacyBufferBuilder HIT_BOX_BUFFER = new LegacyBufferBuilder(4096);
     public static final LegacyBufferBuilder BUFFER_2 = new LegacyBufferBuilder(4096);
 
@@ -143,11 +145,19 @@ public class THObjectContainerRenderer {
         if (!objectList.isEmpty()) {
             boolean shouldRenderHitBox = entityRenderDispatcher.shouldRenderHitBoxes();
             RenderType renderTypeLines = RenderType.lines();
-            ///Batching
-            final Map<RenderType, List<THObject>> map = new HashMap<>();
+            ///Batching：重用同一個 map / 每個 RenderType 的 list（每幀只 clear）
+            for (List<THObject> cached : BATCHES.values()) {
+                cached.clear();
+            }
+            final Map<RenderType, List<THObject>> map = BATCHES;
             for (THObject object : objectList) {
                 RenderType renderType = THObjectContainerRenderer.getTHObjectRenderer(object).getRenderType(object);
-                map.computeIfAbsent(renderType, (key) -> new ArrayList<>()).add(object);
+                List<THObject> bucket = map.get(renderType);
+                if (bucket == null) {
+                    bucket = new ArrayList<>();
+                    map.put(renderType, bucket);
+                }
+                bucket.add(object);
             }
             for (Map.Entry<RenderType, List<THObject>> entry : map.entrySet()) {
                 var renderType = entry.getKey();
@@ -184,58 +194,29 @@ public class THObjectContainerRenderer {
                 if (shouldApplyEffect()) {
                     THObjectContainerRenderer.TEST_RENDER_TARGET.bindWrite(true);
                 }
-                renderType.setupRenderState();
-                BufferUploader.drawWithShader(BUFFER_2.end());
-                BufferUploader.drawWithShader(builder.end());
-                renderType.clearRenderState();
+                // 空的批次（整批被剔除、或 BUFFER_2 沒人寫）就不必建立 MeshData / 發 draw call
+                boolean hasBuffer2 = BUFFER_2.vertexCount() > 0;
+                boolean hasMain = builder.vertexCount() > 0;
+                if (hasBuffer2 || hasMain) {
+                    renderType.setupRenderState();
+                    if (hasBuffer2) {
+                        BufferUploader.drawWithShader(BUFFER_2.end());
+                    }
+                    if (hasMain) {
+                        BufferUploader.drawWithShader(builder.end());
+                    }
+                    renderType.clearRenderState();
+                } else {
+                    // 仍要重置緩衝，否則下一批會沿用舊資料
+                    BUFFER_2.end();
+                    builder.end();
+                }
                 if (shouldApplyEffect()) {
                     THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
                 }
             }
-            map.clear();
+            // 不清 map：list 留給下一幀重用（上一層已 clear）
 
-
-            /*for (Map.Entry<RenderType, BufferBuilder> entry : buffers.entrySet()){
-                RenderType rendertype = entry.getKey();
-                BufferBuilder builder = entry.getValue();
-                builder.begin(rendertype.mode(), rendertype.format());
-            }
-            if (shouldRenderHitBox) {
-                HIT_BOX_BUFFER.begin(renderTypeLines.mode(), renderTypeLines.format());
-            }
-            List<THObject> sortedList = sortObjects(objectList, camX, camY, camZ);
-            for (THObject object : sortedList) {
-                if (object != null) {
-                    AbstractTHObjectRenderer<THObject> renderer = THObjectContainerRenderer.getTHObjectRenderer(object);
-                    BufferBuilder builder = getBuffer(renderer.getRenderType(object));
-                    BUFFER_2 = builder;
-                    if (renderer.shouldRender(object, frustum, camX, camY, camZ)) {
-                        poseStack.pushPose();
-                        Vec3 objectPos = object.getOffsetPosition(partialTicks);
-                        poseStack.translate(objectPos.x() - camX, objectPos.y() - camY, objectPos.z() - camZ);
-                        poseStack.pushPose();
-                        renderer.render(object, objectPos, partialTicks, poseStack, builder);
-                        poseStack.popPose();
-                        if (shouldRenderHitBox && object.collision) {
-                            renderer.renderHitBox(object, objectPos, partialTicks, poseStack, HIT_BOX_BUFFER);
-                        }
-                        poseStack.popPose();
-                    }
-                }
-            }
-            if (shouldRenderHitBox) {
-                renderTypeLines.setupRenderState();
-                BufferUploader.drawWithShader(HIT_BOX_BUFFER.end());
-                renderTypeLines.clearRenderState();
-            }
-
-            for (Map.Entry<RenderType, BufferBuilder> entry : buffers.entrySet()){
-                RenderType rendertype = entry.getKey();
-                BufferBuilder builder = entry.getValue();
-                rendertype.setupRenderState();
-                BufferUploader.drawWithShader(builder.end());
-                rendertype.clearRenderState();
-            }*/
         }
         RenderSystem.blendEquation(32774);
         //RenderSystem.disableBlend();
@@ -254,20 +235,25 @@ public class THObjectContainerRenderer {
         }
 
         try {
+            // 原本比較器每次比較都呼叫 getPosition()（各配置一個 Vec3），
+            // 5000 顆彈幕一趟排序會產生十幾萬個短命 Vec3。這裡直接算平方距離。
             list.sort((o1, o2) -> {
                 if (o1 == null || o2 == null) {
                     return 0;
                 }
-                //Vec3 cam = new Vec3(camX, camY, camZ);
-                return Double.compare(
-                        o2.getPosition().distanceToSqr(cam),
-                        o1.getPosition().distanceToSqr(cam)
-                );
+                return Double.compare(distanceSqr(o2, cam), distanceSqr(o1, cam));
             });
         }catch (Exception e){
             THDanmakuCraftMod.LOGGER.error(e.toString());
         }
         return list;
+    }
+
+    private static double distanceSqr(THObject object, Vec3 cam) {
+        double dx = object.getX() - cam.x;
+        double dy = object.getY() - cam.y;
+        double dz = object.getZ() - cam.z;
+        return dx * dx + dy * dy + dz * dz;
     }
 
     public static void renderContainerBound(THObjectContainer container, PoseStack poseStack, VertexConsumer vertexConsumer) {

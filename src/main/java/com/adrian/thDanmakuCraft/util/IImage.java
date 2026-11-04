@@ -16,11 +16,14 @@ public interface IImage{
         private final ResourceLocation textureLocation;
         private final Vec2 uvStart;
         private final Vec2 size;
+        /** 預先算好：getUVEnd() 每次渲染都會被呼叫，原本每次都會 new 一個 Vec2。 */
+        private final Vec2 uvEnd;
 
         public Image(ResourceLocation textureLocation, Vec2 uvStart, Vec2 size) {
             this.textureLocation = textureLocation;
             this.uvStart = uvStart;
             this.size = size;
+            this.uvEnd = uvStart.add(size);
         }
 
         public Image(ResourceLocation textureLocation, float uStart, float vStart, float width, float height) {
@@ -36,7 +39,7 @@ public interface IImage{
         }
 
         public Vec2 getUVEnd() {
-            return uvStart.add(size);
+            return this.uvEnd;
         }
 
         public Vec2 getSize(){

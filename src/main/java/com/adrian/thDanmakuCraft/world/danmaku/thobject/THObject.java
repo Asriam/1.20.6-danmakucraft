@@ -48,6 +48,8 @@ public class THObject implements ILuaValue, IGetContainer, ISerializable {
     public static final ResourceLocation TEXTURE_WHITE = ResourceLocationUtil.thdanmakucraft("textures/white.png");
     protected IImage.Image image = new IImage.Image(TEXTURE_WHITE, 0.0f, 0.0f, 1.0f, 1.0f);
     protected static final AABB INITIAL_AABB = new AABB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
+    /** 預先膨脹 0.5 的剔除盒（見 setBoundingBox）。 */
+    protected AABB bbForCulling = INITIAL_AABB;
     protected AABB bb = INITIAL_AABB;
     protected double positionX;                    //Object Position
     protected double positionY;
@@ -458,6 +460,8 @@ public class THObject implements ILuaValue, IGetContainer, ISerializable {
 
     public final void setBoundingBox(AABB boundingBox) {
         this.bb = boundingBox;
+        // 視錐剔除用的盒：每幀都要用，預先算好避免每次 inflate() 配置新 AABB
+        this.bbForCulling = boundingBox.inflate(0.5D);
     }
 
     public final void setBoundingBox(Vec3 pos, Vec3 size) {
@@ -472,7 +476,7 @@ public class THObject implements ILuaValue, IGetContainer, ISerializable {
     }
 
     public AABB getBoundingBoxForCulling() {
-        return this.getBoundingBox();
+        return this.bbForCulling;
     }
 
     public ITHObjectContainer getContainer() {

@@ -49,7 +49,7 @@ public abstract class AbstractTHObjectRenderer<T extends THObject>{
         } else if (object.noCulling) {
             return true;
         } else {
-            AABB aabb = object.getBoundingBoxForCulling().inflate(0.5D);
+            AABB aabb = object.getBoundingBoxForCulling();
             if (aabb.hasNaN() || aabb.getSize() == 0.0D) {
                 aabb = new AABB(object.getX() - 2.0D, object.getY() - 2.0D, object.getZ() - 2.0D, object.getX() + 2.0D, object.getY() + 2.0D, object.getZ() + 2.0D);
             }
