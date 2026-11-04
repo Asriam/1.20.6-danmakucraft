@@ -206,6 +206,44 @@ public final class LuaScriptFiles {
 
     // ------------------------------------------------------------------ 一般檔案
 
+    /** 列出 {@code root} 下所有子目錄（相對路徑，已排序）。 */
+    public static List<String> listDirs(Path root) {
+        List<String> found = new ArrayList<>();
+        if (!Files.isDirectory(root)) {
+            return found;
+        }
+        try (Stream<Path> stream = Files.walk(root, MAX_DEPTH)) {
+            stream.filter(Files::isDirectory)
+                    .filter(path -> !path.equals(root))
+                    .forEach(path -> found.add(root.relativize(path).toString().replace('\\', '/')));
+        } catch (IOException ignored) {
+            // 讀不到就當作空清單
+        }
+        found.sort(String::compareToIgnoreCase);
+        return found;
+    }
+
+    /** 在 {@code root} 下建立資料夾（可多層，例如 a/b）。 */
+    public static Path createDirectory(Path root, String name) throws IOException {
+        Path target = root.resolve(name);
+        Files.createDirectories(target);
+        return target;
+    }
+
+    /** 遞迴刪除資料夾（含內容）；回傳是否真的刪掉。 */
+    public static boolean deleteDirectory(Path dir) throws IOException {
+        if (!Files.isDirectory(dir)) {
+            return false;
+        }
+        try (Stream<Path> stream = Files.walk(dir)) {
+            List<Path> paths = stream.sorted(java.util.Comparator.reverseOrder()).toList();
+            for (Path path : paths) {
+                Files.deleteIfExists(path);
+            }
+        }
+        return !Files.exists(dir);
+    }
+
     /** 把使用者輸入正規化成檔名：去空白、統一斜線、補上 .lua。 */
     public static String normalizeName(String input) {
         if (input == null) {
@@ -236,6 +274,17 @@ public final class LuaScriptFiles {
             Files.createDirectories(parent);
         }
         Files.move(from, to);
+        return true;
+    }
+
+    /** 把檔案搬到某個資料夾（同名已存在就不動）。 */
+    public static boolean move(Path file, Path targetDir) throws IOException {
+        Path target = targetDir.resolve(file.getFileName().toString());
+        if (Files.exists(target)) {
+            return false;
+        }
+        Files.createDirectories(targetDir);
+        Files.move(file, target);
         return true;
     }
 

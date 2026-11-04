@@ -103,14 +103,43 @@ public class LuaScriptEditorScreen extends Screen {
     private static final int BROWSER_WIDTH = 156;
     private boolean browserOpen;
     /** 檔案管理器的一列：header 非 null 代表分類標題。 */
-    private record BrowserRow(String header, LuaScriptFiles.Entry entry, String group) {
-        boolean isHeader() {
-            return this.entry == null;
+    private record BrowserRow(String header, LuaScriptFiles.Entry entry, String group,
+                              String directory, int depth, String label) {
+
+        /**
+         * 分類標題（腳本 / 內建 API / 內建工具庫）。
+         * 注意：資料夾列也把標籤放在 header，所以必須排除有 directory 的列，
+         * 否則資料夾會被當成分類標題（不能選、不能收合）。
+         */
+        boolean isSection() {
+            return this.header != null && this.directory == null;
         }
 
-        /** 只有內建來源的資料夾可以收合。 */
+        /** 資料夾列。 */
+        boolean isFolder() {
+            return this.directory != null;
+        }
+
+        boolean isSelectable() {
+            return this.entry != null || this.isFolder();
+        }
+
+        /** 分類標題（內建來源）與資料夾都可以收合。 */
         boolean isCollapsible() {
-            return this.isHeader() && this.group != null;
+            return this.isSection() ? this.group != null : this.isFolder();
+        }
+
+        /** 收合狀態的鍵。 */
+        String collapseKey() {
+            return this.isFolder() ? "dir:" + this.directory : this.group;
+        }
+
+        /** 選取狀態的鍵（重新整理後用來還原選取）。 */
+        String selectionKey() {
+            if (this.isFolder()) {
+                return "dir:" + this.directory;
+            }
+            return this.entry == null ? "" : "file:" + this.entry.path();
         }
     }
 
@@ -135,12 +164,24 @@ public class LuaScriptEditorScreen extends Screen {
     private static final int DRAG_BROWSER = 1;
     private int scrollbarDrag = DRAG_NONE;
 
+    // ---- 拖曳檔案到資料夾 ----
+    /** 按下滑鼠時記下的檔案路徑（還沒真的開始拖）。 */
+    private String dragCandidate;
+    /** 是否已經進入拖曳狀態（移動超過門檻）。 */
+    private boolean draggingFile;
+    private double dragStartX;
+    private double dragStartY;
+    /** 目前滑鼠所在的放置目標資料夾（null = 不可放置）。 */
+    private String dropTargetDir;
+    /** 搬移後要選取的列（refresh 後還原用）。 */
+    private String pendingSelectionKey;
+
     /** 存檔時檢查到的語法錯誤行（1 起算，0 = 沒有錯誤）。 */
     private int syntaxErrorLine;
     private String syntaxErrorMessage = "";
 
 
-    private enum Dialog { NONE, NEW_FILE, RENAME, DELETE }
+    private enum Dialog { NONE, NEW_FILE, NEW_FOLDER, RENAME, DELETE }
 
     private Dialog dialog = Dialog.NONE;
 
@@ -299,12 +340,17 @@ public class LuaScriptEditorScreen extends Screen {
     }
 
     /** 重新掃描：內建資料夾在最上，腳本在最後。 */
+    /** 重新掃描：內建資料夾在最上，腳本（含子資料夾）在最後。 */
+    /** 重新掃描：內建資料夾在最上，腳本（含子資料夾）在最後。 */
     private void refreshFileList() {
+        String previousKey = this.pendingSelectionKey != null ? this.pendingSelectionKey : this.selectedKey();
+        this.pendingSelectionKey = null;
+
         List<LuaScriptFiles.Entry> scripts = new ArrayList<>();
-        Map<String, List<LuaScriptFiles.Entry>> groups = new LinkedHashMap<>();
+        Map<String, List<LuaScriptFiles.Entry>> byRoot = new LinkedHashMap<>();
         for (LuaScriptFiles.Entry entry : LuaScriptFiles.listAll()) {
             if (entry.builtin()) {
-                groups.computeIfAbsent(entry.category(), key -> new ArrayList<>()).add(entry);
+                byRoot.computeIfAbsent(entry.category(), key -> new ArrayList<>()).add(entry);
             } else {
                 scripts.add(entry);
             }
@@ -312,26 +358,109 @@ public class LuaScriptEditorScreen extends Screen {
 
         List<BrowserRow> rows = new ArrayList<>();
         for (LuaScriptFiles.BuiltinRoot root : LuaScriptFiles.BUILTIN_ROOTS) {
-            List<LuaScriptFiles.Entry> entries = groups.getOrDefault(root.name(), List.of());
+            List<LuaScriptFiles.Entry> entries = byRoot.getOrDefault(root.name(), List.of());
             boolean collapsed = this.collapsedGroups.contains(root.name());
-            String marker = collapsed ?  "▼ " : "▶ ";
+            String marker = collapsed ? "\u25B6 " : "\u25BC ";
             rows.add(new BrowserRow(marker + this.builtinTitle(root.name()) + " (" + entries.size()
-                    + ") · 唯讀", null, root.name()));
-            if (collapsed) {
-                for (LuaScriptFiles.Entry entry : entries) {
-                    rows.add(new BrowserRow(null, entry, null));
-                }
+                    + ") \u00B7 \u552F\u8B80", null, root.name(), null, 0, null));
+            if (!collapsed) {
+                this.addTree(rows, entries, root.name() + "/", "dir:" + root.name() + "/", 1, List.of());
             }
         }
 
-        rows.add(new BrowserRow("脚本 (" + scripts.size() + ")", null, null));
-        for (LuaScriptFiles.Entry entry : scripts) {
-            rows.add(new BrowserRow(null, entry, null));
-        }
+        rows.add(new BrowserRow("\u811A\u672C (" + scripts.size() + ")", null, null, null, 0, null));
+        this.addTree(rows, scripts, "", "dir:", 1, LuaScriptFiles.listDirs(LuaScriptFiles.scriptsDir()));
 
         this.browserRows = rows;
+        this.restoreSelection(previousKey);
+    }
+
+    private String selectedKey() {
+        if (this.browserSelected < 0 || this.browserSelected >= this.browserRows.size()) {
+            return "";
+        }
+        return this.browserRows.get(this.browserSelected).selectionKey();
+    }
+
+    private void restoreSelection(String key) {
+        if (key != null && !key.isEmpty()) {
+            for (int i = 0; i < this.browserRows.size(); i++) {
+                if (key.equals(this.browserRows.get(i).selectionKey())) {
+                    this.browserSelected = i;
+                    return;
+                }
+            }
+        }
         this.browserSelected = this.firstSelectableRow();
     }
+
+    /**
+     * 把檔案清單建成樹：先資料夾（遞迴）再檔案，全部依名稱排序。
+     * @param pathPrefix    要從 entry.path() 去掉的前綴（內建來源是 {@code apidoc/}）
+     * @param collapsePrefix 收合鍵前綴（{@code dir:} 或 {@code dir:apidoc/}）
+     * @param extraDirs     沒有檔案的資料夾（腳本目錄才需要）
+     */
+    private void addTree(List<BrowserRow> rows, List<LuaScriptFiles.Entry> entries,
+                         String pathPrefix, String collapsePrefix, int depth,
+                         List<String> extraDirs) {
+        Map<String, List<String>> childDirs = new LinkedHashMap<>();
+        Map<String, List<String>> childNames = new LinkedHashMap<>();
+        Map<String, List<LuaScriptFiles.Entry>> childFiles = new LinkedHashMap<>();
+
+        List<String> dirs = new ArrayList<>(extraDirs);
+        for (LuaScriptFiles.Entry entry : entries) {
+            String relative = entry.path().substring(Math.min(pathPrefix.length(), entry.path().length()));
+            int slash = relative.lastIndexOf('/');
+            if (slash > 0) {
+                String dir = relative.substring(0, slash);
+                // 補上所有上層目錄
+                while (!dir.isEmpty() && !dirs.contains(dir)) {
+                    dirs.add(dir);
+                    int up = dir.lastIndexOf('/');
+                    dir = up > 0 ? dir.substring(0, up) : "";
+                }
+            }
+            String parent = slash > 0 ? relative.substring(0, slash) : "";
+            childFiles.computeIfAbsent(parent, key -> new ArrayList<>()).add(entry);
+            childNames.computeIfAbsent(parent, key -> new ArrayList<>())
+                    .add(relative.substring(slash + 1));
+        }
+        for (String dir : dirs) {
+            int slash = dir.lastIndexOf('/');
+            String parent = slash > 0 ? dir.substring(0, slash) : "";
+            childDirs.computeIfAbsent(parent, key -> new ArrayList<>()).add(dir);
+        }
+        for (List<String> list : childDirs.values()) {
+            list.sort(String::compareToIgnoreCase);
+        }
+        this.addNode(rows, "", pathPrefix, collapsePrefix, childDirs, childFiles, childNames, depth);
+    }
+
+    private void addNode(List<BrowserRow> rows, String parentDir, String pathPrefix, String collapsePrefix,
+                         Map<String, List<String>> childDirs,
+                         Map<String, List<LuaScriptFiles.Entry>> childFiles,
+                         Map<String, List<String>> childNames, int depth) {
+        for (String dir : childDirs.getOrDefault(parentDir, List.of())) {
+            String relative = dir.substring(parentDir.isEmpty() ? 0 : parentDir.length() + 1);
+            String full = pathPrefix + dir;
+            boolean collapsed = this.collapsedGroups.contains(collapsePrefix + dir);
+            String marker = collapsed ? "\u25B6 " : "\u25BC ";
+            rows.add(new BrowserRow(marker + relative + "/", null, null, full, depth, null));
+            if (!collapsed) {
+                this.addNode(rows, dir, pathPrefix, collapsePrefix, childDirs, childFiles, childNames, depth + 1);
+            }
+        }
+        List<LuaScriptFiles.Entry> files = childFiles.getOrDefault(parentDir, List.of());
+        List<String> names = childNames.getOrDefault(parentDir, List.of());
+        for (int i = 0; i < files.size(); i++) {
+            rows.add(new BrowserRow(null, files.get(i), null, null, depth, names.get(i)));
+        }
+    }
+
+    /** 以樹狀方式把腳本與資料夾塞進列清單。 */
+
+
+
 
     private void toggleGroup(String group) {
         if (!this.collapsedGroups.remove(group)) {
@@ -340,30 +469,54 @@ public class LuaScriptEditorScreen extends Screen {
         this.refreshFileList();
     }
 
+    /** 游標預設停在目前開啟的檔案，找不到就停在第一個可選列。 */
     private int firstSelectableRow() {
         String current = this.relativeName();
         for (int i = 0; i < this.browserRows.size(); i++) {
             BrowserRow row = this.browserRows.get(i);
-            if (!row.isHeader() && row.entry().path().equals(current)) {
+            if (row.entry() != null && row.entry().path().equals(current)) {
                 return i;
             }
         }
         for (int i = 0; i < this.browserRows.size(); i++) {
-            if (!this.browserRows.get(i).isHeader()) {
+            if (this.browserRows.get(i).isSelectable()) {
                 return i;
             }
         }
         return 0;
     }
 
+    /** 內建來源（apidoc / lib）底下的路徑一律唯讀。 */
+    private boolean isBuiltinPath(String path) {
+        if (path == null) {
+            return false;
+        }
+        for (LuaScriptFiles.BuiltinRoot root : LuaScriptFiles.BUILTIN_ROOTS) {
+            if (path.equals(root.name()) || path.startsWith(root.name() + "/")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** 目前選取的資料夾（相對路徑），不是資料夾就回傳 null。 */
+    private String currentFolder() {
+        if (this.browserSelected < 0 || this.browserSelected >= this.browserRows.size()) {
+            return null;
+        }
+        return this.browserRows.get(this.browserSelected).directory();
+    }
+
     private LuaScriptFiles.Entry currentSelection() {
         if (this.browserSelected < 0 || this.browserSelected >= this.browserRows.size()) {
             return null;
         }
-        return this.browserRows.get(this.browserSelected).entry();
+        BrowserRow row = this.browserRows.get(this.browserSelected);
+        return row.entry();
     }
 
     /** 上下移動時跳過分類標題列。 */
+    /** 上下移動時跳過分類標題列（資料夾可以選）。 */
     private int moveSelection(int delta) {
         int index = this.browserSelected;
         for (int step = 0; step < this.browserRows.size(); step++) {
@@ -373,7 +526,7 @@ public class LuaScriptEditorScreen extends Screen {
             } else if (index >= this.browserRows.size()) {
                 index = 0;
             }
-            if (!this.browserRows.get(index).isHeader()) {
+            if (this.browserRows.get(index).isSelectable()) {
                 return index;
             }
         }
@@ -391,7 +544,7 @@ public class LuaScriptEditorScreen extends Screen {
     private int countEntries(boolean builtin) {
         int count = 0;
         for (BrowserRow row : this.browserRows) {
-            if (!row.isHeader() && row.entry().builtin() == builtin) {
+            if (row.entry() != null && row.entry().builtin() == builtin) {
                 count++;
             }
         }
@@ -405,11 +558,38 @@ public class LuaScriptEditorScreen extends Screen {
         }
     }
 
+    /** 新增檔案／資料夾要放進哪個目錄（選到資料夾就用它，選到檔案就用它所在目錄）。 */
+    private String targetDirectory() {
+        if (this.browserSelected < 0 || this.browserSelected >= this.browserRows.size()) {
+            return "";
+        }
+        BrowserRow row = this.browserRows.get(this.browserSelected);
+        if (row.isFolder()) {
+            String dir = row.directory();
+            for (LuaScriptFiles.BuiltinRoot root : LuaScriptFiles.BUILTIN_ROOTS) {
+                if (dir.startsWith(root.name() + "/")) {
+                    return "";   // 唯讀來源不能新增
+                }
+            }
+            return dir;
+        }
+        if (row.entry() != null && !row.entry().builtin()) {
+            String path = row.entry().path();
+            int slash = path.lastIndexOf('/');
+            return slash > 0 ? path.substring(0, slash) : "";
+        }
+        return "";
+    }
+
     /** 建立新腳本緩衝（先不寫檔，Ctrl+S 才落地）。 */
     private void newScript(String name) {
         String normalized = name.trim().replace('\\', '/');
         if (normalized.isEmpty()) {
             return;
+        }
+        String directory = this.targetDirectory();
+        if (!directory.isEmpty() && !normalized.contains("/")) {
+            normalized = directory + "/" + normalized;
         }
         if (!normalized.endsWith(".lua")) {
             normalized = normalized + ".lua";
@@ -505,6 +685,15 @@ public class LuaScriptEditorScreen extends Screen {
         if (this.browserOpen) {
             this.renderBrowser(graphics, mouseX, mouseY);
         }
+        if (this.draggingFile && this.dragCandidate != null) {
+            String name = this.dragCandidate.substring(this.dragCandidate.lastIndexOf('/') + 1);
+            int gx = mouseX + 8;
+            int gy = mouseY - 4;
+            int gw = this.font.width(name) + 6;
+            graphics.fill(gx - 1, gy - 1, gx + gw + 1, gy + LINE_HEIGHT + 1, 0xFF3B4252);
+            graphics.fill(gx, gy, gx + gw, gy + LINE_HEIGHT, 0xF01B1F2A);
+            graphics.drawString(this.font, name, gx + 3, gy + 1, 0xFFFFD479, false);
+        }
         this.drawTopBar(graphics, gutter);
         if (this.dialog != Dialog.NONE) {
             this.renderDialog(graphics);
@@ -515,7 +704,7 @@ public class LuaScriptEditorScreen extends Screen {
     // ---- 檔案管理器版面 ----
 
     private static final String[] BROWSER_ACTIONS = {
-            "＋ 新增 (Ctrl+N)", "✎ 重新命名", "✕ 刪除", "⟳ 重新整理"
+            "＋ 新增腳本 (Ctrl+N)", "＋ 新增資料夾", "✎ 重新命名", "✕ 刪除", "⟳ 重新整理"
     };
 
     private int browserTop() {
@@ -567,29 +756,42 @@ public class LuaScriptEditorScreen extends Screen {
         for (int i = 0; i < rows && start + i < this.browserRows.size(); i++) {
             BrowserRow row = this.browserRows.get(start + i);
             int rowY = rowTop + i * (LINE_HEIGHT + 1);
-            if (row.isHeader()) {
+            int indent = x + 4 + Math.max(0, row.depth()) * 8;
+            boolean hovered = hoverInside && mouseY >= rowY - 1 && mouseY < rowY + LINE_HEIGHT;
+            if (this.draggingFile && row.isFolder() && row.directory().equals(this.dropTargetDir)) {
+                graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT, 0x6640C074);
+            }
+            if (row.isSection()) {
                 boolean collapsible = row.isCollapsible();
-                boolean hovered = collapsible && hoverInside
-                        && mouseY >= rowY - 1 && mouseY < rowY + LINE_HEIGHT;
                 graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT, 0x40000000);
-                if (hovered) {
+                if (collapsible && hovered) {
                     graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT, 0x333B82F6);
                 }
                 graphics.drawString(this.font, row.header(), x + 4, rowY,
                         collapsible ? 0xFF8A93A6 : 0xFFCFD8E6, false);
                 continue;
             }
+            if (row.isFolder()) {
+                if (start + i == this.browserSelected) {
+                    graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT, 0x663B82F6);
+                } else if (hovered) {
+                    graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT, 0x333B82F6);
+                }
+                graphics.drawString(this.font, this.font.plainSubstrByWidth(row.header(), w - (indent - x) - 4),
+                        indent, rowY, 0xFFFFD479, false);
+                continue;
+            }
             LuaScriptFiles.Entry entry = row.entry();
             boolean current = entry.path().equals(this.relativeName());
-            boolean hovered = hoverInside && mouseY >= rowY - 1 && mouseY < rowY + LINE_HEIGHT;
             if (start + i == this.browserSelected) {
                 graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT, 0x663B82F6);
             } else if (hovered) {
                 graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT, 0x333B82F6);
             }
             int rowColor = current ? 0xFF7BD88F : (entry.builtin() ? 0xFF7A8699 : 0xFFD4D4D4);
-            graphics.drawString(this.font, this.font.plainSubstrByWidth(entry.path(), w - 10),
-                    x + 4, rowY, rowColor, false);
+            String label = row.label() == null ? entry.path() : row.label();
+            graphics.drawString(this.font, this.font.plainSubstrByWidth(label, w - (indent - x) - 4),
+                    indent, rowY, rowColor, false);
         }
 
 
@@ -605,8 +807,8 @@ public class LuaScriptEditorScreen extends Screen {
                 graphics.fill(x + 1, rowY, x + w - 1, rowY + LINE_HEIGHT + 1, 0x553B82F6);
             }
             int color = switch (i) {
-                case 0 -> 0xFFFFD479;
-                case 2 -> 0xFFFF8080;
+                case 0, 1 -> 0xFFFFD479;
+                case 3 -> 0xFFFF8080;
                 default -> 0xFFD4D4D4;
             };
             graphics.drawString(this.font, BROWSER_ACTIONS[i], x + 4, rowY + 1, color, false);
@@ -623,12 +825,22 @@ public class LuaScriptEditorScreen extends Screen {
         graphics.fill(x, y, x + w, y + h, 0xF21B1F2A);
 
         if (this.dialog == Dialog.DELETE) {
-            graphics.drawString(this.font, "刪除 " + this.dialogSource + " ?", x + 6, y + 8, 0xFFFF8080, false);
+            boolean folder = this.dialogSource.startsWith("dir:");
+            String label = folder ? "刪除資料夾 " + this.dialogInput + "（含內容）?"
+                    : "刪除 " + this.dialogSource + " ?";
+            graphics.drawString(this.font, label, x + 6, y + 8, 0xFFFF8080, false);
             graphics.drawString(this.font, "Enter 確認刪除 · Esc 取消", x + 6, y + 24, LINE_NO, false);
             return;
         }
-        String title = this.dialog == Dialog.RENAME ? "重新命名（Enter 確認 · Esc 取消）"
-                : "新腳本檔名（Enter 建立 · Esc 取消）";
+        String title = switch (this.dialog) {
+            case RENAME -> "重新命名（Enter 確認 · Esc 取消）";
+            case NEW_FOLDER -> "新資料夾名稱（Enter 建立 · Esc 取消）";
+            default -> "新腳本檔名（Enter 建立 · Esc 取消）";
+        };
+        String target = this.targetDirectory();
+        if ((this.dialog == Dialog.NEW_FILE || this.dialog == Dialog.NEW_FOLDER) && !target.isEmpty()) {
+            title = title + "  →  " + target + "/";
+        }
         graphics.drawString(this.font, title, x + 6, y + 6, 0xFFD4D4D4, false);
         String text = this.dialogInput + "_";
         graphics.drawString(this.font, this.font.plainSubstrByWidth(text, w - 12), x + 6, y + 24, 0xFFFFFFFF, false);
@@ -852,8 +1064,13 @@ public class LuaScriptEditorScreen extends Screen {
                         this.dialogSource = "";
                         this.dialogInput = "";
                     }
-                    case 1 -> this.openRenameDialog();
-                    case 2 -> this.openDeleteDialog();
+                    case 1 -> {
+                        this.dialog = Dialog.NEW_FOLDER;
+                        this.dialogSource = "";
+                        this.dialogInput = "";
+                    }
+                    case 2 -> this.openRenameDialog();
+                    case 3 -> this.openDeleteDialog();
                     default -> {
                         this.refreshFileList();
                         this.setStatus("已重新整理，共 " + this.countEntries(false) + " 個腳本、"
@@ -871,10 +1088,20 @@ public class LuaScriptEditorScreen extends Screen {
         int index = start + (int) ((mouseY - rowTop) / (LINE_HEIGHT + 1));
         if (mouseY >= rowTop && index >= 0 && index < this.browserRows.size()) {
             BrowserRow row = this.browserRows.get(index);
-            if (row.isCollapsible()) {
-                this.toggleGroup(row.group());
-            } else if (!row.isHeader()) {
+            if (row.isSection()) {
+                if (row.isCollapsible()) {
+                    this.toggleGroup(row.group());
+                }
+            } else if (row.isFolder()) {
                 this.browserSelected = index;
+                this.toggleGroup(row.collapseKey());
+            } else {
+                this.browserSelected = index;
+                if (!row.entry().builtin()) {
+                    this.dragCandidate = row.entry().path();
+                    this.dragStartX = mouseX;
+                    this.dragStartY = mouseY;
+                }
                 this.openEntry(row.entry());
                 this.refreshFileList();
             }
@@ -885,6 +1112,12 @@ public class LuaScriptEditorScreen extends Screen {
 
     /** 重新命名目前選取的檔案。 */
     private void openRenameDialog() {
+        String folder = this.currentFolder();
+        if (folder != null) {
+            this.setStatus(this.isBuiltinPath(folder)
+                    ? "內建資料夾是唯讀的" : "資料夾不能改名（可刪除後重建）", 0xFFFFD479);
+            return;
+        }
         LuaScriptFiles.Entry entry = this.currentSelection();
         if (entry == null) {
             this.setStatus("沒有可改名的檔案", LINE_NO);
@@ -902,6 +1135,17 @@ public class LuaScriptEditorScreen extends Screen {
 
     /** 刪除目前選取的檔案（需確認）。 */
     private void openDeleteDialog() {
+        String folder = this.currentFolder();
+        if (folder != null) {
+            if (this.isBuiltinPath(folder)) {
+                this.setStatus("內建資料夾是唯讀的，不能刪除", 0xFFFFD479);
+                return;
+            }
+            this.dialog = Dialog.DELETE;
+            this.dialogSource = "dir:" + folder;
+            this.dialogInput = folder;
+            return;
+        }
         LuaScriptFiles.Entry entry = this.currentSelection();
         if (entry == null) {
             this.setStatus("沒有可刪除的檔案", LINE_NO);
@@ -916,6 +1160,27 @@ public class LuaScriptEditorScreen extends Screen {
         this.dialogInput = this.dialogSource;
     }
 
+
+    /** 建立資料夾（可打 a/b 建立多層）。 */
+    /** 建立資料夾（可打 a/b 建立多層）；選到資料夾時建在它裡面。 */
+    private void createFolder(String name) {
+        String normalized = name.trim().replace('\\', '/');
+        if (normalized.isEmpty()) {
+            this.setStatus("資料夾名稱不能為空", 0xFFFF6B6B);
+            return;
+        }
+        String directory = this.targetDirectory();
+        if (!directory.isEmpty() && !normalized.contains("/")) {
+            normalized = directory + "/" + normalized;
+        }
+        try {
+            LuaScriptFiles.createDirectory(LuaScriptFiles.scriptsDir(), normalized);
+            this.refreshFileList();
+            this.setStatus("已建立資料夾 " + normalized, 0xFF7BD88F);
+        } catch (IOException exception) {
+            this.setStatus("建立失敗：" + exception.getMessage(), 0xFFFF6B6B);
+        }
+    }
 
     private void confirmRename() {
         String target = LuaScriptFiles.normalizeName(this.dialogInput);
@@ -944,6 +1209,17 @@ public class LuaScriptEditorScreen extends Screen {
 
     private void confirmDelete() {
         try {
+            if (this.dialogSource.startsWith("dir:")) {
+                String folder = this.dialogSource.substring(4);
+                java.nio.file.Path dir = LuaScriptFiles.scriptsDir().resolve(folder);
+                if (!LuaScriptFiles.deleteDirectory(dir)) {
+                    this.setStatus("資料夾不存在：" + folder, 0xFFFF6B6B);
+                    return;
+                }
+                this.refreshFileList();
+                this.setStatus("已刪除資料夾 " + folder, 0xFF7BD88F);
+                return;
+            }
             java.nio.file.Path file = LuaScriptFiles.scriptsDir().resolve(this.dialogSource);
             if (!LuaScriptFiles.delete(file)) {
                 this.setStatus("檔案不存在：" + this.dialogInput, 0xFFFF6B6B);
@@ -982,7 +1258,8 @@ public class LuaScriptEditorScreen extends Screen {
     @Override
     public boolean charTyped(char codePoint, int modifiers) {
         if (this.dialog != Dialog.NONE) {
-            boolean editable = this.dialog == Dialog.NEW_FILE || this.dialog == Dialog.RENAME;
+            boolean editable = this.dialog == Dialog.NEW_FILE || this.dialog == Dialog.NEW_FOLDER
+                    || this.dialog == Dialog.RENAME;
             if (editable && codePoint >= 32
                     && "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-./".indexOf(codePoint) >= 0) {
                 this.dialogInput += codePoint;
@@ -1024,6 +1301,7 @@ public class LuaScriptEditorScreen extends Screen {
                 this.dialog = Dialog.NONE;
                 switch (active) {
                     case NEW_FILE -> this.newScript(this.dialogInput);
+                    case NEW_FOLDER -> this.createFolder(this.dialogInput);
                     case RENAME -> this.confirmRename();
                     case DELETE -> this.confirmDelete();
                     default -> {
@@ -1840,6 +2118,16 @@ public class LuaScriptEditorScreen extends Screen {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (this.dragCandidate != null) {
+            if (!this.draggingFile
+                    && Math.abs(mouseX - this.dragStartX) + Math.abs(mouseY - this.dragStartY) > 4.0) {
+                this.draggingFile = true;
+            }
+            if (this.draggingFile) {
+                this.dropTargetDir = this.folderAt(mouseX, mouseY);
+                return true;
+            }
+        }
         if (this.scrollbarDrag == DRAG_EDITOR) {
             this.scroll = this.scrollForMouse(this.editorScrollbar(), mouseY);
             return true;
@@ -1853,8 +2141,77 @@ public class LuaScriptEditorScreen extends Screen {
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (this.draggingFile && this.dragCandidate != null) {
+            String source = this.dragCandidate;
+            String target = this.dropTargetDir;
+            this.resetDrag();
+            if (target != null && !target.equals(parentOf(source))) {
+                this.moveFileInto(source, target);
+            }
+            return true;
+        }
+        this.resetDrag();
         this.scrollbarDrag = DRAG_NONE;
         return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    private void resetDrag() {
+        this.dragCandidate = null;
+        this.draggingFile = false;
+        this.dropTargetDir = null;
+    }
+
+    private static String parentOf(String path) {
+        int slash = path.lastIndexOf('/');
+        return slash > 0 ? path.substring(0, slash) : "";
+    }
+
+    /** 滑鼠底下的放置目標；回傳 null 表示不能放，空字串表示放到 scripts 根目錄。 */
+    private String folderAt(double mouseX, double mouseY) {
+        if (!this.browserOpen) {
+            return null;
+        }
+        int x = PADDING;
+        int y = browserTop();
+        int w = BROWSER_WIDTH;
+        int actionTop = browserActionTop();
+        if (mouseX < x || mouseX > x + w || mouseY < y + 20 || mouseY > actionTop) {
+            return null;
+        }
+        int rowTop = y + 20;
+        int rows = browserListRows();
+        int start = this.browserScroll;
+        int index = start + (int) ((mouseY - rowTop) / (LINE_HEIGHT + 1));
+        if (index < 0 || index >= this.browserRows.size()) {
+            return null;
+        }
+        BrowserRow row = this.browserRows.get(index);
+        if (row.isFolder()) {
+            return this.isBuiltinPath(row.directory()) ? null : row.directory();
+        }
+        if (row.isSection() && row.group() == null) {
+            return "";   // 「腳本」分類標題 = 放到根目錄
+        }
+        return null;
+    }
+
+    /** 把檔案搬到資料夾（拖曳放開時呼叫）。 */
+    private void moveFileInto(String sourcePath, String targetDir) {
+        String name = sourcePath.substring(sourcePath.lastIndexOf('/') + 1);
+        try {
+            java.nio.file.Path from = LuaScriptFiles.scriptsDir().resolve(sourcePath);
+            java.nio.file.Path toDir = LuaScriptFiles.scriptsDir().resolve(targetDir);
+            if (!LuaScriptFiles.move(from, toDir)) {
+                this.setStatus("目標資料夾已有同名檔案：" + name, 0xFFFF6B6B);
+                return;
+            }
+            this.pendingSelectionKey = "file:" + (targetDir.isEmpty() ? name : targetDir + "/" + name);
+            this.refreshFileList();
+            this.setStatus("已移動 " + name + " → " + (targetDir.isEmpty() ? "/" : targetDir + "/"),
+                    0xFF7BD88F);
+        } catch (IOException exception) {
+            this.setStatus("移動失敗：" + exception.getMessage(), 0xFFFF6B6B);
+        }
     }
 
     private void setStatus(String message, int color) {
