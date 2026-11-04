@@ -48,6 +48,7 @@ public class LuaScriptEditorScreen extends Screen {
     private static final int TASK_BAR_HEIGHT = 14;
     /** 文字區頂端 = 頂部列 + 工作欄。 */
     private static final int TEXT_TOP = TOP_BAR_HEIGHT + TASK_BAR_HEIGHT;
+    private static final int BROWSER_TOP = TOP_BAR_HEIGHT;
     private static final int STATUS_HEIGHT = 14;
     private static final int PADDING = 4;
 
@@ -887,7 +888,8 @@ public class LuaScriptEditorScreen extends Screen {
     };
 
     private int browserTop() {
-        return TEXT_TOP;
+        //return TEXT_TOP;
+        return BROWSER_TOP;
     }
 
     private int browserHeight() {
@@ -914,6 +916,8 @@ public class LuaScriptEditorScreen extends Screen {
         return this.browserScroll;
     }
 
+    private static final int rowTopOffset = 20;
+
     private void renderBrowser(GuiGraphics graphics, int mouseX, int mouseY) {
         int x = PADDING;
         int y = browserTop();
@@ -926,7 +930,7 @@ public class LuaScriptEditorScreen extends Screen {
         graphics.fill(x, y, x + w, y + 1, 0xFF3B4252);
         graphics.drawString(this.font, "檔案管理器", x + 4, y + 4, 0xFFFFFFFF, false);
 
-        int rowTop = y + 20;
+        int rowTop = y + rowTopOffset;
         int rows = browserListRows();
         if (this.browserSelected >= this.browserRows.size()) {
             this.browserSelected = Math.max(0, this.browserRows.size() - 1);
@@ -1163,14 +1167,20 @@ public class LuaScriptEditorScreen extends Screen {
         return false;
     }
 
+    /** 工作欄左緣：檔案管理器打開時往右縮，對齊文字區。 */
+    private int taskBarLeft() {
+        return PADDING + (this.browserOpen ? BROWSER_WIDTH + 3 : 0);
+    }
+
     /** 工作欄：一排分頁，點擊切換、右端 x 或右鍵關閉。 */
     private void renderTaskBar(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.fill(0, TOP_BAR_HEIGHT, this.width, TEXT_TOP, 0xFF14161A);
+        int left = this.taskBarLeft();
+        graphics.fill(left, TOP_BAR_HEIGHT, this.width, TEXT_TOP, 0xFF14161A);
         if (this.taskBar.isEmpty()) {
-            graphics.drawString(this.font, "雙擊檔案可加入工作欄", PADDING, TOP_BAR_HEIGHT + 3, LINE_NO, false);
+            graphics.drawString(this.font, "雙擊檔案可加入工作欄", left, TOP_BAR_HEIGHT + 3, LINE_NO, false);
             return;
         }
-        int x = PADDING;
+        int x = left;
         for (int i = 0; i < this.taskBar.size(); i++) {
             String path = this.taskBar.get(i);
             String label = this.taskLabel(i);
@@ -1206,7 +1216,7 @@ public class LuaScriptEditorScreen extends Screen {
         if (mouseY < TOP_BAR_HEIGHT || mouseY > TEXT_TOP || this.taskBar.isEmpty()) {
             return new TaskHit(-1, false);
         }
-        int x = PADDING;
+        int x = this.taskBarLeft();
         for (int i = 0; i < this.taskBar.size(); i++) {
             int width = this.taskWidth(i);
             if (x + width > this.width - PADDING) {
@@ -1482,7 +1492,7 @@ public class LuaScriptEditorScreen extends Screen {
         }
 
         // 檔案列（分類標題不可選）
-        int rowTop = y + 20;
+        int rowTop = y + rowTopOffset;
         int rows = browserListRows();
         int start = browserListStart(rows);
         int index = start + (int) ((mouseY - rowTop) / (LINE_HEIGHT + 1));
