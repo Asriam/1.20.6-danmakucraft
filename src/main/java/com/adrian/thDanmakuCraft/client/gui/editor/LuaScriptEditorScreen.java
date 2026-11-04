@@ -42,7 +42,10 @@ public class LuaScriptEditorScreen extends Screen {
 
     // ---- 版面 ----
     private static final int LINE_HEIGHT = 10;
-    private static final int TEXT_TOP = 26;
+    private static final int TOP_BAR_HEIGHT = 24;
+    private static final int TASK_BAR_HEIGHT = 14;
+    /** 文字區頂端 = 頂部列 + 工作欄。 */
+    private static final int TEXT_TOP = TOP_BAR_HEIGHT + TASK_BAR_HEIGHT;
     private static final int STATUS_HEIGHT = 14;
     private static final int PADDING = 4;
 
@@ -102,6 +105,8 @@ public class LuaScriptEditorScreen extends Screen {
     // ---- 檔案瀏覽 ----
     private static final int BROWSER_WIDTH = 156;
     private boolean browserOpen;
+    /** 焦點是否在檔案管理器（決定 Delete 鍵要刪檔案還是刪字元）。 */
+    private boolean browserFocused;
     /** 檔案管理器的一列：header 非 null 代表分類標題。 */
     private record BrowserRow(String header, LuaScriptFiles.Entry entry, String group,
                               String directory, int depth, String label) {
@@ -147,6 +152,8 @@ public class LuaScriptEditorScreen extends Screen {
     private List<BrowserRow> browserRows = new ArrayList<>();
     /** 已收合的分類標題（腳本 / 內建 API / 內建工具庫），預設展開。 */
     private final Set<String> collapsedGroups = new HashSet<>();
+    /** 工作欄：使用者用 Ctrl+T 加入的檔案（顯示路徑，內建檔案帶 apidoc/ 或 lib/ 前綴）。 */
+    private final List<String> taskBar = new ArrayList<>();
     /** 已展開的資料夾（預設收合，所以記錄的是「展開」而不是「收合」）。 */
     private final Set<String> expandedDirs = new HashSet<>();
     /** 開檔後要自動展開的路徑（只生效一次，避免使用者手動收合又被拉開）。 */
@@ -179,6 +186,9 @@ public class LuaScriptEditorScreen extends Screen {
     private String dropTargetDir;
     /** 搬移後要選取的列（refresh 後還原用）。 */
     private String pendingSelectionKey;
+    /** 檔案管理器雙擊偵測。 */
+    private String lastClickedPath = "";
+    private long lastClickAt;
 
     /** 存檔時檢查到的語法錯誤行（1 起算，0 = 沒有錯誤）。 */
     private int syntaxErrorLine;
@@ -590,6 +600,7 @@ public class LuaScriptEditorScreen extends Screen {
 
     private void toggleBrowser() {
         this.browserOpen = !this.browserOpen;
+        this.browserFocused = this.browserOpen;
         if (this.browserOpen) {
             this.refreshFileList();
         }
@@ -637,18 +648,23 @@ public class LuaScriptEditorScreen extends Screen {
             this.setStatus("檔案已存在，已開啟 " + normalized, 0xFFFFD479);
             return;
         }
-        this.openFile(normalized);
-        this.lines.clear();
-        for (String line : TEMPLATE.split("\n", -1)) {
-            this.lines.add(new StringBuilder(line));
+        try {
+            // 先落地（空模板），這樣檔案管理器立刻就能看到它
+            LuaScriptFiles.write(LuaScriptFiles.scriptsDir().resolve(normalized), TEMPLATE);
+        } catch (IOException exception) {
+            this.setStatus("建立失敗：" + exception.getMessage(), 0xFFFF6B6B);
+            return;
         }
+        this.openFile(normalized);
         this.cursorLine = 0;
         this.cursorColumn = 0;
         this.scroll = 0;
         this.selectionLine = -1;
-        this.dirty = true;
+        this.dirty = false;   // 模板已寫入磁碟，內容與檔案一致
+        this.pendingSelectionKey = "file:" + normalized;
+        this.refreshFileList();
         //this.browserOpen = false;
-        this.setStatus("新腳本 " + this.fileName + "（Ctrl+S 儲存）", 0xFF7BD88F);
+        this.setStatus("已建立 " + this.fileName + "（可直接編輯，Ctrl+S 儲存）", 0xFF7BD88F);
     }
 
     /** 內容區左緣（瀏覽器開啟時往右讓開）。 */
@@ -732,6 +748,7 @@ public class LuaScriptEditorScreen extends Screen {
             graphics.drawString(this.font, name, gx + 3, gy + 1, 0xFFFFD479, false);
         }
         this.drawTopBar(graphics, gutter);
+        this.renderTaskBar(graphics, mouseX, mouseY);
         if (this.dialog != Dialog.NONE) {
             this.renderDialog(graphics);
         }
@@ -745,7 +762,7 @@ public class LuaScriptEditorScreen extends Screen {
     };
 
     private int browserTop() {
-        return TEXT_TOP - 4;
+        return TEXT_TOP;
     }
 
     private int browserHeight() {
@@ -825,8 +842,13 @@ public class LuaScriptEditorScreen extends Screen {
             } else if (hovered) {
                 graphics.fill(x + 1, rowY - 1, x + w - 1, rowY + LINE_HEIGHT, 0x333B82F6);
             }
-            int rowColor = current ? 0xFF7BD88F : (entry.builtin() ? 0xFF7A8699 : 0xFFD4D4D4);
+            boolean dirtyHere = current && this.dirty;
+            int rowColor = dirtyHere ? 0xFFFFD479
+                    : (current ? 0xFF7BD88F : (entry.builtin() ? 0xFF7A8699 : 0xFFD4D4D4));
             String label = row.label() == null ? entry.path() : row.label();
+            if (dirtyHere) {
+                label = label + " *";
+            }
             graphics.drawString(this.font, this.font.plainSubstrByWidth(label, w - (indent - x) - 4),
                     indent, rowY, rowColor, false);
         }
@@ -883,7 +905,7 @@ public class LuaScriptEditorScreen extends Screen {
         graphics.drawString(this.font, this.font.plainSubstrByWidth(text, w - 12), x + 6, y + 24, 0xFFFFFFFF, false);
     }
     private void drawTopBar(GuiGraphics graphics, int gutter) {
-        graphics.fill(0, 0, this.width, TEXT_TOP - 2, BAR_BG);
+        graphics.fill(0, 0, this.width, TOP_BAR_HEIGHT, BAR_BG);
         graphics.drawString(this.font, "Lua Script Editor", PADDING, PADDING + 1, 0xFFFFFFFF, false);
 
         // 「檔案」按鈕（讓檔案管理器看得到，不必先知道 Ctrl+O）
@@ -910,6 +932,94 @@ public class LuaScriptEditorScreen extends Screen {
         }
         String hint = "Ctrl+O 檔案 · Ctrl+S 儲存 · Esc 關閉";
         graphics.drawString(this.font, hint, this.width - PADDING - this.font.width(hint), PADDING + 1, LINE_NO, false);
+    }
+
+    /** 工作欄：一排分頁，點擊切換、右端 x 或右鍵關閉。 */
+    private void renderTaskBar(GuiGraphics graphics, int mouseX, int mouseY) {
+        graphics.fill(0, TOP_BAR_HEIGHT, this.width, TEXT_TOP, 0xFF14161A);
+        if (this.taskBar.isEmpty()) {
+            graphics.drawString(this.font, "雙擊檔案可加入工作欄", PADDING, TOP_BAR_HEIGHT + 3, LINE_NO, false);
+            return;
+        }
+        int x = PADDING;
+        for (int i = 0; i < this.taskBar.size(); i++) {
+            String path = this.taskBar.get(i);
+            String label = this.taskLabel(i);
+            int width = this.taskWidth(i);
+            if (x + width > this.width - PADDING) {
+                graphics.drawString(this.font, "…", x, TOP_BAR_HEIGHT + 3, LINE_NO, false);
+                break;
+            }
+            boolean active = path.equals(this.relativeName());
+            graphics.fill(x, TOP_BAR_HEIGHT + 1, x + width, TEXT_TOP - 1,
+                    active ? 0xFF2D6CDF : 0xFF23262E);
+            graphics.drawString(this.font, label, x + 5, TOP_BAR_HEIGHT + 3,
+                    active ? 0xFFFFFFFF : 0xFFB8C2D4, false);
+            boolean hoverClose = mouseX >= x + width - 10 && mouseX <= x + width
+                    && mouseY >= TOP_BAR_HEIGHT && mouseY <= TEXT_TOP;
+            if (hoverClose) {
+                graphics.fill(x + width - 10, TOP_BAR_HEIGHT + 1, x + width, TEXT_TOP - 1, 0x55FF5555);
+            }
+            graphics.drawString(this.font, "x", x + width - 8, TOP_BAR_HEIGHT + 3,
+                    hoverClose ? 0xFFFF5555 : (active ? 0xFFCFD8E6 : 0xFF7A8699), false);
+            x += width + 2;
+        }
+    }
+
+    private record TaskHit(int index, boolean close) {
+        boolean found() {
+            return this.index >= 0;
+        }
+    }
+
+    /** 工作欄命中測試；每一格右端 10px 是關閉用的 x。 */
+    private TaskHit taskBarHit(double mouseX, double mouseY) {
+        if (mouseY < TOP_BAR_HEIGHT || mouseY > TEXT_TOP || this.taskBar.isEmpty()) {
+            return new TaskHit(-1, false);
+        }
+        int x = PADDING;
+        for (int i = 0; i < this.taskBar.size(); i++) {
+            int width = this.taskWidth(i);
+            if (x + width > this.width - PADDING) {
+                return new TaskHit(-1, false);
+            }
+            if (mouseX >= x && mouseX <= x + width) {
+                return new TaskHit(i, mouseX >= x + width - 10);
+            }
+            x += width + 2;
+        }
+        return new TaskHit(-1, false);
+    }
+
+    private String taskLabel(int index) {
+        String path = this.taskBar.get(index);
+        String name = path.substring(path.lastIndexOf('/') + 1);
+        boolean active = path.equals(this.relativeName());
+        return name + (active && this.dirty ? " *" : "");
+    }
+
+    private int taskWidth(int index) {
+        return this.font.width(this.taskLabel(index)) + 12 + 12;
+    }
+
+    /** 目前檔案加入工作欄（已存在就不動）。 */
+    private void addTask(String path) {
+        if (path == null || path.isEmpty()) {
+            return;
+        }
+        if (this.taskBar.contains(path)) {
+            this.setStatus(path + " 已在工作欄中", LINE_NO);
+            return;
+        }
+        this.taskBar.add(path);
+        this.setStatus("已加入工作欄：" + path, 0xFF7BD88F);
+    }
+
+    private void removeTask(int index) {
+        if (index < 0 || index >= this.taskBar.size()) {
+            return;
+        }
+        this.setStatus("已從工作欄移除：" + this.taskBar.remove(index), STATUS_TEXT);
     }
 
     private void drawStatusBar(GuiGraphics graphics, int statusTop) {
@@ -1047,6 +1157,19 @@ public class LuaScriptEditorScreen extends Screen {
             }
         }
 
+        TaskHit taskHit = this.taskBarHit(mouseX, mouseY);
+        if (taskHit.found()) {
+            String path = this.taskBar.get(taskHit.index());
+            if (button == 1 || taskHit.close()) {
+                this.removeTask(taskHit.index());
+            } else if (this.isBuiltinPath(path)) {
+                this.openBuiltin(path);
+            } else {
+                this.openFile(path);
+            }
+            return true;
+        }
+
         if (this.handleTopBarClick(mouseX, mouseY)) {
             return true;
         }
@@ -1060,6 +1183,7 @@ public class LuaScriptEditorScreen extends Screen {
         if (mouseY < TEXT_TOP || mouseY > statusTop) {
             return super.mouseClicked(mouseX, mouseY, button);
         }
+        this.browserFocused = false;
         int lineIndex = this.scroll + (int) ((mouseY - TEXT_TOP) / LINE_HEIGHT);
         lineIndex = Math.max(0, Math.min(lineIndex, this.lines.size() - 1));
         String line = this.lines.get(lineIndex).toString();
@@ -1089,6 +1213,7 @@ public class LuaScriptEditorScreen extends Screen {
         if (mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) {
             return false;
         }
+        this.browserFocused = true;
 
         // 動作列
         int actionTop = browserActionTop();
@@ -1133,11 +1258,19 @@ public class LuaScriptEditorScreen extends Screen {
                 this.browserSelected = index;
                 this.toggleFolder(row.directory());
             } else {
+                String path = row.entry().path();
+                boolean doubleClick = path.equals(this.lastClickedPath)
+                        && System.currentTimeMillis() - this.lastClickAt < 300L;
+                this.lastClickedPath = path;
+                this.lastClickAt = System.currentTimeMillis();
                 this.browserSelected = index;
                 if (!row.entry().builtin()) {
-                    this.dragCandidate = row.entry().path();
+                    this.dragCandidate = path;
                     this.dragStartX = mouseX;
                     this.dragStartY = mouseY;
+                }
+                if (doubleClick) {
+                    this.addTask(path);
                 }
                 this.openEntry(row.entry());
                 this.refreshFileList();
@@ -1353,6 +1486,14 @@ public class LuaScriptEditorScreen extends Screen {
         }
 
         if (this.browserOpen && !this.completionActive) {
+            if (keyCode == GLFW.GLFW_KEY_DOWN || keyCode == GLFW.GLFW_KEY_UP
+                    || keyCode == GLFW.GLFW_KEY_DELETE) {
+                this.browserFocused = true;
+            }
+            if (keyCode == GLFW.GLFW_KEY_DELETE) {
+                this.openDeleteDialog();
+                return true;
+            }
             if (keyCode == GLFW.GLFW_KEY_DOWN) {
                 if (!this.browserRows.isEmpty()) {
                     this.browserSelected = this.moveSelection(1);
@@ -1430,6 +1571,7 @@ public class LuaScriptEditorScreen extends Screen {
             this.insert(Minecraft.getInstance().keyboardHandler.getClipboard());
             return true;
         }
+
         if (control && keyCode == GLFW.GLFW_KEY_SLASH) {
             this.toggleComment();
             return true;
