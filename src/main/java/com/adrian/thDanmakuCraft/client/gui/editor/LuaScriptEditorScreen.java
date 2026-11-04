@@ -42,12 +42,13 @@ import java.util.Set;
 @OnlyIn(Dist.CLIENT)
 public class LuaScriptEditorScreen extends Screen {
 
+    // 標題LOGO
+    private static final String EDITOR_TITLE = "Lua Script Editor";
     // ---- 版面 ----
     private static final int LINE_HEIGHT = 10;
     private static final int TOP_BAR_HEIGHT = 24;
-    private static final int TASK_BAR_HEIGHT = 14;
-    /** 文字區頂端 = 頂部列 + 工作欄。 */
-    private static final int TEXT_TOP = TOP_BAR_HEIGHT + TASK_BAR_HEIGHT;
+    /** 工作欄每一列的高度（分頁太多時往下增列）。 */
+    private static final int TASK_BAR_ROW_HEIGHT = 14;
     private static final int BROWSER_TOP = TOP_BAR_HEIGHT;
     private static final int STATUS_HEIGHT = 14;
     private static final int PADDING = 4;
@@ -256,6 +257,15 @@ public class LuaScriptEditorScreen extends Screen {
     private final int[] actionW = new int[TopAction.values().length];
     private int hoveredAction = -1;
     private long hoverActionSince;
+
+    // ---- 工作欄多列版面 ----
+    private record TaskRect(int x, int y, int width) {
+    }
+
+    private List<TaskRect> taskLayout = List.of();
+    private int taskRowCount = 1;
+    private long layoutFrame = -1;
+    private long frameId;
     private int fileButtonW;
     private String dialogInput = "";
     /** 對話框開啟時的原始檔名（改名／刪除的來源，不受輸入內容影響）。 */
@@ -818,28 +828,29 @@ public class LuaScriptEditorScreen extends Screen {
         }
         this.lastMouseX = mouseX;
         this.lastMouseY = mouseY;
+        this.frameId++;
         //super.render(graphics, mouseX, mouseY, partialTick);
         graphics.fill(0, 0, this.width, this.height, BG);
 
         int gutter = this.gutterWidth();
         int textLeft = this.contentLeft();
         int statusTop = this.height - STATUS_HEIGHT;
-        int visibleLines = Math.max(1, (statusTop - TEXT_TOP) / LINE_HEIGHT);
+        int visibleLines = Math.max(1, (statusTop - textTop()) / LINE_HEIGHT);
 
         // 目前行高亮
         int cursorScreenLine = this.cursorLine - this.scroll;
         if (cursorScreenLine >= 0 && cursorScreenLine < visibleLines) {
-            int y = TEXT_TOP + cursorScreenLine * LINE_HEIGHT;
+            int y = textTop() + cursorScreenLine * LINE_HEIGHT;
             graphics.fill(PADDING, y, this.width - PADDING, y + LINE_HEIGHT, CURRENT_LINE);
         }
 
-        graphics.enableScissor(PADDING, TEXT_TOP, this.width - PADDING, statusTop);
+        graphics.enableScissor(PADDING, textTop(), this.width - PADDING, statusTop);
         for (int i = 0; i < visibleLines; i++) {
             int lineIndex = this.scroll + i;
             if (lineIndex >= this.lines.size()) {
                 break;
             }
-            int y = TEXT_TOP + i * LINE_HEIGHT;
+            int y = textTop() + i * LINE_HEIGHT;
 
             boolean errorLine = this.syntaxErrorLine > 0 && lineIndex == this.syntaxErrorLine - 1;
             if (errorLine) {
@@ -888,7 +899,7 @@ public class LuaScriptEditorScreen extends Screen {
     };
 
     private int browserTop() {
-        //return TEXT_TOP;
+        //return textTop();
         return BROWSER_TOP;
     }
 
@@ -1037,10 +1048,10 @@ public class LuaScriptEditorScreen extends Screen {
         graphics.fill(0, 0, this.width, TOP_BAR_HEIGHT, BAR_BG);
 
         // 標題
-        String title = "Lua Script Editor";
+        String title = EDITOR_TITLE;
         graphics.drawString(this.font, title, PADDING, PADDING + 4, 0xFFFFFFFF, false);
 
-        int x = PADDING + this.font.width(title) + 10;
+        int x = PADDING + this.font.width(title) + 5;
         int hovered = -1;
         TopAction[] actions = TopAction.values();
         for (int i = 0; i < actions.length; i++) {
@@ -1075,17 +1086,23 @@ public class LuaScriptEditorScreen extends Screen {
             this.hoverActionSince = now;
         }
 
-        // 檔名貼齊最右邊（空間不足時截斷）
-        String name = this.fileName + (this.dirty ? " *" : "") + (this.readOnly ? "  [唯讀]" : "");
-        int nameMax = Math.max(40, this.width - PADDING - x - 8);
-        String shownName = this.font.plainSubstrByWidth(name, nameMax);
-        int nameX = this.width - PADDING - this.font.width(shownName);
-        graphics.drawString(this.font, shownName, nameX, PADDING + 4,
-                this.dirty ? 0xFFFFD479 : STATUS_TEXT, false);
+        // 右上角：關閉按鈕（和 ESC 同功能，滑鼠移上去變紅）
+        int closeX = this.width - PADDING - ICON_SIZE;
+        boolean closeHover = this.inRect(this.lastMouseX, this.lastMouseY, closeX, 2, ICON_SIZE, ICON_SIZE);
+        if (closeHover) {
+            graphics.fill(closeX, 2, closeX + ICON_SIZE, 2 + ICON_SIZE, 0x55FF5555);
+        }
+        int closeColor = closeHover ? 0xFFFF5555 : 0xFFB8C2D4;
+        for (int i = 0; i < 9; i++) {
+            int px = closeX + 3 + i;
+            int py = 3 + i;
+            graphics.fill(px, py, px + 1, py + 1, closeColor);
+            graphics.fill(closeX + 11 - i, py, closeX + 12 - i, py + 1, closeColor);
+        }
 
         if (this.syntaxErrorLine > 0) {
             String badge = "⚠ 第 " + this.syntaxErrorLine + " 行";
-            graphics.drawString(this.font, badge, nameX - this.font.width(badge) - 8,
+            graphics.drawString(this.font, badge, closeX - this.font.width(badge) - 8,
                     PADDING + 4, 0xFFFF6B6B, false);
         }
     }
@@ -1167,41 +1184,70 @@ public class LuaScriptEditorScreen extends Screen {
         return false;
     }
 
+    private static final int taskBarOffset = 3;
     /** 工作欄左緣：檔案管理器打開時往右縮，對齊文字區。 */
     private int taskBarLeft() {
-        return PADDING + (this.browserOpen ? BROWSER_WIDTH + 3 : 0);
+        return PADDING + (this.browserOpen ? BROWSER_WIDTH + taskBarOffset : 0);
     }
 
-    /** 工作欄：一排分頁，點擊切換、右端 x 或右鍵關閉。 */
-    private void renderTaskBar(GuiGraphics graphics, int mouseX, int mouseY) {
+    /** 依目前寬度把分頁排成多列（每幀只算一次）。 */
+    private void layoutTaskBar() {
+        if (this.layoutFrame == this.frameId) {
+            return;
+        }
+        this.layoutFrame = this.frameId;
+        List<TaskRect> layout = new ArrayList<>();
         int left = this.taskBarLeft();
-        graphics.fill(left, TOP_BAR_HEIGHT, this.width, TEXT_TOP, 0xFF14161A);
+        int maxRight = Math.max(left + 40, this.width - PADDING);
+        int x = left;
+        int row = 0;
+        for (int i = 0; i < this.taskBar.size(); i++) {
+            int width = Math.min(this.taskWidth(i), maxRight - left);
+            if (x + width > maxRight && x > left) {
+                row++;
+                x = left;
+            }
+            layout.add(new TaskRect(x, TOP_BAR_HEIGHT + row * TASK_BAR_ROW_HEIGHT, width));
+            x += width + 2;
+        }
+        this.taskLayout = layout;
+        this.taskRowCount = Math.max(1, row + 1);
+    }
+
+    /** 文字區頂端：工作欄佔幾列就往下推多少。 */
+    private int textTop() {
+        this.layoutTaskBar();
+        return TOP_BAR_HEIGHT + this.taskRowCount * TASK_BAR_ROW_HEIGHT;
+    }
+
+    /** 工作欄：分頁太多時換行往下排。 */
+    private void renderTaskBar(GuiGraphics graphics, int mouseX, int mouseY) {
+        this.layoutTaskBar();
+        int left = this.taskBarLeft();
+        int bottom = this.textTop();
+        graphics.fill(left-taskBarOffset, TOP_BAR_HEIGHT, this.width, bottom, 0xFF14161A);
         if (this.taskBar.isEmpty()) {
             graphics.drawString(this.font, "雙擊檔案可加入工作欄", left, TOP_BAR_HEIGHT + 3, LINE_NO, false);
             return;
         }
-        int x = left;
-        for (int i = 0; i < this.taskBar.size(); i++) {
+        for (int i = 0; i < this.taskLayout.size(); i++) {
+            TaskRect rect = this.taskLayout.get(i);
             String path = this.taskBar.get(i);
             String label = this.taskLabel(i);
-            int width = this.taskWidth(i);
-            if (x + width > this.width - PADDING) {
-                graphics.drawString(this.font, "…", x, TOP_BAR_HEIGHT + 3, LINE_NO, false);
-                break;
-            }
             boolean active = path.equals(this.relativeName());
-            graphics.fill(x, TOP_BAR_HEIGHT + 1, x + width, TEXT_TOP - 1,
-                    active ? 0xFF2D6CDF : 0xFF23262E);
-            graphics.drawString(this.font, label, x + 5, TOP_BAR_HEIGHT + 3,
-                    active ? 0xFFFFFFFF : 0xFFB8C2D4, false);
-            boolean hoverClose = mouseX >= x + width - 10 && mouseX <= x + width
-                    && mouseY >= TOP_BAR_HEIGHT && mouseY <= TEXT_TOP;
+            graphics.fill(rect.x(), rect.y() + 1, rect.x() + rect.width(),
+                    rect.y() + TASK_BAR_ROW_HEIGHT - 1, active ? 0xFF2D6CDF : 0xFF23262E);
+            graphics.drawString(this.font, this.font.plainSubstrByWidth(label, rect.width() - 22),
+                    rect.x() + 5, rect.y() + 3, active ? 0xFFFFFFFF : 0xFFB8C2D4, false);
+            boolean hoverClose = mouseX >= rect.x() + rect.width() - 10
+                    && mouseX <= rect.x() + rect.width()
+                    && mouseY >= rect.y() && mouseY < rect.y() + TASK_BAR_ROW_HEIGHT;
             if (hoverClose) {
-                graphics.fill(x + width - 10, TOP_BAR_HEIGHT + 1, x + width, TEXT_TOP - 1, 0x55FF5555);
+                graphics.fill(rect.x() + rect.width() - 10, rect.y() + 1,
+                        rect.x() + rect.width(), rect.y() + TASK_BAR_ROW_HEIGHT - 1, 0x55FF5555);
             }
-            graphics.drawString(this.font, "x", x + width - 8, TOP_BAR_HEIGHT + 3,
+            graphics.drawString(this.font, "x", rect.x() + rect.width() - 8, rect.y() + 3,
                     hoverClose ? 0xFFFF5555 : (active ? 0xFFCFD8E6 : 0xFF7A8699), false);
-            x += width + 2;
         }
     }
 
@@ -1213,19 +1259,13 @@ public class LuaScriptEditorScreen extends Screen {
 
     /** 工作欄命中測試；每一格右端 10px 是關閉用的 x。 */
     private TaskHit taskBarHit(double mouseX, double mouseY) {
-        if (mouseY < TOP_BAR_HEIGHT || mouseY > TEXT_TOP || this.taskBar.isEmpty()) {
-            return new TaskHit(-1, false);
-        }
-        int x = this.taskBarLeft();
-        for (int i = 0; i < this.taskBar.size(); i++) {
-            int width = this.taskWidth(i);
-            if (x + width > this.width - PADDING) {
-                return new TaskHit(-1, false);
+        this.layoutTaskBar();
+        for (int i = 0; i < this.taskLayout.size(); i++) {
+            TaskRect rect = this.taskLayout.get(i);
+            if (mouseX >= rect.x() && mouseX <= rect.x() + rect.width()
+                    && mouseY >= rect.y() && mouseY < rect.y() + TASK_BAR_ROW_HEIGHT) {
+                return new TaskHit(i, mouseX >= rect.x() + rect.width() - 10);
             }
-            if (mouseX >= x && mouseX <= x + width) {
-                return new TaskHit(i, mouseX >= x + width - 10);
-            }
-            x += width + 2;
         }
         return new TaskHit(-1, false);
     }
@@ -1298,7 +1338,7 @@ public class LuaScriptEditorScreen extends Screen {
         String line = this.lines.get(this.cursorLine).toString();
         int column = Math.min(this.cursorColumn, line.length());
         int x = textLeft + this.font.width(line.substring(0, column));
-        int y = TEXT_TOP + screenLine * LINE_HEIGHT;
+        int y = textTop() + screenLine * LINE_HEIGHT;
         graphics.fill(x, y, x + 1, Math.min(y + LINE_HEIGHT, statusTop), CURSOR);
     }
 
@@ -1389,6 +1429,10 @@ public class LuaScriptEditorScreen extends Screen {
         if (this.font == null) {
             return false;
         }
+        if (this.inRect(mouseX, mouseY, this.width - PADDING - ICON_SIZE, 2, ICON_SIZE, ICON_SIZE)) {
+            this.onClose();
+            return true;
+        }
         if (this.dialog != Dialog.NONE) {
             return true;
         }
@@ -1430,11 +1474,11 @@ public class LuaScriptEditorScreen extends Screen {
             return super.mouseClicked(mouseX, mouseY, button);
         }
         int statusTop = this.height - STATUS_HEIGHT;
-        if (mouseY < TEXT_TOP || mouseY > statusTop) {
+        if (mouseY < textTop() || mouseY > statusTop) {
             return super.mouseClicked(mouseX, mouseY, button);
         }
         this.browserFocused = false;
-        int lineIndex = this.scroll + (int) ((mouseY - TEXT_TOP) / LINE_HEIGHT);
+        int lineIndex = this.scroll + (int) ((mouseY - textTop()) / LINE_HEIGHT);
         lineIndex = Math.max(0, Math.min(lineIndex, this.lines.size() - 1));
         int column = this.columnAt(lineIndex, mouseX);
         if (hasShiftDown()) {
@@ -1680,7 +1724,7 @@ public class LuaScriptEditorScreen extends Screen {
             return true;
         }
         int statusTop = this.height - STATUS_HEIGHT;
-        int visibleLines = Math.max(1, (statusTop - TEXT_TOP) / LINE_HEIGHT);
+        int visibleLines = Math.max(1, (statusTop - textTop()) / LINE_HEIGHT);
         int maxScroll = Math.max(0, this.lines.size() - visibleLines);
         this.scroll = Math.max(0, Math.min(maxScroll, this.scroll - (int) Math.signum(scrollY) * 2));
         return true;
@@ -1884,7 +1928,7 @@ public class LuaScriptEditorScreen extends Screen {
     }
 
     private int visibleLines() {
-        return Math.max(1, (this.height - STATUS_HEIGHT - TEXT_TOP) / LINE_HEIGHT);
+        return Math.max(1, (this.height - STATUS_HEIGHT - textTop()) / LINE_HEIGHT);
     }
 
     // ------------------------------------------------------------------ 編輯操作
@@ -2284,7 +2328,7 @@ public class LuaScriptEditorScreen extends Screen {
         String line = this.lines.get(this.cursorLine).toString();
         int prefixWidth = this.font.width(line.substring(0, Math.min(this.completionStartColumn, line.length())));
         int x = textLeft + prefixWidth;
-        int y = TEXT_TOP + (this.cursorLine - this.scroll + 1) * LINE_HEIGHT;
+        int y = textTop() + (this.cursorLine - this.scroll + 1) * LINE_HEIGHT;
         int rowWidth = 0;
         for (LuaApiIndex.Entry completion : this.completionItems) {
             rowWidth = Math.max(rowWidth, this.font.width(completion.name()) + 8 + this.font.width(completion.detail()));
@@ -2294,7 +2338,7 @@ public class LuaScriptEditorScreen extends Screen {
         int maxX = this.width - PADDING - width;
         int maxY = this.height - STATUS_HEIGHT - height;
         x = Math.max(PADDING, Math.min(x, maxX));
-        y = Math.max(TEXT_TOP, Math.min(y, maxY));
+        y = Math.max(textTop(), Math.min(y, maxY));
         graphics.fill(x - 1, y - 1, x + width + 1, y + height + 1, 0xFF3B4252);
         graphics.fill(x, y, x + width, y + height, 0xF01B1F2A);
         for (int i = 0; i < this.completionItems.size(); i++) {
@@ -2320,7 +2364,7 @@ public class LuaScriptEditorScreen extends Screen {
             if (docX + docWidth > this.width - PADDING) {
                 docX = Math.max(PADDING, x - docWidth - 4);
             }
-            int docY = Math.max(TEXT_TOP, Math.min(y, this.height - STATUS_HEIGHT - docHeight));
+            int docY = Math.max(textTop(), Math.min(y, this.height - STATUS_HEIGHT - docHeight));
             graphics.fill(docX - 1, docY - 1, docX + docWidth + 1, docY + docHeight + 1, 0xFF3B4252);
             graphics.fill(docX, docY, docX + docWidth, docY + docHeight, 0xF01B1F2A);
             for (int i = 0; i < visible; i++) {
@@ -2523,9 +2567,9 @@ public class LuaScriptEditorScreen extends Screen {
 
     private Scrollbar editorScrollbar() {
         int statusTop = this.height - STATUS_HEIGHT;
-        int visible = Math.max(1, (statusTop - TEXT_TOP) / LINE_HEIGHT);
-        return this.computeScrollbar(this.width - PADDING - SCROLLBAR_WIDTH, TEXT_TOP,
-                Math.max(1, statusTop - TEXT_TOP), this.lines.size(), visible, this.scroll);
+        int visible = Math.max(1, (statusTop - textTop()) / LINE_HEIGHT);
+        return this.computeScrollbar(this.width - PADDING - SCROLLBAR_WIDTH, textTop(),
+                Math.max(1, statusTop - textTop()), this.lines.size(), visible, this.scroll);
     }
 
     private Scrollbar browserScrollbar() {
@@ -2590,13 +2634,13 @@ public class LuaScriptEditorScreen extends Screen {
         if (this.textSelecting) {
             int statusTop = this.height - STATUS_HEIGHT;
             // 拖出文字區時自動捲動
-            if (mouseY < TEXT_TOP) {
+            if (mouseY < textTop()) {
                 this.scroll = Math.max(0, this.scroll - 1);
             } else if (mouseY > statusTop) {
                 int max = Math.max(0, this.lines.size() - this.visibleLines());
                 this.scroll = Math.min(max, this.scroll + 1);
             }
-            int lineIndex = this.scroll + (int) ((mouseY - TEXT_TOP) / LINE_HEIGHT);
+            int lineIndex = this.scroll + (int) ((mouseY - textTop()) / LINE_HEIGHT);
             lineIndex = Math.max(0, Math.min(lineIndex, this.lines.size() - 1));
             int column = this.columnAt(lineIndex, mouseX);
             if (this.selectionLine < 0) {
