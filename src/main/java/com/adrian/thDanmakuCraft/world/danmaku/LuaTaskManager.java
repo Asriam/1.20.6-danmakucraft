@@ -62,12 +62,12 @@ public class LuaTaskManager implements IDataStorage, ILuaValue{
     public void doTasks(){
         List<LuaValue> removeTasks = new ArrayList<>();
         for (LuaValue task : tasks) {
-            LuaThread coroutine = task.get("co").checkthread();
+            LuaThread coroutine = task.get(LuaKeys.CO).checkthread();
             if(coroutine.isthread() && coroutine.state.status != LuaThread.STATUS_DEAD) {
                 coroutine.resume(target.ofLuaValue());
-                LuaValue LProgress = task.get("progress");
+                LuaValue LProgress = task.get(LuaKeys.PROGRESS);
                 int progress = (LProgress.isnil() ? 0 : LProgress.checkint()) + 1;
-                task.set("progress", progress);
+                task.set(LuaKeys.PROGRESS, LuaValue.valueOf(progress));
             }else {
                 removeTasks.add(task);
             }
@@ -83,7 +83,7 @@ public class LuaTaskManager implements IDataStorage, ILuaValue{
     }
 
     public static LuaThread getTaskCoroutine(LuaValue task){
-        LuaValue co = task.get("co");
+        LuaValue co = task.get(LuaKeys.CO);
         if (co.isthread()) {
             return co.checkthread();
         }
@@ -167,7 +167,7 @@ public class LuaTaskManager implements IDataStorage, ILuaValue{
     public void encode(FriendlyByteBuf buffer) {
         buffer.writeShort(this.tasks.size());
         for(LuaValue task : this.tasks){
-            LuaValue progress = task.get("progress");
+            LuaValue progress = task.get(LuaKeys.PROGRESS);
             buffer.writeInt(progress.isnil() ? 0 : progress.checkint());
         }
     }

@@ -21,6 +21,8 @@ public final class LuaKeys {
     public static final LuaString X = LuaString.valueOf("x");
     public static final LuaString Y = LuaString.valueOf("y");
     public static final LuaString Z = LuaString.valueOf("z");
+    public static final LuaString CO = LuaString.valueOf("co");
+    public static final LuaString PROGRESS = LuaString.valueOf("progress");
 
     private static final Map<String, LuaString> CACHE = new HashMap<>();
 
