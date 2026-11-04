@@ -1,6 +1,7 @@
 package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.world.IDataStorage;
+import com.adrian.thDanmakuCraft.world.LuaKeys;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet.THBullet;
@@ -386,7 +387,7 @@ public class AdditionalParameterManager implements IDataStorage, ILuaValue {
     }
 
     public static AdditionalParameterManager checkParameterManager(LuaValue luaValue) {
-        if (luaValue.get("source").checkuserdata() instanceof AdditionalParameterManager parameterManager){
+        if (luaValue.get(LuaKeys.SOURCE).checkuserdata() instanceof AdditionalParameterManager parameterManager){
             return parameterManager;
         }
         throw new NullPointerException();

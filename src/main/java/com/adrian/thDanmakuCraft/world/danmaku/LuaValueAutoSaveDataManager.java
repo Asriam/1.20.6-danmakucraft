@@ -1,6 +1,7 @@
 package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.world.IDataStorage;
+import com.adrian.thDanmakuCraft.world.LuaKeys;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -87,7 +88,7 @@ public class LuaValueAutoSaveDataManager implements IDataStorage, ILuaValue {
 
     private static class LuaAPI{
         private static LuaValueAutoSaveDataManager checkLuaValueAutoSaveDataManager(LuaValue value){
-            if(value.get("source").checkuserdata() instanceof LuaValueAutoSaveDataManager manager){
+            if(value.get(LuaKeys.SOURCE).checkuserdata() instanceof LuaValueAutoSaveDataManager manager){
                 return manager;
             }
             throw new NullPointerException();

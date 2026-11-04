@@ -1,6 +1,7 @@
 package com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet;
 
 import com.adrian.thDanmakuCraft.init.THObjectInit;
+import com.adrian.thDanmakuCraft.world.LuaKeys;
 import com.adrian.thDanmakuCraft.util.*;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
 import com.adrian.thDanmakuCraft.world.LuaValueHelper;
@@ -323,7 +324,7 @@ public class THBullet extends THObject {
 
     private static class LuaAPI {
         private static THBullet checkTHBullet(LuaValue luaValue) {
-            if (luaValue.get("source").checkuserdata() instanceof THBullet bullet) {
+            if (luaValue.get(LuaKeys.SOURCE).checkuserdata() instanceof THBullet bullet) {
                 return bullet;
             }
             throw new NullPointerException();

@@ -1,6 +1,7 @@
 package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
+import com.adrian.thDanmakuCraft.world.LuaKeys;
 import com.adrian.thDanmakuCraft.world.IDataStorage;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
 import com.google.common.collect.Maps;
@@ -334,7 +335,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
 
     private static class LuaAPI {
         private static TaskManager<ILuaValue> checkTaskManager(LuaValue luaValue) {
-            if (luaValue.get("source").checkuserdata() instanceof TaskManager<?> taskManager){
+            if (luaValue.get(LuaKeys.SOURCE).checkuserdata() instanceof TaskManager<?> taskManager){
                 return (TaskManager<ILuaValue>) taskManager;
             }
             throw new NullPointerException();

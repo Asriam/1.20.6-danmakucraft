@@ -1,6 +1,7 @@
 package com.adrian.thDanmakuCraft.world.danmaku.thobject.laser;
 
 import com.adrian.thDanmakuCraft.init.THObjectInit;
+import com.adrian.thDanmakuCraft.world.LuaKeys;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.CompoundTagUtil;
 import com.adrian.thDanmakuCraft.util.FriendlyByteBufUtil;
@@ -260,7 +261,7 @@ public class THLaser extends THObject {
 
     protected static class LuaAPI{
         private static THLaser checkTHLaser(LuaValue luaValue) {
-            if (luaValue.get("source").checkuserdata() instanceof THLaser laser) {
+            if (luaValue.get(LuaKeys.SOURCE).checkuserdata() instanceof THLaser laser) {
                 return laser;
             }
             throw new NullPointerException();

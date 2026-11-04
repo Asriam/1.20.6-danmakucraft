@@ -1,4 +1,4 @@
-local num = 3
+local num = 12
 
 ---@type Class|THBullet
 local testBullet = core.defineClass()

@@ -1,6 +1,7 @@
 package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.world.IDataStorage;
+import com.adrian.thDanmakuCraft.world.LuaKeys;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -90,7 +91,7 @@ public class LuaTaskManager implements IDataStorage, ILuaValue{
     }
 
     public static LuaTaskManager checkLuaTaskManager(LuaValue luaValue) {
-        if (luaValue.get("source").checkuserdata() instanceof LuaTaskManager luaTaskManager){
+        if (luaValue.get(LuaKeys.SOURCE).checkuserdata() instanceof LuaTaskManager luaTaskManager){
             return luaTaskManager;
         }
         throw new NullPointerException();

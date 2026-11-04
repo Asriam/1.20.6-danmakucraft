@@ -10,6 +10,7 @@ import com.adrian.thDanmakuCraft.lua.LuaManager;
 import com.adrian.thDanmakuCraft.util.LuaValueUtil;
 import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
+import com.adrian.thDanmakuCraft.world.LuaKeys;
 import com.adrian.thDanmakuCraft.world.ISerializable;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
@@ -165,35 +166,62 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     }
 
     //private final Map<String,LuaValue> scriptEventCache = Maps.newHashMap();
-    public void invokeScriptEvent(String eventName, LuaValue... args){
+    private LuaFunction resolveScriptEvent(String eventName) {
         if(LuaValueUtil.isNotValid(this.luaClass)) {
             LuaValue luaClass1 = LuaCore.getInstance().getLuaClass(this.getLuaClassName());
             if (luaClass1 == null) {
-                return;
+                return null;
             }
             this.luaClass = luaClass1;
         }
 
-        LuaFunction event = null;
-        String cacheKey = this.getLuaClassName()+"$"+eventName;
-        if (MyCaches.scriptEventCache.containsKey(cacheKey)) {
-            event = MyCaches.scriptEventCache.get(cacheKey);
-        } else {
-            LuaValue value = luaClass.get(eventName);
-            if(value.isfunction()){
-                event = value.checkfunction();
-                MyCaches.scriptEventCache.put(cacheKey, event);
-            }
+        String className = this.getLuaClassName();
+        LuaValue cached = MyCaches.getScriptEvent(className, eventName);
+        if (cached != null) {
+            return cached.isnil() ? null : cached.checkfunction();
         }
-        if (event != null) {
-            try {
-                event.invoke(args);
-            } catch (Exception e) {
-                THDanmakuCraftMod.LOGGER.error("Failed invoke script!", e);
-                this.discard();
-            }
+        LuaValue value = this.luaClass.get(LuaKeys.of(eventName));
+        if (value.isfunction()) {
+            LuaFunction function = value.checkfunction();
+            MyCaches.putScriptEvent(className, eventName, function);
+            return function;
+        }
+        MyCaches.putScriptEvent(className, eventName, LuaValue.NIL);
+        return null;
+    }
+
+    public void invokeScriptEvent(String eventName, Varargs args) {
+        LuaFunction event = this.resolveScriptEvent(eventName);
+        if (event == null) return;
+        try {
+            event.invoke(args);
+        } catch (Exception e) {
+            THDanmakuCraftMod.LOGGER.error("Failed invoke script!", e);
+            this.discard();
         }
     }
+
+    public void invokeScriptEvent(String eventName, LuaValue... args){
+        if (args.length == 0) {
+            this.invokeScriptEvent(eventName);
+        } else {
+            this.invokeScriptEvent(eventName, LuaValue.varargsOf(args));
+        }
+    }
+
+    /** 無參數事件：不建立 Varargs 陣列。 */
+    public void invokeScriptEvent(String eventName) {
+        LuaFunction event = this.resolveScriptEvent(eventName);
+        if (event == null) return;
+        try {
+            event.call();
+        } catch (Exception e) {
+            THDanmakuCraftMod.LOGGER.error("Failed invoke script!", e);
+            this.discard();
+        }
+    }
+
+
 
     public void tick() {
         if(this.hostEntity == null){
@@ -490,7 +518,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
 
     public static class LuaAPI {
         private static THObjectContainer checkTHObjectContainer(LuaValue luaValue) {
-            if (luaValue.get("source").checkuserdata() instanceof THObjectContainer container){
+            if (luaValue.get(LuaKeys.SOURCE).checkuserdata() instanceof THObjectContainer container){
                 return container;
             }
             throw new NullPointerException();

@@ -17,7 +17,7 @@ import java.util.Objects;
 public class LuaValueHelper {
     public static class LuaEntityClass {
         public static Entity checkEntity(LuaValue luaValue){
-            if (luaValue.get("source").checkuserdata() instanceof Entity entity){
+            if (luaValue.get(LuaKeys.SOURCE).checkuserdata() instanceof Entity entity){
                 return entity;
             }
             throw new NullPointerException();
@@ -66,7 +66,7 @@ public class LuaValueHelper {
     }
 
     public static LuaValue Vec3ToLuaValue(double x, double y, double z) {
-        LuaValue library = LuaValue.tableOf();
+        LuaValue library = LuaValue.tableOf(0, 3);
         library.set("x", x);
         library.set("y", y);
         library.set("z", z);
@@ -80,7 +80,7 @@ public class LuaValueHelper {
     }
 
     public static LuaValue Vec2ToLuaValue(double x, double y) {
-        LuaValue library = LuaValue.tableOf();
+        LuaValue library = LuaValue.tableOf(0, 3);
         library.set("x", x);
         library.set("y", y);
         library.setmetatable(LuaCore.LuaUtilVec2Meta);
@@ -92,7 +92,7 @@ public class LuaValueHelper {
     }
 
     public static LuaValue Vector3fToLuaValue(float x, float y, float z) {
-        /*LuaValue library = LuaValue.tableOf();
+        /*LuaValue library = LuaValue.tableOf(0, 3);
         library.set("x", x);
         library.set("y", y);
         library.set("z", z);
@@ -102,24 +102,24 @@ public class LuaValueHelper {
 
     public static Vec3 LuaValueToVec3(LuaValue luaValue) {
         return new Vec3(
-                luaValue.get("x").checkdouble(),
-                luaValue.get("y").checkdouble(),
-                luaValue.get("z").checkdouble()
+                luaValue.get(LuaKeys.X).checkdouble(),
+                luaValue.get(LuaKeys.Y).checkdouble(),
+                luaValue.get(LuaKeys.Z).checkdouble()
         );
     }
 
     public static Vec2 LuaValueToVec2(LuaValue luaValue) {
         return new Vec2(
-                luaValue.get("x").tofloat(),
-                luaValue.get("y").tofloat()
+                luaValue.get(LuaKeys.X).tofloat(),
+                luaValue.get(LuaKeys.Y).tofloat()
         );
     }
 
     public static Vector3f LuaValueToVector3f(LuaValue luaValue) {
         return new Vector3f(
-                luaValue.get("x").tofloat(),
-                luaValue.get("y").tofloat(),
-                luaValue.get("z").tofloat()
+                luaValue.get(LuaKeys.X).tofloat(),
+                luaValue.get(LuaKeys.Y).tofloat(),
+                luaValue.get(LuaKeys.Z).tofloat()
         );
     }
 

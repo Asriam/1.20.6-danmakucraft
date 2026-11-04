@@ -20,7 +20,7 @@ public interface ILuaValue {
         if(luaValue.isstring()){
             return luaValue.checkjstring();
         }else if(luaValue.istable()){
-            return luaValue.get("className").checkjstring();
+            return luaValue.get(LuaKeys.CLASS_NAME).checkjstring();
         }
         return "";
     }

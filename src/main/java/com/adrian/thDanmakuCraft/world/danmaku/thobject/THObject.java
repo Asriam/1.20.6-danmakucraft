@@ -5,6 +5,7 @@ import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.util.*;
 import com.adrian.thDanmakuCraft.world.ILuaValue;
+import com.adrian.thDanmakuCraft.world.LuaKeys;
 import com.adrian.thDanmakuCraft.world.ISerializable;
 import com.adrian.thDanmakuCraft.world.danmaku.*;
 import net.minecraft.core.BlockPos;
@@ -534,20 +535,7 @@ public class THObject implements ILuaValue, IGetContainer, ISerializable {
             return;
         }
 
-        LuaFunction event = null;
-        String cacheKey = this.getLuaClassName()+"$"+eventName;
-        if (MyCaches.scriptEventCache.containsKey(cacheKey)) {
-            event = MyCaches.scriptEventCache.get(cacheKey);
-        } else {
-            LuaValue value = luaClass.get(eventName);
-            if(value.isfunction()){
-                event = value.checkfunction();
-                MyCaches.scriptEventCache.put(cacheKey, event);
-            }else {
-                THDanmakuCraftMod.LOGGER.warn(eventName + " is not a valid function!");
-                this.invalidFuncions.add(eventName);
-            }
-        }
+        LuaFunction event = this.resolveScriptEvent(eventName);
 
         if (event != null) {
             try {
@@ -560,9 +548,49 @@ public class THObject implements ILuaValue, IGetContainer, ISerializable {
     }
 
     public void invokeScriptEvent(String eventName, LuaValue... args){
-        Varargs varargs = LuaValue.varargsOf(args);
-        this.invokeScriptEvent(eventName, varargs);
+        if (args.length == 0) {
+            this.invokeScriptEvent(eventName);
+        } else {
+            this.invokeScriptEvent(eventName, LuaValue.varargsOf(args));
+        }
     }
+
+    /** 解析事件函式：先查快取（含「未實作」的負快取），miss 才查 metatable。 */
+    private LuaFunction resolveScriptEvent(String eventName) {
+        String className = this.getLuaClassName();
+        LuaValue cached = MyCaches.getScriptEvent(className, eventName);
+        if (cached != null) {
+            return cached.isnil() ? null : cached.checkfunction();
+        }
+        LuaValue luaClass = this.getLuaClass();
+        if (luaClass == null || luaClass.isnil()) {
+            return null;
+        }
+        LuaValue value = luaClass.get(LuaKeys.of(eventName));
+        if (value.isfunction()) {
+            LuaFunction function = value.checkfunction();
+            MyCaches.putScriptEvent(className, eventName, function);
+            return function;
+        }
+        THDanmakuCraftMod.LOGGER.warn(eventName + " is not a valid function!");
+        this.invalidFuncions.add(eventName);
+        MyCaches.putScriptEvent(className, eventName, LuaValue.NIL);
+        return null;
+    }
+
+    /** 無參數事件：不建立 Varargs 陣列。 */
+    public void invokeScriptEvent(String eventName) {
+        LuaFunction event = this.resolveScriptEvent(eventName);
+        if (event == null) return;
+        try {
+            event.call();
+        } catch (Exception e) {
+            THDanmakuCraftMod.LOGGER.error("Failed invoke script!", e);
+            this.remove();
+        }
+    }
+
+
 
     public int getIndex() {
         return this.index;
