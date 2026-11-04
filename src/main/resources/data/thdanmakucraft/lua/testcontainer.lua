@@ -1,4 +1,4 @@
-local num = 12
+local num = 1
 
 ---@type Class|THBullet
 local testBullet = core.defineClass()
@@ -62,6 +62,17 @@ function testLaser:onTick()
             true,
             true);
 
+    ---@type table<Entity>
+    local players = self:getContainer():getPlayersInBound()
+    if players ~= nil then
+        for i, player in ipairs(players) do
+            ---@type math.Vec3
+            local pos = player:getPosition()
+            self:setPosition(pos:add(math.vec3.new(0, -2 ,0)))
+        end
+    end
+    
+
     for i=0,100 do
         local timer = self.timer
     end
@@ -93,11 +104,12 @@ function container:onInit()
     self.autosave:register("sad")
     self.autosave:register("userRot")
     self.userRot = userRot
+    self:setMaxObjectAmount(100)
     for i = 1,num  do
         self:createTHCurvedLaser(testLaser, {i}, self:getPosition(),1,120,0.5)
     end
 
-    for i = 1,32 do
+    for i = 1,60 do
         self:createTHBullet(testBullet2, {i}, self:getPosition(),bullet_styles.ball_big,1)
     end
     self.sad = "sdfhhsdfubnsdfusbdufd"

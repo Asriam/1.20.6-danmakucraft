@@ -7,8 +7,14 @@
 ---@class Entity
 local entity = {}
 
----@return math.Vec3
+---@return core.Vec3
 function entity:getPosition() end
+
+---@return core.Vec3
+function entity:getLastPosition() end
 
 ---@return core.Vec2
 function entity:getRotation() end
+
+---@return string
+function entity:getName() end

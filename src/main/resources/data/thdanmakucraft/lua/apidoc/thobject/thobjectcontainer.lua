@@ -86,6 +86,13 @@ function container:setLifetime(lifetime) end
 function container:getLifetime() end
 
 ---@param amount number
-function container:getMaxObjectAmount(amount) end
+function container:setMaxObjectAmount(amount) end
+
+---@return table:Entity
+function container:getPlayersInBound() end
+
+---@return table:Entity
+function container:getEntitiesInBound() end
+
 
 THObjectContainer = container

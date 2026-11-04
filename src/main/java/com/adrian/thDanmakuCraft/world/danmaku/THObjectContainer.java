@@ -25,6 +25,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.Minecart;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -32,6 +33,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.DistExecutor;
 import org.apache.commons.compress.utils.Lists;
 import org.luaj.vm2.LuaFunction;
+import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.*;
@@ -68,6 +70,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     private LuaValue luaClass;
     private String luaClassName = "";
     private boolean isInited = false;
+    private List<Player> playersInBound = Lists.newArrayList();
 
     public boolean shouldRenderMagicAura = true;
     public boolean shouldRenderLineAura = true;
@@ -221,7 +224,9 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         }
     }
 
-
+    public List<Player> getPlayersInBound(){
+        return playersInBound;
+    }
 
     public void tick() {
         if(this.hostEntity == null){
@@ -235,7 +240,11 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
             this.scriptInit();
         }
         this.setBound(this.position(),this.bound);
-        this.entitiesInBound = this.level().getEntities(this.hostEntity,this.getContainerBound()).stream().filter((entity -> !(entity.equals(this.hostEntity)) && !(entity instanceof EntityTHObjectContainer))).toList();
+        this.playersInBound.clear();
+        this.entitiesInBound = this.level().getEntities(this.hostEntity,this.getContainerBound()).stream().filter((entity -> {
+            if (entity instanceof Player player) {this.playersInBound.add(player);}
+            return !(entity.equals(this.hostEntity)) && !(entity instanceof EntityTHObjectContainer);
+        })).toList();
 
         this.objectManager.tickTHObjects();
 
@@ -688,6 +697,44 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
                 return LuaValue.valueOf(checkTHObjectContainer(luaValue0).level().isClientSide());
             }
         };
+        private static final LibFunction getPlayersInBound = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                List<Player> players = checkTHObjectContainer(luaValue0).getPlayersInBound();
+                if (players.isEmpty()) return LuaValue.NIL;
+                LuaValue playerTable = LuaValue.tableOf();
+                int index = 1;
+                for (Player player : players) {
+                    playerTable.set(index, EntityToLuaValue(player));
+                    index++;
+                }
+                return playerTable;
+            }
+        };
+
+        private static final LibFunction getEntitiesInBound = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                List<Entity> entities = checkTHObjectContainer(luaValue0).getEntitiesInBound();
+                if (entities.isEmpty()) return LuaValue.NIL;
+                LuaValue playerTable = LuaValue.tableOf();
+                int index = 1;
+                for (Entity entity : entities) {
+                    playerTable.set(index, EntityToLuaValue(entity));
+                    index++;
+                }
+                return playerTable;
+            }
+        };
+
+        private static final LibFunction setMaxObjectAmount = new TwoArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0,  LuaValue luaValue1) {
+                checkTHObjectContainer(luaValue0).setMaxObjectAmount(luaValue1.checkint());
+                return LuaValue.NIL;
+            }
+        };
+
         private static LuaValue functions() {
             LuaValue library = LuaValue.tableOf();
             library.set("getMaxObjectAmount", getMaxObjectAmount);
@@ -708,6 +755,9 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
             library.set("setLifetime", setLifetime);
             library.set("getLifetime", getLifetime);
             library.set("isClientSide", isClientSide);
+            library.set("getPlayersInBound", getPlayersInBound);
+            library.set("getEntitiesInBound", getEntitiesInBound);
+            library.set("setMaxObjectAmount", setMaxObjectAmount);
             return library;
         }
     }

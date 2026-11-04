@@ -4,6 +4,9 @@ import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
@@ -15,6 +18,7 @@ import org.luaj.vm2.lib.OneArgFunction;
 import java.util.Objects;
 
 public class LuaValueHelper {
+
     public static class LuaEntityClass {
         public static Entity checkEntity(LuaValue luaValue){
             if (luaValue.get(LuaKeys.SOURCE).checkuserdata() instanceof Entity entity){
@@ -26,7 +30,20 @@ public class LuaValueHelper {
         public static final LibFunction getPosition = new OneArgFunction() {
             @Override
             public LuaValue call(LuaValue luaValue0) {
-                return Vec3ToLuaValue(checkEntity(luaValue0).getBoundingBox().getCenter());
+                Entity entity = checkEntity(luaValue0);
+                AABB bb = entity.getBoundingBox();
+                Vec3 position = entity.position().add(bb.getXsize(), bb.getYsize(), bb.getZsize());
+                return Vec3ToLuaValue(position);
+            }
+        };
+
+        public static final LibFunction getLastPosition = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                Entity entity = checkEntity(luaValue0);
+                AABB bb = entity.getBoundingBox();
+                Vec3 position = new Vec3(entity.xo+bb.getXsize(), entity.yo+bb.getYsize(), entity.zo+bb.getZsize());
+                return Vec3ToLuaValue(position);
             }
         };
 
@@ -38,10 +55,23 @@ public class LuaValueHelper {
             }
         };
 
+        public static final LibFunction getName = new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue luaValue0) {
+                Entity entity = checkEntity(luaValue0);
+                if (entity instanceof Player player){
+                    LuaValue.valueOf(player.getDisplayName().getString());
+                }
+                return LuaValue.valueOf(entity.getName().getString());
+            }
+        };
+
         private static LuaValue functions(){
             LuaTable library = LuaValue.tableOf();
             library.set("getPosition", LuaEntityClass.getPosition);
+            library.set("getLastPosition", LuaEntityClass.getLastPosition);
             library.set("getRotation", LuaEntityClass.getRotation);
+            library.set("getName", LuaEntityClass.getName);
             return library;
         }
 
@@ -50,6 +80,18 @@ public class LuaValueHelper {
             meta.set("__index", functions());
         }
     }
+
+    public static LuaValue PlayerToLuaValue(Player player){
+        if (player == null) return LuaValue.NIL;
+        LuaValue library = LuaValue.tableOf();
+        //Fields
+        library.set("source",LuaValue.userdataOf(player));
+        //Functions
+        library.set("getPosition", LuaEntityClass.getPosition);
+        library.set("getRotation", LuaEntityClass.getRotation);
+        return library;
+    }
+
     public static LuaValue EntityToLuaValue(Entity entity) {
         if (entity == null) return LuaValue.NIL;
         LuaValue library = LuaValue.tableOf();

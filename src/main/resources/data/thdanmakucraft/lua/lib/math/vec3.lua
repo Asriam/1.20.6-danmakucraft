@@ -109,6 +109,7 @@ function vec3:subtract(_vec3)
 end
 
 ---@param _vec3 math.Vec3
+---@
 ---@return math.Vec3
 function vec3:add(_vec3)
     return vec3.new(self.x + _vec3.x, self.y + _vec3.y, self.z + _vec3.z)
