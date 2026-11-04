@@ -305,9 +305,9 @@ public class LuaScriptEditorScreen extends Screen {
         for (LuaScriptFiles.BuiltinRoot root : LuaScriptFiles.BUILTIN_ROOTS) {
             List<LuaScriptFiles.Entry> entries = groups.getOrDefault(root.name(), List.of());
             boolean collapsed = this.collapsedGroups.contains(root.name());
-            String marker = collapsed ? "\u25B6 " : "\u25BC ";
+            String marker = collapsed ?  "▼ " : "▶ ";
             rows.add(new BrowserRow(marker + this.builtinTitle(root.name()) + " (" + entries.size()
-                    + ") \u00B7 \u552F\u8B80", null, root.name()));
+                    + ") · 唯讀", null, root.name()));
             if (collapsed) {
                 for (LuaScriptFiles.Entry entry : entries) {
                     rows.add(new BrowserRow(null, entry, null));
@@ -315,7 +315,7 @@ public class LuaScriptEditorScreen extends Screen {
             }
         }
 
-        rows.add(new BrowserRow("\u811A\u672C (" + scripts.size() + ")", null, null));
+        rows.add(new BrowserRow("脚本 (" + scripts.size() + ")", null, null));
         for (LuaScriptFiles.Entry entry : scripts) {
             rows.add(new BrowserRow(null, entry, null));
         }
