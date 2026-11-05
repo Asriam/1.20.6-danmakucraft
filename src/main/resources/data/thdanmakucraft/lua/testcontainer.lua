@@ -44,8 +44,9 @@ function testLaser:onInit(i)
     self.params.angle = 360/num*i
     self:setWidth(0.01)
     self:growWidth(1,120)
+    self:initPosition(math.vec3.of(self:getPosition()):add(math.vec3.new(0,10,0)))
     --self.taskManager:startTask("laser_width_set",120)
-    print(self:isClientSide())
+    --print(self:isClientSide())
 end
 
 function testLaser:onAddTasks()
@@ -67,7 +68,7 @@ function testLaser:onTick()
     if players ~= nil then
         for i, player in ipairs(players) do
             ---@type math.Vec3
-            local pos = player:getPosition()
+            local pos = math.vec3.of(player:getPosition())
             self:setPosition(pos:add(math.vec3.new(0, -2 ,0)))
         end
     end

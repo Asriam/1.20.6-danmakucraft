@@ -29,7 +29,7 @@ public class LuaValueHelper {
             public LuaValue call(LuaValue luaValue0) {
                 Entity entity = checkEntity(luaValue0);
                 AABB bb = entity.getBoundingBox();
-                Vec3 position = entity.position().add(bb.getXsize(), bb.getYsize(), bb.getZsize());
+                Vec3 position = entity.position().add(bb.getXsize()/2, bb.getYsize()/2, bb.getZsize()/2);
                 return Vec3ToLuaValue(position);
             }
         };

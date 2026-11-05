@@ -122,6 +122,10 @@ tasks.withType(Jar).configureEach {
         from(layout.buildDirectory.dir('tmp/compileJava')) {
             include 'mixins.thdanmakucraft.refmap.json'
         }
+        // 保險：同時寫進 manifest（舊版 Forge 會讀 MixinConfigs）
+        manifest {
+            attributes 'MixinConfigs': 'mixins.thdanmakucraft.json'
+        }
     }
 }
 

@@ -71,8 +71,8 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
                         edgeA, edgeB, false,
                         new Vec2(0.0f, 1.0f),
                         new Vec2(0.3f, 1.0f),
-                        laserCoreColor.multiply(0.8f),
-                        laserCoreColor.multiply(0.5f),
+                        laserCoreColor.multiply(0.9f),
+                        laserCoreColor.multiply(0.6f),
                         laserCoreColor);
                 RenderUtil.renderSphere(vertexConsumer, poseStack.last(), 2,
                         ConstantUtil.VECTOR3F_ZERO,
@@ -80,8 +80,8 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
                         edgeA, edgeB, false,
                         new Vec2(0.0f, 1.0f),
                         new Vec2(0.3f, 1.0f),
-                        laserColor.multiply(0.6f),
-                        laserColor.multiply(0.3f),
+                        laserColor.multiply(0.9f),
+                        laserColor.multiply(0.5f),
                         laserCoreColor, false, false);
                 break;
             }

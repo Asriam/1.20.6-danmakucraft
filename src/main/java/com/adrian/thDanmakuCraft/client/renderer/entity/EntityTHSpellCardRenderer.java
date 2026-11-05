@@ -178,7 +178,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
 
         if(container.shouldApplyBackgroundWarpEffect){
             time = 30.0f;
-            float radius = 20.0f;
+            float radius = 200.0f;
             float open2 = timer > time ? 1.0f : (float) Math.pow(Math.min(timer / time,1.0f),0.2f);
             renderBackgroundWarpEffect(spellCard,container, poseStack, pos, partialTicks,radius*open2*close*Mth.lerp((float)Math.pow(Math.max(timeLeft,0.0f),1),0.4f,1.0f),open*close);
         }
@@ -198,7 +198,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
                 new Color(255,255,255,255), true, false
         ).vertex((vertexPos,normal,color)->
                 builder.vertex(vertexPos).normal(normal).color(color2).endVertex());
-        if(true) {
+        if(false) {
             new SphereVertexHelper(
                     poseStack.last().pose(), poseStack.last().normal(),
                     ConstantUtil.VECTOR3F_ZERO, new Vector3f(radius, radius, radius),
