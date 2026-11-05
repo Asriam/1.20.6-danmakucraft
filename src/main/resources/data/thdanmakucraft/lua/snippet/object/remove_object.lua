@@ -2,4 +2,4 @@
 ---@icon unitkill.png
 ---@description 立刻把物件從世界中移除（不走死亡流程）。
 
-object:remove()
+self:setDead()

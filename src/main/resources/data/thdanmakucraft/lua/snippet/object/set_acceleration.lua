@@ -5,4 +5,4 @@
 ---@parameter y: Y 分量 = -0.01
 ---@parameter z: Z 分量 = 0.0
 
-object:setAcceleration(math.vec3.new(${x}, ${y}, ${z}))
+self:setAcceleration(math.vec3.new(${x}, ${y}, ${z}))

@@ -43,7 +43,7 @@ import java.util.Set;
 public class LuaScriptEditorScreen extends Screen {
 
     // 標題LOGO
-    private static final String EDITOR_TITLE = "Lua Script Editor";
+    private static final String EDITOR_TITLE = "Danmaku Script Editor";
     // ---- 版面 ----
     private static final int LINE_HEIGHT = 10;
     private static final int TOP_BAR_HEIGHT = 20;
@@ -265,6 +265,8 @@ public class LuaScriptEditorScreen extends Screen {
     private static final int SNIPPET_CATEGORY_HEIGHT = 11;
     private static final int SNIPPET_TOOL_HEIGHT = 16;
     private static final int SNIPPET_ICON = 14;
+    /** 參數表單每一列的高度。 */
+    private static final int PARAM_ROW_HEIGHT = LINE_HEIGHT + 8;
 
     private enum SnippetCategory {
         BULLET("Bullet"), OBJECT("Object"), LASER("Laser"), TASK("Task"), SPELLCARD("SpellCard");
@@ -319,8 +321,9 @@ public class LuaScriptEditorScreen extends Screen {
     // ---- 樣板參數輸入 ----
     private Snippet pendingSnippet;
     private List<LuaSnippetLibrary.Parameter> pendingParams = List.of();
-    private int pendingParamIndex;
-    private final Map<String, String> pendingValues = new HashMap<>();
+    private int pendingFocus;
+    /** 每個參數目前輸入的值（與 pendingParams 同索引）。 */
+    private final List<String> pendingFieldValues = new ArrayList<>();
 
     private final int[] actionX = new int[TopAction.values().length];
     private final int[] actionW = new int[TopAction.values().length];
@@ -1100,6 +1103,10 @@ public class LuaScriptEditorScreen extends Screen {
 
 
     private void renderDialog(GuiGraphics graphics) {
+        if (this.dialog == Dialog.PARAMETERS) {
+            this.renderParameterDialog(graphics);
+            return;
+        }
         int w = 280;
         int h = this.dialog == Dialog.DELETE ? 46 : 48;
         int x = (this.width - w) / 2;
@@ -1107,19 +1114,7 @@ public class LuaScriptEditorScreen extends Screen {
         graphics.fill(x - 1, y - 1, x + w + 1, y + h + 1, 0xFF3B4252);
         graphics.fill(x, y, x + w, y + h, 0xF21B1F2A);
 
-        if (this.dialog == Dialog.PARAMETERS) {
-            LuaSnippetLibrary.Parameter parameter = this.pendingParams.get(
-                    Math.min(this.pendingParamIndex, this.pendingParams.size() - 1));
-            String title = this.dialogInput == null ? "" : this.pendingSnippet.label();
-            String prompt = "參數 " + (this.pendingParamIndex + 1) + "/" + this.pendingParams.size()
-                    + "：" + parameter.label() + "（預設 " + parameter.defaultValue() + "）";
-            graphics.drawString(this.font, title, x + 6, y + 6, 0xFFFFFFFF, false);
-            graphics.drawString(this.font, prompt, x + 6, y + 18, 0xFF9AA4BC, false);
-            String text = this.dialogInput + "_";
-            graphics.drawString(this.font, this.font.plainSubstrByWidth(text, w - 12),
-                    x + 6, y + 32, 0xFFFFD479, false);
-            return;
-        }
+
 
         if (this.dialog == Dialog.DELETE) {
             boolean folder = this.dialogSource.startsWith("dir:");
@@ -1142,12 +1137,50 @@ public class LuaScriptEditorScreen extends Screen {
         String text = this.dialogInput + "_";
         graphics.drawString(this.font, this.font.plainSubstrByWidth(text, w - 12), x + 6, y + 24, 0xFFFFFFFF, false);
     }
+
+    private static final int parameterRowOffset = 40;
+    /** 縱向排列的參數表單：一列一個參數，Tab/↑↓ 換欄位。 */
+    private void renderParameterDialog(GuiGraphics graphics) {
+        int w = 300;
+        int h = this.parameterDialogHeight();
+        int x = (this.width - w) / 2;
+        int y = (this.height - h) / 2;
+        graphics.fill(x - 1, y - 1, x + w + 1, y + h + 1, 0xFF3B4252);
+        graphics.fill(x, y, x + w, y + h, 0xF21B1F2A);
+        graphics.drawString(this.font, this.pendingSnippet == null ? "" : this.pendingSnippet.label(),
+                x + 8, y + 6, 0xFFFFFFFF, false);
+        graphics.drawString(this.font, "填寫參數（Tab / ↑↓ 切換 · Enter 插入 · Esc 取消）",
+                x + 8, y + 18, 0xFF6B7280, false);
+
+        for (int i = 0; i < this.pendingParams.size(); i++) {
+            LuaSnippetLibrary.Parameter parameter = this.pendingParams.get(i);
+            int rowY = y + parameterRowOffset + i * PARAM_ROW_HEIGHT;
+            boolean focused = i == this.pendingFocus;
+            if (focused) {
+                graphics.fill(x + 4, rowY - 2, x + w - 4, rowY + PARAM_ROW_HEIGHT - 5, 0x553B82F6);
+            }
+            String label = this.font.plainSubstrByWidth(parameter.label(), 110);
+            graphics.drawString(this.font, label, x + 8, rowY + 2,
+                    focused ? 0xFFFFFFFF : 0xFF9AA4BC, false);
+            String value = this.pendingFieldValues.size() > i ? this.pendingFieldValues.get(i) : "";
+            String shown = this.font.plainSubstrByWidth(value, w - 132);
+            int valueX = x + 124;
+            graphics.fill(valueX - 4, rowY - 1, x + w - 8, rowY + LINE_HEIGHT + 3, 0x66000000);
+            graphics.drawString(this.font, shown, valueX, rowY + 1,
+                    focused ? 0xFFFFD479 : 0xFFD4D4D4, false);
+            if (focused) {
+                int caret = valueX + this.font.width(shown);
+                graphics.fill(caret, rowY + 1, caret + 1, rowY + 1 + LINE_HEIGHT, 0xFFFFFFFF);
+            }
+        }
+    }
+
     private void drawTopBar(GuiGraphics graphics, int gutter) {
         graphics.fill(0, 0, this.width, TOP_BAR_HEIGHT, BAR_BG);
 
         // 標題
         String title = EDITOR_TITLE;
-        graphics.drawString(this.font, title, PADDING, PADDING + 4, 0xFFFFFFFF, false);
+        graphics.drawString(this.font, title, PADDING, PADDING + 2, 0xFFFFFFFF, false);
 
         int x = PADDING + this.font.width(title) + 5;
         int hovered = -1;
@@ -1448,16 +1481,18 @@ public class LuaScriptEditorScreen extends Screen {
             this.insertSnippetCode(snippet, Map.of());
             return;
         }
-        this.pendingSnippet = snippet;
-        this.pendingParams = snippet.parameters();
-        this.pendingParamIndex = 0;
-        this.pendingValues.clear();
         if (this.readOnly) {
             this.setStatus("內建 API 文件是唯讀的", 0xFFFFD479);
             return;
         }
+        this.pendingSnippet = snippet;
+        this.pendingParams = snippet.parameters();
+        this.pendingFocus = 0;
+        this.pendingFieldValues.clear();
+        for (LuaSnippetLibrary.Parameter parameter : this.pendingParams) {
+            this.pendingFieldValues.add(parameter.defaultValue());
+        }
         this.dialog = Dialog.PARAMETERS;
-        this.dialogInput = this.pendingParams.get(0).defaultValue();
     }
 
     /** 把 ${name} 佔位符換成使用者輸入後插入。 */
@@ -1470,28 +1505,71 @@ public class LuaScriptEditorScreen extends Screen {
         this.setStatus("已插入：" + snippet.label(), 0xFF7BD88F);
     }
 
-    /** 參數對話框按 Enter：存下目前值，還有下一個就繼續問。 */
-    private void confirmParameter() {
-        if (this.pendingSnippet == null || this.pendingParamIndex >= this.pendingParams.size()) {
+    /** 確認整個表單：所有欄位一次套用。 */
+    private void confirmParameters() {
+        if (this.pendingSnippet == null) {
             this.dialog = Dialog.NONE;
             return;
         }
-        LuaSnippetLibrary.Parameter parameter = this.pendingParams.get(this.pendingParamIndex);
-        this.pendingValues.put(parameter.name(), this.dialogInput);
-        this.pendingParamIndex++;
-        if (this.pendingParamIndex < this.pendingParams.size()) {
-            this.dialogInput = this.pendingParams.get(this.pendingParamIndex).defaultValue();
-            return;
+        Map<String, String> values = new HashMap<>();
+        for (int i = 0; i < this.pendingParams.size(); i++) {
+            String value = i < this.pendingFieldValues.size() ? this.pendingFieldValues.get(i) : "";
+            values.put(this.pendingParams.get(i).name(), value);
         }
         Snippet snippet = this.pendingSnippet;
-        Map<String, String> values = new HashMap<>(this.pendingValues);
-        this.pendingSnippet = null;
-        this.pendingParams = List.of();
-        this.pendingParamIndex = 0;
-        this.pendingValues.clear();
-        this.dialog = Dialog.NONE;
+        this.resetParameterDialog();
         this.insertSnippetCode(snippet, values);
     }
+
+    private void resetParameterDialog() {
+        this.dialog = Dialog.NONE;
+        this.pendingSnippet = null;
+        this.pendingParams = List.of();
+        this.pendingFocus = 0;
+        this.pendingFieldValues.clear();
+    }
+
+    /** 表單鍵盤操作：Tab/↑↓ 換欄位、Enter 確定、Esc 取消。 */
+    private void handleParameterDialogKey(int keyCode) {
+        int size = this.pendingParams.size();
+        if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+            this.confirmParameters();
+        } else if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+            this.resetParameterDialog();
+            this.setStatus("已取消插入樣板", LINE_NO);
+        } else if (keyCode == GLFW.GLFW_KEY_TAB || keyCode == GLFW.GLFW_KEY_DOWN) {
+            this.pendingFocus = size == 0 ? 0 : (this.pendingFocus + 1) % size;
+        } else if (keyCode == GLFW.GLFW_KEY_UP) {
+            this.pendingFocus = size == 0 ? 0 : (this.pendingFocus - 1 + size) % size;
+        } else if (keyCode == GLFW.GLFW_KEY_BACKSPACE) {
+            String value = this.pendingFieldValues.get(this.pendingFocus);
+            if (!value.isEmpty()) {
+                this.pendingFieldValues.set(this.pendingFocus, value.substring(0, value.length() - 1));
+            }
+        }
+    }
+
+    private int parameterDialogHeight() {
+        return 30 + this.pendingParams.size() * PARAM_ROW_HEIGHT + 16;
+    }
+
+    /** 滑鼠點在表單的哪一列，沒有就 -1。 */
+    private int parameterRowAt(double mouseX, double mouseY) {
+        if (this.dialog != Dialog.PARAMETERS) {
+            return -1;
+        }
+        int w = 300;
+        int h = this.parameterDialogHeight();
+        int x = (this.width - w) / 2;
+        int y = (this.height - h) / 2;
+        if (mouseX < x || mouseX > x + w) {
+            return -1;
+        }
+        int index = (int) ((mouseY - (y + parameterRowOffset)) / PARAM_ROW_HEIGHT);
+        return index >= 0 && index < this.pendingParams.size() ? index : -1;
+    }
+
+
 
     /** 樣板按鈕的說明（停留 1 秒）。 */
     private void renderSnippetTooltip(GuiGraphics graphics) {
@@ -1717,6 +1795,13 @@ public class LuaScriptEditorScreen extends Screen {
         }
         if (this.inRect(mouseX, mouseY, this.width - PADDING - ICON_SIZE, 2, ICON_SIZE, ICON_SIZE)) {
             this.onClose();
+            return true;
+        }
+        if (this.dialog == Dialog.PARAMETERS) {
+            int row = this.parameterRowAt(mouseX, mouseY);
+            if (row >= 0) {
+                this.pendingFocus = row;
+            }
             return true;
         }
         if (this.dialog != Dialog.NONE) {
@@ -2031,6 +2116,13 @@ public class LuaScriptEditorScreen extends Screen {
 
     @Override
     public boolean charTyped(char codePoint, int modifiers) {
+        if (this.dialog == Dialog.PARAMETERS) {
+            if (codePoint >= 32 && !this.pendingFieldValues.isEmpty()) {
+                int focus = Math.max(0, Math.min(this.pendingFocus, this.pendingFieldValues.size() - 1));
+                this.pendingFieldValues.set(focus, this.pendingFieldValues.get(focus) + codePoint);
+            }
+            return true;
+        }
         if (this.dialog != Dialog.NONE) {
             boolean editable = this.dialog == Dialog.NEW_FILE || this.dialog == Dialog.NEW_FOLDER
                     || this.dialog == Dialog.RENAME;
@@ -2068,29 +2160,26 @@ public class LuaScriptEditorScreen extends Screen {
         boolean control = hasControlDown();
         boolean shift = hasShiftDown();
 
+        if (this.dialog == Dialog.PARAMETERS) {
+            this.handleParameterDialogKey(keyCode);
+            return true;
+        }
+
         if (this.dialog != Dialog.NONE) {
             boolean isDelete = this.dialog == Dialog.DELETE;
             if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
                 Dialog active = this.dialog;
-                if (active == Dialog.PARAMETERS) {
-                    this.confirmParameter();   // 參數可能還有多個，狀態由它自己管
-                } else {
-                    this.dialog = Dialog.NONE;
-                    switch (active) {
-                        case NEW_FILE -> this.newScript(this.dialogInput);
-                        case NEW_FOLDER -> this.createFolder(this.dialogInput);
-                        case RENAME -> this.confirmRename();
-                        case DELETE -> this.confirmDelete();
-                        default -> {
-                        }
+                this.dialog = Dialog.NONE;
+                switch (active) {
+                    case NEW_FILE -> this.newScript(this.dialogInput);
+                    case NEW_FOLDER -> this.createFolder(this.dialogInput);
+                    case RENAME -> this.confirmRename();
+                    case DELETE -> this.confirmDelete();
+                    default -> {
                     }
                 }
             } else if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
                 this.dialog = Dialog.NONE;
-                this.pendingSnippet = null;
-                this.pendingParams = List.of();
-                this.pendingParamIndex = 0;
-                this.pendingValues.clear();
             } else if (keyCode == GLFW.GLFW_KEY_BACKSPACE && !isDelete && !this.dialogInput.isEmpty()) {
                 this.dialogInput = this.dialogInput.substring(0, this.dialogInput.length() - 1);
             }

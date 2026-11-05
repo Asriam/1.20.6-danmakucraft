@@ -2,4 +2,5 @@
 ---@icon unitdel.png
 ---@description 讓物件走死亡流程（會觸發碰撞／死亡事件後再移除）。
 
-object:setDead()
+---@field self THBullet
+self:remove()

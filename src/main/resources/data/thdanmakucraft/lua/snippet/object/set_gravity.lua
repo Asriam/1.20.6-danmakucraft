@@ -4,4 +4,4 @@
 ---@parameter gravity: 重力大小 = -0.05
 
 -- 重力：向下持續加速
-object:setAcceleration(math.vec3.new(0.0, ${gravity}, 0.0))
+self:setAcceleration(math.vec3.new(0.0, ${gravity}, 0.0))
