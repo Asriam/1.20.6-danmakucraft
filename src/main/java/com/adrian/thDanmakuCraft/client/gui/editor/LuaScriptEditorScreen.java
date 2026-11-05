@@ -46,7 +46,7 @@ public class LuaScriptEditorScreen extends Screen {
     private static final String EDITOR_TITLE = "Lua Script Editor";
     // ---- 版面 ----
     private static final int LINE_HEIGHT = 10;
-    private static final int TOP_BAR_HEIGHT = 24;
+    private static final int TOP_BAR_HEIGHT = 20;
     /** 工作欄每一列的高度（分頁太多時往下增列）。 */
     private static final int TASK_BAR_ROW_HEIGHT = 14;
     private static final int BROWSER_TOP = TOP_BAR_HEIGHT;
@@ -260,6 +260,56 @@ public class LuaScriptEditorScreen extends Screen {
             "thdanmakucraft", "textures/gui/editor/icons/folder.png");
     private static final ResourceLocation ICON_CODE = ResourceLocation.fromNamespaceAndPath(
             "thdanmakucraft", "textures/gui/editor/icons/code.png");
+
+    // ---- 代碼工具列（分類 + 樣板按鈕） ----
+    private static final int SNIPPET_CATEGORY_HEIGHT = 11;
+    private static final int SNIPPET_TOOL_HEIGHT = 16;
+    private static final int SNIPPET_ICON = 14;
+
+    private enum SnippetCategory {
+        BULLET("Bullet"), OBJECT("Object"), LASER("Laser"), TASK("Task");
+
+        private final String label;
+
+        SnippetCategory(String label) {
+            this.label = label;
+        }
+    }
+
+    private record Snippet(String label, ResourceLocation icon, String code) {
+    }
+
+    private static ResourceLocation icon(String name) {
+        return ResourceLocation.fromNamespaceAndPath("thdanmakucraft",
+                "textures/gui/editor/icons/" + name);
+    }
+
+    private Map<SnippetCategory, List<Snippet>> snippetCache;
+
+    /** 從 data/thdanmakucraft/lua/snippet 載入樣板（第一次用到時載入）。 */
+    private List<Snippet> snippetsFor(SnippetCategory category) {
+        if (this.snippetCache == null) {
+            Map<SnippetCategory, List<Snippet>> built = new java.util.EnumMap<>(SnippetCategory.class);
+            for (SnippetCategory each : SnippetCategory.values()) {
+                List<Snippet> list = new ArrayList<>();
+                for (LuaSnippetLibrary.Entry entry : LuaSnippetLibrary.byCategory()
+                        .getOrDefault(each.name().toLowerCase(java.util.Locale.ROOT), List.of())) {
+                    list.add(new Snippet(entry.label(), icon(entry.icon()), entry.code()));
+                }
+                built.put(each, List.copyOf(list));
+            }
+            this.snippetCache = built;
+        }
+        return this.snippetCache.getOrDefault(category, List.of());
+    }
+
+    private SnippetCategory snippetCategory = SnippetCategory.BULLET;
+    private final int[] categoryX = new int[SnippetCategory.values().length];
+    private final int[] categoryW = new int[SnippetCategory.values().length];
+    private final int[] snippetX = new int[32];
+    private int snippetCount;
+    private int hoveredSnippet = -1;
+    private long hoverSnippetSince;
 
     private final int[] actionX = new int[TopAction.values().length];
     private final int[] actionW = new int[TopAction.values().length];
@@ -894,11 +944,13 @@ public class LuaScriptEditorScreen extends Screen {
         }
         this.drawTopBar(graphics, gutter);
         this.renderTaskBar(graphics, mouseX, mouseY);
+        this.renderSnippetBar(graphics, mouseX, mouseY);
         if (this.dialog != Dialog.NONE) {
             this.renderDialog(graphics);
         }
         this.drawStatusBar(graphics, statusTop);
         this.renderActionTooltip(graphics);
+        this.renderSnippetTooltip(graphics);
     }
 
     // ---- 檔案管理器版面 ----
@@ -909,7 +961,7 @@ public class LuaScriptEditorScreen extends Screen {
 
     private int browserTop() {
         //return textTop();
-        return BROWSER_TOP;
+        return BROWSER_TOP + SNIPPET_CATEGORY_HEIGHT + SNIPPET_TOOL_HEIGHT;
     }
 
     private int browserHeight() {
@@ -1228,7 +1280,7 @@ public class LuaScriptEditorScreen extends Screen {
                 row++;
                 x = left;
             }
-            layout.add(new TaskRect(x, TOP_BAR_HEIGHT + row * TASK_BAR_ROW_HEIGHT, width));
+            layout.add(new TaskRect(x, this.taskBarTop() + row * TASK_BAR_ROW_HEIGHT, width));
             x += width + 2;
         }
         this.taskLayout = layout;
@@ -1238,7 +1290,17 @@ public class LuaScriptEditorScreen extends Screen {
     /** 文字區頂端：工作欄佔幾列就往下推多少。 */
     private int textTop() {
         this.layoutTaskBar();
-        return TOP_BAR_HEIGHT + this.taskRowCount * TASK_BAR_ROW_HEIGHT;
+        return this.taskBarTop() + this.taskRowCount * TASK_BAR_ROW_HEIGHT;
+    }
+
+    /** 工作欄頂端：在代碼工具列下方。 */
+    private int taskBarTop() {
+        return TOP_BAR_HEIGHT + SNIPPET_CATEGORY_HEIGHT + SNIPPET_TOOL_HEIGHT;
+    }
+
+    /** 代碼工具列頂端（工作欄下方）。 */
+    private int snippetBarTop() {
+        return TOP_BAR_HEIGHT;
     }
 
     /** 工作欄：分頁太多時換行往下排。 */
@@ -1246,9 +1308,10 @@ public class LuaScriptEditorScreen extends Screen {
         this.layoutTaskBar();
         int left = this.taskBarLeft();
         int bottom = this.textTop();
-        graphics.fill(left-taskBarOffset, TOP_BAR_HEIGHT, this.width, bottom, 0xFF14161A);
+        int top = this.taskBarTop();
+        graphics.fill(left-taskBarOffset, top, this.width, bottom, 0xFF14161A);
         if (this.taskBar.isEmpty()) {
-            graphics.drawString(this.font, "雙擊檔案可加入工作欄", left, TOP_BAR_HEIGHT + 3, LINE_NO, false);
+            graphics.drawString(this.font, "雙擊檔案可加入工作欄", left, top + 3, LINE_NO, false);
             return;
         }
         for (int i = 0; i < this.taskLayout.size(); i++) {
@@ -1270,6 +1333,112 @@ public class LuaScriptEditorScreen extends Screen {
             graphics.drawString(this.font, "x", rect.x() + rect.width() - 8, rect.y() + 3,
                     hoverClose ? 0xFFFF5555 : (active ? 0xFFCFD8E6 : 0xFF7A8699), false);
         }
+    }
+
+    /** 代碼工具列：上排分類、下排樣板按鈕。 */
+    private void renderSnippetBar(GuiGraphics graphics, int mouseX, int mouseY) {
+        int top = this.snippetBarTop();
+        int catBottom = top + SNIPPET_CATEGORY_HEIGHT;
+        graphics.fill(0, top, this.width, catBottom, 0xFF101216);
+
+        int x = PADDING;
+        SnippetCategory[] categories = SnippetCategory.values();
+        for (int i = 0; i < categories.length; i++) {
+            String label = categories[i].label;
+            int width = this.font.width(label) + 12;
+            boolean active = categories[i] == this.snippetCategory;
+            boolean hover = this.inRect(mouseX, mouseY, x, top, width, SNIPPET_CATEGORY_HEIGHT);
+            graphics.fill(x, top, x + width, catBottom,
+                    active ? 0xFF2D6CDF : (hover ? 0xFF262A33 : 0xFF16181D));
+            graphics.drawString(this.font, label, x + 6, top + 2,
+                    active ? 0xFFFFFFFF : 0xFFB8C2D4, false);
+            this.categoryX[i] = x;
+            this.categoryW[i] = width;
+            x += width + 2;
+        }
+
+        int toolTop = catBottom;
+        graphics.fill(0, toolTop, this.width, toolTop + SNIPPET_TOOL_HEIGHT, 0xFF0D0F13);
+        List<Snippet> snippets = this.snippetsFor(this.snippetCategory);
+        this.snippetCount = snippets.size();
+        int iconX = PADDING;
+        for (int i = 0; i < snippets.size(); i++) {
+            int iconY = toolTop + (SNIPPET_TOOL_HEIGHT - SNIPPET_ICON) / 2;
+            boolean hover = this.inRect(mouseX, mouseY, iconX, iconY, SNIPPET_ICON, SNIPPET_ICON);
+            if (hover) {
+                graphics.fill(iconX, iconY, iconX + SNIPPET_ICON, iconY + SNIPPET_ICON, 0x553B82F6);
+            }
+            graphics.blit(snippets.get(i).icon(), iconX, iconY, SNIPPET_ICON, SNIPPET_ICON,
+                    0.0F, 0.0F, 24, 24, 24, 24);
+            this.snippetX[i] = iconX;
+            iconX += SNIPPET_ICON + 2;
+        }
+
+        int hovered = this.snippetHit(mouseX, mouseY);
+        long now = System.currentTimeMillis();
+        if (hovered != this.hoveredSnippet) {
+            this.hoveredSnippet = hovered;
+            this.hoverSnippetSince = now;
+        }
+    }
+
+    /** 回傳滑鼠所在的分類索引，沒有就 -1。 */
+    private int categoryHit(double mouseX, double mouseY) {
+        int top = this.snippetBarTop();
+        if (mouseY < top || mouseY > top + SNIPPET_CATEGORY_HEIGHT) {
+            return -1;
+        }
+        for (int i = 0; i < SnippetCategory.values().length; i++) {
+            if (mouseX >= this.categoryX[i] && mouseX <= this.categoryX[i] + this.categoryW[i]) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /** 回傳滑鼠所在的樣板按鈕索引，沒有就 -1。 */
+    private int snippetHit(double mouseX, double mouseY) {
+        int top = this.snippetBarTop() + SNIPPET_CATEGORY_HEIGHT;
+        int iconY = top + (SNIPPET_TOOL_HEIGHT - SNIPPET_ICON) / 2;
+        if (mouseY < iconY || mouseY > iconY + SNIPPET_ICON) {
+            return -1;
+        }
+        List<Snippet> snippets = this.snippetsFor(this.snippetCategory);
+        for (int i = 0; i < snippets.size(); i++) {
+            if (mouseX >= this.snippetX[i] && mouseX <= this.snippetX[i] + SNIPPET_ICON) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /** 把樣板程式碼插入游標處。 */
+    private void insertSnippet(int index) {
+        List<Snippet> snippets = this.snippetsFor(this.snippetCategory);
+        if (index < 0 || index >= snippets.size()) {
+            return;
+        }
+        Snippet snippet = snippets.get(index);
+        this.insert(snippet.code());
+        this.setStatus("已插入：" + snippet.label(), 0xFF7BD88F);
+    }
+
+    /** 樣板按鈕的說明（停留 1 秒）。 */
+    private void renderSnippetTooltip(GuiGraphics graphics) {
+        if (this.hoveredSnippet < 0 || System.currentTimeMillis() - this.hoverSnippetSince < 1000L) {
+            return;
+        }
+        List<Snippet> snippets = this.snippetsFor(this.snippetCategory);
+        if (this.hoveredSnippet >= snippets.size()) {
+            return;
+        }
+        String text = snippets.get(this.hoveredSnippet).label();
+        int width = this.font.width(text) + 8;
+        int x = Math.min(Math.max(PADDING, this.snippetX[this.hoveredSnippet]), this.width - width - PADDING);
+        int y = this.taskBarTop() + 2;
+        graphics.fill(x - 1, y - 1, x + width + 1, y + LINE_HEIGHT + 3, 0xFF3B4252);
+        graphics.fill(x, y, x + width, y + LINE_HEIGHT + 2, 0xF01B1F2A);
+        graphics.drawString(this.font, text, x + 4, y + 2, 0xFFD4D4D4, false);
     }
 
     private record TaskHit(int index, boolean close) {
@@ -1462,6 +1631,19 @@ public class LuaScriptEditorScreen extends Screen {
         }
         if (this.dialog != Dialog.NONE) {
             return true;
+        }
+        if (button == 0) {
+            int category = this.categoryHit(mouseX, mouseY);
+            if (category >= 0) {
+                this.snippetCategory = SnippetCategory.values()[category];
+                this.hoveredSnippet = -1;
+                return true;
+            }
+            int snippet = this.snippetHit(mouseX, mouseY);
+            if (snippet >= 0) {
+                this.insertSnippet(snippet);
+                return true;
+            }
         }
         Scrollbar editorBar = this.editorScrollbar();
         if (editorBar.maxScroll() > 0 && this.hitScrollbar(editorBar, mouseX, mouseY)) {
@@ -2145,24 +2327,35 @@ public class LuaScriptEditorScreen extends Screen {
     }
 
     private boolean hasSelection() {
-        return this.selectionLine >= 0
-                && (this.selectionLine != this.cursorLine || this.selectionColumn != this.cursorColumn);
+        if (this.selectionLine < 0 || this.lines.isEmpty()) {
+            return false;
+        }
+        if (this.selectionLine >= this.lines.size() || this.cursorLine >= this.lines.size()) {
+            return false;   // 座標過期（例如復原後內容變短）
+        }
+        return this.selectionLine != this.cursorLine || this.selectionColumn != this.cursorColumn;
     }
 
     private int[] selectionStart() {
-        if (this.selectionLine < this.cursorLine
-                || (this.selectionLine == this.cursorLine && this.selectionColumn < this.cursorColumn)) {
-            return new int[]{this.selectionLine, this.selectionColumn};
+        int anchorLine = this.clampLine(this.selectionLine);
+        int anchorColumn = this.clampColumn(anchorLine, this.selectionColumn);
+        int cursorLine = this.clampLine(this.cursorLine);
+        int cursorColumn = this.clampColumn(cursorLine, this.cursorColumn);
+        if (anchorLine < cursorLine || (anchorLine == cursorLine && anchorColumn < cursorColumn)) {
+            return new int[]{anchorLine, anchorColumn};
         }
-        return new int[]{this.cursorLine, this.cursorColumn};
+        return new int[]{cursorLine, cursorColumn};
     }
 
     private int[] selectionEnd() {
-        int[] start = this.selectionStart();
-        if (start[0] == this.selectionLine && start[1] == this.selectionColumn) {
-            return new int[]{this.cursorLine, this.cursorColumn};
+        int anchorLine = this.clampLine(this.selectionLine);
+        int anchorColumn = this.clampColumn(anchorLine, this.selectionColumn);
+        int cursorLine = this.clampLine(this.cursorLine);
+        int cursorColumn = this.clampColumn(cursorLine, this.cursorColumn);
+        if (anchorLine < cursorLine || (anchorLine == cursorLine && anchorColumn < cursorColumn)) {
+            return new int[]{cursorLine, cursorColumn};
         }
-        return new int[]{this.selectionLine, this.selectionColumn};
+        return new int[]{anchorLine, anchorColumn};
     }
 
     /** 某一行在選取範圍內的字元區間；不在範圍內回傳 null。 */
@@ -2202,10 +2395,30 @@ public class LuaScriptEditorScreen extends Screen {
         return builder.toString();
     }
 
+    /** 把行號夾進目前內容範圍（選取座標可能因為復原／切換緩衝而過期）。 */
+    private int clampLine(int line) {
+        if (this.lines.isEmpty()) {
+            return 0;
+        }
+        return Math.max(0, Math.min(line, this.lines.size() - 1));
+    }
+
+    private int clampColumn(int line, int column) {
+        if (this.lines.isEmpty()) {
+            return 0;
+        }
+        int target = clampLine(line);
+        return Math.max(0, Math.min(column, this.lines.get(target).length()));
+    }
+
     private void deleteSelection() {
         if (!this.hasSelection()) {
             return;
         }
+        this.selectionLine = this.clampLine(this.selectionLine);
+        this.selectionColumn = this.clampColumn(this.selectionLine, this.selectionColumn);
+        this.cursorLine = this.clampLine(this.cursorLine);
+        this.cursorColumn = this.clampColumn(this.cursorLine, this.cursorColumn);
         int[] start = this.selectionStart();
         int[] end = this.selectionEnd();
         StringBuilder first = this.lines.get(start[0]);
