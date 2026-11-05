@@ -13,7 +13,7 @@ function TaskManager:registerTask(name, runnable) end
 
 ---@param name string
 ---@param lifetime number
-function TaskManager:startTask(name, lifetime) end
+function TaskManager:startTask(name, lifetime, delay) end
 
 ---@param name string
 function TaskManager:removeTask(name) end
