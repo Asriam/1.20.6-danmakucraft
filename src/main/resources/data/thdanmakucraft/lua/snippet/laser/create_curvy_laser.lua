@@ -6,4 +6,3 @@
 ---@parameter width: 寬度 = 0.08
 
 local curvy = self:createTHCurvedLaser(curvyLaserClass, {}, self:getPosition(), ${colorIndex}, ${length}, ${width})
-curvy:spawn()

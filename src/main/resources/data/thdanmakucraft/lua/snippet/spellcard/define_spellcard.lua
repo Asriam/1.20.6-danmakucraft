@@ -3,7 +3,7 @@
 ---@description aa
 ---@parameter parameterName: 符卡變量名 = mySpellCard
 ---@parameter spellcardClassName: 符卡Class name = mySpellCard
----@parameter spellcardDisplayName: 符卡顯示名稱 = mySpellCard"
+---@parameter spellcardDisplayName: 符卡顯示名稱 = mySpellCard
 
 local ${parameterName} = core.defineSpellCardClass("${spellcardClassName}")
 function ${parameterName}:onInit()
@@ -11,4 +11,5 @@ function ${parameterName}:onInit()
 end
 
 function ${parameterName}:onTick()
+
 end
