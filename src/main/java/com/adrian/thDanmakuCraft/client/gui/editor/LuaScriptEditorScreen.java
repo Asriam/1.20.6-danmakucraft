@@ -478,6 +478,11 @@ public class LuaScriptEditorScreen extends Screen {
     private int switchDropdownScroll;
     private int switchDropdownHighlight;
     private boolean switchScrollbarDragging;
+
+    // ---- 參數欄位的文字選取 / 貼上 ----
+    private int fieldSelectionAnchor = -1;
+    private int fieldSelectionCaret = -1;
+    private boolean fieldSelecting;
     /** 每個參數目前輸入的值（與 pendingParams 同索引）。 */
     private final List<String> pendingFieldValues = new ArrayList<>();
 
@@ -1359,11 +1364,24 @@ public class LuaScriptEditorScreen extends Screen {
                 graphics.drawString(this.font, (at + 1) + "/" + options.size(), arrowX + 10,
                         rowY + 1, 0xFF6B7280, false);
             } else {
+                if (focused && this.fieldHasSelection()) {
+                    String full = value;
+                    int from = Math.max(0, Math.min(this.fieldSelectionFrom(), full.length()));
+                    int to = Math.max(0, Math.min(this.fieldSelectionTo(), full.length()));
+                    int selX1 = valueX + this.font.width(full.substring(0, from));
+                    int selX2 = valueX + this.font.width(full.substring(0, to));
+                    graphics.fill(selX1, rowY - 1, Math.max(selX2, selX1 + 1), rowY + LINE_HEIGHT + 1,
+                            0x883B82F6);
+                }
                 String shown = this.font.plainSubstrByWidth(value, w - 132);
                 graphics.drawString(this.font, shown, valueX, rowY + 1,
                         focused ? 0xFFFFD479 : 0xFFD4D4D4, false);
                 if (focused) {
-                    int caret = valueX + this.font.width(shown);
+                    int caretColumn = value.length();
+                    if (this.fieldSelectionCaret >= 0) {
+                        caretColumn = Math.max(0, Math.min(this.fieldSelectionCaret, value.length()));
+                    }
+                    int caret = valueX + this.font.width(value.substring(0, caretColumn));
                     graphics.fill(caret, rowY + 1, caret + 1, rowY + 1 + LINE_HEIGHT, 0xFFFFFFFF);
                 }
             }
@@ -1771,6 +1789,9 @@ public class LuaScriptEditorScreen extends Screen {
 
     private void resetParameterDialog() {
         this.closeSwitchDropdown();
+        this.fieldSelectionAnchor = -1;
+        this.fieldSelectionCaret = -1;
+        this.fieldSelecting = false;
         this.dialog = Dialog.NONE;
         this.pendingSnippet = null;
         this.pendingParams = List.of();
@@ -1779,8 +1800,47 @@ public class LuaScriptEditorScreen extends Screen {
     }
 
     /** 表單鍵盤操作：Tab/↑↓ 換欄位、Enter 確定、Esc 取消。 */
-    private void handleParameterDialogKey(int keyCode) {
+    private void handleParameterDialogKey(int keyCode, boolean control, boolean shift) {
         int size = this.pendingParams.size();
+        if (control && this.isTextFieldFocused()) {
+            if (keyCode == GLFW.GLFW_KEY_A) {
+                this.fieldSelectionAnchor = 0;
+                this.fieldSelectionCaret = this.fieldValue(this.pendingFocus).length();
+                return;
+            }
+            if (keyCode == GLFW.GLFW_KEY_C) {
+                String selected = this.fieldSelectedText();
+                if (selected.isEmpty()) {
+                    selected = this.fieldValue(this.pendingFocus);
+                }
+                if (!selected.isEmpty()) {
+                    Minecraft.getInstance().keyboardHandler.setClipboard(selected);
+                    this.setStatus("已複製參數內容", STATUS_TEXT);
+                }
+                return;
+            }
+            if (keyCode == GLFW.GLFW_KEY_X) {
+                String selected = this.fieldSelectedText();
+                if (selected.isEmpty()) {
+                    selected = this.fieldValue(this.pendingFocus);
+                    this.fieldSelectionAnchor = 0;
+                    this.fieldSelectionCaret = selected.length();
+                }
+                if (!selected.isEmpty()) {
+                    Minecraft.getInstance().keyboardHandler.setClipboard(selected);
+                    this.fieldDeleteSelection();
+                }
+                return;
+            }
+            if (keyCode == GLFW.GLFW_KEY_V) {
+                String clip = Minecraft.getInstance().keyboardHandler.getClipboard();
+                clip = clip.replace("\r", "").replace("\n", " ");
+                if (!clip.isEmpty()) {
+                    this.fieldInsert(clip);
+                }
+                return;
+            }
+        }
         if (this.switchDropdownOpen) {
             LuaSnippetLibrary.Parameter parameter = this.parameterAt(this.switchDropdownRow);
             int optionCount = parameter.options().size();
@@ -1813,6 +1873,8 @@ public class LuaScriptEditorScreen extends Screen {
         } else if (keyCode == GLFW.GLFW_KEY_TAB || keyCode == GLFW.GLFW_KEY_DOWN) {
             this.pendingFocus = size == 0 ? 0 : (this.pendingFocus + 1) % size;
             this.closeSwitchDropdown();
+            this.fieldSelectionAnchor = -1;
+            this.fieldSelectionCaret = -1;
         } else if (keyCode == GLFW.GLFW_KEY_UP) {
             this.pendingFocus = size == 0 ? 0 : (this.pendingFocus - 1 + size) % size;
         } else if (keyCode == GLFW.GLFW_KEY_LEFT) {
@@ -1820,11 +1882,15 @@ public class LuaScriptEditorScreen extends Screen {
         } else if (keyCode == GLFW.GLFW_KEY_RIGHT || keyCode == GLFW.GLFW_KEY_SPACE) {
             this.cycleParameter(this.pendingFocus, 1);
         } else if (keyCode == GLFW.GLFW_KEY_BACKSPACE) {
-            if (this.parameterAt(this.pendingFocus).kind() == LuaSnippetLibrary.ParameterKind.TEXT) {
-                String value = this.pendingFieldValues.get(this.pendingFocus);
-                if (!value.isEmpty()) {
-                    this.pendingFieldValues.set(this.pendingFocus,
-                            value.substring(0, value.length() - 1));
+            if (this.isTextFieldFocused()) {
+                if (this.fieldHasSelection()) {
+                    this.fieldDeleteSelection();
+                } else {
+                    String value = this.fieldValue(this.pendingFocus);
+                    if (!value.isEmpty()) {
+                        this.pendingFieldValues.set(this.pendingFocus,
+                                value.substring(0, value.length() - 1));
+                    }
                 }
             }
         }
@@ -1920,6 +1986,7 @@ public class LuaScriptEditorScreen extends Screen {
     private void closeSwitchDropdown() {
         this.switchDropdownOpen = false;
         this.switchScrollbarDragging = false;
+        this.fieldSelecting = false;
         this.switchDropdownRow = -1;
         this.switchDropdownScroll = 0;
     }
@@ -1947,6 +2014,91 @@ public class LuaScriptEditorScreen extends Screen {
         int index = this.switchDropdownScroll + (int) ((mouseY - rect[1] - 2) / LINE_HEIGHT);
         return index >= 0 && index < this.parameterAt(this.switchDropdownRow).options().size()
                 ? index : -1;
+    }
+
+    // ---- 參數欄位：選取 / 插入 / 刪除 ----
+
+    private boolean isTextFieldFocused() {
+        return this.dialog == Dialog.PARAMETERS
+                && !this.pendingParams.isEmpty()
+                && this.parameterAt(this.pendingFocus).kind()
+                        == LuaSnippetLibrary.ParameterKind.TEXT
+                && !this.pendingFieldValues.isEmpty();
+    }
+
+    private String fieldValue(int index) {
+        return index >= 0 && index < this.pendingFieldValues.size()
+                ? this.pendingFieldValues.get(index) : "";
+    }
+
+    private boolean fieldHasSelection() {
+        return this.fieldSelectionAnchor >= 0 && this.fieldSelectionCaret >= 0
+                && this.fieldSelectionAnchor != this.fieldSelectionCaret;
+    }
+
+    private int fieldSelectionFrom() {
+        return Math.min(this.fieldSelectionAnchor, this.fieldSelectionCaret);
+    }
+
+    private int fieldSelectionTo() {
+        return Math.max(this.fieldSelectionAnchor, this.fieldSelectionCaret);
+    }
+
+    private String fieldSelectedText() {
+        if (!this.fieldHasSelection() || !this.isTextFieldFocused()) {
+            return "";
+        }
+        String value = this.fieldValue(this.pendingFocus);
+        int from = Math.max(0, Math.min(this.fieldSelectionFrom(), value.length()));
+        int to = Math.max(0, Math.min(this.fieldSelectionTo(), value.length()));
+        return value.substring(from, to);
+    }
+
+    private void fieldDeleteSelection() {
+        if (!this.fieldHasSelection() || !this.isTextFieldFocused()) {
+            return;
+        }
+        String value = this.fieldValue(this.pendingFocus);
+        int from = Math.max(0, Math.min(this.fieldSelectionFrom(), value.length()));
+        int to = Math.max(0, Math.min(this.fieldSelectionTo(), value.length()));
+        this.pendingFieldValues.set(this.pendingFocus, value.substring(0, from) + value.substring(to));
+        this.fieldSelectionAnchor = from;
+        this.fieldSelectionCaret = from;
+    }
+
+    /** 在有選取時取代選取，否則接在字尾。 */
+    private void fieldInsert(String text) {
+        if (!this.isTextFieldFocused()) {
+            return;
+        }
+        this.fieldDeleteSelection();
+        String value = this.fieldValue(this.pendingFocus);
+        if (this.fieldHasSelection()) {
+            return;
+        }
+        int at = this.fieldSelectionCaret >= 0
+                ? Math.max(0, Math.min(this.fieldSelectionCaret, value.length())) : value.length();
+        this.pendingFieldValues.set(this.pendingFocus,
+                value.substring(0, at) + text + value.substring(at));
+        int caret = at + text.length();
+        this.fieldSelectionAnchor = caret;
+        this.fieldSelectionCaret = caret;
+    }
+
+    private int fieldCharAt(double mouseX) {
+        String value = this.fieldValue(this.pendingFocus);
+        int valueX = this.parameterValueX();
+        int target = (int) mouseX - valueX;
+        int column = 0;
+        while (column < value.length() && this.font.width(value.substring(0, column + 1)) <= target) {
+            column++;
+        }
+        return column;
+    }
+
+    /** 參數值欄位的左緣（繪製與點擊共用）。 */
+    private int parameterValueX() {
+        return (this.width - 300) / 2 + 124;
     }
 
     private LuaSnippetLibrary.Parameter parameterAt(int index) {
@@ -2246,6 +2398,20 @@ public class LuaScriptEditorScreen extends Screen {
             if (row >= 0) {
                 this.pendingFocus = row;
                 LuaSnippetLibrary.Parameter parameter = this.parameterAt(row);
+                if (parameter.kind() == LuaSnippetLibrary.ParameterKind.TEXT) {
+                    if (mouseX >= this.parameterValueX() - 4) {
+                        int at = this.fieldCharAt(mouseX);
+                        this.fieldSelectionAnchor = at;
+                        this.fieldSelectionCaret = at;
+                        this.fieldSelecting = true;
+                    } else {
+                        this.fieldSelectionAnchor = -1;
+                        this.fieldSelectionCaret = -1;
+                    }
+                } else {
+                    this.fieldSelectionAnchor = -1;
+                    this.fieldSelectionCaret = -1;
+                }
                 if (parameter.isSwitch()) {
                     // 點一次展開選單（點在選單上方的設定列才會到這裡）
                     this.openSwitchDropdown(row);
@@ -2583,12 +2749,9 @@ public class LuaScriptEditorScreen extends Screen {
     @Override
     public boolean charTyped(char codePoint, int modifiers) {
         if (this.dialog == Dialog.PARAMETERS) {
-            boolean text = !this.pendingParams.isEmpty()
-                    && this.parameterAt(this.pendingFocus).kind()
-                            == LuaSnippetLibrary.ParameterKind.TEXT;
-            if (codePoint >= 32 && text && !this.pendingFieldValues.isEmpty()) {
-                int focus = Math.max(0, Math.min(this.pendingFocus, this.pendingFieldValues.size() - 1));
-                this.pendingFieldValues.set(focus, this.pendingFieldValues.get(focus) + codePoint);
+            boolean text = this.isTextFieldFocused();
+            if (codePoint >= 32 && text) {
+                this.fieldInsert(String.valueOf(codePoint));
             }
             return true;
         }
@@ -2630,7 +2793,7 @@ public class LuaScriptEditorScreen extends Screen {
         boolean shift = hasShiftDown();
 
         if (this.dialog == Dialog.PARAMETERS) {
-            this.handleParameterDialogKey(keyCode);
+            this.handleParameterDialogKey(keyCode, control, shift);
             return true;
         }
 
@@ -3523,6 +3686,10 @@ public class LuaScriptEditorScreen extends Screen {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (this.fieldSelecting && this.dialog == Dialog.PARAMETERS && this.isTextFieldFocused()) {
+            this.fieldSelectionCaret = this.fieldCharAt(mouseX);
+            return true;
+        }
         if (this.switchScrollbarDragging) {
             this.switchDropdownScroll = this.switchScrollFromMouse(mouseY);
             return true;
