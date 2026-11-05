@@ -1,11 +1,14 @@
 ---@label 建立子彈
 ---@icon bossspellcard.png
 ---@description aa
+---@parameter parameterName: 符卡變量名 = mySpellCard
 ---@parameter spellcardClassName: 符卡Class name = mySpellCard
 ---@parameter spellcardDisplayName: 符卡顯示名稱 = mySpellCard"
 
-local yukari_spellcrad_2 = core.defineSpellCardClass("${spellcardClassName}")
-function yukari_spellcrad_2:onInit()
+local ${parameterName} = core.defineSpellCardClass("${spellcardClassName}")
+function ${parameterName}:onInit()
     self:setSpellCardName("${spellcardDisplayName}")
 end
 
+function ${parameterName}:onTick()
+end

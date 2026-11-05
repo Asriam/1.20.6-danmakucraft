@@ -267,7 +267,7 @@ public class LuaScriptEditorScreen extends Screen {
     private static final int SNIPPET_ICON = 14;
 
     private enum SnippetCategory {
-        BULLET("Bullet"), OBJECT("Object"), LASER("Laser"), TASK("Task");
+        BULLET("Bullet"), OBJECT("Object"), LASER("Laser"), TASK("Task"), SPELLCARD("SpellCard");
 
         private final String label;
 
