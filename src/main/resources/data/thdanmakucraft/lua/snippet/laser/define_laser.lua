@@ -11,3 +11,7 @@ function laserClass:onInit()
     self:setWidth(${width})
     self:setLength(${length})
 end
+
+function ${parameter_name}:onRegisterTasks(taskManager)
+
+end

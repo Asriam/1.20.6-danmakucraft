@@ -5,4 +5,3 @@
 ---@parameter colorIndex: 顏色索引 = 1
 
 local bullet = self:createTHBullet(bulletClass, {}, self:getPosition(), ${style}, ${colorIndex})
-bullet:spawn()

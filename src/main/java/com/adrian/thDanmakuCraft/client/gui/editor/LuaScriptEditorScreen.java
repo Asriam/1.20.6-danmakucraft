@@ -265,25 +265,39 @@ public class LuaScriptEditorScreen extends Screen {
     private static final int SNIPPET_CATEGORY_HEIGHT = 11;
     private static final int SNIPPET_TOOL_HEIGHT = 16;
     private static final int SNIPPET_ICON = 14;
-    /** 樣板區塊標記：第一行寫 Start、最後一行寫 End，行號欄會把 Start 畫成圖示。 */
-    private static final String SNIPPET_START = "---@SnippetStart ";
-    private static final String SNIPPET_END = "---@SnippetEnd";
+    /** 樣板標記的索引配對快取（內容沒變就不重算）。 */
+    private int snippetPairHash = Integer.MIN_VALUE;
+    private Set<Integer> snippetPairs = Set.of();
 
     /** 行號欄圖示快取（key = 圖示檔名）。 */
     private final Map<String, ResourceLocation> gutterIcons = new HashMap<>();
 
-    /** 這一行是不是樣板標記；是就回傳圖示檔名，否則 null。 */
-    private static String snippetMarkerOf(String line) {
-        String trimmed = line.trim();
-        if (!trimmed.startsWith(SNIPPET_START)) {
-            return null;
-        }
-        String file = trimmed.substring(SNIPPET_START.length()).trim();
-        return file.isEmpty() ? null : file;
+    /** 這一行是不是樣板標記；是就回傳 Start 標記，否則 null。 */
+    private static LuaSnippetMarkers.Marker snippetMarkerOf(String line) {
+        return LuaSnippetMarkers.anyStartMarker(line);
     }
 
     private static boolean isSnippetEndLine(String line) {
-        return line.trim().startsWith(SNIPPET_END);
+        return LuaSnippetMarkers.endMarker(line) != null;
+    }
+
+    /** 目前內容裡「Start/End 配對成功」的樣板索引。 */
+    private Set<Integer> pairedSnippetIndices() {
+        int hash = this.content().hashCode();
+        if (hash != this.snippetPairHash) {
+            this.snippetPairHash = hash;
+            List<String> all = new ArrayList<>(this.lines.size());
+            for (StringBuilder line : this.lines) {
+                all.add(line.toString());
+            }
+            this.snippetPairs = LuaSnippetMarkers.pairedIndices(all);
+        }
+        return this.snippetPairs;
+    }
+
+    /** 剝掉已配對的樣板標記後，實際要顯示的字串。 */
+    private LuaSnippetMarkers.Mapped displayOf(String line) {
+        return LuaSnippetMarkers.strip(line, this.pairedSnippetIndices());
     }
 
     /** 行號欄的左緣（圖示畫在這裡）。 */
@@ -291,17 +305,98 @@ public class LuaScriptEditorScreen extends Screen {
         return taskBarLeft() - taskBarOffset;
     }
 
+    /** 下一個可用的樣板索引（目前內容裡最大的 +1）。 */
+    private int nextSnippetIndex() {
+        int max = 0;
+        for (StringBuilder line : this.lines) {
+            for (LuaSnippetMarkers.Marker marker : LuaSnippetMarkers.markersOf(line.toString())) {
+                max = Math.max(max, marker.index());
+            }
+        }
+        return max + 1;
+    }
+
+    /** 找出某個 index 的樣板區塊（Start 行/欄 ~ End 行/欄）；找不到回傳 null。 */
+    private int[] snippetBlockFor(int index, int endLine, LuaSnippetMarkers.Marker endMarker) {
+        for (int line = endLine; line >= 0; line--) {
+            for (LuaSnippetMarkers.Marker marker : LuaSnippetMarkers.markersOf(
+                    this.lines.get(line).toString())) {
+                if (!marker.start()) {
+                    continue;
+                }
+                boolean sameIndex = index >= 0 && marker.index() == index;
+                boolean legacy = index < 0 && marker.index() < 0 && line < endLine;
+                if (sameIndex || legacy) {
+                    return new int[]{line, marker.from(), endLine, endMarker.to()};
+                }
+            }
+        }
+        return null;
+    }
+
+    private void deleteSnippetBlock(int[] block) {
+        this.recordUndo(false);
+        this.selectionLine = block[0];
+        this.selectionColumn = block[1];
+        this.cursorLine = block[2];
+        this.cursorColumn = block[3];
+        this.deleteSelection();
+        this.setStatus("已刪除樣板區塊", STATUS_TEXT);
+    }
+
+    /**
+     * 刪除時遇到樣板標記：
+     * Start 標記直接跳過（不讓它被破壞），End 標記則刪掉整段區塊。
+     * @return true 表示已處理（呼叫端不要再往下刪）
+     */
+    private boolean handleSnippetMarkerDelete(boolean backspace) {
+        if (this.cursorLine < 0 || this.cursorLine >= this.lines.size()) {
+            return false;
+        }
+        String line = this.lines.get(this.cursorLine).toString();
+        int column = Math.min(this.cursorColumn, line.length());
+        for (LuaSnippetMarkers.Marker marker : LuaSnippetMarkers.markersOf(line)) {
+            boolean inside = backspace
+                    ? column > marker.from() && column <= marker.to()
+                    : column >= marker.from() && column < marker.to();
+            if (!inside) {
+                continue;
+            }
+            if (marker.start()) {
+                this.cursorColumn = backspace ? marker.from() : marker.to();
+                this.setStatus("樣板標記不可編輯（要先刪掉整段區塊）", LINE_NO);
+                return true;
+            }
+            int[] block = this.snippetBlockFor(marker.index(), this.cursorLine, marker);
+            if (block != null) {
+                this.deleteSnippetBlock(block);
+            }
+            return true;
+        }
+        return false;
+    }
+
     /** 選取整個樣板區塊（Start 到 End，含兩端）。 */
     private void selectSnippetBlock(int startLine) {
+        String line = this.lines.get(startLine).toString();
+        LuaSnippetMarkers.Marker start = LuaSnippetMarkers.anyStartMarker(line);
+        int index = start == null ? -1 : start.index();
         int endLine = startLine;
-        for (int i = startLine + 1; i < this.lines.size(); i++) {
-            String text = this.lines.get(i).toString();
-            if (isSnippetEndLine(text)) {
-                endLine = i;
-                break;
+        if (index >= 0) {
+            for (int i = startLine; i < this.lines.size(); i++) {
+                LuaSnippetMarkers.Marker end = LuaSnippetMarkers.endMarker(this.lines.get(i).toString());
+                if (end != null && end.index() == index) {
+                    endLine = i;
+                    break;
+                }
             }
-            if (snippetMarkerOf(text) != null) {
-                break;   // 下一個區塊開始，代表這個區塊沒有 End
+        } else {
+            for (int i = startLine + 1; i < this.lines.size(); i++) {
+                LuaSnippetMarkers.Marker end = LuaSnippetMarkers.endMarker(this.lines.get(i).toString());
+                if (end != null) {
+                    endLine = i;
+                    break;
+                }
             }
         }
         this.selectionLine = startLine;
@@ -376,6 +471,13 @@ public class LuaScriptEditorScreen extends Screen {
     private Snippet pendingSnippet;
     private List<LuaSnippetLibrary.Parameter> pendingParams = List.of();
     private int pendingFocus;
+
+    // ---- 參數下拉選單（parameter_switch） ----
+    private boolean switchDropdownOpen;
+    private int switchDropdownRow = -1;
+    private int switchDropdownScroll;
+    private int switchDropdownHighlight;
+    private boolean switchScrollbarDragging;
     /** 每個參數目前輸入的值（與 pendingParams 同索引）。 */
     private final List<String> pendingFieldValues = new ArrayList<>();
 
@@ -983,8 +1085,10 @@ public class LuaScriptEditorScreen extends Screen {
                 graphics.fill(PADDING, y, this.width - PADDING, y + LINE_HEIGHT, 0x33FF5555);
             }
             String gutterText = this.lines.get(lineIndex).toString();
-            String snippetIcon = snippetMarkerOf(gutterText);
-            boolean snippetEnd = isSnippetEndLine(gutterText);
+            LuaSnippetMarkers.Mapped mapped = this.displayOf(gutterText);
+            LuaSnippetMarkers.Marker startMarker =
+                    LuaSnippetMarkers.startMarker(gutterText, this.pairedSnippetIndices());
+            String snippetIcon = startMarker == null ? null : startMarker.icon();
             int gutterX = this.gutterLeft();
             if (snippetIcon != null) {
                 // 樣板起始行：行號位置改畫樣板圖示
@@ -999,14 +1103,7 @@ public class LuaScriptEditorScreen extends Screen {
             }
 
             this.drawSelection(graphics, lineIndex, y, textLeft);
-            if (snippetIcon == null && !snippetEnd) {
-                this.drawLine(graphics, gutterText, textLeft, y);
-            } else if (lineIndex == this.cursorLine) {
-                // 游標移到標記行時才淡淡顯示，方便刪改；平常只看得到圖示
-                graphics.drawString(this.font,
-                        this.font.plainSubstrByWidth(gutterText, this.width - textLeft - PADDING),
-                        textLeft, y + 1, 0xFF3A3F4A, false);
-            }
+            this.drawLine(graphics, mapped.display(), textLeft, y);
         }
         graphics.disableScissor();
 
@@ -1037,6 +1134,9 @@ public class LuaScriptEditorScreen extends Screen {
         this.drawStatusBar(graphics, statusTop);
         this.renderActionTooltip(graphics);
         this.renderSnippetTooltip(graphics);
+        if (this.dialog == Dialog.PARAMETERS) {
+            this.renderSwitchDropdown(graphics);
+        }
     }
 
     // ---- 檔案管理器版面 ----
@@ -1221,7 +1321,7 @@ public class LuaScriptEditorScreen extends Screen {
         graphics.fill(x, y, x + w, y + h, 0xF21B1F2A);
         graphics.drawString(this.font, this.pendingSnippet == null ? "" : this.pendingSnippet.label(),
                 x + 8, y + 6, 0xFFFFFFFF, false);
-        graphics.drawString(this.font, "填寫參數（Tab / ↑↓ 切換 · Enter 插入 · Esc 取消）",
+        graphics.drawString(this.font, "Tab/↑↓ 換欄位 · ←→ 或點擊切換選項 · Enter 插入 · Esc 取消",
                 x + 8, y + 18, 0xFF6B7280, false);
 
         for (int i = 0; i < this.pendingParams.size(); i++) {
@@ -1235,15 +1335,72 @@ public class LuaScriptEditorScreen extends Screen {
             graphics.drawString(this.font, label, x + 8, rowY + 2,
                     focused ? 0xFFFFFFFF : 0xFF9AA4BC, false);
             String value = this.pendingFieldValues.size() > i ? this.pendingFieldValues.get(i) : "";
-            String shown = this.font.plainSubstrByWidth(value, w - 132);
             int valueX = x + 124;
             graphics.fill(valueX - 4, rowY - 1, x + w - 8, rowY + LINE_HEIGHT + 3, 0x66000000);
-            graphics.drawString(this.font, shown, valueX, rowY + 1,
-                    focused ? 0xFFFFD479 : 0xFFD4D4D4, false);
-            if (focused) {
-                int caret = valueX + this.font.width(shown);
-                graphics.fill(caret, rowY + 1, caret + 1, rowY + 1 + LINE_HEIGHT, 0xFFFFFFFF);
+            if (parameter.isBoolean()) {
+                boolean on = "true".equalsIgnoreCase(value);
+                int boxColor = on ? 0xFF4CAF50 : 0xFF6B7280;
+                graphics.fill(valueX, rowY, valueX + LINE_HEIGHT, rowY + LINE_HEIGHT, boxColor);
+                if (on) {
+                    graphics.drawString(this.font, "v", valueX + 2, rowY + 1, 0xFF0B0D10, false);
+                }
+                graphics.drawString(this.font, on ? "true" : "false", valueX + LINE_HEIGHT + 4,
+                        rowY + 1, focused ? 0xFFFFD479 : 0xFFD4D4D4, false);
+            } else if (parameter.isSwitch()) {
+                List<String> options = parameter.options();
+                int at = Math.max(0, options.indexOf(value));
+                String shown = this.font.plainSubstrByWidth(value, w - 190);
+                graphics.drawString(this.font, shown, valueX, rowY + 1,
+                        focused ? 0xFFFFD479 : 0xFFD4D4D4, false);
+                int arrowX = valueX + this.font.width(shown) + 6;
+                boolean open = this.switchDropdownOpen && this.switchDropdownRow == i;
+                graphics.drawString(this.font, open ? "^" : "v", arrowX, rowY + 1,
+                        focused ? 0xFFFFFFFF : 0xFF7A8699, false);
+                graphics.drawString(this.font, (at + 1) + "/" + options.size(), arrowX + 10,
+                        rowY + 1, 0xFF6B7280, false);
+            } else {
+                String shown = this.font.plainSubstrByWidth(value, w - 132);
+                graphics.drawString(this.font, shown, valueX, rowY + 1,
+                        focused ? 0xFFFFD479 : 0xFFD4D4D4, false);
+                if (focused) {
+                    int caret = valueX + this.font.width(shown);
+                    graphics.fill(caret, rowY + 1, caret + 1, rowY + 1 + LINE_HEIGHT, 0xFFFFFFFF);
+                }
             }
+        }
+    }
+
+    /** 展開中的選項清單（可滾動）。 */
+    private void renderSwitchDropdown(GuiGraphics graphics) {
+        int[] rect = this.switchDropdownRect();
+        if (rect == null) {
+            return;
+        }
+        LuaSnippetLibrary.Parameter parameter = this.parameterAt(this.switchDropdownRow);
+        List<String> options = parameter.options();
+        int visible = this.switchDropdownVisible();
+        graphics.fill(rect[0] - 1, rect[1] - 1, rect[0] + rect[2] + 1, rect[1] + rect[3] + 1, 0xFF3B4252);
+        graphics.fill(rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3], 0xF21B1F2A);
+        for (int i = 0; i < visible; i++) {
+            int index = this.switchDropdownScroll + i;
+            if (index >= options.size()) {
+                break;
+            }
+            int rowY = rect[1] + 2 + i * LINE_HEIGHT;
+            boolean highlight = index == this.switchDropdownHighlight;
+            if (highlight) {
+                graphics.fill(rect[0], rowY - 1, rect[0] + rect[2], rowY + LINE_HEIGHT, 0xFF2D6CDF);
+            }
+            String label = this.font.plainSubstrByWidth(options.get(index), rect[2] - 16);
+            graphics.drawString(this.font, label, rect[0] + 5, rowY,
+                    highlight ? 0xFFFFFFFF : 0xFFD4D4D4, false);
+        }
+        int[] bar = this.switchScrollbarRect();
+        if (bar != null) {
+            graphics.fill(bar[0], bar[1], bar[0] + bar[2], bar[1] + bar[3], 0x40000000);
+            graphics.fill(bar[0], this.switchThumbTop(bar), bar[0] + bar[2],
+                    this.switchThumbTop(bar) + this.switchThumbHeight(bar),
+                    this.switchScrollbarDragging ? 0xFFB8C2D4 : 0xFF7C8798);
         }
     }
 
@@ -1573,9 +1730,17 @@ public class LuaScriptEditorScreen extends Screen {
         for (Map.Entry<String, String> entry : values.entrySet()) {
             code = code.replace("${" + entry.getKey() + "}", entry.getValue());
         }
-        // 包成 ---@SnippetStart / ---@SnippetEnd 區塊，行號欄會把 Start 畫成圖示
+        // 行內標記：Start 貼在第一行程式碼前、End 貼在最後一行後，都不額外換行
+        // index 讓「樣板裡再插樣板」時內外兩層不會配錯
         String body = code.endsWith("\n") ? code.substring(0, code.length() - 1) : code;
-        String block = SNIPPET_START + snippet.iconFile() + "\n" + body + "\n" + SNIPPET_END + "\n";
+        String[] bodyLines = body.split("\n", -1);
+        int snippetIndex = this.nextSnippetIndex();
+        bodyLines[0] = LuaSnippetMarkers.START_PREFIX + snippetIndex + " " + snippet.iconFile()
+                + " ]] " + bodyLines[0];
+        int last = bodyLines.length - 1;
+        bodyLines[last] = bodyLines[last] + " " + LuaSnippetMarkers.END_PREFIX + " "
+                + snippetIndex + "]]";
+        String block = String.join("\n", bodyLines) + "\n";
         // 目前這一行如果有內容（不是空白），先斷行，讓區塊從新的一行開始
         boolean needBreak = !this.lines.get(this.cursorLine).toString().trim().isEmpty();
         int blockStart = this.cursorLine + (needBreak ? 1 : 0);
@@ -1605,6 +1770,7 @@ public class LuaScriptEditorScreen extends Screen {
     }
 
     private void resetParameterDialog() {
+        this.closeSwitchDropdown();
         this.dialog = Dialog.NONE;
         this.pendingSnippet = null;
         this.pendingParams = List.of();
@@ -1615,6 +1781,30 @@ public class LuaScriptEditorScreen extends Screen {
     /** 表單鍵盤操作：Tab/↑↓ 換欄位、Enter 確定、Esc 取消。 */
     private void handleParameterDialogKey(int keyCode) {
         int size = this.pendingParams.size();
+        if (this.switchDropdownOpen) {
+            LuaSnippetLibrary.Parameter parameter = this.parameterAt(this.switchDropdownRow);
+            int optionCount = parameter.options().size();
+            if (keyCode == GLFW.GLFW_KEY_DOWN) {
+                this.switchDropdownHighlight = Math.min(optionCount - 1, this.switchDropdownHighlight + 1);
+                this.ensureSwitchHighlightVisible();
+                return;
+            }
+            if (keyCode == GLFW.GLFW_KEY_UP) {
+                this.switchDropdownHighlight = Math.max(0, this.switchDropdownHighlight - 1);
+                this.ensureSwitchHighlightVisible();
+                return;
+            }
+            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+                this.pendingFieldValues.set(this.switchDropdownRow,
+                        parameter.options().get(this.switchDropdownHighlight));
+                this.closeSwitchDropdown();
+                return;
+            }
+            if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+                this.closeSwitchDropdown();
+                return;
+            }
+        }
         if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
             this.confirmParameters();
         } else if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
@@ -1622,13 +1812,161 @@ public class LuaScriptEditorScreen extends Screen {
             this.setStatus("已取消插入樣板", LINE_NO);
         } else if (keyCode == GLFW.GLFW_KEY_TAB || keyCode == GLFW.GLFW_KEY_DOWN) {
             this.pendingFocus = size == 0 ? 0 : (this.pendingFocus + 1) % size;
+            this.closeSwitchDropdown();
         } else if (keyCode == GLFW.GLFW_KEY_UP) {
             this.pendingFocus = size == 0 ? 0 : (this.pendingFocus - 1 + size) % size;
+        } else if (keyCode == GLFW.GLFW_KEY_LEFT) {
+            this.cycleParameter(this.pendingFocus, -1);
+        } else if (keyCode == GLFW.GLFW_KEY_RIGHT || keyCode == GLFW.GLFW_KEY_SPACE) {
+            this.cycleParameter(this.pendingFocus, 1);
         } else if (keyCode == GLFW.GLFW_KEY_BACKSPACE) {
-            String value = this.pendingFieldValues.get(this.pendingFocus);
-            if (!value.isEmpty()) {
-                this.pendingFieldValues.set(this.pendingFocus, value.substring(0, value.length() - 1));
+            if (this.parameterAt(this.pendingFocus).kind() == LuaSnippetLibrary.ParameterKind.TEXT) {
+                String value = this.pendingFieldValues.get(this.pendingFocus);
+                if (!value.isEmpty()) {
+                    this.pendingFieldValues.set(this.pendingFocus,
+                            value.substring(0, value.length() - 1));
+                }
             }
+        }
+    }
+
+    private static final int SWITCH_DROPDOWN_MAX_ROWS = 6;
+    private static final int SWITCH_DROPDOWN_WIDTH = 110;
+
+    /** 下拉選單的可見列數。 */
+    private int switchDropdownVisible() {
+        LuaSnippetLibrary.Parameter parameter = this.parameterAt(this.switchDropdownRow);
+        return Math.max(1, Math.min(parameter.options().size(), SWITCH_DROPDOWN_MAX_ROWS));
+    }
+
+    /** 下拉選單的矩形（x, y, w, h）；沒開就 null。 */
+    private int[] switchDropdownRect() {
+        if (!this.switchDropdownOpen || this.switchDropdownRow < 0) {
+            return null;
+        }
+        int w = 200;
+        int h = this.parameterDialogHeight();
+        int left = (this.width - w) / 2;
+        int top = (this.height - h) / 2;
+        int rowY = top + parameterRowOffset + this.switchDropdownRow * PARAM_ROW_HEIGHT;
+        int ddHeight = this.switchDropdownVisible() * LINE_HEIGHT + 4;
+        return new int[]{left + 124, rowY + PARAM_ROW_HEIGHT, SWITCH_DROPDOWN_WIDTH, ddHeight};
+    }
+
+    /** 滾動條矩形（x, y, w, h）；不需要滾動時回傳 null。 */
+    private int[] switchScrollbarRect() {
+        int[] rect = this.switchDropdownRect();
+        if (rect == null) {
+            return null;
+        }
+        LuaSnippetLibrary.Parameter parameter = this.parameterAt(this.switchDropdownRow);
+        if (parameter.options().size() <= this.switchDropdownVisible()) {
+            return null;
+        }
+        int width = 4;
+        return new int[]{rect[0] + rect[2] - width - 2, rect[1] + 2, width, rect[3] - 4};
+    }
+
+    private int switchThumbHeight(int[] bar) {
+        LuaSnippetLibrary.Parameter parameter = this.parameterAt(this.switchDropdownRow);
+        int total = parameter.options().size();
+        int visible = this.switchDropdownVisible();
+        return Math.max(10, (int) ((long) bar[3] * visible / Math.max(1, total)));
+    }
+
+    private int switchThumbTop(int[] bar) {
+        LuaSnippetLibrary.Parameter parameter = this.parameterAt(this.switchDropdownRow);
+        int maxScroll = Math.max(1, parameter.options().size() - this.switchDropdownVisible());
+        int travel = Math.max(1, bar[3] - this.switchThumbHeight(bar));
+        return bar[1] + (int) ((long) travel * Math.min(this.switchDropdownScroll, maxScroll) / maxScroll);
+    }
+
+    /** 依滑鼠 y 換算 scroll（拖曳或點軌道）。 */
+    private int switchScrollFromMouse(double mouseY) {
+        int[] bar = this.switchScrollbarRect();
+        if (bar == null) {
+            return 0;
+        }
+        LuaSnippetLibrary.Parameter parameter = this.parameterAt(this.switchDropdownRow);
+        int maxScroll = Math.max(0, parameter.options().size() - this.switchDropdownVisible());
+        int thumb = this.switchThumbHeight(bar);
+        int travel = bar[3] - thumb;
+        if (travel <= 0) {
+            return 0;
+        }
+        double offset = mouseY - bar[1] - thumb / 2.0;
+        offset = Math.max(0, Math.min(offset, travel));
+        return (int) Math.round(offset * maxScroll / travel);
+    }
+
+    private boolean onSwitchScrollbar(double mouseX, double mouseY) {
+        int[] bar = this.switchScrollbarRect();
+        return bar != null && mouseX >= bar[0] - 2 && mouseX <= bar[0] + bar[2] + 2
+                && mouseY >= bar[1] && mouseY <= bar[1] + bar[3];
+    }
+
+    private void openSwitchDropdown(int row) {
+        LuaSnippetLibrary.Parameter parameter = this.parameterAt(row);
+        if (!parameter.isSwitch()) {
+            return;
+        }
+        this.switchDropdownOpen = true;
+        this.switchDropdownRow = row;
+        this.switchDropdownHighlight = Math.max(0, parameter.options().indexOf(
+                this.pendingFieldValues.get(row)));
+        this.ensureSwitchHighlightVisible();
+    }
+
+    private void closeSwitchDropdown() {
+        this.switchDropdownOpen = false;
+        this.switchScrollbarDragging = false;
+        this.switchDropdownRow = -1;
+        this.switchDropdownScroll = 0;
+    }
+
+    private void ensureSwitchHighlightVisible() {
+        int visible = this.switchDropdownVisible();
+        if (this.switchDropdownHighlight < this.switchDropdownScroll) {
+            this.switchDropdownScroll = this.switchDropdownHighlight;
+        } else if (this.switchDropdownHighlight >= this.switchDropdownScroll + visible) {
+            this.switchDropdownScroll = this.switchDropdownHighlight - visible + 1;
+        }
+        this.switchDropdownScroll = Math.max(0, this.switchDropdownScroll);
+    }
+
+    /** 滑鼠在下拉選單的哪一個選項上；沒有回傳 -1。 */
+    private int switchOptionAt(double mouseX, double mouseY) {
+        int[] rect = this.switchDropdownRect();
+        if (rect == null) {
+            return -1;
+        }
+        if (mouseX < rect[0] || mouseX > rect[0] + rect[2]
+                || mouseY < rect[1] + 2 || mouseY > rect[1] + rect[3] - 2) {
+            return -1;
+        }
+        int index = this.switchDropdownScroll + (int) ((mouseY - rect[1] - 2) / LINE_HEIGHT);
+        return index >= 0 && index < this.parameterAt(this.switchDropdownRow).options().size()
+                ? index : -1;
+    }
+
+    private LuaSnippetLibrary.Parameter parameterAt(int index) {
+        return this.pendingParams.get(Math.max(0, Math.min(index, this.pendingParams.size() - 1)));
+    }
+
+    /** BOOLEAN 切換 true/false；SWITCH 在選項間循環。 */
+    private void cycleParameter(int index, int direction) {
+        if (index < 0 || index >= this.pendingParams.size()) {
+            return;
+        }
+        LuaSnippetLibrary.Parameter parameter = this.pendingParams.get(index);
+        String current = this.pendingFieldValues.get(index);
+        if (parameter.isBoolean()) {
+            this.pendingFieldValues.set(index, "true".equalsIgnoreCase(current) ? "false" : "true");
+        } else if (parameter.isSwitch()) {
+            List<String> options = parameter.options();
+            int at = options.indexOf(current);
+            at = at < 0 ? 0 : Math.floorMod(at + direction, options.size());
+            this.pendingFieldValues.set(index, options.get(at));
         }
     }
 
@@ -1761,10 +2099,13 @@ public class LuaScriptEditorScreen extends Screen {
             return;
         }
         String line = this.lines.get(lineIndex).toString();
-        int from = Math.min(range[0], line.length());
-        int to = Math.min(range[1], line.length());
-        int x1 = textLeft + this.font.width(line.substring(0, from));
-        int x2 = textLeft + this.font.width(line.substring(0, to));
+        LuaSnippetMarkers.Mapped mapped = this.displayOf(line);
+        int from = Math.min(mapped.toDisplay(Math.min(range[0], line.length())),
+                mapped.display().length());
+        int to = Math.min(mapped.toDisplay(Math.min(range[1], line.length())),
+                mapped.display().length());
+        int x1 = textLeft + this.font.width(mapped.display().substring(0, from));
+        int x2 = textLeft + this.font.width(mapped.display().substring(0, to));
         graphics.fill(x1, y, Math.max(x2, x1 + 1), y + LINE_HEIGHT, SELECTION);
     }
 
@@ -1778,7 +2119,9 @@ public class LuaScriptEditorScreen extends Screen {
         }
         String line = this.lines.get(this.cursorLine).toString();
         int column = Math.min(this.cursorColumn, line.length());
-        int x = textLeft + this.font.width(line.substring(0, column));
+        LuaSnippetMarkers.Mapped mapped = this.displayOf(line);
+        int displayColumn = Math.min(mapped.toDisplay(column), mapped.display().length());
+        int x = textLeft + this.font.width(mapped.display().substring(0, displayColumn));
         int y = textTop() + screenLine * LINE_HEIGHT;
         graphics.fill(x, y, x + 1, Math.min(y + LINE_HEIGHT, statusTop), CURSOR);
     }
@@ -1849,13 +2192,15 @@ public class LuaScriptEditorScreen extends Screen {
     /** 滑鼠 x 對應到某一行的第幾個字元。 */
     private int columnAt(int lineIndex, double mouseX) {
         String line = this.lines.get(lineIndex).toString();
+        LuaSnippetMarkers.Mapped mapped = this.displayOf(line);
+        String display = mapped.display();
         int textLeft = this.contentLeft();
         int target = (int) mouseX - textLeft;
         int column = 0;
-        while (column < line.length() && this.font.width(line.substring(0, column + 1)) <= target) {
+        while (column < display.length() && this.font.width(display.substring(0, column + 1)) <= target) {
             column++;
         }
-        return column;
+        return mapped.toBuffer()[Math.min(column, mapped.toBuffer().length - 1)];
     }
 
     /** 畫管理器列上的小圖示（來源 24x24，縮到 12x12）。 */
@@ -1881,9 +2226,32 @@ public class LuaScriptEditorScreen extends Screen {
             return true;
         }
         if (this.dialog == Dialog.PARAMETERS) {
+            // 下拉開著時：點選項 = 選取；點別處 = 關閉
+            if (this.switchDropdownOpen) {
+                if (this.onSwitchScrollbar(mouseX, mouseY)) {
+                    this.switchScrollbarDragging = true;
+                    this.switchDropdownScroll = this.switchScrollFromMouse(mouseY);
+                    return true;
+                }
+                int option = this.switchOptionAt(mouseX, mouseY);
+                if (option >= 0) {
+                    this.pendingFieldValues.set(this.switchDropdownRow,
+                            this.parameterAt(this.switchDropdownRow).options().get(option));
+                    this.closeSwitchDropdown();
+                    return true;
+                }
+                this.closeSwitchDropdown();
+            }
             int row = this.parameterRowAt(mouseX, mouseY);
             if (row >= 0) {
                 this.pendingFocus = row;
+                LuaSnippetLibrary.Parameter parameter = this.parameterAt(row);
+                if (parameter.isSwitch()) {
+                    // 點一次展開選單（點在選單上方的設定列才會到這裡）
+                    this.openSwitchDropdown(row);
+                } else if (parameter.isBoolean()) {
+                    this.cycleParameter(row, 1);
+                }
             }
             return true;
         }
@@ -1949,7 +2317,7 @@ public class LuaScriptEditorScreen extends Screen {
         int clickedLine = this.scroll + (int) ((mouseY - textTop()) / LINE_HEIGHT);
         if (clickedLine >= 0 && clickedLine < this.lines.size()
                 && mouseX >= this.gutterLeft() && mouseX < textLeft
-                && snippetMarkerOf(this.lines.get(clickedLine).toString()) != null) {
+                && LuaSnippetMarkers.anyStartMarker(this.lines.get(clickedLine).toString()) != null) {
             this.selectSnippetBlock(clickedLine);
             return true;
         }
@@ -2190,6 +2558,13 @@ public class LuaScriptEditorScreen extends Screen {
         if (this.font == null) {
             return false;
         }
+        if (this.switchDropdownOpen) {
+            LuaSnippetLibrary.Parameter parameter = this.parameterAt(this.switchDropdownRow);
+            int maxScroll = Math.max(0, parameter.options().size() - this.switchDropdownVisible());
+            this.switchDropdownScroll = Math.max(0, Math.min(maxScroll,
+                    this.switchDropdownScroll - (int) Math.signum(scrollY)));
+            return true;
+        }
         if (this.browserOpen && mouseX >= PADDING && mouseX <= PADDING + BROWSER_WIDTH
                 && mouseY >= browserTop() && mouseY <= browserActionTop()) {
             int visible = browserListRows();
@@ -2208,7 +2583,10 @@ public class LuaScriptEditorScreen extends Screen {
     @Override
     public boolean charTyped(char codePoint, int modifiers) {
         if (this.dialog == Dialog.PARAMETERS) {
-            if (codePoint >= 32 && !this.pendingFieldValues.isEmpty()) {
+            boolean text = !this.pendingParams.isEmpty()
+                    && this.parameterAt(this.pendingFocus).kind()
+                            == LuaSnippetLibrary.ParameterKind.TEXT;
+            if (codePoint >= 32 && text && !this.pendingFieldValues.isEmpty()) {
                 int focus = Math.max(0, Math.min(this.pendingFocus, this.pendingFieldValues.size() - 1));
                 this.pendingFieldValues.set(focus, this.pendingFieldValues.get(focus) + codePoint);
             }
@@ -2470,6 +2848,9 @@ public class LuaScriptEditorScreen extends Screen {
         if (this.readOnly) {
             return;
         }
+        if (this.handleSnippetMarkerDelete(true)) {
+            return;
+        }
         this.clearSyntaxError();
         this.recordUndo(true);
         if (this.hasSelection()) {
@@ -2506,6 +2887,9 @@ public class LuaScriptEditorScreen extends Screen {
 
     private void deleteForward() {
         if (this.readOnly) {
+            return;
+        }
+        if (this.handleSnippetMarkerDelete(false)) {
             return;
         }
         this.clearSyntaxError();
@@ -3139,6 +3523,10 @@ public class LuaScriptEditorScreen extends Screen {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (this.switchScrollbarDragging) {
+            this.switchDropdownScroll = this.switchScrollFromMouse(mouseY);
+            return true;
+        }
         if (this.dragCandidate != null) {
             if (!this.draggingFile
                     && Math.abs(mouseX - this.dragStartX) + Math.abs(mouseY - this.dragStartY) > 4.0) {
@@ -3181,6 +3569,7 @@ public class LuaScriptEditorScreen extends Screen {
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        this.switchScrollbarDragging = false;
         if (this.draggingFile && this.dragCandidate != null) {
             String source = this.dragCandidate;
             String target = this.dropTargetDir;

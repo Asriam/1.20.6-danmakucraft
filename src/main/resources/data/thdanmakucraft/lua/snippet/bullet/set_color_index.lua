@@ -3,4 +3,4 @@
 ---@description 依索引設定子彈顏色（對應子彈的 COLOR_* 索引）。
 ---@parameter index: 顏色索引 = 1
 
-bullet:setBulletColorByIndex(${index})
+self:setBulletColorByIndex(${index})

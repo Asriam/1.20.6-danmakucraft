@@ -110,7 +110,7 @@ function container:onInit()
     end
 
     for i = 1,60 do
-        self:createTHBullet(testBullet2, {i}, self:getPosition(),bullet_styles.ball_big,1)
+        --self:createTHBullet(testBullet2, {i}, self:getPosition(),bullet_styles.ball_big,1)
     end
     self.sad = "sdfhhsdfubnsdfusbdufd"
 end

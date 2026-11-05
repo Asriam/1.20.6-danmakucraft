@@ -42,13 +42,34 @@ public final class LuaSnippetLibrary {
         }
     }
 
+    /** 參數型別。 */
+    public enum ParameterKind {
+        /** 自由輸入（---@parameter）。 */
+        TEXT,
+        /** 布林開關（---@parameter_boolean）。 */
+        BOOLEAN,
+        /** 多選一（---@parameter_switch）：在表單裡點擊／左右鍵切換。 */
+        SWITCH
+    }
+
     /**
      * 樣板參數。
      * @param name         佔位符名稱（程式碼裡寫 {@code ${name}}）
      * @param label        對話框顯示的說明
      * @param defaultValue 預設值（可直接按 Enter 採用）
+     * @param kind         參數型別
+     * @param options      SWITCH 的可選值（其他型別為空）
      */
-    public record Parameter(String name, String label, String defaultValue) {
+    public record Parameter(String name, String label, String defaultValue,
+                            ParameterKind kind, List<String> options) {
+
+        public boolean isBoolean() {
+            return this.kind == ParameterKind.BOOLEAN;
+        }
+
+        public boolean isSwitch() {
+            return this.kind == ParameterKind.SWITCH && !this.options.isEmpty();
+        }
     }
 
     public static final String ROOT = "data/thdanmakucraft/lua/snippet";
@@ -88,17 +109,17 @@ public final class LuaSnippetLibrary {
      * 說明與預設值都可省略。
      */
     public static Parameter parseParameter(String text) {
+        return parseParameter(text, ParameterKind.TEXT);
+    }
+
+    public static Parameter parseParameter(String text, ParameterKind kind) {
         if (text == null || text.isEmpty()) {
             return null;
         }
-        String defaultValue = "";
+        String value = "";
         int equal = text.indexOf('=');
         if (equal >= 0) {
-            defaultValue = text.substring(equal + 1).trim();
-            if (defaultValue.length() >= 2
-                    && defaultValue.startsWith("\"") && defaultValue.endsWith("\"")) {
-                defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
-            }
+            value = text.substring(equal + 1).trim();
             text = text.substring(0, equal).trim();
         }
         String name = text;
@@ -114,7 +135,48 @@ public final class LuaSnippetLibrary {
         if (label.isEmpty()) {
             label = name;
         }
-        return new Parameter(name, label, defaultValue);
+
+        List<String> options = List.of();
+        String defaultValue;
+        switch (kind) {
+            case BOOLEAN -> {
+                defaultValue = value.equalsIgnoreCase("false") ? "false" : "true";
+            }
+            case SWITCH -> {
+                options = parseOptions(value);
+                defaultValue = options.isEmpty() ? "" : options.get(0);
+            }
+            default -> {
+                defaultValue = unquote(value);
+            }
+        }
+        return new Parameter(name, label, defaultValue, kind, options);
+    }
+
+    /** 解析 {@code {a, b, c}} 這種選項清單。 */
+    static List<String> parseOptions(String text) {
+        String body = text.trim();
+        if (body.startsWith("{")) {
+            body = body.substring(1);
+        }
+        if (body.endsWith("}")) {
+            body = body.substring(0, body.length() - 1);
+        }
+        List<String> options = new ArrayList<>();
+        for (String part : body.split(",")) {
+            String option = unquote(part.trim());
+            if (!option.isEmpty()) {
+                options.add(option);
+            }
+        }
+        return options;
+    }
+
+    private static String unquote(String text) {
+        if (text.length() >= 2 && text.startsWith("\"") && text.endsWith("\"")) {
+            return text.substring(1, text.length() - 1);
+        }
+        return text;
     }
 
     public static Entry parse(String path, String content) {
@@ -132,8 +194,21 @@ public final class LuaSnippetLibrary {
                 icon = line.substring("---@icon ".length()).trim();
             } else if (line.startsWith("---@description ")) {
                 description = line.substring("---@description ".length()).trim();
+            } else if (line.startsWith("---@parameter_switch ")) {
+                Parameter parameter = parseParameter(
+                        line.substring("---@parameter_switch ".length()).trim(), ParameterKind.SWITCH);
+                if (parameter != null) {
+                    parameters.add(parameter);
+                }
+            } else if (line.startsWith("---@parameter_boolean ")) {
+                Parameter parameter = parseParameter(
+                        line.substring("---@parameter_boolean ".length()).trim(), ParameterKind.BOOLEAN);
+                if (parameter != null) {
+                    parameters.add(parameter);
+                }
             } else if (line.startsWith("---@parameter ")) {
-                Parameter parameter = parseParameter(line.substring("---@parameter ".length()).trim());
+                Parameter parameter = parseParameter(
+                        line.substring("---@parameter ".length()).trim(), ParameterKind.TEXT);
                 if (parameter != null) {
                     parameters.add(parameter);
                 }

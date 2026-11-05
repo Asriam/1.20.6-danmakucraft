@@ -3,7 +3,7 @@
 --- Created by Administrator.
 --- DateTime: 2025/2/17 上午 01:29
 ---
-
+---
 bullet_styles = {
     arrow_big = "arrow_big",
     arrow_mid = "arrow_mid",
@@ -36,3 +36,11 @@ bullet_styles = {
     ball_huge_dark = "ball_huge_dark",
     ball_light_dark = "ball_light_dark",
 }
+
+local aaa = ""
+
+for i, style in pairs(bullet_styles) do
+    aaa = aaa..i ..", "
+end
+
+print(aaa)
