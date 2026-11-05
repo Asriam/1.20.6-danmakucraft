@@ -6,10 +6,16 @@
 ---@parameter spellcardDisplayName: 符卡顯示名稱 = mySpellCard
 
 local ${parameterName} = core.defineSpellCardClass("${spellcardClassName}")
-function ${parameterName}:onInit()
+--[[@SnippetStart 114514 event.png ]]function ${parameterName}:onInit()
     self:setSpellCardName("${spellcardDisplayName}")
-end
+    self:setMaxObjectAmount(600)
+    self:setLifetime(120)
+end--[[@SnippetEnd 114514]]
 
-function ${parameterName}:onTick()
+--[[@SnippetStart 114514 register_task_event.png ]]function ${parameterName}:onRegisterTasks(taskManager)
 
-end
+end--[[@SnippetEnd 114514]]
+
+--[[@SnippetStart 114514 event.png ]]function ${parameterName}:onTick()
+
+end--[[@SnippetEnd 114514]]

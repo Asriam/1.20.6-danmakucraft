@@ -1,17 +1,21 @@
 ---@label 定義雷射
 ---@icon laserdefine.png
 ---@description 宣告一個直線雷射類別（THLaser）並設定寬度與長度。
+---@parameter parameterName: 子彈變量名 = laserClass
 ---@parameter width: 寬度 = 0.1
 ---@parameter length: 長度 = 40.0
 
 ---@type Class|THLaser
-local laserClass = core.defineClass()
-
-function laserClass:onInit()
+local ${parameterName} = core.defineClass()
+--[[@SnippetStart 114514 event.png ]]function ${parameterName}:onInit()
     self:setWidth(${width})
     self:setLength(${length})
-end
+end--[[@SnippetEnd 114514]]
 
-function ${parameter_name}:onRegisterTasks(taskManager)
+--[[@SnippetStart 114514 register_task_event.png ]]function ${parameterName}:onRegisterTasks(taskManager)
 
-end
+end--[[@SnippetEnd 114514]]
+
+--[[@SnippetStart 114514 event.png ]]function ${parameterName}:onTick()
+
+end--[[@SnippetEnd 114514]]
