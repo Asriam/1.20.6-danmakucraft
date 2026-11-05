@@ -1,10 +1,13 @@
 package com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet;
 
+import com.adrian.thDanmakuCraft.util.io.ResourceLocationUtil;
+import com.adrian.thDanmakuCraft.util.io.CompoundTagUtil;
+import com.adrian.thDanmakuCraft.util.net.FriendlyByteBufUtil;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
-import com.adrian.thDanmakuCraft.world.LuaKeys;
+import com.adrian.thDanmakuCraft.world.lua.LuaKeys;
 import com.adrian.thDanmakuCraft.util.*;
-import com.adrian.thDanmakuCraft.world.ILuaValue;
-import com.adrian.thDanmakuCraft.world.LuaValueHelper;
+import com.adrian.thDanmakuCraft.world.lua.ILuaValue;
+import com.adrian.thDanmakuCraft.world.lua.LuaValueHelper;
 import com.adrian.thDanmakuCraft.world.danmaku.ITHObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.CollisionType;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;

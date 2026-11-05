@@ -1,7 +1,7 @@
 package com.adrian.thDanmakuCraft.events;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
-import com.adrian.thDanmakuCraft.client.renderer.MyRenderTypes;
+import com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.entity.EntityTHSpellCardRenderer;
@@ -68,7 +68,7 @@ public class RenderEvents {
             ModelViewMatrix = new Matrix4f(RenderSystem.getModelViewMatrix());
             ProjectionMatrix = new Matrix4f(RenderSystem.getProjectionMatrix());
             RenderTarget target = Minecraft.getInstance().getMainRenderTarget();
-            MyRenderTypes.DEPTH_BUFFER_TARGET.copyDepthFrom(target);
+            RenderTypes.DEPTH_BUFFER_TARGET.copyDepthFrom(target);
             target.bindWrite(false);
         }
 

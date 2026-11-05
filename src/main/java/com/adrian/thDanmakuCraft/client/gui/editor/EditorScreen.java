@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.client.gui.editor;
 
-import com.adrian.thDanmakuCraft.client.gui.editor.buttons.EditorButton;
+import com.adrian.thDanmakuCraft.client.gui.widgets.EditorButton;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.adrian.thDanmakuCraft.client.renderer.compat.LegacyBufferBuilder;

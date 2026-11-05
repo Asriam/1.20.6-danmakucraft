@@ -1,7 +1,7 @@
 package com.adrian.thDanmakuCraft.events;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
-import com.adrian.thDanmakuCraft.client.gui.components.SpellCardNameOverlay;
+import com.adrian.thDanmakuCraft.client.gui.widgets.SpellCardNameOverlay;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.adrian.thDanmakuCraft.world.entity.spellcard.EntityTHSpellCard;
 import net.minecraft.client.Camera;

@@ -1,13 +1,16 @@
 package com.adrian.thDanmakuCraft.world.danmaku.thobject;
 
+import com.adrian.thDanmakuCraft.util.io.CompoundTagUtil;
+import com.adrian.thDanmakuCraft.util.net.FriendlyByteBufUtil;
+import com.adrian.thDanmakuCraft.util.io.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.init.THObjectInit;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.util.*;
-import com.adrian.thDanmakuCraft.world.ILuaValue;
-import com.adrian.thDanmakuCraft.world.LuaKeys;
-import com.adrian.thDanmakuCraft.world.LuaBridge;
-import com.adrian.thDanmakuCraft.world.ISerializable;
+import com.adrian.thDanmakuCraft.world.lua.ILuaValue;
+import com.adrian.thDanmakuCraft.world.lua.LuaKeys;
+import com.adrian.thDanmakuCraft.world.lua.LuaBridge;
+import com.adrian.thDanmakuCraft.world.data.ISerializable;
 import com.adrian.thDanmakuCraft.world.danmaku.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -31,10 +34,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static com.adrian.thDanmakuCraft.world.LuaValueHelper.*;
+import static com.adrian.thDanmakuCraft.world.lua.LuaValueHelper.*;
 import static com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject.LuaAPI.*;
 
-public class THObject implements ILuaValue, IGetContainer, ISerializable {
+public class THObject implements ILuaValue, ITHContainerProvider, ISerializable {
     //private static final Logger log = LoggerFactory.getLogger(THObject.class);
     private final THObjectType<? extends THObject> type;
     //private final AdditionalParameterManager parameterManager;
@@ -563,7 +566,7 @@ public class THObject implements ILuaValue, IGetContainer, ISerializable {
     /** 解析事件函式：先查快取（含「未實作」的負快取），miss 才查 metatable。 */
     private LuaFunction resolveScriptEvent(String eventName) {
         String className = this.getLuaClassName();
-        LuaValue cached = MyCaches.getScriptEvent(className, eventName);
+        LuaValue cached = LuaEventCache.getScriptEvent(className, eventName);
         if (cached != null) {
             return cached.isnil() ? null : cached.checkfunction();
         }
@@ -574,12 +577,12 @@ public class THObject implements ILuaValue, IGetContainer, ISerializable {
         LuaValue value = luaClass.get(LuaKeys.of(eventName));
         if (value.isfunction()) {
             LuaFunction function = value.checkfunction();
-            MyCaches.putScriptEvent(className, eventName, function);
+            LuaEventCache.putScriptEvent(className, eventName, function);
             return function;
         }
         THDanmakuCraftMod.LOGGER.warn(eventName + " is not a valid function!");
         this.invalidFuncions.add(eventName);
-        MyCaches.putScriptEvent(className, eventName, LuaValue.NIL);
+        LuaEventCache.putScriptEvent(className, eventName, LuaValue.NIL);
         return null;
     }
 

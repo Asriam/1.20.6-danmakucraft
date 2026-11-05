@@ -1,7 +1,7 @@
 package com.adrian.thDanmakuCraft.init;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
-import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
+import com.adrian.thDanmakuCraft.util.io.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.world.entity.EntitySingleTHObject;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.adrian.thDanmakuCraft.world.entity.mount.BroomMount;

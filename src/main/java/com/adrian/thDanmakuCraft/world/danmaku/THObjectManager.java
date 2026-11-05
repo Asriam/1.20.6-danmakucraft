@@ -1,8 +1,8 @@
 package com.adrian.thDanmakuCraft.world.danmaku;
 
 import com.adrian.thDanmakuCraft.util.MultiMap;
-import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
-import com.adrian.thDanmakuCraft.world.IDataStorage;
+import com.adrian.thDanmakuCraft.util.io.ResourceLocationUtil;
+import com.adrian.thDanmakuCraft.world.data.IDataStorage;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
 import io.netty.buffer.ByteBufInputStream;

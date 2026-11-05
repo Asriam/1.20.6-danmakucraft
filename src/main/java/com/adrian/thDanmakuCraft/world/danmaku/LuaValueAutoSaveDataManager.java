@@ -1,10 +1,10 @@
 package com.adrian.thDanmakuCraft.world.danmaku;
 
-import com.adrian.thDanmakuCraft.world.IDataStorage;
-import com.adrian.thDanmakuCraft.world.LuaFunctions;
-import com.adrian.thDanmakuCraft.world.LuaBridge;
-import com.adrian.thDanmakuCraft.world.LuaKeys;
-import com.adrian.thDanmakuCraft.world.ILuaValue;
+import com.adrian.thDanmakuCraft.world.data.IDataStorage;
+import com.adrian.thDanmakuCraft.world.lua.LuaFunctions;
+import com.adrian.thDanmakuCraft.world.lua.LuaBridge;
+import com.adrian.thDanmakuCraft.world.lua.LuaKeys;
+import com.adrian.thDanmakuCraft.world.lua.ILuaValue;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -21,10 +21,10 @@ public class LuaValueAutoSaveDataManager implements IDataStorage, ILuaValue {
 
     public LuaValueStorageHelper luaValueStorageHelper;
     public List<String> keys = Lists.newArrayList();
-    public IGetContainer target;
+    public ITHContainerProvider target;
     private final LuaValue luaValueForm;
 
-    public LuaValueAutoSaveDataManager(IGetContainer getContainer){
+    public LuaValueAutoSaveDataManager(ITHContainerProvider getContainer){
         this.luaValueStorageHelper = new LuaValueStorageHelper(getContainer);
         this.target = getContainer;
         this.luaValueForm = this.ofLuaClass();

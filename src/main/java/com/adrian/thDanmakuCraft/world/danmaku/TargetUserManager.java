@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.world.danmaku;
 
-import com.adrian.thDanmakuCraft.world.IDataStorage;
+import com.adrian.thDanmakuCraft.world.data.IDataStorage;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;

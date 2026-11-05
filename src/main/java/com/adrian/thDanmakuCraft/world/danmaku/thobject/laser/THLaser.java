@@ -1,14 +1,14 @@
 package com.adrian.thDanmakuCraft.world.danmaku.thobject.laser;
 
 import com.adrian.thDanmakuCraft.init.THObjectInit;
-import com.adrian.thDanmakuCraft.world.LuaKeys;
-import com.adrian.thDanmakuCraft.util.CollisionHelper;
+import com.adrian.thDanmakuCraft.world.lua.LuaKeys;
+import com.adrian.thDanmakuCraft.util.math.CollisionHelper;
 import com.adrian.thDanmakuCraft.util.Color;
-import com.adrian.thDanmakuCraft.util.CompoundTagUtil;
-import com.adrian.thDanmakuCraft.util.FriendlyByteBufUtil;
-import com.adrian.thDanmakuCraft.util.MathUtil;
-import com.adrian.thDanmakuCraft.world.ILuaValue;
-import com.adrian.thDanmakuCraft.world.LuaValueHelper;
+import com.adrian.thDanmakuCraft.util.io.CompoundTagUtil;
+import com.adrian.thDanmakuCraft.util.net.FriendlyByteBufUtil;
+import com.adrian.thDanmakuCraft.util.math.MathUtil;
+import com.adrian.thDanmakuCraft.world.lua.ILuaValue;
+import com.adrian.thDanmakuCraft.world.lua.LuaValueHelper;
 import com.adrian.thDanmakuCraft.world.danmaku.ITHObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.TaskManager;

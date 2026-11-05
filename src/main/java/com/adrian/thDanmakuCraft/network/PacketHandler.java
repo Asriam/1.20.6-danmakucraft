@@ -2,7 +2,7 @@ package com.adrian.thDanmakuCraft.network;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.network.packets.THObjectContainerPacket;
-import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
+import com.adrian.thDanmakuCraft.util.io.ResourceLocationUtil;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.ChannelBuilder;
 import net.minecraftforge.network.NetworkDirection;

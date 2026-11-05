@@ -18,9 +18,6 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber
 public class Events {
 
-    public static void onEnttiyTick(EntityEvent.EntityConstructing event) {
-
-    }
 
     @SubscribeEvent
     public static void registerCommand(RegisterCommandsEvent event) {
@@ -105,7 +102,7 @@ public class Events {
                             // 主线程中执行的实际重新加载
                             reloadProfiler.startTick();
                             THDanmakuCraftMod.LOGGER.info("资源正在重新加载...bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
-                            MyCaches.clearMyCaches();
+                            LuaEventCache.clearMyCaches();
                             // 重新初始化你的资源
                             reloadProfiler.endTick();
                         }, gameExecutor)

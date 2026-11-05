@@ -1,14 +1,14 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.laser;
 
-import com.adrian.thDanmakuCraft.client.renderer.MyRenderTypes;
+import com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
-import com.adrian.thDanmakuCraft.client.renderer.THBlendMode;
+import com.adrian.thDanmakuCraft.client.renderer.type.THBlendMode;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.ConstantUtil;
-import com.adrian.thDanmakuCraft.client.renderer.VertexBuilder;
+import com.adrian.thDanmakuCraft.client.renderer.buffer.VertexBuilder;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THCurvyLaser;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -242,7 +242,7 @@ public class THCurvyLaserRenderer extends AbstractTHObjectRenderer<THCurvyLaser>
 
     @Override
     public RenderType getRenderType(THCurvyLaser laser){
-        return MyRenderTypes.TEST_RENDER_TYPE_FUNCTION.apply(new MyRenderTypes.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(laser.getBlend()), true));
+        return RenderTypes.TEST_RENDER_TYPE_FUNCTION.apply(new RenderTypes.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(laser.getBlend()), true));
     }
 
     @Override

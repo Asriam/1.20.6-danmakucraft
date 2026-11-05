@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.script;
 
-import com.adrian.thDanmakuCraft.util.ResourceLoader;
+import com.adrian.thDanmakuCraft.util.io.ResourceLoader;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 

@@ -6,7 +6,7 @@ import com.adrian.thDanmakuCraft.client.renderer.entity.EntityTHObjectContainerR
 import com.adrian.thDanmakuCraft.client.renderer.entity.EntityTHSpellCardRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.entity.mount.BroomMountRenderer;
 import com.adrian.thDanmakuCraft.init.EntityInit;
-import com.adrian.thDanmakuCraft.world.danmaku.MyCaches;
+import com.adrian.thDanmakuCraft.world.danmaku.LuaEventCache;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraftforge.api.distmarker.Dist;

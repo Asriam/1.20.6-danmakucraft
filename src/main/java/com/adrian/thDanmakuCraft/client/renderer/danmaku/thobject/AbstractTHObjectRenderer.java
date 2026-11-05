@@ -1,8 +1,8 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject;
 
-import com.adrian.thDanmakuCraft.client.renderer.MyRenderTypes;
+import com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
-import com.adrian.thDanmakuCraft.client.renderer.THBlendMode;
+import com.adrian.thDanmakuCraft.client.renderer.type.THBlendMode;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.CollisionType;
@@ -36,8 +36,8 @@ public abstract class AbstractTHObjectRenderer<T extends THObject>{
     public abstract void render(T object, Vec3 objectPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer);
 
     public RenderType getRenderType(T object){
-        return MyRenderTypes.RENDER_TYPE_THOBJECT.apply(
-                new MyRenderTypes.RENDER_TYPE_2D_DANMAKU_CONTEXT(
+        return RenderTypes.RENDER_TYPE_THOBJECT.apply(
+                new RenderTypes.RENDER_TYPE_2D_DANMAKU_CONTEXT(
                 object.getImage().getTextureLocation(),
                 THBlendMode.getBlendMode(object.getBlend()))
         );

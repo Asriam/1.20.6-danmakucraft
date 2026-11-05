@@ -1,7 +1,7 @@
 package com.adrian.thDanmakuCraft.world.player;
 
-import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
-import com.adrian.thDanmakuCraft.world.THObjectContainerProvider;
+import com.adrian.thDanmakuCraft.util.io.ResourceLocationUtil;
+import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainerProvider;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import io.netty.buffer.Unpooled;
 import net.minecraft.network.FriendlyByteBuf;

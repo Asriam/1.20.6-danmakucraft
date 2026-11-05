@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
+import com.adrian.thDanmakuCraft.client.renderer.buffer.VertexBuilder;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;

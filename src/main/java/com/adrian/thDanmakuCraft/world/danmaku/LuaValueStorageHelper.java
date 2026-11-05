@@ -10,8 +10,8 @@ import org.luaj.vm2.LuaValue;
 public class LuaValueStorageHelper {
     //private static final Map<Integer,LuaValue> userDataMap = new HashMap<>();
 
-    private final IGetContainer iGetContainer;
-    public LuaValueStorageHelper(IGetContainer iGetContainer){
+    private final ITHContainerProvider iGetContainer;
+    public LuaValueStorageHelper(ITHContainerProvider iGetContainer){
         this.iGetContainer = iGetContainer;
     }
 

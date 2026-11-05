@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.client.renderer.entity.mount;
 
-import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
+import com.adrian.thDanmakuCraft.util.io.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.world.entity.mount.BroomMount;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;

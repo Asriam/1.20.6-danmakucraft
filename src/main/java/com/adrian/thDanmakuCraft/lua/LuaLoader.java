@@ -1,8 +1,8 @@
 package com.adrian.thDanmakuCraft.lua;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
-import com.adrian.thDanmakuCraft.util.ResourceLoader;
-import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
+import com.adrian.thDanmakuCraft.util.io.ResourceLoader;
+import com.adrian.thDanmakuCraft.util.io.ResourceLocationUtil;
 import com.google.common.collect.Maps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;

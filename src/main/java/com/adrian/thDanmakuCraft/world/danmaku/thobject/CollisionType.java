@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.world.danmaku.thobject;
 
-import com.adrian.thDanmakuCraft.util.CollisionHelper;
+import com.adrian.thDanmakuCraft.util.math.CollisionHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;

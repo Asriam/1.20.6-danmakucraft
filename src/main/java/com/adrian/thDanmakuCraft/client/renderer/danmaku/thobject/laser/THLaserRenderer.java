@@ -1,9 +1,9 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.laser;
 
-import com.adrian.thDanmakuCraft.client.renderer.MyRenderTypes;
+import com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
-import com.adrian.thDanmakuCraft.client.renderer.THBlendMode;
-import com.adrian.thDanmakuCraft.client.renderer.VertexBuilder;
+import com.adrian.thDanmakuCraft.client.renderer.type.THBlendMode;
+import com.adrian.thDanmakuCraft.client.renderer.buffer.VertexBuilder;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.client.renderer.shape.CylinderVertexHelper;
@@ -118,7 +118,7 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
 
     @Override
     public RenderType getRenderType(THLaser laser){
-        return MyRenderTypes.TEST_RENDER_TYPE_FUNCTION.apply(new MyRenderTypes.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(laser.getBlend()), true));
+        return RenderTypes.TEST_RENDER_TYPE_FUNCTION.apply(new RenderTypes.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(laser.getBlend()), true));
     }
 
     @Override

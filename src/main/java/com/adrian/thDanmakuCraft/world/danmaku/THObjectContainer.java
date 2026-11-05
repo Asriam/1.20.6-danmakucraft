@@ -7,12 +7,12 @@ import com.adrian.thDanmakuCraft.network.packets.THObjectContainerPacket;
 import com.adrian.thDanmakuCraft.script.IScript;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.lua.LuaManager;
-import com.adrian.thDanmakuCraft.util.LuaValueUtil;
-import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
-import com.adrian.thDanmakuCraft.world.ILuaValue;
-import com.adrian.thDanmakuCraft.world.LuaKeys;
-import com.adrian.thDanmakuCraft.world.LuaBridge;
-import com.adrian.thDanmakuCraft.world.ISerializable;
+import com.adrian.thDanmakuCraft.world.lua.LuaValueHelper;
+import com.adrian.thDanmakuCraft.util.io.ResourceLocationUtil;
+import com.adrian.thDanmakuCraft.world.lua.ILuaValue;
+import com.adrian.thDanmakuCraft.world.lua.LuaKeys;
+import com.adrian.thDanmakuCraft.world.lua.LuaBridge;
+import com.adrian.thDanmakuCraft.world.data.ISerializable;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet.THBullet;
@@ -42,9 +42,9 @@ import org.luaj.vm2.lib.*;
 import javax.annotation.Nullable;
 import java.util.*;
 
-import static com.adrian.thDanmakuCraft.world.LuaValueHelper.*;
+import static com.adrian.thDanmakuCraft.world.lua.LuaValueHelper.*;
 
-public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue, IGetContainer, ISerializable {
+public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue, ITHContainerProvider, ISerializable {
     private Entity hostEntity;
     private static final int MAX_OBJECT_AMOUNT_LIMIT = 10000;
     private int maxObjectAmount = 2000;
@@ -158,7 +158,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     }
 
     public LuaValue getLuaClass(){
-        if (LuaValueUtil.isNotValid(this.luaClass)) {
+        if (LuaValueHelper.isNotValid(this.luaClass)) {
             LuaValue luaClass1 = LuaCore.getInstance().getLuaClass(this.getLuaClassName());
             if (luaClass1 != null && !luaClass1.isnil()) {
                 this.luaClass = luaClass1;
@@ -171,7 +171,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
 
     //private final Map<String,LuaValue> scriptEventCache = Maps.newHashMap();
     private LuaFunction resolveScriptEvent(String eventName) {
-        if(LuaValueUtil.isNotValid(this.luaClass)) {
+        if(LuaValueHelper.isNotValid(this.luaClass)) {
             LuaValue luaClass1 = LuaCore.getInstance().getLuaClass(this.getLuaClassName());
             if (luaClass1 == null) {
                 return null;
@@ -180,17 +180,17 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         }
 
         String className = this.getLuaClassName();
-        LuaValue cached = MyCaches.getScriptEvent(className, eventName);
+        LuaValue cached = LuaEventCache.getScriptEvent(className, eventName);
         if (cached != null) {
             return cached.isnil() ? null : cached.checkfunction();
         }
         LuaValue value = this.luaClass.get(LuaKeys.of(eventName));
         if (value.isfunction()) {
             LuaFunction function = value.checkfunction();
-            MyCaches.putScriptEvent(className, eventName, function);
+            LuaEventCache.putScriptEvent(className, eventName, function);
             return function;
         }
-        MyCaches.putScriptEvent(className, eventName, LuaValue.NIL);
+        LuaEventCache.putScriptEvent(className, eventName, LuaValue.NIL);
         return null;
     }
 

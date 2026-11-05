@@ -1,5 +1,9 @@
 package com.adrian.thDanmakuCraft.client.renderer.entity;
 
+import com.adrian.thDanmakuCraft.client.renderer.type.THBlendMode;
+import com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes;
+import com.adrian.thDanmakuCraft.client.renderer.type.ModVertexFormats;
+import com.adrian.thDanmakuCraft.client.renderer.buffer.VertexBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.adrian.thDanmakuCraft.client.renderer.compat.LegacyBufferBuilder;
 import com.adrian.thDanmakuCraft.client.renderer.*;
@@ -9,7 +13,7 @@ import com.adrian.thDanmakuCraft.events.RenderEvents;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.util.IImage;
-import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
+import com.adrian.thDanmakuCraft.util.io.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.Blend;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
@@ -34,7 +38,7 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import static com.adrian.thDanmakuCraft.client.renderer.MyRenderTypes.TEST_RENDER_TARGET;
+import static com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes.TEST_RENDER_TARGET;
 
 public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<EntityTHSpellCard>{
     public EntityTHSpellCardRenderer(EntityRendererProvider.Context context) {
@@ -218,14 +222,14 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
     public static void beforeRenderEntities(LevelRenderer levelRenderer, float partialTick){
         MAGIC_SQUARE_BUFFER.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         AURA_BUFFER.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        BACKGROUND_WARP_EFFECT_BUFFER.begin(VertexFormat.Mode.QUADS, MyVertexFormats.POSITION_NORMAL_COLOR);
+        BACKGROUND_WARP_EFFECT_BUFFER.begin(VertexFormat.Mode.QUADS, ModVertexFormats.POSITION_NORMAL_COLOR);
         //BACKGROUND_WARP_EFFECT_BUFFER.color(0,0,0,255);
         //BACKGROUND_WARP_EFFECT_BUFFER.clear();
     }
 
     public static void afterRenderEntities(LevelRenderer levelRenderer, float partialTick){
-        RenderType renderType = MyRenderTypes.RENDER_TYPE_SPELLCARD_AURA.apply(
-                new MyRenderTypes.RENDER_TYPE_2D_DANMAKU_CONTEXT(SPELLCARD_MAGIC_SQUARE.getTextureLocation(), THBlendMode.getBlendMode(Blend.add))
+        RenderType renderType = RenderTypes.RENDER_TYPE_SPELLCARD_AURA.apply(
+                new RenderTypes.RENDER_TYPE_2D_DANMAKU_CONTEXT(SPELLCARD_MAGIC_SQUARE.getTextureLocation(), THBlendMode.getBlendMode(Blend.add))
         );
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         renderType.setupRenderState();
@@ -251,7 +255,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         TEST_RENDER_TARGET.unbindWrite();*/
 
 
-        RenderType bg_warp_ef_rt = MyRenderTypes.RENDER_TYPE_BACKGROUND_WARP_EFFECT;
+        RenderType bg_warp_ef_rt = RenderTypes.RENDER_TYPE_BACKGROUND_WARP_EFFECT;
         bg_warp_ef_rt.setupRenderState();
         RenderSystem.enableCull();
         //ShaderInstance shader = RenderSystem.getShader();

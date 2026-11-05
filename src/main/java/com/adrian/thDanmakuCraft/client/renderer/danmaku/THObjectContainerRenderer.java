@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku;
 
+import com.adrian.thDanmakuCraft.client.renderer.shader.ShaderLoader;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.adrian.thDanmakuCraft.client.renderer.compat.LegacyBufferBuilder;
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
@@ -7,7 +8,7 @@ import com.adrian.thDanmakuCraft.client.renderer.*;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRenderers;
-import com.adrian.thDanmakuCraft.util.ResourceLocationUtil;
+import com.adrian.thDanmakuCraft.util.io.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;

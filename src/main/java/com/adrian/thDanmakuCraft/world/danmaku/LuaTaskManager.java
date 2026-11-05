@@ -1,10 +1,10 @@
 package com.adrian.thDanmakuCraft.world.danmaku;
 
-import com.adrian.thDanmakuCraft.world.IDataStorage;
-import com.adrian.thDanmakuCraft.world.LuaFunctions;
-import com.adrian.thDanmakuCraft.world.LuaBridge;
-import com.adrian.thDanmakuCraft.world.LuaKeys;
-import com.adrian.thDanmakuCraft.world.ILuaValue;
+import com.adrian.thDanmakuCraft.world.data.IDataStorage;
+import com.adrian.thDanmakuCraft.world.lua.LuaFunctions;
+import com.adrian.thDanmakuCraft.world.lua.LuaBridge;
+import com.adrian.thDanmakuCraft.world.lua.LuaKeys;
+import com.adrian.thDanmakuCraft.world.lua.ILuaValue;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import org.luaj.vm2.LuaThread;

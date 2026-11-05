@@ -1,7 +1,7 @@
 package com.adrian.thDanmakuCraft.lua;
 
 import com.adrian.thDanmakuCraft.script.ScriptManager;
-import com.adrian.thDanmakuCraft.util.ResourceLoader;
+import com.adrian.thDanmakuCraft.util.io.ResourceLoader;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaValue;

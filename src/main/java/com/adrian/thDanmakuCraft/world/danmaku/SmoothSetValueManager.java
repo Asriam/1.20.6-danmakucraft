@@ -1,7 +1,7 @@
 package com.adrian.thDanmakuCraft.world.danmaku;
 
-import com.adrian.thDanmakuCraft.world.IDataStorage;
-import com.adrian.thDanmakuCraft.world.ILuaValue;
+import com.adrian.thDanmakuCraft.world.data.IDataStorage;
+import com.adrian.thDanmakuCraft.world.lua.ILuaValue;
 import com.google.common.collect.Lists;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;

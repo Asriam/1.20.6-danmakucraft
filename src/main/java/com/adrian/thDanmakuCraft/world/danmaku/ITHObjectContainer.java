@@ -1,6 +1,6 @@
 package com.adrian.thDanmakuCraft.world.danmaku;
 
-import com.adrian.thDanmakuCraft.world.ILuaValue;
+import com.adrian.thDanmakuCraft.world.lua.ILuaValue;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
