@@ -28,8 +28,27 @@ import java.util.Map;
 @OnlyIn(Dist.CLIENT)
 public final class LuaSnippetLibrary {
 
-    /** @param label 按鈕說明；{@code icon} 是 {@code textures/gui/editor/icons} 下的檔名 */
-    public record Entry(String label, String icon, String code) {
+    /**
+     * @param label       按鈕名稱
+     * @param icon        {@code textures/gui/editor/icons} 下的檔名
+     * @param code        要插入的程式碼（參數以 {@code ${name}} 當佔位符）
+     * @param description {@code ---@description} 的說明（可空）
+     * @param parameters  {@code ---@parameter} 宣告的參數（依宣告順序）
+     */
+    public record Entry(String label, String icon, String code, String description,
+                        List<Parameter> parameters) {
+        public boolean hasParameters() {
+            return !this.parameters.isEmpty();
+        }
+    }
+
+    /**
+     * 樣板參數。
+     * @param name         佔位符名稱（程式碼裡寫 {@code ${name}}）
+     * @param label        對話框顯示的說明
+     * @param defaultValue 預設值（可直接按 Enter 採用）
+     */
+    public record Parameter(String name, String label, String defaultValue) {
     }
 
     public static final String ROOT = "data/thdanmakucraft/lua/snippet";
@@ -63,9 +82,46 @@ public final class LuaSnippetLibrary {
     }
 
     /** 解析一個樣板檔：標頭標註 + 之後的程式碼。 */
+    /**
+     * 解析 {@code ---@parameter 格式}：
+     * <pre>name: 說明 = 預設值</pre>
+     * 說明與預設值都可省略。
+     */
+    public static Parameter parseParameter(String text) {
+        if (text == null || text.isEmpty()) {
+            return null;
+        }
+        String defaultValue = "";
+        int equal = text.indexOf('=');
+        if (equal >= 0) {
+            defaultValue = text.substring(equal + 1).trim();
+            if (defaultValue.length() >= 2
+                    && defaultValue.startsWith("\"") && defaultValue.endsWith("\"")) {
+                defaultValue = defaultValue.substring(1, defaultValue.length() - 1);
+            }
+            text = text.substring(0, equal).trim();
+        }
+        String name = text;
+        String label = text;
+        int colon = text.indexOf(':');
+        if (colon >= 0) {
+            name = text.substring(0, colon).trim();
+            label = text.substring(colon + 1).trim();
+        }
+        if (name.isEmpty()) {
+            return null;
+        }
+        if (label.isEmpty()) {
+            label = name;
+        }
+        return new Parameter(name, label, defaultValue);
+    }
+
     public static Entry parse(String path, String content) {
         String label = null;
         String icon = null;
+        String description = null;
+        List<Parameter> parameters = new ArrayList<>();
         String[] lines = content.replace("\r\n", "\n").split("\n", -1);
         int index = 0;
         while (index < lines.length) {
@@ -74,6 +130,13 @@ public final class LuaSnippetLibrary {
                 label = line.substring("---@label ".length()).trim();
             } else if (line.startsWith("---@icon ")) {
                 icon = line.substring("---@icon ".length()).trim();
+            } else if (line.startsWith("---@description ")) {
+                description = line.substring("---@description ".length()).trim();
+            } else if (line.startsWith("---@parameter ")) {
+                Parameter parameter = parseParameter(line.substring("---@parameter ".length()).trim());
+                if (parameter != null) {
+                    parameters.add(parameter);
+                }
             } else if (line.isEmpty()) {
                 index++;
                 break;
@@ -104,6 +167,6 @@ public final class LuaSnippetLibrary {
         if (icon == null || icon.isEmpty()) {
             icon = "code.png";
         }
-        return new Entry(label, icon, code.toString());
+        return new Entry(label, icon, code.toString(), description, List.copyOf(parameters));
     }
 }

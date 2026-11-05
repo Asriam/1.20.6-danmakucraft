@@ -201,7 +201,7 @@ public class LuaScriptEditorScreen extends Screen {
     private String syntaxErrorMessage = "";
 
 
-    private enum Dialog { NONE, NEW_FILE, NEW_FOLDER, RENAME, DELETE }
+    private enum Dialog { NONE, NEW_FILE, NEW_FOLDER, RENAME, DELETE, PARAMETERS }
 
     private Dialog dialog = Dialog.NONE;
 
@@ -276,7 +276,11 @@ public class LuaScriptEditorScreen extends Screen {
         }
     }
 
-    private record Snippet(String label, ResourceLocation icon, String code) {
+    private record Snippet(String label, ResourceLocation icon, String code, String description,
+                           List<LuaSnippetLibrary.Parameter> parameters) {
+        boolean hasParameters() {
+            return !this.parameters.isEmpty();
+        }
     }
 
     private static ResourceLocation icon(String name) {
@@ -294,7 +298,8 @@ public class LuaScriptEditorScreen extends Screen {
                 List<Snippet> list = new ArrayList<>();
                 for (LuaSnippetLibrary.Entry entry : LuaSnippetLibrary.byCategory()
                         .getOrDefault(each.name().toLowerCase(java.util.Locale.ROOT), List.of())) {
-                    list.add(new Snippet(entry.label(), icon(entry.icon()), entry.code()));
+                    list.add(new Snippet(entry.label(), icon(entry.icon()), entry.code(),
+                            entry.description(), entry.parameters()));
                 }
                 built.put(each, List.copyOf(list));
             }
@@ -310,6 +315,12 @@ public class LuaScriptEditorScreen extends Screen {
     private int snippetCount;
     private int hoveredSnippet = -1;
     private long hoverSnippetSince;
+
+    // ---- 樣板參數輸入 ----
+    private Snippet pendingSnippet;
+    private List<LuaSnippetLibrary.Parameter> pendingParams = List.of();
+    private int pendingParamIndex;
+    private final Map<String, String> pendingValues = new HashMap<>();
 
     private final int[] actionX = new int[TopAction.values().length];
     private final int[] actionW = new int[TopAction.values().length];
@@ -1096,6 +1107,20 @@ public class LuaScriptEditorScreen extends Screen {
         graphics.fill(x - 1, y - 1, x + w + 1, y + h + 1, 0xFF3B4252);
         graphics.fill(x, y, x + w, y + h, 0xF21B1F2A);
 
+        if (this.dialog == Dialog.PARAMETERS) {
+            LuaSnippetLibrary.Parameter parameter = this.pendingParams.get(
+                    Math.min(this.pendingParamIndex, this.pendingParams.size() - 1));
+            String title = this.dialogInput == null ? "" : this.pendingSnippet.label();
+            String prompt = "參數 " + (this.pendingParamIndex + 1) + "/" + this.pendingParams.size()
+                    + "：" + parameter.label() + "（預設 " + parameter.defaultValue() + "）";
+            graphics.drawString(this.font, title, x + 6, y + 6, 0xFFFFFFFF, false);
+            graphics.drawString(this.font, prompt, x + 6, y + 18, 0xFF9AA4BC, false);
+            String text = this.dialogInput + "_";
+            graphics.drawString(this.font, this.font.plainSubstrByWidth(text, w - 12),
+                    x + 6, y + 32, 0xFFFFD479, false);
+            return;
+        }
+
         if (this.dialog == Dialog.DELETE) {
             boolean folder = this.dialogSource.startsWith("dir:");
             String label = folder ? "刪除資料夾 " + this.dialogInput + "（含內容）?"
@@ -1419,8 +1444,53 @@ public class LuaScriptEditorScreen extends Screen {
             return;
         }
         Snippet snippet = snippets.get(index);
-        this.insert(snippet.code());
+        if (!snippet.hasParameters()) {
+            this.insertSnippetCode(snippet, Map.of());
+            return;
+        }
+        this.pendingSnippet = snippet;
+        this.pendingParams = snippet.parameters();
+        this.pendingParamIndex = 0;
+        this.pendingValues.clear();
+        if (this.readOnly) {
+            this.setStatus("內建 API 文件是唯讀的", 0xFFFFD479);
+            return;
+        }
+        this.dialog = Dialog.PARAMETERS;
+        this.dialogInput = this.pendingParams.get(0).defaultValue();
+    }
+
+    /** 把 ${name} 佔位符換成使用者輸入後插入。 */
+    private void insertSnippetCode(Snippet snippet, Map<String, String> values) {
+        String code = snippet.code();
+        for (Map.Entry<String, String> entry : values.entrySet()) {
+            code = code.replace("${" + entry.getKey() + "}", entry.getValue());
+        }
+        this.insert(code);
         this.setStatus("已插入：" + snippet.label(), 0xFF7BD88F);
+    }
+
+    /** 參數對話框按 Enter：存下目前值，還有下一個就繼續問。 */
+    private void confirmParameter() {
+        if (this.pendingSnippet == null || this.pendingParamIndex >= this.pendingParams.size()) {
+            this.dialog = Dialog.NONE;
+            return;
+        }
+        LuaSnippetLibrary.Parameter parameter = this.pendingParams.get(this.pendingParamIndex);
+        this.pendingValues.put(parameter.name(), this.dialogInput);
+        this.pendingParamIndex++;
+        if (this.pendingParamIndex < this.pendingParams.size()) {
+            this.dialogInput = this.pendingParams.get(this.pendingParamIndex).defaultValue();
+            return;
+        }
+        Snippet snippet = this.pendingSnippet;
+        Map<String, String> values = new HashMap<>(this.pendingValues);
+        this.pendingSnippet = null;
+        this.pendingParams = List.of();
+        this.pendingParamIndex = 0;
+        this.pendingValues.clear();
+        this.dialog = Dialog.NONE;
+        this.insertSnippetCode(snippet, values);
     }
 
     /** 樣板按鈕的說明（停留 1 秒）。 */
@@ -1432,13 +1502,33 @@ public class LuaScriptEditorScreen extends Screen {
         if (this.hoveredSnippet >= snippets.size()) {
             return;
         }
-        String text = snippets.get(this.hoveredSnippet).label();
-        int width = this.font.width(text) + 8;
+        Snippet snippet = snippets.get(this.hoveredSnippet);
+        String title = snippet.label();
+        List<String> lines = new ArrayList<>();
+        lines.add(title);
+        if (snippet.description() != null && !snippet.description().isEmpty()) {
+            int wrapWidth = 200;
+            for (String raw : this.wrapText(snippet.description(), wrapWidth)) {
+                lines.add(raw);
+                if (lines.size() >= 6) {
+                    break;
+                }
+            }
+        }
+        int width = 0;
+        for (String line : lines) {
+            width = Math.max(width, this.font.width(line));
+        }
+        width += 10;
+        int height = lines.size() * LINE_HEIGHT + 6;
         int x = Math.min(Math.max(PADDING, this.snippetX[this.hoveredSnippet]), this.width - width - PADDING);
-        int y = this.taskBarTop() + 2;
-        graphics.fill(x - 1, y - 1, x + width + 1, y + LINE_HEIGHT + 3, 0xFF3B4252);
-        graphics.fill(x, y, x + width, y + LINE_HEIGHT + 2, 0xF01B1F2A);
-        graphics.drawString(this.font, text, x + 4, y + 2, 0xFFD4D4D4, false);
+        int y = Math.min(this.taskBarTop() + 2, this.height - STATUS_HEIGHT - height - 2);
+        graphics.fill(x - 1, y - 1, x + width + 1, y + height + 1, 0xFF3B4252);
+        graphics.fill(x, y, x + width, y + height, 0xF01B1F2A);
+        for (int i = 0; i < lines.size(); i++) {
+            graphics.drawString(this.font, lines.get(i), x + 5, y + 3 + i * LINE_HEIGHT,
+                    i == 0 ? 0xFFFFFFFF : 0xFF9AA4BC, false);
+        }
     }
 
     private record TaskHit(int index, boolean close) {
@@ -1982,17 +2072,25 @@ public class LuaScriptEditorScreen extends Screen {
             boolean isDelete = this.dialog == Dialog.DELETE;
             if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
                 Dialog active = this.dialog;
-                this.dialog = Dialog.NONE;
-                switch (active) {
-                    case NEW_FILE -> this.newScript(this.dialogInput);
-                    case NEW_FOLDER -> this.createFolder(this.dialogInput);
-                    case RENAME -> this.confirmRename();
-                    case DELETE -> this.confirmDelete();
-                    default -> {
+                if (active == Dialog.PARAMETERS) {
+                    this.confirmParameter();   // 參數可能還有多個，狀態由它自己管
+                } else {
+                    this.dialog = Dialog.NONE;
+                    switch (active) {
+                        case NEW_FILE -> this.newScript(this.dialogInput);
+                        case NEW_FOLDER -> this.createFolder(this.dialogInput);
+                        case RENAME -> this.confirmRename();
+                        case DELETE -> this.confirmDelete();
+                        default -> {
+                        }
                     }
                 }
             } else if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
                 this.dialog = Dialog.NONE;
+                this.pendingSnippet = null;
+                this.pendingParams = List.of();
+                this.pendingParamIndex = 0;
+                this.pendingValues.clear();
             } else if (keyCode == GLFW.GLFW_KEY_BACKSPACE && !isDelete && !this.dialogInput.isEmpty()) {
                 this.dialogInput = this.dialogInput.substring(0, this.dialogInput.length() - 1);
             }
