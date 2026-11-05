@@ -53,8 +53,15 @@ public class RenderEvents {
         //GL46.glDepthFunc(GL46.GL_LESS);
         //GL46.glDepthRange(0.1f,0.5f);
 
-        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES){
-            //THObjectContainerRenderer.beforeRenderEntities(levelRenderer,partialTick);
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES
+                && !mixinApplied) {
+            // 備援：mixin 沒生效時，改用 Forge 事件把彈幕畫出來（否則完全看不到彈幕）
+            if (!fallbackLogged) {
+                fallbackLogged = true;
+                THDanmakuCraftMod.LOGGER.warn("[thdanmakucraft] mixin NOT applied -> fallback render via RenderLevelStageEvent");
+            }
+            beforeRenderEntities(event.getLevelRenderer(), partialTick);
+            afterRenderEntities(event.getLevelRenderer(), partialTick);
         }
 
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_WEATHER){
@@ -70,6 +77,17 @@ public class RenderEvents {
         }
     }
 
+    private static boolean mixinFiredLogged = false;
+    private static boolean fallbackLogged = false;
+    /** 只有 mixin 呼叫進來時才會設為 true（備援路徑不會動它）。 */
+    public static volatile boolean mixinApplied = false;
+
+    /** mixin 注入後實際呼叫的入口（設定 mixinApplied 後再交給一般流程）。 */
+    public static void mixinBeforeRenderEntities(LevelRenderer levelRenderer, float partialTick) {
+        mixinApplied = true;
+        beforeRenderEntities(levelRenderer, partialTick);
+    }
+
     public static void beforeRenderEntities(LevelRenderer levelRenderer, float partialTick){
         PoseStack poseStack = new PoseStack();
         List<THObject> objects = Lists.newArrayList();
@@ -79,6 +97,11 @@ public class RenderEvents {
                     objects.addAll(container.getContainer().getObjectManager().getTHObjects());
                 }
             }
+        }
+        if (!mixinFiredLogged) {
+            mixinFiredLogged = true;
+            THDanmakuCraftMod.LOGGER.info("[thdanmakucraft] render callbacks fired, objects = {}",
+                    objects.size());
         }
         poseStack.pushPose();
         THObjectContainerRenderer.renderTHObjects(

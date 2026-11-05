@@ -31,17 +31,6 @@ public class ShaderLoader {
         DANMAKU_DEPTH_OUTLINE_SHADER = registryShader(resourceProvider, ResourceLocationUtil.thdanmakucraft("danmaku/rendertype_danmaku_1"), MyRenderTypes.TEST_FORMAT);
         BACKGROUND_WARP_EFFECT = registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("danmaku/rendertype_bgwarpef"), MyVertexFormats.POSITION_NORMAL);
         DANMAKU_TEXTURE_SHADER = registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("danmaku/rendertype_danmaku_texture"), MyVertexFormats.POSITION_COLOR_COLOR_TEX);
-        /*registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("box_blur"), DefaultVertexFormat.POSITION);
-        registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("test_shader"), new VertexFormat(
-                ImmutableMap.<String, VertexFormatElement>builder()
-                        .put("Position", DefaultVertexFormat.ELEMENT_POSITION)
-                        .put("Color"   , DefaultVertexFormat.ELEMENT_COLOR)
-                        .put("UV0"     , DefaultVertexFormat.ELEMENT_UV0)
-                        .put("UV1"     , DefaultVertexFormat.ELEMENT_UV1)
-                        .put("UV2"     , DefaultVertexFormat.ELEMENT_UV2)
-                        .put("Normal"  , DefaultVertexFormat.ELEMENT_NORMAL)
-                        .build()
-        ));*/
 
     }
 

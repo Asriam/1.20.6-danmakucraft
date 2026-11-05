@@ -17,6 +17,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class LevelRendererMixin {
 
     @Unique
+    private static boolean thdc$callbackLogged = false;
+
+    @Unique
+    private void thdc$logCallback() {
+        if (!thdc$callbackLogged) {
+            thdc$callbackLogged = true;
+            com.adrian.thDanmakuCraft.THDanmakuCraftMod.LOGGER.info(
+                    "[thdanmakucraft] mixin callback fired inside LevelRenderer.renderLevel");
+        }
+    }
+
+    @Unique
     private LevelRenderer self(){
         return (LevelRenderer) (Object) this;
     }
@@ -24,7 +36,8 @@ public class LevelRendererMixin {
     //@Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;entitiesForRendering()Ljava/lang/Iterable;"))
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderBuffers;bufferSource()Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;", shift = At.Shift.AFTER))
     private void beforeRenderEntity(DeltaTracker deltaTracker, boolean p_109603_, Camera p_109604_, GameRenderer p_109605_, LightTexture p_109606_, Matrix4f p_254120_, Matrix4f p_330527_, CallbackInfo ci){
-        RenderEvents.beforeRenderEntities(self(), deltaTracker.getGameTimeDeltaPartialTick(false));
+        thdc$logCallback();
+        RenderEvents.mixinBeforeRenderEntities(self(), deltaTracker.getGameTimeDeltaPartialTick(false));
     }
 
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;endLastBatch()V", ordinal = 0 ,shift = At.Shift.BEFORE))

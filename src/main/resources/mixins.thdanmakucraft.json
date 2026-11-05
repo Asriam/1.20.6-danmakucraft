@@ -1,6 +1,7 @@
 {
   "required": true,
   "package": "com.adrian.thDanmakuCraft.mixins",
+  "plugin": "com.adrian.thDanmakuCraft.mixins.THMixinPlugin",
   "compatibilityLevel": "JAVA_17",
   "refmap": "mixins.thdanmakucraft.refmap.json",
   "mixins": [

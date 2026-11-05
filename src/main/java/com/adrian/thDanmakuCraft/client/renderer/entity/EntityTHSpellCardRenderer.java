@@ -191,6 +191,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         final VertexBuilder builder = new VertexBuilder(BACKGROUND_WARP_EFFECT_BUFFER);
         final Color color2 = new Color(255,0,200, (int) (180*alpha));
         RenderUtil.enableCull();
+        if(true) {
         new SphereVertexHelper(poseStack.last().pose(), poseStack.last().normal(),
                 ConstantUtil.VECTOR3F_ZERO, new Vector3f(radius, radius, radius),
                 32, 32, 1.0f, false,
@@ -198,6 +199,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
                 new Color(255,255,255,255), true, false
         ).vertex((vertexPos,normal,color)->
                 builder.vertex(vertexPos).normal(normal).color(color2).endVertex());
+        }
         if(false) {
             new SphereVertexHelper(
                     poseStack.last().pose(), poseStack.last().normal(),
@@ -217,7 +219,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         MAGIC_SQUARE_BUFFER.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         AURA_BUFFER.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         BACKGROUND_WARP_EFFECT_BUFFER.begin(VertexFormat.Mode.QUADS, MyVertexFormats.POSITION_NORMAL_COLOR);
-        BACKGROUND_WARP_EFFECT_BUFFER.color(0,0,0,255);
+        //BACKGROUND_WARP_EFFECT_BUFFER.color(0,0,0,255);
         //BACKGROUND_WARP_EFFECT_BUFFER.clear();
     }
 

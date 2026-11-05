@@ -31,6 +31,16 @@ public class ClientModEvents {
     }
     @SubscribeEvent
     public static void clientSetup(FMLClientSetupEvent event){
+        // 診斷用：列出 mixin 到底註冊了哪些設定（正式環境不開 verbose 也看得到）
+        try {
+            java.util.List<String> configs = org.spongepowered.asm.mixin.MixinEnvironment
+                    .getCurrentEnvironment().getMixinConfigs();
+            THDanmakuCraftMod.LOGGER.info("[thdanmakucraft] mixin configs = {}", configs);
+            THDanmakuCraftMod.LOGGER.info("[thdanmakucraft] 本模組 mixin 設定已註冊? {}",
+                    configs.contains("mixins.thdanmakucraft.json"));
+        } catch (Throwable error) {
+            THDanmakuCraftMod.LOGGER.warn("[thdanmakucraft] 無法讀取 mixin 設定清單", error);
+        }
         event.enqueueWork(() -> {
 
         });
