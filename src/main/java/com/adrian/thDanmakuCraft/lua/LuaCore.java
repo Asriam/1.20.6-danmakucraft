@@ -95,16 +95,6 @@ public class LuaCore {
         try {
             GLOBALS.set("core",coreAPI());
             GLOBALS.set("Mth", mthAPI());
-            //this.bindClass("Mth" ,              Mth.class);
-            //this.bindClass("Vec2" ,             Vec2.class);
-            //this.bindClass("Vec3" ,             Vec3.class);
-            //this.bindClass("THObject" ,         THObject.class);
-            //this.bindClass("THBullet" ,         THBullet.class);
-            //this.bindClass("THCurvedLaser" ,    THCurvedLaser.class);
-            //GLOBALS.set("THObjectContainer", THObjectContainer.meta.get("__index"));
-            //GLOBALS.set("THObject", THObject.meta.get("__index"));
-            //GLOBALS.set("THBullet", THBullet.meta.get("__index"));
-
             GLOBALS.set("luajava", NIL);
         } catch (Exception e) {
             LOGGER.warn("Failed put api!", e);

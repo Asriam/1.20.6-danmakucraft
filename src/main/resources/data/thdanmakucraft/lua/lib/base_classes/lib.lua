@@ -7,3 +7,4 @@
 core.doFile("lib/base_classes/thobject_container_base.lua")
 core.doFile("lib/base_classes/thobject_base.lua")
 core.doFile("lib/base_classes/thbullet_base.lua")
+core.doFile("lib/base_classes/object_utils.lua")
