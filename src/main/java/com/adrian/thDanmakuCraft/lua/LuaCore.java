@@ -35,6 +35,8 @@ import static org.luaj.vm2.LuaValue.NIL;
 public class LuaCore {
 
     private static final Logger LOGGER = LogUtils.getLogger();
+    /** 使用者腳本的路徑前綴（避免與內建 lua 資源同名衝突）。 */
+    public static final String USER_SCRIPT_PREFIX = "scripts/";
     private static LuaCore LUA = new LuaCore();
     private final Globals GLOBALS = JsePlatform.standardGlobals();
     private final Map<String,LuaValue> luaClassMap = Maps.newHashMap();
@@ -68,7 +70,7 @@ public class LuaCore {
 
     /** 編輯器腳本根目錄：{@code config/thdanmakucraft/scripts}。 */
     public static Path userScriptsDir() {
-        return FMLPaths.CONFIGDIR.get().resolve(THDanmakuCraftMod.MOD_ID).resolve("scripts");
+        return FMLPaths.CONFIGDIR.get().resolve(THDanmakuCraftMod.MOD_ID);
     }
 
     /**
@@ -77,7 +79,7 @@ public class LuaCore {
      * <p>檔案不存在就跳過；腳本內容有錯只記錄，不會讓遊戲崩潰。</p>
      */
     public void runUserMainScript() {
-        Path file = userScriptsDir().resolve("main.lua");
+        Path file = userScriptsDir().resolve("scripts").resolve("main.lua");
         if (!Files.isRegularFile(file)) {
             LOGGER.info("No user main script at {}", file);
             return;
@@ -120,13 +122,24 @@ public class LuaCore {
 
     public LuaValue doFile(String path){
         try {
-            String script = luaLoader.getResourceAsString(getFileLocation(path));
-            if (script == null) {
-                // 內建資源找不到時，回退到編輯器腳本目錄（config/thdanmakucraft/scripts）
-                Path userFile = userScriptsDir().resolve(path);
+            String script = null;
+            if (path.startsWith(USER_SCRIPT_PREFIX)) {
+                // scripts/xxx：只找使用者腳本目錄，不會碰到內建 lua 資源
+                String relative = path.substring(USER_SCRIPT_PREFIX.length());
+                Path userFile = userScriptsDir().resolve(relative);
                 if (Files.isRegularFile(userFile)) {
                     script = Files.readString(userFile, StandardCharsets.UTF_8);
                     LOGGER.info("Loading user lua script {}", userFile);
+                }
+            } else {
+                script = luaLoader.getResourceAsString(getFileLocation(path));
+                if (script == null) {
+                    // 相容舊寫法：沒有前綴時，內建找不到才回退到使用者腳本目錄
+                    Path userFile = userScriptsDir().resolve(path);
+                    if (Files.isRegularFile(userFile)) {
+                        script = Files.readString(userFile, StandardCharsets.UTF_8);
+                        LOGGER.info("Loading user lua script {} (考慮加上 scripts/ 前綴)", userFile);
+                    }
                 }
             }
             if (script == null) {
@@ -141,11 +154,15 @@ public class LuaCore {
     }
 
     public void doFolder(String path){
-        luaLoader.loadAllResourcesInFolderAsString(getFileLocation(path)).forEach((path1, resource) -> {
-            this.GLOBALS.load(resource,path).call();
-        });
-        // 也執行編輯器腳本目錄下的 .lua（僅限這個資料夾，不再遞迴）
-        Path userDir = userScriptsDir().resolve(path);
+        boolean userFolder = path.startsWith(USER_SCRIPT_PREFIX);
+        if (!userFolder) {
+            luaLoader.loadAllResourcesInFolderAsString(getFileLocation(path)).forEach((path1, resource) -> {
+                this.GLOBALS.load(resource,path).call();
+            });
+        }
+        String relative = userFolder ? path.substring(USER_SCRIPT_PREFIX.length()) : path;
+        // 執行編輯器腳本目錄下的 .lua（僅限這個資料夾，不再遞迴）
+        Path userDir = userScriptsDir().resolve(relative);
         if (Files.isDirectory(userDir)) {
             try (var stream = Files.list(userDir)) {
                 stream.filter(Files::isRegularFile)

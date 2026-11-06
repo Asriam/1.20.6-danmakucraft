@@ -3700,8 +3700,8 @@ public class LuaScriptEditorScreen extends Screen {
                     // 放開就會插入 core.doFile("...")，不要顯示資料夾高亮
                     this.dropTargetDir = null;
                     if (this.dragCandidate != null) {
-                        String name = this.dragCandidate.substring(this.dragCandidate.lastIndexOf('/') + 1);
-                        this.setStatus("放開以插入 core.doFile(\"" + name + "\")", 0xFF7BD88F);
+                        String shown = this.dragBuiltin ? this.dragCandidate : USER_SCRIPT_PREFIX + this.dragCandidate;
+                        this.setStatus("放開以插入 core.doFile(\"" + shown + "\")", 0xFF7BD88F);
                     }
                 } else {
                     this.dropTargetDir = this.folderAt(mouseX, mouseY);
@@ -3749,7 +3749,7 @@ public class LuaScriptEditorScreen extends Screen {
             boolean intoTextArea = this.isInTextArea(mouseX, mouseY);
             this.resetDrag();
             if (intoTextArea) {
-                this.insertDoFile(mouseX, mouseY, source);
+                this.insertDoFile(mouseX, mouseY, source, builtin);
             } else if (!builtin && target != null && !target.equals(parentOf(source))) {
                 this.moveFileInto(source, target);
             }
@@ -3782,14 +3782,18 @@ public class LuaScriptEditorScreen extends Screen {
                 && mouseY >= textTop() && mouseY < statusTop;
     }
 
+    /** 使用者腳本在 doFile 裡的路徑前綴，避免和內建 lua 資源同名。 */
+    private static final String USER_SCRIPT_PREFIX = "scripts/";
+
     /** 把瀏覽器拖過來的檔案，在放開的位置插入 {@code core.doFile("path")}。 */
-    private void insertDoFile(double mouseX, double mouseY, String path) {
+    private void insertDoFile(double mouseX, double mouseY, String path, boolean builtin) {
+        String doFilePath = builtin ? path : USER_SCRIPT_PREFIX + path;
         int line = this.scroll + (int) ((mouseY - textTop()) / LINE_HEIGHT);
         line = Math.max(0, Math.min(line, this.lines.size() - 1));
         int column = this.columnAt(line, mouseX);
         this.setCursor(line, column);
-        this.insert("core.doFile(\"" + path + "\")");
-        this.setStatus("已插入 core.doFile(\"" + path + "\")", 0xFF7BD88F);
+        this.insert("core.doFile(\"" + doFilePath + "\")");
+        this.setStatus("已插入 core.doFile(\"" + doFilePath + "\")", 0xFF7BD88F);
     }
 
     private String folderAt(double mouseX, double mouseY) {
