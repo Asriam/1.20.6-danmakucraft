@@ -2,44 +2,38 @@ package com.adrian.thDanmakuCraft.network;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.network.packets.THObjectContainerPacket;
-import com.adrian.thDanmakuCraft.util.io.ResourceLocationUtil;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.ChannelBuilder;
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.PacketDistributor;
-import net.minecraftforge.network.SimpleChannel;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
-public class PacketHandler {
+/**
+ * NeoForge payload 註冊（取代 Forge 的 SimpleChannel）。
+ */
+@EventBusSubscriber(modid = THDanmakuCraftMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+public final class PacketHandler {
 
-    private static final int PROTOCOL_VERSION = 1;
-    private static int id = 1;
-    public static final SimpleChannel SIMPLE_CHANNEL = ChannelBuilder
-            .named(ResourceLocationUtil.location(THDanmakuCraftMod.MOD_ID,"main"))
-            .serverAcceptedVersions((status,version) -> true)
-            .clientAcceptedVersions((status,version) -> true)
-            .networkProtocolVersion(PROTOCOL_VERSION)
-            .simpleChannel();
-
-    public static int id(){
-        return id++;
-    }
-    public static void register() {
-        SIMPLE_CHANNEL.messageBuilder(THObjectContainerPacket.class, id(), NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(THObjectContainerPacket::encode)
-                .decoder(THObjectContainerPacket::decode)
-                .consumerMainThread(THObjectContainerPacket::handle)
-                .add();
+    private PacketHandler() {
     }
 
-    public static void sendToServer(Object msg){
-        SIMPLE_CHANNEL.send(msg, PacketDistributor.SERVER.noArg());
+    @SubscribeEvent
+    public static void register(RegisterPayloadHandlersEvent event) {
+        PayloadRegistrar registrar = event.registrar("1");
+        registrar.playToClient(THObjectContainerPacket.TYPE, THObjectContainerPacket.STREAM_CODEC,
+                THObjectContainerPacket::handle);
     }
 
-    public static void sendToPlayer(Object msg, ServerPlayer player){
-        SIMPLE_CHANNEL.send(msg, PacketDistributor.PLAYER.with(player));
+    public static void sendToServer(THObjectContainerPacket packet) {
+        PacketDistributor.sendToServer(packet);
     }
 
-    public static void sendToAllClient(Object msg){
-        SIMPLE_CHANNEL.send(msg, PacketDistributor.ALL.noArg());
+    public static void sendToPlayer(THObjectContainerPacket packet, ServerPlayer player) {
+        PacketDistributor.sendToPlayer(player, packet);
+    }
+
+    public static void sendToAllClient(THObjectContainerPacket packet) {
+        PacketDistributor.sendToAllPlayers(packet);
     }
 }

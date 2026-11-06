@@ -1,8 +1,8 @@
 package com.adrian.thDanmakuCraft.client.gui.editor;
 
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.loading.FMLPaths;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.fml.loading.FMLPaths;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -130,7 +130,7 @@ public final class LuaScriptFiles {
     /** 開發環境走目錄、正式環境走 jar，都交給 Forge 的 mod 檔案介面。 */
     private static Path resolveBuiltinDir(BuiltinRoot root) {
         try {
-            return net.minecraftforge.fml.ModList.get()
+            return net.neoforged.fml.ModList.get()
                     .getModFileById("thdanmakucraft").getFile()
                     .findResource(root.dir().split("/"));
         } catch (Throwable ignored) {

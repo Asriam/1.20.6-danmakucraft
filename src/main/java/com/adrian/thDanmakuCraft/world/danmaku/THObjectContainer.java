@@ -31,7 +31,6 @@ import net.minecraft.world.entity.vehicle.Minecart;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.fml.DistExecutor;
 import org.apache.commons.compress.utils.Lists;
 import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaTable;

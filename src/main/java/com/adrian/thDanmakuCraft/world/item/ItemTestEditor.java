@@ -8,8 +8,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.loading.FMLEnvironment;
 import org.jetbrains.annotations.NotNull;
 
 public class ItemTestEditor extends Item {
@@ -33,8 +33,10 @@ public class ItemTestEditor extends Item {
     public InteractionResultHolder<ItemStack> use(@NotNull Level level, @NotNull Player player, @NotNull InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(hand);
         if (level.isClientSide()) {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> Minecraft.getInstance()
-                    .execute(() -> Minecraft.getInstance().setScreen(new LuaScriptEditorScreen("untitled"))));
+            if (FMLEnvironment.dist.isClient()) {
+                Minecraft.getInstance()
+                        .execute(() -> Minecraft.getInstance().setScreen(new LuaScriptEditorScreen("untitled")));
+            }
         }
         return InteractionResultHolder.sidedSuccess(itemstack, level.isClientSide());
     }

@@ -1,7 +1,7 @@
 package com.adrian.thDanmakuCraft.client.gui.editor;
 
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.luaj.vm2.LuaError;
 import org.luaj.vm2.compiler.LuaC;
 

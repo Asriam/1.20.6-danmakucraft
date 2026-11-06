@@ -9,11 +9,12 @@ import org.jetbrains.annotations.Nullable;
 public record THObjectType<T extends THObject>(THObjectFactory<T> factory) {
 
     public static ResourceLocation getKey(THObjectType<? extends THObject> object) {
-        return THDanmakuCraftRegistries.THOBJECT_TYPE.getKey(object);
+        net.minecraft.core.Registry<THObjectType> registry = THDanmakuCraftRegistries.THOBJECT_TYPE;
+        return registry == null ? null : registry.getKey(object);
     }
 
     public ResourceLocation getKey() {
-        return THDanmakuCraftRegistries.THOBJECT_TYPE.getKey(this);
+        return getKey(this);
     }
 
     public Class<? extends THObject> getBaseClass() {
@@ -22,7 +23,8 @@ public record THObjectType<T extends THObject>(THObjectFactory<T> factory) {
 
     @Nullable
     public static THObjectType<? extends THObject> getValue(ResourceLocation key) {
-        return THDanmakuCraftRegistries.THOBJECT_TYPE.getValue(key);
+        net.minecraft.core.Registry<THObjectType> registry = THDanmakuCraftRegistries.THOBJECT_TYPE;
+        return registry == null ? null : registry.get(key);
     }
 
     public T create(ITHObjectContainer container) {

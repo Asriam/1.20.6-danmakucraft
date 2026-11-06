@@ -15,17 +15,17 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.entity.IEntityAdditionalSpawnData;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.neoforged.fml.loading.FMLEnvironment;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-public class EntityTHObjectContainer extends Entity implements IEntityAdditionalSpawnData {
+public class EntityTHObjectContainer extends Entity implements IEntityWithComplexSpawn {
     //private static final EntityDataAccessor<THObjectContainer> DATA_THOBJECT_CONTAINER = SynchedEntityData.defineId(EntityTHObjectContainer.class, MyEntityDataSerializers.THOBJECT_CONTAINER);
 
     private final THObjectContainer container;
@@ -55,8 +55,8 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     }
 
     @Override
-    public void onAddedToWorld() {
-        super.onAddedToWorld();
+    public void onAddedToLevel() {
+        super.onAddedToLevel();
         this.getContainer().onAddToWorld();
     }
 
@@ -91,7 +91,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     }
 
     @Override
-    public void writeSpawnData(FriendlyByteBuf buffer) {
+    public void writeSpawnData(RegistryFriendlyByteBuf buffer) {
         //this.container.encode(buffer);
         ByteBufOutputStream bos = new ByteBufOutputStream(buffer);
         try (GZIPOutputStream gzip = new GZIPOutputStream(bos)) {
@@ -104,7 +104,7 @@ public class EntityTHObjectContainer extends Entity implements IEntityAdditional
     }
 
     @Override
-    public void readSpawnData(FriendlyByteBuf buffer) {
+    public void readSpawnData(RegistryFriendlyByteBuf buffer) {
         //this.container.decode(buffer);
         ByteBufInputStream bis = new ByteBufInputStream(buffer);
         try (GZIPInputStream gzip = new GZIPInputStream(bis)) {

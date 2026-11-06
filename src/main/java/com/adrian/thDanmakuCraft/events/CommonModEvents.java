@@ -2,32 +2,33 @@ package com.adrian.thDanmakuCraft.events;
 
 import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.lua.LuaLoader;
-import com.adrian.thDanmakuCraft.network.PacketHandler;
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.registries.THDanmakuCraftRegistries;
 import com.adrian.thDanmakuCraft.util.io.ResourceLoader;
 import com.adrian.thDanmakuCraft.util.io.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.world.danmaku.LuaEventCache;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
+import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
-import net.minecraftforge.event.entity.SpawnPlacementRegisterEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.registries.NewRegistryEvent;
-import net.minecraftforge.registries.RegistryBuilder;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.registries.NewRegistryEvent;
+import net.neoforged.neoforge.registries.RegistryBuilder;
 
 import java.util.concurrent.CompletableFuture;
 
-@Mod.EventBusSubscriber(modid = THDanmakuCraftMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = THDanmakuCraftMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
 public class CommonModEvents {
     @SubscribeEvent
     public static void entityAttributes(EntityAttributeCreationEvent event){
@@ -35,22 +36,20 @@ public class CommonModEvents {
     }
 
     @SubscribeEvent
-    public static void registerSpawnPlacements(SpawnPlacementRegisterEvent event){
+    public static void registerSpawnPlacements(RegisterSpawnPlacementsEvent event){
 
     }
 
     @SubscribeEvent
     public static void newRegistry(NewRegistryEvent event){
-        event.create(makeRegistry(THDanmakuCraftRegistries.Keys.THOBJECT_TYPE, "object_0").legacyName("thobjects"));
-    }
-
-    private static <T> RegistryBuilder<T> makeRegistry(ResourceKey<? extends Registry<T>> key, String _default)
-    {
-        return new RegistryBuilder<T>().setName(key.location()).setMaxID(Integer.MAX_VALUE - 1).hasTags().setDefaultKey(ResourceLocationUtil.of(_default));
+        THDanmakuCraftRegistries.THOBJECT_TYPE = event.create(
+                new RegistryBuilder<THObjectType>(THDanmakuCraftRegistries.Keys.THOBJECT_TYPE)
+                        .maxId(Integer.MAX_VALUE - 1)
+                        .defaultKey(ResourceLocationUtil.thdanmakucraft("object_0")));
     }
 
     @SubscribeEvent
     public static void commonSetup(FMLCommonSetupEvent event){
-        event.enqueueWork(PacketHandler::register);
+        // 網路 payload 改由 PacketHandler 的 RegisterPayloadHandlersEvent 註冊
     }
 }

@@ -12,9 +12,9 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.syncher.EntityDataSerializer;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -110,10 +110,10 @@ public class MyEntityDataSerializers {
         EntityDataSerializers.registerSerializer(THOBJECT);
     }*/
 
-    public static final DeferredRegister<EntityDataSerializer<?>> ENTITY_DATA_SERIALIZERS = DeferredRegister.create(ForgeRegistries.Keys.ENTITY_DATA_SERIALIZERS, THDanmakuCraftMod.MOD_ID);
+    public static final DeferredRegister<EntityDataSerializer<?>> ENTITY_DATA_SERIALIZERS = DeferredRegister.create(NeoForgeRegistries.Keys.ENTITY_DATA_SERIALIZERS, THDanmakuCraftMod.MOD_ID);
 
     // Register the serializer
-    public static final RegistryObject<EntityDataSerializer<THObjectContainer>> THOBJECT_CONTAINER_SERIALIZER = ENTITY_DATA_SERIALIZERS.register("thobject_container_serializer", () -> THOBJECT_CONTAINER);
+    public static final DeferredHolder<EntityDataSerializer<?>, EntityDataSerializer<THObjectContainer>> THOBJECT_CONTAINER_SERIALIZER = ENTITY_DATA_SERIALIZERS.register("thobject_container_serializer", () -> THOBJECT_CONTAINER);
 
     public static EntityDataSerializer<THObjectContainer> getTHObjectContainerSerializer() {
         return THOBJECT_CONTAINER_SERIALIZER.get();

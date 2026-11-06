@@ -2,8 +2,8 @@ package com.adrian.thDanmakuCraft.client.renderer.type;
 
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.Blend;
 import com.mojang.blaze3d.shaders.BlendMode;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.EnumMap;
 

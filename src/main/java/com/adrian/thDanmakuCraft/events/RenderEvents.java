@@ -14,12 +14,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.client.event.RenderPlayerEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.RenderPlayerEvent;
+import net.neoforged.neoforge.client.event.RenderFrameEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
 import org.apache.commons.compress.utils.Lists;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL44;
@@ -29,7 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Mod.EventBusSubscriber(modid = THDanmakuCraftMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
+@EventBusSubscriber(modid = THDanmakuCraftMod.MOD_ID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
 public class RenderEvents {
     private static final Map<String, RenderLevelStageTask> renderLevelStageTasks = new HashMap<>();
     public static int renderTickCount = 0;
@@ -41,7 +42,7 @@ public class RenderEvents {
     public static void renderLevelStage(RenderLevelStageEvent event) {
         //Matrix4f pose = event.getPoseStack();
         PoseStack poseStack = new PoseStack();
-        float partialTick = event.getPartialTick();
+        float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         for (RenderLevelStageTask renderHelper: renderLevelStageTasks.values()){
             if (event.getStage() == renderHelper.stage){
                 renderHelper.render(poseStack,partialTick);
@@ -164,12 +165,12 @@ public class RenderEvents {
     }
 
     @SubscribeEvent
-    public static void renderTickPre(TickEvent.RenderTickEvent.Pre event) {
+    public static void renderTickPre(RenderFrameEvent.Pre event) {
         RenderUtil.quadList.clear();
     }
 
     @SubscribeEvent
-    public static void renderTickPost(TickEvent.RenderTickEvent.Post event) {
+    public static void renderTickPost(RenderFrameEvent.Post event) {
         //THDanmakuCraftCore.LOGGER.info("Quads mount:" + RenderUtil.quadList.size());
         renderTickCount++;
     }
