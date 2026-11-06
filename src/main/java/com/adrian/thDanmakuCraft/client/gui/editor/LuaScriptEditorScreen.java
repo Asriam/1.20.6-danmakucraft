@@ -7,18 +7,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.loading.FMLPaths;
 import org.lwjgl.glfw.GLFW;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -200,6 +193,7 @@ public class LuaScriptEditorScreen extends Screen {
     private int syntaxErrorLine;
     private String syntaxErrorMessage = "";
 
+
     private enum Dialog { NONE, NEW_FILE, NEW_FOLDER, RENAME, DELETE, PARAMETERS }
 
     private Dialog dialog = Dialog.NONE;
@@ -265,14 +259,6 @@ public class LuaScriptEditorScreen extends Screen {
     private static final int SNIPPET_TOOL_HEIGHT = 16;
     private static final int SNIPPET_ICON = 14;
     /** 樣板標記的索引配對快取（內容沒變就不重算）。 */
-    /** 讓同套件的輔助類別取得字型（Screen.font 是 protected）。 */
-    net.minecraft.client.gui.Font font() {
-        return this.font;
-    }
-
-    /** 參數表單（已拆成獨立類別）。 */
-    private final LuaParameterDialog parameterDialog = new LuaParameterDialog(this);
-
     private int snippetPairHash = Integer.MIN_VALUE;
     private Set<Integer> snippetPairs = Set.of();
 
@@ -424,22 +410,39 @@ public class LuaScriptEditorScreen extends Screen {
     /** 參數表單每一列的高度。 */
     private static final int PARAM_ROW_HEIGHT = LINE_HEIGHT + 8;
 
+    private enum SnippetCategory {
+        BULLET("Bullet"), OBJECT("Object"), LASER("Laser"), TASK("Task"), SPELLCARD("SpellCard");
+
+        private final String label;
+
+        SnippetCategory(String label) {
+            this.label = label;
+        }
+    }
+
+    private record Snippet(String label, ResourceLocation icon, String iconFile, String code,
+                           String description, List<LuaSnippetLibrary.Parameter> parameters) {
+        boolean hasParameters() {
+            return !this.parameters.isEmpty();
+        }
+    }
+
     private static ResourceLocation icon(String name) {
         return ResourceLocation.fromNamespaceAndPath("thdanmakucraft",
                 "textures/gui/editor/icons/" + name);
     }
 
-    private Map<LuaSnippetCategory, List<LuaSnippet>> snippetCache;
+    private Map<SnippetCategory, List<Snippet>> snippetCache;
 
     /** 從 data/thdanmakucraft/lua/snippet 載入樣板（第一次用到時載入）。 */
-    private List<LuaSnippet> snippetsFor(LuaSnippetCategory category) {
+    private List<Snippet> snippetsFor(SnippetCategory category) {
         if (this.snippetCache == null) {
-            Map<LuaSnippetCategory, List<LuaSnippet>> built = new java.util.EnumMap<>(LuaSnippetCategory.class);
-            for (LuaSnippetCategory each : LuaSnippetCategory.values()) {
-                List<LuaSnippet> list = new ArrayList<>();
+            Map<SnippetCategory, List<Snippet>> built = new java.util.EnumMap<>(SnippetCategory.class);
+            for (SnippetCategory each : SnippetCategory.values()) {
+                List<Snippet> list = new ArrayList<>();
                 for (LuaSnippetLibrary.Entry entry : LuaSnippetLibrary.byCategory()
                         .getOrDefault(each.name().toLowerCase(java.util.Locale.ROOT), List.of())) {
-                    list.add(new LuaSnippet(entry.label(), icon(entry.icon()), entry.icon(), entry.code(),
+                    list.add(new Snippet(entry.label(), icon(entry.icon()), entry.icon(), entry.code(),
                             entry.description(), entry.parameters()));
                 }
                 built.put(each, List.copyOf(list));
@@ -449,19 +452,32 @@ public class LuaScriptEditorScreen extends Screen {
         return this.snippetCache.getOrDefault(category, List.of());
     }
 
-    private LuaSnippetCategory snippetCategory = LuaSnippetCategory.BULLET;
-    private final int[] categoryX = new int[LuaSnippetCategory.values().length];
-    private final int[] categoryW = new int[LuaSnippetCategory.values().length];
+    private SnippetCategory snippetCategory = SnippetCategory.BULLET;
+    private final int[] categoryX = new int[SnippetCategory.values().length];
+    private final int[] categoryW = new int[SnippetCategory.values().length];
     private final int[] snippetX = new int[32];
     private int snippetCount;
     private int hoveredSnippet = -1;
     private long hoverSnippetSince;
 
     // ---- 樣板參數輸入 ----
+    private Snippet pendingSnippet;
+    private List<LuaSnippetLibrary.Parameter> pendingParams = List.of();
+    private int pendingFocus;
 
     // ---- 參數下拉選單（parameter_switch） ----
+    private boolean switchDropdownOpen;
+    private int switchDropdownRow = -1;
+    private int switchDropdownScroll;
+    private int switchDropdownHighlight;
+    private boolean switchScrollbarDragging;
 
     // ---- 參數欄位的文字選取 / 貼上 ----
+    private int fieldSelectionAnchor = -1;
+    private int fieldSelectionCaret = -1;
+    private boolean fieldSelecting;
+    /** 每個參數目前輸入的值（與 pendingParams 同索引）。 */
+    private final List<String> pendingFieldValues = new ArrayList<>();
 
     private final int[] actionX = new int[TopAction.values().length];
     private final int[] actionW = new int[TopAction.values().length];
@@ -523,6 +539,7 @@ public class LuaScriptEditorScreen extends Screen {
     private static Path scriptsDir() {
         return LuaScriptFiles.scriptsDir();
     }
+
 
     private void openFile(String name) {
         this.switchTo(name, false);
@@ -840,6 +857,9 @@ public class LuaScriptEditorScreen extends Screen {
 
     /** 以樹狀方式把腳本與資料夾塞進列清單。 */
 
+
+
+
     /** 分類標題預設收合，所以這裡切換的是「展開」狀態。 */
     private void toggleGroup(String group) {
         if (!this.expandedSections.remove(group)) {
@@ -1112,7 +1132,9 @@ public class LuaScriptEditorScreen extends Screen {
         this.drawStatusBar(graphics, statusTop);
         this.renderActionTooltip(graphics);
         this.renderSnippetTooltip(graphics);
-        // 參數表單的下拉選單已移出（LuaParameterDialog.render 內處理）
+        if (this.dialog == Dialog.PARAMETERS) {
+            this.renderSwitchDropdown(graphics);
+        }
     }
 
     // ---- 檔案管理器版面 ----
@@ -1228,6 +1250,7 @@ public class LuaScriptEditorScreen extends Screen {
                     labelX, rowY + (BROWSER_ROW_HEIGHT - 8) / 2, rowColor, false);
         }
 
+
         Scrollbar browserBar = this.browserScrollbar();
         this.drawScrollbar(graphics, browserBar, this.scrollbarDrag == DRAG_BROWSER
                 || this.hitScrollbar(browserBar, mouseX, mouseY));
@@ -1248,9 +1271,10 @@ public class LuaScriptEditorScreen extends Screen {
         }
     }
 
+
     private void renderDialog(GuiGraphics graphics) {
-        if (this.parameterDialog.isOpen()) {
-            this.parameterDialog.render(graphics);
+        if (this.dialog == Dialog.PARAMETERS) {
+            this.renderParameterDialog(graphics);
             return;
         }
         int w = 280;
@@ -1259,6 +1283,8 @@ public class LuaScriptEditorScreen extends Screen {
         int y = (this.height - h) / 2;
         graphics.fill(x - 1, y - 1, x + w + 1, y + h + 1, 0xFF3B4252);
         graphics.fill(x, y, x + w, y + h, 0xF21B1F2A);
+
+
 
         if (this.dialog == Dialog.DELETE) {
             boolean folder = this.dialogSource.startsWith("dir:");
@@ -1284,8 +1310,110 @@ public class LuaScriptEditorScreen extends Screen {
 
     private static final int parameterRowOffset = 40;
     /** 縱向排列的參數表單：一列一個參數，Tab/↑↓ 換欄位。 */
+    private void renderParameterDialog(GuiGraphics graphics) {
+        int w = 300;
+        int h = this.parameterDialogHeight();
+        int x = (this.width - w) / 2;
+        int y = (this.height - h) / 2;
+        graphics.fill(x - 1, y - 1, x + w + 1, y + h + 1, 0xFF3B4252);
+        graphics.fill(x, y, x + w, y + h, 0xF21B1F2A);
+        graphics.drawString(this.font, this.pendingSnippet == null ? "" : this.pendingSnippet.label(),
+                x + 8, y + 6, 0xFFFFFFFF, false);
+        graphics.drawString(this.font, "Tab/↑↓ 換欄位 · ←→ 或點擊切換選項 · Enter 插入 · Esc 取消",
+                x + 8, y + 18, 0xFF6B7280, false);
+
+        for (int i = 0; i < this.pendingParams.size(); i++) {
+            LuaSnippetLibrary.Parameter parameter = this.pendingParams.get(i);
+            int rowY = y + parameterRowOffset + i * PARAM_ROW_HEIGHT;
+            boolean focused = i == this.pendingFocus;
+            if (focused) {
+                graphics.fill(x + 4, rowY - 2, x + w - 4, rowY + PARAM_ROW_HEIGHT - 5, 0x553B82F6);
+            }
+            String label = this.font.plainSubstrByWidth(parameter.label(), 110);
+            graphics.drawString(this.font, label, x + 8, rowY + 2,
+                    focused ? 0xFFFFFFFF : 0xFF9AA4BC, false);
+            String value = this.pendingFieldValues.size() > i ? this.pendingFieldValues.get(i) : "";
+            int valueX = x + 124;
+            graphics.fill(valueX - 4, rowY - 1, x + w - 8, rowY + LINE_HEIGHT + 3, 0x66000000);
+            if (parameter.isBoolean()) {
+                boolean on = "true".equalsIgnoreCase(value);
+                int boxColor = on ? 0xFF4CAF50 : 0xFF6B7280;
+                graphics.fill(valueX, rowY, valueX + LINE_HEIGHT, rowY + LINE_HEIGHT, boxColor);
+                if (on) {
+                    graphics.drawString(this.font, "v", valueX + 2, rowY + 1, 0xFF0B0D10, false);
+                }
+                graphics.drawString(this.font, on ? "true" : "false", valueX + LINE_HEIGHT + 4,
+                        rowY + 1, focused ? 0xFFFFD479 : 0xFFD4D4D4, false);
+            } else if (parameter.isSwitch()) {
+                List<String> options = parameter.options();
+                int at = Math.max(0, options.indexOf(value));
+                String shown = this.font.plainSubstrByWidth(value, w - 190);
+                graphics.drawString(this.font, shown, valueX, rowY + 1,
+                        focused ? 0xFFFFD479 : 0xFFD4D4D4, false);
+                int arrowX = valueX + this.font.width(shown) + 6;
+                boolean open = this.switchDropdownOpen && this.switchDropdownRow == i;
+                graphics.drawString(this.font, open ? "^" : "v", arrowX, rowY + 1,
+                        focused ? 0xFFFFFFFF : 0xFF7A8699, false);
+                graphics.drawString(this.font, (at + 1) + "/" + options.size(), arrowX + 10,
+                        rowY + 1, 0xFF6B7280, false);
+            } else {
+                if (focused && this.fieldHasSelection()) {
+                    String full = value;
+                    int from = Math.max(0, Math.min(this.fieldSelectionFrom(), full.length()));
+                    int to = Math.max(0, Math.min(this.fieldSelectionTo(), full.length()));
+                    int selX1 = valueX + this.font.width(full.substring(0, from));
+                    int selX2 = valueX + this.font.width(full.substring(0, to));
+                    graphics.fill(selX1, rowY - 1, Math.max(selX2, selX1 + 1), rowY + LINE_HEIGHT + 1,
+                            0x883B82F6);
+                }
+                String shown = this.font.plainSubstrByWidth(value, w - 132);
+                graphics.drawString(this.font, shown, valueX, rowY + 1,
+                        focused ? 0xFFFFD479 : 0xFFD4D4D4, false);
+                if (focused) {
+                    int caretColumn = value.length();
+                    if (this.fieldSelectionCaret >= 0) {
+                        caretColumn = Math.max(0, Math.min(this.fieldSelectionCaret, value.length()));
+                    }
+                    int caret = valueX + this.font.width(value.substring(0, caretColumn));
+                    graphics.fill(caret, rowY + 1, caret + 1, rowY + 1 + LINE_HEIGHT, 0xFFFFFFFF);
+                }
+            }
+        }
+    }
 
     /** 展開中的選項清單（可滾動）。 */
+    private void renderSwitchDropdown(GuiGraphics graphics) {
+        int[] rect = this.switchDropdownRect();
+        if (rect == null) {
+            return;
+        }
+        LuaSnippetLibrary.Parameter parameter = this.parameterAt(this.switchDropdownRow);
+        List<String> options = parameter.options();
+        int visible = this.switchDropdownVisible();
+        graphics.fill(rect[0] - 1, rect[1] - 1, rect[0] + rect[2] + 1, rect[1] + rect[3] + 1, 0xFF3B4252);
+        graphics.fill(rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3], 0xF21B1F2A);
+        for (int i = 0; i < visible; i++) {
+            int index = this.switchDropdownScroll + i;
+            if (index >= options.size()) {
+                break;
+            }
+            int rowY = rect[1] + 2 + i * LINE_HEIGHT;
+            boolean highlight = index == this.switchDropdownHighlight;
+            if (highlight) {
+                graphics.fill(rect[0], rowY - 1, rect[0] + rect[2], rowY + LINE_HEIGHT, 0xFF2D6CDF);
+            }
+            String label = this.font.plainSubstrByWidth(options.get(index), rect[2] - 16);
+            graphics.drawString(this.font, label, rect[0] + 5, rowY,
+                    highlight ? 0xFFFFFFFF : 0xFFD4D4D4, false);
+        }
+        int[] bar = this.switchScrollbarRect();
+        if (bar != null) {
+            graphics.fill(bar[0], bar[1], bar[0] + bar[2], bar[1] + bar[3], 0x40000000);
+            graphics.fill(bar[0], this.switchThumbTop(bar), bar[0] + bar[2],
+                    this.switchThumbTop(bar) + this.switchThumbHeight(bar),
+                    this.switchScrollbarDragging ? 0xFFB8C2D4 : 0xFF7C8798);
+        }
+    }
 
     private void drawTopBar(GuiGraphics graphics, int gutter) {
         graphics.fill(0, 0, this.width, TOP_BAR_HEIGHT, BAR_BG);
@@ -1512,9 +1640,9 @@ public class LuaScriptEditorScreen extends Screen {
         graphics.fill(0, top, this.width, catBottom, 0xFF101216);
 
         int x = PADDING;
-        LuaSnippetCategory[] categories = LuaSnippetCategory.values();
+        SnippetCategory[] categories = SnippetCategory.values();
         for (int i = 0; i < categories.length; i++) {
-            String label = categories[i].label();
+            String label = categories[i].label;
             int width = this.font.width(label) + 12;
             boolean active = categories[i] == this.snippetCategory;
             boolean hover = this.inRect(mouseX, mouseY, x, top, width, SNIPPET_CATEGORY_HEIGHT);
@@ -1529,7 +1657,7 @@ public class LuaScriptEditorScreen extends Screen {
 
         int toolTop = catBottom;
         graphics.fill(0, toolTop, this.width, toolTop + SNIPPET_TOOL_HEIGHT, 0xFF0D0F13);
-        List<LuaSnippet> snippets = this.snippetsFor(this.snippetCategory);
+        List<Snippet> snippets = this.snippetsFor(this.snippetCategory);
         this.snippetCount = snippets.size();
         int iconX = PADDING;
         for (int i = 0; i < snippets.size(); i++) {
@@ -1558,7 +1686,7 @@ public class LuaScriptEditorScreen extends Screen {
         if (mouseY < top || mouseY > top + SNIPPET_CATEGORY_HEIGHT) {
             return -1;
         }
-        for (int i = 0; i < LuaSnippetCategory.values().length; i++) {
+        for (int i = 0; i < SnippetCategory.values().length; i++) {
             if (mouseX >= this.categoryX[i] && mouseX <= this.categoryX[i] + this.categoryW[i]) {
                 return i;
             }
@@ -1573,7 +1701,7 @@ public class LuaScriptEditorScreen extends Screen {
         if (mouseY < iconY || mouseY > iconY + SNIPPET_ICON) {
             return -1;
         }
-        List<LuaSnippet> snippets = this.snippetsFor(this.snippetCategory);
+        List<Snippet> snippets = this.snippetsFor(this.snippetCategory);
         for (int i = 0; i < snippets.size(); i++) {
             if (mouseX >= this.snippetX[i] && mouseX <= this.snippetX[i] + SNIPPET_ICON) {
                 return i;
@@ -1584,11 +1712,11 @@ public class LuaScriptEditorScreen extends Screen {
 
     /** 把樣板程式碼插入游標處。 */
     private void insertSnippet(int index) {
-        List<LuaSnippet> snippets = this.snippetsFor(this.snippetCategory);
+        List<Snippet> snippets = this.snippetsFor(this.snippetCategory);
         if (index < 0 || index >= snippets.size()) {
             return;
         }
-        LuaSnippet snippet = snippets.get(index);
+        Snippet snippet = snippets.get(index);
         if (!snippet.hasParameters()) {
             this.insertSnippetCode(snippet, Map.of());
             return;
@@ -1597,11 +1725,18 @@ public class LuaScriptEditorScreen extends Screen {
             this.setStatus("內建 API 文件是唯讀的", 0xFFFFD479);
             return;
         }
-        this.parameterDialog.open(snippet);
+        this.pendingSnippet = snippet;
+        this.pendingParams = snippet.parameters();
+        this.pendingFocus = 0;
+        this.pendingFieldValues.clear();
+        for (LuaSnippetLibrary.Parameter parameter : this.pendingParams) {
+            this.pendingFieldValues.add(parameter.defaultValue());
+        }
+        this.dialog = Dialog.PARAMETERS;
     }
 
     /** 把 ${name} 佔位符換成使用者輸入後插入。 */
-    void insertSnippetCode(LuaSnippet snippet, Map<String, String> values) {
+    private void insertSnippetCode(Snippet snippet, Map<String, String> values) {
         String code = snippet.code();
         for (Map.Entry<String, String> entry : values.entrySet()) {
             code = code.replace("${" + entry.getKey() + "}", entry.getValue());
@@ -1630,42 +1765,388 @@ public class LuaScriptEditorScreen extends Screen {
     }
 
     /** 確認整個表單：所有欄位一次套用。 */
+    private void confirmParameters() {
+        if (this.pendingSnippet == null) {
+            this.dialog = Dialog.NONE;
+            return;
+        }
+        Map<String, String> values = new HashMap<>();
+        for (int i = 0; i < this.pendingParams.size(); i++) {
+            String value = i < this.pendingFieldValues.size() ? this.pendingFieldValues.get(i) : "";
+            values.put(this.pendingParams.get(i).name(), value);
+        }
+        Snippet snippet = this.pendingSnippet;
+        this.resetParameterDialog();
+        this.insertSnippetCode(snippet, values);
+    }
+
+    private void resetParameterDialog() {
+        this.closeSwitchDropdown();
+        this.fieldSelectionAnchor = -1;
+        this.fieldSelectionCaret = -1;
+        this.fieldSelecting = false;
+        this.dialog = Dialog.NONE;
+        this.pendingSnippet = null;
+        this.pendingParams = List.of();
+        this.pendingFocus = 0;
+        this.pendingFieldValues.clear();
+    }
 
     /** 表單鍵盤操作：Tab/↑↓ 換欄位、Enter 確定、Esc 取消。 */
+    private void handleParameterDialogKey(int keyCode, boolean control, boolean shift) {
+        int size = this.pendingParams.size();
+        if (control && this.isTextFieldFocused()) {
+            if (keyCode == GLFW.GLFW_KEY_A) {
+                this.fieldSelectionAnchor = 0;
+                this.fieldSelectionCaret = this.fieldValue(this.pendingFocus).length();
+                return;
+            }
+            if (keyCode == GLFW.GLFW_KEY_C) {
+                String selected = this.fieldSelectedText();
+                if (selected.isEmpty()) {
+                    selected = this.fieldValue(this.pendingFocus);
+                }
+                if (!selected.isEmpty()) {
+                    Minecraft.getInstance().keyboardHandler.setClipboard(selected);
+                    this.setStatus("已複製參數內容", STATUS_TEXT);
+                }
+                return;
+            }
+            if (keyCode == GLFW.GLFW_KEY_X) {
+                String selected = this.fieldSelectedText();
+                if (selected.isEmpty()) {
+                    selected = this.fieldValue(this.pendingFocus);
+                    this.fieldSelectionAnchor = 0;
+                    this.fieldSelectionCaret = selected.length();
+                }
+                if (!selected.isEmpty()) {
+                    Minecraft.getInstance().keyboardHandler.setClipboard(selected);
+                    this.fieldDeleteSelection();
+                }
+                return;
+            }
+            if (keyCode == GLFW.GLFW_KEY_V) {
+                String clip = Minecraft.getInstance().keyboardHandler.getClipboard();
+                clip = clip.replace("\r", "").replace("\n", " ");
+                if (!clip.isEmpty()) {
+                    this.fieldInsert(clip);
+                }
+                return;
+            }
+        }
+        if (this.switchDropdownOpen) {
+            LuaSnippetLibrary.Parameter parameter = this.parameterAt(this.switchDropdownRow);
+            int optionCount = parameter.options().size();
+            if (keyCode == GLFW.GLFW_KEY_DOWN) {
+                this.switchDropdownHighlight = Math.min(optionCount - 1, this.switchDropdownHighlight + 1);
+                this.ensureSwitchHighlightVisible();
+                return;
+            }
+            if (keyCode == GLFW.GLFW_KEY_UP) {
+                this.switchDropdownHighlight = Math.max(0, this.switchDropdownHighlight - 1);
+                this.ensureSwitchHighlightVisible();
+                return;
+            }
+            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+                this.pendingFieldValues.set(this.switchDropdownRow,
+                        parameter.options().get(this.switchDropdownHighlight));
+                this.closeSwitchDropdown();
+                return;
+            }
+            if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+                this.closeSwitchDropdown();
+                return;
+            }
+        }
+        if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+            this.confirmParameters();
+        } else if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+            this.resetParameterDialog();
+            this.setStatus("已取消插入樣板", LINE_NO);
+        } else if (keyCode == GLFW.GLFW_KEY_TAB || keyCode == GLFW.GLFW_KEY_DOWN) {
+            this.pendingFocus = size == 0 ? 0 : (this.pendingFocus + 1) % size;
+            this.closeSwitchDropdown();
+            this.fieldSelectionAnchor = -1;
+            this.fieldSelectionCaret = -1;
+        } else if (keyCode == GLFW.GLFW_KEY_UP) {
+            this.pendingFocus = size == 0 ? 0 : (this.pendingFocus - 1 + size) % size;
+        } else if (keyCode == GLFW.GLFW_KEY_LEFT) {
+            this.cycleParameter(this.pendingFocus, -1);
+        } else if (keyCode == GLFW.GLFW_KEY_RIGHT || keyCode == GLFW.GLFW_KEY_SPACE) {
+            this.cycleParameter(this.pendingFocus, 1);
+        } else if (keyCode == GLFW.GLFW_KEY_BACKSPACE) {
+            if (this.isTextFieldFocused()) {
+                if (this.fieldHasSelection()) {
+                    this.fieldDeleteSelection();
+                } else {
+                    String value = this.fieldValue(this.pendingFocus);
+                    if (!value.isEmpty()) {
+                        this.pendingFieldValues.set(this.pendingFocus,
+                                value.substring(0, value.length() - 1));
+                    }
+                }
+            }
+        }
+    }
 
     private static final int SWITCH_DROPDOWN_MAX_ROWS = 6;
     private static final int SWITCH_DROPDOWN_WIDTH = 110;
 
     /** 下拉選單的可見列數。 */
+    private int switchDropdownVisible() {
+        LuaSnippetLibrary.Parameter parameter = this.parameterAt(this.switchDropdownRow);
+        return Math.max(1, Math.min(parameter.options().size(), SWITCH_DROPDOWN_MAX_ROWS));
+    }
 
     /** 下拉選單的矩形（x, y, w, h）；沒開就 null。 */
+    private int[] switchDropdownRect() {
+        if (!this.switchDropdownOpen || this.switchDropdownRow < 0) {
+            return null;
+        }
+        int w = 200;
+        int h = this.parameterDialogHeight();
+        int left = (this.width - w) / 2;
+        int top = (this.height - h) / 2;
+        int rowY = top + parameterRowOffset + this.switchDropdownRow * PARAM_ROW_HEIGHT;
+        int ddHeight = this.switchDropdownVisible() * LINE_HEIGHT + 4;
+        return new int[]{left + 124, rowY + PARAM_ROW_HEIGHT, SWITCH_DROPDOWN_WIDTH, ddHeight};
+    }
 
     /** 滾動條矩形（x, y, w, h）；不需要滾動時回傳 null。 */
+    private int[] switchScrollbarRect() {
+        int[] rect = this.switchDropdownRect();
+        if (rect == null) {
+            return null;
+        }
+        LuaSnippetLibrary.Parameter parameter = this.parameterAt(this.switchDropdownRow);
+        if (parameter.options().size() <= this.switchDropdownVisible()) {
+            return null;
+        }
+        int width = 4;
+        return new int[]{rect[0] + rect[2] - width - 2, rect[1] + 2, width, rect[3] - 4};
+    }
+
+    private int switchThumbHeight(int[] bar) {
+        LuaSnippetLibrary.Parameter parameter = this.parameterAt(this.switchDropdownRow);
+        int total = parameter.options().size();
+        int visible = this.switchDropdownVisible();
+        return Math.max(10, (int) ((long) bar[3] * visible / Math.max(1, total)));
+    }
+
+    private int switchThumbTop(int[] bar) {
+        LuaSnippetLibrary.Parameter parameter = this.parameterAt(this.switchDropdownRow);
+        int maxScroll = Math.max(1, parameter.options().size() - this.switchDropdownVisible());
+        int travel = Math.max(1, bar[3] - this.switchThumbHeight(bar));
+        return bar[1] + (int) ((long) travel * Math.min(this.switchDropdownScroll, maxScroll) / maxScroll);
+    }
 
     /** 依滑鼠 y 換算 scroll（拖曳或點軌道）。 */
+    private int switchScrollFromMouse(double mouseY) {
+        int[] bar = this.switchScrollbarRect();
+        if (bar == null) {
+            return 0;
+        }
+        LuaSnippetLibrary.Parameter parameter = this.parameterAt(this.switchDropdownRow);
+        int maxScroll = Math.max(0, parameter.options().size() - this.switchDropdownVisible());
+        int thumb = this.switchThumbHeight(bar);
+        int travel = bar[3] - thumb;
+        if (travel <= 0) {
+            return 0;
+        }
+        double offset = mouseY - bar[1] - thumb / 2.0;
+        offset = Math.max(0, Math.min(offset, travel));
+        return (int) Math.round(offset * maxScroll / travel);
+    }
+
+    private boolean onSwitchScrollbar(double mouseX, double mouseY) {
+        int[] bar = this.switchScrollbarRect();
+        return bar != null && mouseX >= bar[0] - 2 && mouseX <= bar[0] + bar[2] + 2
+                && mouseY >= bar[1] && mouseY <= bar[1] + bar[3];
+    }
+
+    private void openSwitchDropdown(int row) {
+        LuaSnippetLibrary.Parameter parameter = this.parameterAt(row);
+        if (!parameter.isSwitch()) {
+            return;
+        }
+        this.switchDropdownOpen = true;
+        this.switchDropdownRow = row;
+        this.switchDropdownHighlight = Math.max(0, parameter.options().indexOf(
+                this.pendingFieldValues.get(row)));
+        this.ensureSwitchHighlightVisible();
+    }
+
+    private void closeSwitchDropdown() {
+        this.switchDropdownOpen = false;
+        this.switchScrollbarDragging = false;
+        this.fieldSelecting = false;
+        this.switchDropdownRow = -1;
+        this.switchDropdownScroll = 0;
+    }
+
+    private void ensureSwitchHighlightVisible() {
+        int visible = this.switchDropdownVisible();
+        if (this.switchDropdownHighlight < this.switchDropdownScroll) {
+            this.switchDropdownScroll = this.switchDropdownHighlight;
+        } else if (this.switchDropdownHighlight >= this.switchDropdownScroll + visible) {
+            this.switchDropdownScroll = this.switchDropdownHighlight - visible + 1;
+        }
+        this.switchDropdownScroll = Math.max(0, this.switchDropdownScroll);
+    }
 
     /** 滑鼠在下拉選單的哪一個選項上；沒有回傳 -1。 */
+    private int switchOptionAt(double mouseX, double mouseY) {
+        int[] rect = this.switchDropdownRect();
+        if (rect == null) {
+            return -1;
+        }
+        if (mouseX < rect[0] || mouseX > rect[0] + rect[2]
+                || mouseY < rect[1] + 2 || mouseY > rect[1] + rect[3] - 2) {
+            return -1;
+        }
+        int index = this.switchDropdownScroll + (int) ((mouseY - rect[1] - 2) / LINE_HEIGHT);
+        return index >= 0 && index < this.parameterAt(this.switchDropdownRow).options().size()
+                ? index : -1;
+    }
 
     // ---- 參數欄位：選取 / 插入 / 刪除 ----
 
+    private boolean isTextFieldFocused() {
+        return this.dialog == Dialog.PARAMETERS
+                && !this.pendingParams.isEmpty()
+                && this.parameterAt(this.pendingFocus).kind()
+                        == LuaSnippetLibrary.ParameterKind.TEXT
+                && !this.pendingFieldValues.isEmpty();
+    }
+
+    private String fieldValue(int index) {
+        return index >= 0 && index < this.pendingFieldValues.size()
+                ? this.pendingFieldValues.get(index) : "";
+    }
+
+    private boolean fieldHasSelection() {
+        return this.fieldSelectionAnchor >= 0 && this.fieldSelectionCaret >= 0
+                && this.fieldSelectionAnchor != this.fieldSelectionCaret;
+    }
+
+    private int fieldSelectionFrom() {
+        return Math.min(this.fieldSelectionAnchor, this.fieldSelectionCaret);
+    }
+
+    private int fieldSelectionTo() {
+        return Math.max(this.fieldSelectionAnchor, this.fieldSelectionCaret);
+    }
+
+    private String fieldSelectedText() {
+        if (!this.fieldHasSelection() || !this.isTextFieldFocused()) {
+            return "";
+        }
+        String value = this.fieldValue(this.pendingFocus);
+        int from = Math.max(0, Math.min(this.fieldSelectionFrom(), value.length()));
+        int to = Math.max(0, Math.min(this.fieldSelectionTo(), value.length()));
+        return value.substring(from, to);
+    }
+
+    private void fieldDeleteSelection() {
+        if (!this.fieldHasSelection() || !this.isTextFieldFocused()) {
+            return;
+        }
+        String value = this.fieldValue(this.pendingFocus);
+        int from = Math.max(0, Math.min(this.fieldSelectionFrom(), value.length()));
+        int to = Math.max(0, Math.min(this.fieldSelectionTo(), value.length()));
+        this.pendingFieldValues.set(this.pendingFocus, value.substring(0, from) + value.substring(to));
+        this.fieldSelectionAnchor = from;
+        this.fieldSelectionCaret = from;
+    }
+
     /** 在有選取時取代選取，否則接在字尾。 */
+    private void fieldInsert(String text) {
+        if (!this.isTextFieldFocused()) {
+            return;
+        }
+        this.fieldDeleteSelection();
+        String value = this.fieldValue(this.pendingFocus);
+        if (this.fieldHasSelection()) {
+            return;
+        }
+        int at = this.fieldSelectionCaret >= 0
+                ? Math.max(0, Math.min(this.fieldSelectionCaret, value.length())) : value.length();
+        this.pendingFieldValues.set(this.pendingFocus,
+                value.substring(0, at) + text + value.substring(at));
+        int caret = at + text.length();
+        this.fieldSelectionAnchor = caret;
+        this.fieldSelectionCaret = caret;
+    }
+
+    private int fieldCharAt(double mouseX) {
+        String value = this.fieldValue(this.pendingFocus);
+        int valueX = this.parameterValueX();
+        int target = (int) mouseX - valueX;
+        int column = 0;
+        while (column < value.length() && this.font.width(value.substring(0, column + 1)) <= target) {
+            column++;
+        }
+        return column;
+    }
 
     /** 參數值欄位的左緣（繪製與點擊共用）。 */
+    private int parameterValueX() {
+        return (this.width - 300) / 2 + 124;
+    }
+
+    private LuaSnippetLibrary.Parameter parameterAt(int index) {
+        return this.pendingParams.get(Math.max(0, Math.min(index, this.pendingParams.size() - 1)));
+    }
 
     /** BOOLEAN 切換 true/false；SWITCH 在選項間循環。 */
+    private void cycleParameter(int index, int direction) {
+        if (index < 0 || index >= this.pendingParams.size()) {
+            return;
+        }
+        LuaSnippetLibrary.Parameter parameter = this.pendingParams.get(index);
+        String current = this.pendingFieldValues.get(index);
+        if (parameter.isBoolean()) {
+            this.pendingFieldValues.set(index, "true".equalsIgnoreCase(current) ? "false" : "true");
+        } else if (parameter.isSwitch()) {
+            List<String> options = parameter.options();
+            int at = options.indexOf(current);
+            at = at < 0 ? 0 : Math.floorMod(at + direction, options.size());
+            this.pendingFieldValues.set(index, options.get(at));
+        }
+    }
+
+    private int parameterDialogHeight() {
+        return 30 + this.pendingParams.size() * PARAM_ROW_HEIGHT + 16;
+    }
 
     /** 滑鼠點在表單的哪一列，沒有就 -1。 */
+    private int parameterRowAt(double mouseX, double mouseY) {
+        if (this.dialog != Dialog.PARAMETERS) {
+            return -1;
+        }
+        int w = 300;
+        int h = this.parameterDialogHeight();
+        int x = (this.width - w) / 2;
+        int y = (this.height - h) / 2;
+        if (mouseX < x || mouseX > x + w) {
+            return -1;
+        }
+        int index = (int) ((mouseY - (y + parameterRowOffset)) / PARAM_ROW_HEIGHT);
+        return index >= 0 && index < this.pendingParams.size() ? index : -1;
+    }
+
+
 
     /** 樣板按鈕的說明（停留 1 秒）。 */
     private void renderSnippetTooltip(GuiGraphics graphics) {
         if (this.hoveredSnippet < 0 || System.currentTimeMillis() - this.hoverSnippetSince < 1000L) {
             return;
         }
-        List<LuaSnippet> snippets = this.snippetsFor(this.snippetCategory);
+        List<Snippet> snippets = this.snippetsFor(this.snippetCategory);
         if (this.hoveredSnippet >= snippets.size()) {
             return;
         }
-        LuaSnippet snippet = snippets.get(this.hoveredSnippet);
+        Snippet snippet = snippets.get(this.hoveredSnippet);
         String title = snippet.label();
         List<String> lines = new ArrayList<>();
         lines.add(title);
@@ -1889,7 +2370,48 @@ public class LuaScriptEditorScreen extends Screen {
             this.onClose();
             return true;
         }
-        if (this.parameterDialog.mouseClicked(mouseX, mouseY)) {
+        if (this.dialog == Dialog.PARAMETERS) {
+            // 下拉開著時：點選項 = 選取；點別處 = 關閉
+            if (this.switchDropdownOpen) {
+                if (this.onSwitchScrollbar(mouseX, mouseY)) {
+                    this.switchScrollbarDragging = true;
+                    this.switchDropdownScroll = this.switchScrollFromMouse(mouseY);
+                    return true;
+                }
+                int option = this.switchOptionAt(mouseX, mouseY);
+                if (option >= 0) {
+                    this.pendingFieldValues.set(this.switchDropdownRow,
+                            this.parameterAt(this.switchDropdownRow).options().get(option));
+                    this.closeSwitchDropdown();
+                    return true;
+                }
+                this.closeSwitchDropdown();
+            }
+            int row = this.parameterRowAt(mouseX, mouseY);
+            if (row >= 0) {
+                this.pendingFocus = row;
+                LuaSnippetLibrary.Parameter parameter = this.parameterAt(row);
+                if (parameter.kind() == LuaSnippetLibrary.ParameterKind.TEXT) {
+                    if (mouseX >= this.parameterValueX() - 4) {
+                        int at = this.fieldCharAt(mouseX);
+                        this.fieldSelectionAnchor = at;
+                        this.fieldSelectionCaret = at;
+                        this.fieldSelecting = true;
+                    } else {
+                        this.fieldSelectionAnchor = -1;
+                        this.fieldSelectionCaret = -1;
+                    }
+                } else {
+                    this.fieldSelectionAnchor = -1;
+                    this.fieldSelectionCaret = -1;
+                }
+                if (parameter.isSwitch()) {
+                    // 點一次展開選單（點在選單上方的設定列才會到這裡）
+                    this.openSwitchDropdown(row);
+                } else if (parameter.isBoolean()) {
+                    this.cycleParameter(row, 1);
+                }
+            }
             return true;
         }
         if (this.dialog != Dialog.NONE) {
@@ -1898,7 +2420,7 @@ public class LuaScriptEditorScreen extends Screen {
         if (button == 0) {
             int category = this.categoryHit(mouseX, mouseY);
             if (category >= 0) {
-                this.snippetCategory = LuaSnippetCategory.values()[category];
+                this.snippetCategory = SnippetCategory.values()[category];
                 this.hoveredSnippet = -1;
                 return true;
             }
@@ -2058,6 +2580,7 @@ public class LuaScriptEditorScreen extends Screen {
         return true;
     }
 
+
     /** 重新命名目前選取的檔案。 */
     private void openRenameDialog() {
         String folder = this.currentFolder();
@@ -2079,6 +2602,7 @@ public class LuaScriptEditorScreen extends Screen {
         this.dialogSource = entry.path();
         this.dialogInput = this.dialogSource;
     }
+
 
     /** 刪除目前選取的檔案（需確認）。 */
     private void openDeleteDialog() {
@@ -2106,6 +2630,7 @@ public class LuaScriptEditorScreen extends Screen {
         this.dialogSource = entry.path();
         this.dialogInput = this.dialogSource;
     }
+
 
     /** 建立資料夾（可打 a/b 建立多層）。 */
     /** 建立資料夾（可打 a/b 建立多層）；選到資料夾時建在它裡面。 */
@@ -2192,7 +2717,11 @@ public class LuaScriptEditorScreen extends Screen {
         if (this.font == null) {
             return false;
         }
-        if (this.parameterDialog.mouseScrolled(scrollY)) {
+        if (this.switchDropdownOpen) {
+            LuaSnippetLibrary.Parameter parameter = this.parameterAt(this.switchDropdownRow);
+            int maxScroll = Math.max(0, parameter.options().size() - this.switchDropdownVisible());
+            this.switchDropdownScroll = Math.max(0, Math.min(maxScroll,
+                    this.switchDropdownScroll - (int) Math.signum(scrollY)));
             return true;
         }
         if (this.browserOpen && mouseX >= PADDING && mouseX <= PADDING + BROWSER_WIDTH
@@ -2212,7 +2741,11 @@ public class LuaScriptEditorScreen extends Screen {
 
     @Override
     public boolean charTyped(char codePoint, int modifiers) {
-        if (this.parameterDialog.charTyped(codePoint)) {
+        if (this.dialog == Dialog.PARAMETERS) {
+            boolean text = this.isTextFieldFocused();
+            if (codePoint >= 32 && text) {
+                this.fieldInsert(String.valueOf(codePoint));
+            }
             return true;
         }
         if (this.dialog != Dialog.NONE) {
@@ -2252,7 +2785,8 @@ public class LuaScriptEditorScreen extends Screen {
         boolean control = hasControlDown();
         boolean shift = hasShiftDown();
 
-        if (this.parameterDialog.keyPressed(keyCode, control, shift)) {
+        if (this.dialog == Dialog.PARAMETERS) {
+            this.handleParameterDialogKey(keyCode, control, shift);
             return true;
         }
 
@@ -3145,10 +3679,14 @@ public class LuaScriptEditorScreen extends Screen {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        if (this.parameterDialog.mouseDragged(mouseX, mouseY)) {
+        if (this.fieldSelecting && this.dialog == Dialog.PARAMETERS && this.isTextFieldFocused()) {
+            this.fieldSelectionCaret = this.fieldCharAt(mouseX);
             return true;
         }
-
+        if (this.switchScrollbarDragging) {
+            this.switchDropdownScroll = this.switchScrollFromMouse(mouseY);
+            return true;
+        }
         if (this.dragCandidate != null) {
             if (!this.draggingFile
                     && Math.abs(mouseX - this.dragStartX) + Math.abs(mouseY - this.dragStartY) > 4.0) {
@@ -3191,6 +3729,7 @@ public class LuaScriptEditorScreen extends Screen {
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        this.switchScrollbarDragging = false;
         if (this.draggingFile && this.dragCandidate != null) {
             String source = this.dragCandidate;
             String target = this.dropTargetDir;
@@ -3201,7 +3740,6 @@ public class LuaScriptEditorScreen extends Screen {
             return true;
         }
         this.resetDrag();
-        this.parameterDialog.mouseReleased();
         this.textSelecting = false;
         this.scrollbarDrag = DRAG_NONE;
         return super.mouseReleased(mouseX, mouseY, button);
@@ -3266,7 +3804,7 @@ public class LuaScriptEditorScreen extends Screen {
         }
     }
 
-    void setStatus(String message, int color) {
+    private void setStatus(String message, int color) {
         this.status = message;
         this.statusColor = color;
     }
