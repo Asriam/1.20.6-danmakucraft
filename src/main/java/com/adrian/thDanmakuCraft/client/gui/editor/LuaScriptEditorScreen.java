@@ -179,6 +179,8 @@ public class LuaScriptEditorScreen extends Screen {
     private String dragCandidate;
     /** 是否已經進入拖曳狀態（移動超過門檻）。 */
     private boolean draggingFile;
+    /** 拖曳中的檔案是不是唯讀的內建檔案（內建檔只能插入 doFile，不能搬移）。 */
+    private boolean dragBuiltin;
     private double dragStartX;
     private double dragStartY;
     /** 目前滑鼠所在的放置目標資料夾（null = 不可放置）。 */
@@ -2567,11 +2569,10 @@ public class LuaScriptEditorScreen extends Screen {
                 this.lastClickAt = System.currentTimeMillis();
                 this.browserSelected = index;
                 this.noSelection = false;
-                if (!row.entry().builtin()) {
-                    this.dragCandidate = path;
-                    this.dragStartX = mouseX;
-                    this.dragStartY = mouseY;
-                }
+                this.dragCandidate = path;
+                this.dragBuiltin = row.entry().builtin();
+                this.dragStartX = mouseX;
+                this.dragStartY = mouseY;
                 if (doubleClick) {
                     this.addTask(path);
                     this.openEntry(row.entry());
@@ -3695,7 +3696,16 @@ public class LuaScriptEditorScreen extends Screen {
                 this.draggingFile = true;
             }
             if (this.draggingFile) {
-                this.dropTargetDir = this.folderAt(mouseX, mouseY);
+                if (this.isInTextArea(mouseX, mouseY)) {
+                    // 放開就會插入 core.doFile("...")，不要顯示資料夾高亮
+                    this.dropTargetDir = null;
+                    if (this.dragCandidate != null) {
+                        String name = this.dragCandidate.substring(this.dragCandidate.lastIndexOf('/') + 1);
+                        this.setStatus("放開以插入 core.doFile(\"" + name + "\")", 0xFF7BD88F);
+                    }
+                } else {
+                    this.dropTargetDir = this.folderAt(mouseX, mouseY);
+                }
                 return true;
             }
         }
@@ -3734,9 +3744,13 @@ public class LuaScriptEditorScreen extends Screen {
         this.switchScrollbarDragging = false;
         if (this.draggingFile && this.dragCandidate != null) {
             String source = this.dragCandidate;
+            boolean builtin = this.dragBuiltin;
             String target = this.dropTargetDir;
+            boolean intoTextArea = this.isInTextArea(mouseX, mouseY);
             this.resetDrag();
-            if (target != null && !target.equals(parentOf(source))) {
+            if (intoTextArea) {
+                this.insertDoFile(mouseX, mouseY, source);
+            } else if (!builtin && target != null && !target.equals(parentOf(source))) {
                 this.moveFileInto(source, target);
             }
             return true;
@@ -3750,6 +3764,7 @@ public class LuaScriptEditorScreen extends Screen {
     private void resetDrag() {
         this.dragCandidate = null;
         this.draggingFile = false;
+        this.dragBuiltin = false;
         this.dropTargetDir = null;
     }
 
@@ -3759,6 +3774,24 @@ public class LuaScriptEditorScreen extends Screen {
     }
 
     /** 滑鼠底下的放置目標；回傳 null 表示不能放，空字串表示放到 scripts 根目錄。 */
+    /** 滑鼠是不是在文字工作區裡（行號欄右側、狀態列上方）。 */
+    private boolean isInTextArea(double mouseX, double mouseY) {
+        int textLeft = this.contentLeft();
+        int statusTop = this.height - STATUS_HEIGHT;
+        return mouseX >= textLeft && mouseX <= this.width - PADDING
+                && mouseY >= textTop() && mouseY < statusTop;
+    }
+
+    /** 把瀏覽器拖過來的檔案，在放開的位置插入 {@code core.doFile("path")}。 */
+    private void insertDoFile(double mouseX, double mouseY, String path) {
+        int line = this.scroll + (int) ((mouseY - textTop()) / LINE_HEIGHT);
+        line = Math.max(0, Math.min(line, this.lines.size() - 1));
+        int column = this.columnAt(line, mouseX);
+        this.setCursor(line, column);
+        this.insert("core.doFile(\"" + path + "\")");
+        this.setStatus("已插入 core.doFile(\"" + path + "\")", 0xFF7BD88F);
+    }
+
     private String folderAt(double mouseX, double mouseY) {
         if (!this.browserOpen) {
             return null;
