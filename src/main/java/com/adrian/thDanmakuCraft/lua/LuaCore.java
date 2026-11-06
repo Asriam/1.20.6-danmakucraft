@@ -11,6 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.fml.loading.FMLPaths;
 import org.apache.commons.compress.utils.Lists;
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaTable;
@@ -23,6 +24,9 @@ import org.luaj.vm2.lib.jse.CoerceJavaToLua;
 import org.luaj.vm2.lib.jse.JsePlatform;
 import org.slf4j.Logger;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -58,6 +62,33 @@ public class LuaCore {
         String script = LUA.luaLoader.getResourceAsString(getFileLocation(path));
         LuaCore luaCore = LuaCore.getInstance();
         luaCore.GLOBALS.load(script,path).call();
+        // 再執行編輯器根目錄（config/thdanmakucraft/scripts）底下的 main.lua
+        luaCore.runUserMainScript();
+    }
+
+    /** 編輯器腳本根目錄：{@code config/thdanmakucraft/scripts}。 */
+    public static Path userScriptsDir() {
+        return FMLPaths.CONFIGDIR.get().resolve(THDanmakuCraftMod.MOD_ID).resolve("scripts");
+    }
+
+    /**
+     * 執行編輯器根目錄的 {@code main.lua}（使用者可編輯）。
+     *
+     * <p>檔案不存在就跳過；腳本內容有錯只記錄，不會讓遊戲崩潰。</p>
+     */
+    public void runUserMainScript() {
+        Path file = userScriptsDir().resolve("main.lua");
+        if (!Files.isRegularFile(file)) {
+            LOGGER.info("No user main script at {}", file);
+            return;
+        }
+        try {
+            String source = Files.readString(file, StandardCharsets.UTF_8);
+            this.GLOBALS.load(source, file.toString()).call();
+            LOGGER.info("Ran user main script {}", file);
+        } catch (Throwable error) {
+            LOGGER.error("Failed to run user main script {}", file, error);
+        }
     }
 
     public void putAPI(){
@@ -100,6 +131,18 @@ public class LuaCore {
     public LuaValue doFile(String path){
         try {
             String script = luaLoader.getResourceAsString(getFileLocation(path));
+            if (script == null) {
+                // 內建資源找不到時，回退到編輯器腳本目錄（config/thdanmakucraft/scripts）
+                Path userFile = userScriptsDir().resolve(path);
+                if (Files.isRegularFile(userFile)) {
+                    script = Files.readString(userFile, StandardCharsets.UTF_8);
+                    LOGGER.info("Loading user lua script {}", userFile);
+                }
+            }
+            if (script == null) {
+                THDanmakuCraftMod.LOGGER.error("Lua file not found: {}", path);
+                return NIL;
+            }
             return this.GLOBALS.load(script,path).call();
         } catch (Exception e) {
             THDanmakuCraftMod.LOGGER.error("Failed loading lua file! the file path is not valid!",e);
@@ -111,6 +154,25 @@ public class LuaCore {
         luaLoader.loadAllResourcesInFolderAsString(getFileLocation(path)).forEach((path1, resource) -> {
             this.GLOBALS.load(resource,path).call();
         });
+        // 也執行編輯器腳本目錄下的 .lua（僅限這個資料夾，不再遞迴）
+        Path userDir = userScriptsDir().resolve(path);
+        if (Files.isDirectory(userDir)) {
+            try (var stream = Files.list(userDir)) {
+                stream.filter(Files::isRegularFile)
+                        .filter(file -> file.getFileName().toString().endsWith(".lua"))
+                        .sorted()
+                        .forEach(file -> {
+                            try {
+                                this.GLOBALS.load(Files.readString(file, StandardCharsets.UTF_8),
+                                        file.toString()).call();
+                            } catch (Throwable error) {
+                                THDanmakuCraftMod.LOGGER.error("Failed loading lua file {}", file, error);
+                            }
+                        });
+            } catch (Exception error) {
+                THDanmakuCraftMod.LOGGER.error("Failed listing lua folder {}", userDir, error);
+            }
+        }
     }
 
     public LuaValue defineClass(Varargs varargs){

@@ -28,9 +28,9 @@ public class LuaValueHelper {
             @Override
             public LuaValue call(LuaValue luaValue0) {
                 Entity entity = checkEntity(luaValue0);
-                AABB bb = entity.getBoundingBox();
-                Vec3 position = entity.position().add(bb.getXsize()/2, bb.getYsize()/2, bb.getZsize()/2);
-                return Vec3ToLuaValue(position);
+                //AABB bb = entity.getBoundingBox();
+                //Vec3 position = entity.position().add(bb.getXsize()/2, bb.getYsize()/2, bb.getZsize()/2);
+                return Vec3ToLuaValue(entity.getBoundingBox().getCenter());
             }
         };
 
@@ -105,13 +105,15 @@ public class LuaValueHelper {
     }
 
     public static LuaValue Vec3ToLuaValue(double x, double y, double z) {
-        LuaValue library = LuaValue.tableOf(0, 3);
-        library.set("x", x);
-        library.set("y", y);
-        library.set("z", z);
-        if(LuaCore.LuaUtilVec3Meta != null)
-            library.setmetatable(LuaCore.LuaUtilVec3Meta);
-        return library;
+        LuaValue vec3Lua = LuaValue.tableOf(0, 3);
+        vec3Lua.set("x", x);
+        vec3Lua.set("y", y);
+        vec3Lua.set("z", z);
+        LuaValue vec3Lib = LuaCore.LuaUtilVec3;
+        if (!vec3Lib.isnil()){
+            return vec3Lib.get("of").call(vec3Lua);
+        }
+        return vec3Lua;
     }
 
     public static LuaValue Vec2ToLuaValue(Vec2 vec2) {
@@ -119,11 +121,14 @@ public class LuaValueHelper {
     }
 
     public static LuaValue Vec2ToLuaValue(double x, double y) {
-        LuaValue library = LuaValue.tableOf(0, 3);
-        library.set("x", x);
-        library.set("y", y);
-        library.setmetatable(LuaCore.LuaUtilVec2Meta);
-        return library;
+        LuaValue vec2Lua = LuaValue.tableOf(0, 3);
+        vec2Lua.set("x", x);
+        vec2Lua.set("y", y);
+        LuaValue vec2Lib = LuaCore.LuaUtilVec2;
+        if (!vec2Lib.isnil()){
+            return vec2Lib.get("of").call(vec2Lua);
+        }
+        return vec2Lua;
     }
 
     public static LuaValue Vector3fToLuaValue(Vector3f vec3f) {
@@ -131,11 +136,6 @@ public class LuaValueHelper {
     }
 
     public static LuaValue Vector3fToLuaValue(float x, float y, float z) {
-        /*LuaValue library = LuaValue.tableOf(0, 3);
-        library.set("x", x);
-        library.set("y", y);
-        library.set("z", z);
-        return library;*/
         return Vec3ToLuaValue(x,y,z);
     }
 

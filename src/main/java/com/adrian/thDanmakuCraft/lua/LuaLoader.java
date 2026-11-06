@@ -16,14 +16,14 @@ public class LuaLoader {
     public static LuaLoader instance;
 
     private final Map<ResourceLocation,Resource> resourceMap;
-    private final Map<ResourceLocation,String>   resourceMap2 = new HashMap<>();
+    private final Map<ResourceLocation,String> resourceContentMap = new HashMap<>();
 
     public LuaLoader(){
         this.resourceMap = ResourceLoader.loadAllResourcesInFolder(ResourceLocationUtil.thdanmakucraft("lua"),"lua");
         this.resourceMap.forEach(((resourceLocation, resource) -> {
             try {
                 THDanmakuCraftMod.LOGGER.info("Loading resource {}",resourceLocation);
-                resourceMap2.put(resourceLocation,ResourceLoader.readResource(resource));
+                resourceContentMap.put(resourceLocation,ResourceLoader.readResource(resource));
             } catch (Exception e) {
                 THDanmakuCraftMod.LOGGER.warn("Failed to load resource {}",resourceLocation,e);
             }
@@ -41,7 +41,7 @@ public class LuaLoader {
 
     @Nullable
     public String getResourceAsString(ResourceLocation resourceLocation){
-        return this.resourceMap2.get(resourceLocation);
+        return this.resourceContentMap.get(resourceLocation);
     }
 
     public Map<ResourceLocation,Resource> loadAllResourcesInFolder(ResourceLocation path){
@@ -63,6 +63,6 @@ public class LuaLoader {
 
     @Nullable
     public Map<ResourceLocation,String> getResourceMap(){
-        return this.resourceMap2;
+        return this.resourceContentMap;
     }
 }

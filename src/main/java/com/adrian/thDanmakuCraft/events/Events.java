@@ -48,8 +48,8 @@ public class Events {
                                     var level = source.getLevel();
                                     EntityTHObjectContainer entityTHObjectContainer = new EntityTHSpellCard(null, level, "");
                                     entityTHObjectContainer.setPos(player.position());
-                                    level.addFreshEntity(entityTHObjectContainer);
                                     entityTHObjectContainer.getContainer().setLuaClass(spellCardKey);
+                                    level.addFreshEntity(entityTHObjectContainer);
                                     return 15;
                                 }).then(Commands.argument("position", Vec3Argument.vec3()).executes(arguments -> {
                                     String spellCardKey = StringArgumentType.getString(arguments, "spellcardkey");
@@ -58,8 +58,8 @@ public class Events {
                                     var level = source.getLevel();
                                     EntityTHObjectContainer entityTHObjectContainer = new EntityTHSpellCard(null, level, "");
                                     entityTHObjectContainer.setPos(Vec3Argument.getVec3(arguments, "position"));
-                                    level.addFreshEntity(entityTHObjectContainer);
                                     entityTHObjectContainer.getContainer().setLuaClass(spellCardKey);
+                                    level.addFreshEntity(entityTHObjectContainer);
                                     return 15;
                                 }))))
                 .then(Commands.literal("get")

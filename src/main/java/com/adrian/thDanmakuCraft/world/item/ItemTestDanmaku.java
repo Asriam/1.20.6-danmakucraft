@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.world.item;
 
+import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THLaser;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
@@ -25,7 +26,6 @@ public class ItemTestDanmaku extends Item {
         ItemStack itemstack = player.getItemInHand(hand);
         EntityTHObjectContainer entityTHObjectContainer = new EntityTHSpellCard(null, level, "");
         entityTHObjectContainer.setPos(player.position().add(0.0,player.getEyeHeight(),0.0));
-        level.addFreshEntity(entityTHObjectContainer);
 
         THObjectContainer container = entityTHObjectContainer.getContainer();
         //container.setUser(player);
@@ -39,9 +39,11 @@ public class ItemTestDanmaku extends Item {
         laser.setLifetime(1000);
         laser.spawn();
         container.setLifetime(1000);
+        level.addFreshEntity(entityTHObjectContainer);
+        //THDanmakuCraftMod.LOGGER.info(entityTHObjectContainer.toString());
         //container.scriptEvent("onInit",container.ofLuaValue());
 
-        //player.getCooldowns().addCooldown(this, container.getLifetime());
+        player.getCooldowns().addCooldown(this, 6);
         return InteractionResultHolder.sidedSuccess(itemstack, level.isClientSide());
     }
 }

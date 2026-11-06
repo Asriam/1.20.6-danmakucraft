@@ -9,7 +9,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 
-@EventBusSubscriber(modid = THDanmakuCraftMod.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = THDanmakuCraftMod.MOD_ID/*,bus = EventBusSubscriber.Bus.GAME*/)
 public class GuiEvents {
     private static final GuiLayers layers = new GuiLayers();
     @SubscribeEvent

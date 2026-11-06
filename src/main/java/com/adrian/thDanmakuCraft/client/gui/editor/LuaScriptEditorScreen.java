@@ -253,6 +253,8 @@ public class LuaScriptEditorScreen extends Screen {
             "thdanmakucraft", "textures/gui/editor/icons/folder.png");
     private static final ResourceLocation ICON_CODE = ResourceLocation.fromNamespaceAndPath(
             "thdanmakucraft", "textures/gui/editor/icons/code.png");
+    private static final ResourceLocation ICON_CODE_MAIN = ResourceLocation.fromNamespaceAndPath(
+            "thdanmakucraft", "textures/gui/editor/icons/code_main.png");
 
     // ---- 代碼工具列（分類 + 樣板按鈕） ----
     private static final int SNIPPET_CATEGORY_HEIGHT = 11;
@@ -1243,7 +1245,7 @@ public class LuaScriptEditorScreen extends Screen {
             if (dirtyHere) {
                 label = label + " *";
             }
-            this.drawBrowserIcon(graphics, ICON_CODE, indent,
+            this.drawBrowserIcon(graphics, label.equals("main.lua") ? ICON_CODE_MAIN : ICON_CODE, indent,
                     rowY + (BROWSER_ROW_HEIGHT - BROWSER_ICON_SIZE) / 2);
             int labelX = indent + BROWSER_ICON_SIZE + 3;
             graphics.drawString(this.font, this.font.plainSubstrByWidth(label, w - (labelX - x) - 4),

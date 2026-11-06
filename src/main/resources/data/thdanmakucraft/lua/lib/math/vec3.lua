@@ -17,7 +17,7 @@ local abstractVec3 = {}
 local vec3 = {}
 
 local metatable = {__index = vec3 }
-core.registerMetaTable("util.vec3",metatable)
+core.registerMetaTable("math.vec3",metatable)
 core.setupVec3Lib(vec3,metatable)
 ---@param _vec3 table
 ---@return math.Vec3
