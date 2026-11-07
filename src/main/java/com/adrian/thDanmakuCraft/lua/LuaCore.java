@@ -70,7 +70,7 @@ public class LuaCore {
 
     /** 編輯器腳本根目錄：{@code config/thdanmakucraft/scripts}。 */
     public static Path userScriptsDir() {
-        return FMLPaths.CONFIGDIR.get().resolve(THDanmakuCraftMod.MOD_ID);
+        return FMLPaths.CONFIGDIR.get().resolve(THDanmakuCraftMod.MOD_ID).resolve("scripts");
     }
 
     /**
@@ -79,7 +79,7 @@ public class LuaCore {
      * <p>檔案不存在就跳過；腳本內容有錯只記錄，不會讓遊戲崩潰。</p>
      */
     public void runUserMainScript() {
-        Path file = userScriptsDir().resolve("scripts").resolve("main.lua");
+        Path file = userScriptsDir().resolve("main.lua");
         if (!Files.isRegularFile(file)) {
             LOGGER.info("No user main script at {}", file);
             return;
