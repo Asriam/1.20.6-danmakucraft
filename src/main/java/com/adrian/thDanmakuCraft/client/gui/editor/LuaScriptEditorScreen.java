@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.client.gui.editor;
 
+import com.adrian.thDanmakuCraft.lua.LuaCore;
 import net.minecraft.client.Minecraft;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -678,6 +679,7 @@ public class LuaScriptEditorScreen extends Screen {
             return;
         }
         this.dialog = Dialog.CLOSE_CONFIRM;
+        LuaCore.refreshLuaLib();
     }
 
     private void save() {
@@ -1333,7 +1335,7 @@ public class LuaScriptEditorScreen extends Screen {
                     x + 14, lineY, 0xFF6B7280, false);
         }
 
-        String[] labels = {"儲存全部 (S)", "不儲存 (D)", "取消 (Esc)"};
+        String[] labels = {"儲存全部 (Enter)", "不儲存 (Del)", "取消 (Esc)"};
         for (int i = 0; i < 3; i++) {
             int[] b = this.closeDialogButton(i);
             boolean hover = this.inRect(this.lastMouseX, this.lastMouseY, b[0], b[1], b[2], b[3]);
@@ -2828,12 +2830,12 @@ public class LuaScriptEditorScreen extends Screen {
         boolean shift = hasShiftDown();
 
         if (this.dialog == Dialog.CLOSE_CONFIRM) {
-            if (keyCode == GLFW.GLFW_KEY_S || keyCode == GLFW.GLFW_KEY_ENTER
+            if (keyCode == GLFW.GLFW_KEY_ENTER
                     || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
                 this.dialog = Dialog.NONE;
                 this.saveAll();
                 super.onClose();
-            } else if (keyCode == GLFW.GLFW_KEY_D) {
+            } else if (keyCode == GLFW.GLFW_KEY_DELETE) {
                 this.dialog = Dialog.NONE;
                 super.onClose();
             } else if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
