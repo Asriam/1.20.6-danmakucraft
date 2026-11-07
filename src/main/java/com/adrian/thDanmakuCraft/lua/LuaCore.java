@@ -65,7 +65,7 @@ public class LuaCore {
         String path = "main.lua";
         String script = LUA.luaLoader.getResourceAsString(getFileLocation(path));
         LuaCore luaCore = LuaCore.getInstance();
-        luaCore.GLOBALS.load(script,path).call();
+        luaCore.loadScript(script, path).call();
         // 再執行編輯器根目錄（config/thdanmakucraft/scripts）底下的 main.lua
         luaCore.runUserMainScript();
     }
@@ -88,7 +88,7 @@ public class LuaCore {
         }
         try {
             String source = Files.readString(file, StandardCharsets.UTF_8);
-            this.GLOBALS.load(source, file.toString()).call();
+            this.loadScript(source, file.toString()).call();
             LOGGER.info("Ran user main script {}", file);
         } catch (Throwable error) {
             LOGGER.error("Failed to run user main script {}", file, error);
@@ -99,7 +99,7 @@ public class LuaCore {
         try {
             GLOBALS.set("core",coreAPI());
             GLOBALS.set("Mth", mthAPI());
-            // 全域函式：constantize("NAME", value) / constantize("NAME") / constantize(table)
+            // constantize：constantize(name, value) / constantize(table) / constantize(value)
             GLOBALS.set("constantize", new VarArgFunction() {
                 @Override
                 public Varargs invoke(Varargs args) {
@@ -112,10 +112,37 @@ public class LuaCore {
                     return LuaValue.valueOf(LuaConstants.isConstant(name.checkjstring()));
                 }
             });
+            GLOBALS.set("constantizeGlobal", new OneArgFunction() {
+                @Override
+                public LuaValue call(LuaValue name) {
+                    LuaConstants.lockGlobal(name.checkjstring());
+                    return LuaValue.TRUE;
+                }
+            });
+            // 以下兩個由 LuaConstantGuard 改寫後的程式碼呼叫，一般不直接使用
+            GLOBALS.set("__lua_const_guard__", new OneArgFunction() {
+                @Override
+                public LuaValue call(LuaValue name) {
+                    LuaConstants.guard(name.checkjstring());
+                    return LuaValue.NIL;
+                }
+            });
+            GLOBALS.set("__lua_const_register__", new OneArgFunction() {
+                @Override
+                public LuaValue call(LuaValue name) {
+                    LuaConstants.registerSourceConstant(name.checkjstring());
+                    return LuaValue.NIL;
+                }
+            });
             GLOBALS.set("luajava", NIL);
         } catch (Exception e) {
             LOGGER.warn("Failed put api!", e);
         }
+    }
+
+    /** 載入腳本前先套用常數改寫（constantize）。 */
+    public LuaValue loadScript(String source, String chunkName) {
+        return this.GLOBALS.load(LuaConstantGuard.transform(source), chunkName);
     }
 
     public static ResourceLocation getFileLocation(String path){
@@ -161,7 +188,7 @@ public class LuaCore {
                 THDanmakuCraftMod.LOGGER.error("Lua file not found: {}", path);
                 return NIL;
             }
-            return this.GLOBALS.load(script,path).call();
+            return this.loadScript(script, path).call();
         } catch (Exception e) {
             THDanmakuCraftMod.LOGGER.error("Failed loading lua file! the file path is not valid!",e);
         }
@@ -172,7 +199,7 @@ public class LuaCore {
         boolean userFolder = path.startsWith(USER_SCRIPT_PREFIX);
         if (!userFolder) {
             luaLoader.loadAllResourcesInFolderAsString(getFileLocation(path)).forEach((path1, resource) -> {
-                this.GLOBALS.load(resource,path).call();
+                this.loadScript(resource, path).call();
             });
         }
         String relative = userFolder ? path.substring(USER_SCRIPT_PREFIX.length()) : path;
@@ -185,7 +212,7 @@ public class LuaCore {
                         .sorted()
                         .forEach(file -> {
                             try {
-                                this.GLOBALS.load(Files.readString(file, StandardCharsets.UTF_8),
+                                this.loadScript(Files.readString(file, StandardCharsets.UTF_8),
                                         file.toString()).call();
                             } catch (Throwable error) {
                                 THDanmakuCraftMod.LOGGER.error("Failed loading lua file {}", file, error);
@@ -377,6 +404,7 @@ public class LuaCore {
             }
         });
 
+        // 全域函式：constantize("NAME", value) / constantize("NAME") / constantize(table)
         library.set("constantize", new VarArgFunction() {
             @Override
             public Varargs invoke(Varargs args) {
@@ -389,7 +417,6 @@ public class LuaCore {
                 return LuaValue.valueOf(LuaConstants.isConstant(name.checkjstring()));
             }
         });
-
         return library;
     }
 

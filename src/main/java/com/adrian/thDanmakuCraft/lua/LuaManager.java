@@ -22,7 +22,7 @@ public class LuaManager extends ScriptManager<LuaValue> {
     @Override
     public void setScript(String script){
         if(script != null && !script.isEmpty()){
-            this.luaValue = GLOBALS.load(script).call();
+            this.luaValue = GLOBALS.load(LuaConstantGuard.transform(script)).call();
         }
         this.script = script;
     };

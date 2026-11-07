@@ -61,6 +61,14 @@ function c.getClass(className) end
 ---@overload fun(metatable:table)
 function c.registerMetaTable(metatableName, metatable) end
 
+---@param table table
+---@overload fun(globalTableName:string)
+function c.constantize(table) end
+
+---@param table table
+---@return boolean
+function c.isConstant(table) end
+
 ---@field thobject    userdata
 ---@field bullet      userdata
 ---@field laser       userdata
