@@ -295,8 +295,14 @@ public class LuaScriptEditorScreen extends Screen {
       /** 參數表單每一列的高度。 */
     private static final int PARAM_ROW_HEIGHT = LINE_HEIGHT + 8;
 
-    private enum SnippetCategory {
-        BULLET("Bullet"), OBJECT("Object"), LASER("Laser"), TASK("Task"), SPELLCARD("SpellCard"), MATH("Math");
+    protected enum SnippetCategory {
+        BULLET("Bullet"),
+        OBJECT("Object"),
+        LASER("Laser"),
+        TASK("Task"),
+        SPELLCARD("SpellCard"),
+        MATH("Math"),
+        CORE("Core");
 
         private final String label;
 
@@ -1624,6 +1630,8 @@ public class LuaScriptEditorScreen extends Screen {
             if (hover) {
                 graphics.fill(iconX, iconY, iconX + SNIPPET_ICON, iconY + SNIPPET_ICON, 0x553B82F6);
             }
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
             graphics.blit(snippets.get(i).icon(), iconX, iconY, SNIPPET_ICON, SNIPPET_ICON,
                     0.0F, 0.0F, 24, 24, 24, 24);
             this.snippetX[i] = iconX;
