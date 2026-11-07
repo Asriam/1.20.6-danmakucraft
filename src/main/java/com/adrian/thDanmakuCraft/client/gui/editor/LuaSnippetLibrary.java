@@ -36,7 +36,7 @@ public final class LuaSnippetLibrary {
      * @param parameters  {@code ---@parameter} 宣告的參數（依宣告順序）
      */
     public record Entry(String label, String icon, String code, String description,
-                        List<Parameter> parameters) {
+                        List<Parameter> parameters, String keyword) {
         public boolean hasParameters() {
             return !this.parameters.isEmpty();
         }
@@ -183,6 +183,7 @@ public final class LuaSnippetLibrary {
         String label = null;
         String icon = null;
         String description = null;
+        String keyword = null;
         List<Parameter> parameters = new ArrayList<>();
         String[] lines = content.replace("\r\n", "\n").split("\n", -1);
         int index = 0;
@@ -194,6 +195,8 @@ public final class LuaSnippetLibrary {
                 icon = line.substring("---@icon ".length()).trim();
             } else if (line.startsWith("---@description ")) {
                 description = line.substring("---@description ".length()).trim();
+            } else if (line.startsWith("---@keyword ")) {
+                keyword = line.substring("---@keyword ".length()).trim();
             } else if (line.startsWith("---@parameter_switch ")) {
                 Parameter parameter = parseParameter(
                         line.substring("---@parameter_switch ".length()).trim(), ParameterKind.SWITCH);
@@ -242,6 +245,29 @@ public final class LuaSnippetLibrary {
         if (icon == null || icon.isEmpty()) {
             icon = "code.png";
         }
-        return new Entry(label, icon, code.toString(), description, List.copyOf(parameters));
+        String codeText = code.toString();
+        if (keyword == null || keyword.isEmpty()) {
+            keyword = deriveKeyword(codeText);
+        }
+        return new Entry(label, icon, codeText, description, List.copyOf(parameters), keyword);
+    }
+
+    /** 從樣板程式碼推導「關鍵字」：第一個 {@code 名稱:方法(} 或 {@code 名稱.方法(}。 */
+    private static String deriveKeyword(String code) {
+        // 1) 名稱:方法( 或 名稱.方法(
+        java.util.regex.Matcher matcher = java.util.regex.Pattern
+                .compile("([A-Za-z_][A-Za-z0-9_]*[:.][A-Za-z_][A-Za-z0-9_]*)\\s*\\(")
+                .matcher(code);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        // 2) ${target}:方法( -> 用 ":方法" 當關鍵字
+        matcher = java.util.regex.Pattern
+                .compile(":([A-Za-z_][A-Za-z0-9_]*)\\s*\\(")
+                .matcher(code);
+        if (matcher.find()) {
+            return ":" + matcher.group(1);
+        }
+        return "";
     }
 }

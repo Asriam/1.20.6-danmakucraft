@@ -60,8 +60,15 @@ public class LuaScriptEditorScreen extends Screen {
     private static final int LINE_NO = 0xFF5A6478;
     private static final int CURRENT_LINE = 0x30FFFFFF;
     private static final int SELECTION = 0x553B82F6;
+    /** core / math / Mth 這類函式庫引用的顏色。 */
+    private static final int LIBRARY = 0xFF4EC9B0;
+    /** 樣板圖示佔用的寬度。 */
+    private static final int SNIPPET_ICON_GAP = LINE_HEIGHT;
     private static final int CURSOR = 0xFFFFFFFF;
     private static final int STATUS_TEXT = 0xFF9AA4BC;
+
+    /** 會被著色的函式庫名稱（後面接 . 時才上色）。 */
+    private static final Set<String> LIBRARY_NAMES = Set.of("core", "math", "Mth");
 
     private static final Set<String> KEYWORDS = Set.of(
             "and", "break", "do", "else", "elseif", "end", "false", "for", "function", "goto",
@@ -263,155 +270,27 @@ public class LuaScriptEditorScreen extends Screen {
     private static final int SNIPPET_TOOL_HEIGHT = 16;
     private static final int SNIPPET_ICON = 14;
     /** 樣板標記的索引配對快取（內容沒變就不重算）。 */
-    private int snippetPairHash = Integer.MIN_VALUE;
-    private Set<Integer> snippetPairs = Set.of();
 
     /** 行號欄圖示快取（key = 圖示檔名）。 */
-    private final Map<String, ResourceLocation> gutterIcons = new HashMap<>();
 
     /** 這一行是不是樣板標記；是就回傳 Start 標記，否則 null。 */
-    private static LuaSnippetMarkers.Marker snippetMarkerOf(String line) {
-        return LuaSnippetMarkers.anyStartMarker(line);
-    }
-
-    private static boolean isSnippetEndLine(String line) {
-        return LuaSnippetMarkers.endMarker(line) != null;
-    }
-
-    /** 目前內容裡「Start/End 配對成功」的樣板索引。 */
-    private Set<Integer> pairedSnippetIndices() {
-        int hash = this.content().hashCode();
-        if (hash != this.snippetPairHash) {
-            this.snippetPairHash = hash;
-            List<String> all = new ArrayList<>(this.lines.size());
-            for (StringBuilder line : this.lines) {
-                all.add(line.toString());
-            }
-            this.snippetPairs = LuaSnippetMarkers.pairedIndices(all);
-        }
-        return this.snippetPairs;
-    }
-
-    /** 剝掉已配對的樣板標記後，實際要顯示的字串。 */
-    private LuaSnippetMarkers.Mapped displayOf(String line) {
-        return LuaSnippetMarkers.strip(line, this.pairedSnippetIndices());
-    }
-
-    /** 行號欄的左緣（圖示畫在這裡）。 */
+        /** 目前內容裡「Start/End 配對成功」的樣板索引。 */
+      /** 剝掉已配對的樣板標記後，實際要顯示的字串。 */
+      /** 行號欄的左緣（圖示畫在這裡）。 */
     private int gutterLeft() {
         return taskBarLeft() - taskBarOffset;
     }
 
     /** 下一個可用的樣板索引（目前內容裡最大的 +1）。 */
-    private int nextSnippetIndex() {
-        int max = 0;
-        for (StringBuilder line : this.lines) {
-            for (LuaSnippetMarkers.Marker marker : LuaSnippetMarkers.markersOf(line.toString())) {
-                max = Math.max(max, marker.index());
-            }
-        }
-        return max + 1;
-    }
-
-    /** 找出某個 index 的樣板區塊（Start 行/欄 ~ End 行/欄）；找不到回傳 null。 */
-    private int[] snippetBlockFor(int index, int endLine, LuaSnippetMarkers.Marker endMarker) {
-        for (int line = endLine; line >= 0; line--) {
-            for (LuaSnippetMarkers.Marker marker : LuaSnippetMarkers.markersOf(
-                    this.lines.get(line).toString())) {
-                if (!marker.start()) {
-                    continue;
-                }
-                boolean sameIndex = index >= 0 && marker.index() == index;
-                boolean legacy = index < 0 && marker.index() < 0 && line < endLine;
-                if (sameIndex || legacy) {
-                    return new int[]{line, marker.from(), endLine, endMarker.to()};
-                }
-            }
-        }
-        return null;
-    }
-
-    private void deleteSnippetBlock(int[] block) {
-        this.recordUndo(false);
-        this.selectionLine = block[0];
-        this.selectionColumn = block[1];
-        this.cursorLine = block[2];
-        this.cursorColumn = block[3];
-        this.deleteSelection();
-        this.setStatus("已刪除樣板區塊", STATUS_TEXT);
-    }
-
-    /**
+      /** 找出某個 index 的樣板區塊（Start 行/欄 ~ End 行/欄）；找不到回傳 null。 */
+        /**
      * 刪除時遇到樣板標記：
      * Start 標記直接跳過（不讓它被破壞），End 標記則刪掉整段區塊。
      * @return true 表示已處理（呼叫端不要再往下刪）
      */
-    private boolean handleSnippetMarkerDelete(boolean backspace) {
-        if (this.cursorLine < 0 || this.cursorLine >= this.lines.size()) {
-            return false;
-        }
-        String line = this.lines.get(this.cursorLine).toString();
-        int column = Math.min(this.cursorColumn, line.length());
-        for (LuaSnippetMarkers.Marker marker : LuaSnippetMarkers.markersOf(line)) {
-            boolean inside = backspace
-                    ? column > marker.from() && column <= marker.to()
-                    : column >= marker.from() && column < marker.to();
-            if (!inside) {
-                continue;
-            }
-            if (marker.start()) {
-                this.cursorColumn = backspace ? marker.from() : marker.to();
-                this.setStatus("樣板標記不可編輯（要先刪掉整段區塊）", LINE_NO);
-                return true;
-            }
-            int[] block = this.snippetBlockFor(marker.index(), this.cursorLine, marker);
-            if (block != null) {
-                this.deleteSnippetBlock(block);
-            }
-            return true;
-        }
-        return false;
-    }
-
-    /** 選取整個樣板區塊（Start 到 End，含兩端）。 */
-    private void selectSnippetBlock(int startLine) {
-        String line = this.lines.get(startLine).toString();
-        LuaSnippetMarkers.Marker start = LuaSnippetMarkers.anyStartMarker(line);
-        int index = start == null ? -1 : start.index();
-        int endLine = startLine;
-        if (index >= 0) {
-            for (int i = startLine; i < this.lines.size(); i++) {
-                LuaSnippetMarkers.Marker end = LuaSnippetMarkers.endMarker(this.lines.get(i).toString());
-                if (end != null && end.index() == index) {
-                    endLine = i;
-                    break;
-                }
-            }
-        } else {
-            for (int i = startLine + 1; i < this.lines.size(); i++) {
-                LuaSnippetMarkers.Marker end = LuaSnippetMarkers.endMarker(this.lines.get(i).toString());
-                if (end != null) {
-                    endLine = i;
-                    break;
-                }
-            }
-        }
-        this.selectionLine = startLine;
-        this.selectionColumn = 0;
-        this.cursorLine = endLine;
-        this.cursorColumn = this.lines.get(endLine).length();
-        this.ensureCursorVisible();
-        this.setStatus("已選取樣板區塊（第 " + (startLine + 1) + " ~ " + (endLine + 1) + " 行）",
-                STATUS_TEXT);
-    }
-
-    /** 把圖示檔名轉成 ResourceLocation（有快取）。 */
-    private ResourceLocation gutterIcon(String file) {
-        return this.gutterIcons.computeIfAbsent(file, key -> ResourceLocation.fromNamespaceAndPath(
-                "thdanmakucraft", "textures/gui/editor/icons/" + key));
-    }
-
-    /** 參數表單每一列的高度。 */
+      /** 選取整個樣板區塊（Start 到 End，含兩端）。 */
+      /** 把圖示檔名轉成 ResourceLocation（有快取）。 */
+      /** 參數表單每一列的高度。 */
     private static final int PARAM_ROW_HEIGHT = LINE_HEIGHT + 8;
 
     private enum SnippetCategory {
@@ -425,7 +304,8 @@ public class LuaScriptEditorScreen extends Screen {
     }
 
     private record Snippet(String label, ResourceLocation icon, String iconFile, String code,
-                           String description, List<LuaSnippetLibrary.Parameter> parameters) {
+                           String description, List<LuaSnippetLibrary.Parameter> parameters,
+                           String keyword) {
         boolean hasParameters() {
             return !this.parameters.isEmpty();
         }
@@ -437,6 +317,67 @@ public class LuaScriptEditorScreen extends Screen {
     }
 
     private Map<SnippetCategory, List<Snippet>> snippetCache;
+    /** 樣板關鍵字 -> 樣板（第一次畫線時建立）。 */
+    private Map<String, Snippet> snippetKeywords;
+
+    private record SnippetHit(int column, Snippet snippet) {
+    }
+
+    /** 建立「關鍵字 -> 樣板」索引。 */
+    private void ensureSnippetKeywords() {
+        if (this.snippetKeywords != null) {
+            return;
+        }
+        this.snippetKeywords = new HashMap<>();
+        for (SnippetCategory category : SnippetCategory.values()) {
+            for (Snippet snippet : this.snippetsFor(category)) {
+                String keyword = snippet.keyword();
+                if (keyword != null && !keyword.isEmpty()) {
+                    this.snippetKeywords.putIfAbsent(keyword, snippet);
+                }
+            }
+        }
+    }
+
+    /** 這一行第一個樣板關鍵字；沒有回傳 null。 */
+    private SnippetHit snippetHit(String line) {
+        this.ensureSnippetKeywords();
+        if (line.isEmpty() || this.snippetKeywords.isEmpty()) {
+            return null;
+        }
+        int best = -1;
+        Snippet bestSnippet = null;
+        for (Map.Entry<String, Snippet> entry : this.snippetKeywords.entrySet()) {
+            int index = line.indexOf(entry.getKey());
+            if (index >= 0 && (best < 0 || index < best)) {
+                best = index;
+                bestSnippet = entry.getValue();
+            }
+        }
+        return best < 0 ? null : new SnippetHit(best, bestSnippet);
+    }
+
+    /** 這個欄位在畫面上要額外往右偏移多少（樣板圖示的寬度）。 */
+    private int snippetShift(String line, int column) {
+        SnippetHit hit = this.snippetHit(line);
+        return hit != null && column > hit.column() ? SNIPPET_ICON_GAP : 0;
+    }
+
+    /** 畫一行；若行內有樣板關鍵字，先在關鍵字前面畫樣板圖示。 */
+    private void drawCodeLine(GuiGraphics graphics, String line, int x, int y) {
+        SnippetHit hit = this.snippetHit(line);
+        if (hit == null) {
+            this.drawLine(graphics, line, x, y);
+            return;
+        }
+        String prefix = line.substring(0, hit.column());
+        String rest = line.substring(hit.column());
+        this.drawLine(graphics, prefix, x, y);
+        int iconX = x + this.font.width(prefix);
+        graphics.blit(hit.snippet().icon(), iconX, y, LINE_HEIGHT, LINE_HEIGHT,
+                0.0F, 0.0F, 24, 24, 24, 24);
+        this.drawLine(graphics, rest, iconX + SNIPPET_ICON_GAP, y);
+    }
 
     /** 從 data/thdanmakucraft/lua/snippet 載入樣板（第一次用到時載入）。 */
     private List<Snippet> snippetsFor(SnippetCategory category) {
@@ -447,7 +388,7 @@ public class LuaScriptEditorScreen extends Screen {
                 for (LuaSnippetLibrary.Entry entry : LuaSnippetLibrary.byCategory()
                         .getOrDefault(each.name().toLowerCase(java.util.Locale.ROOT), List.of())) {
                     list.add(new Snippet(entry.label(), icon(entry.icon()), entry.icon(), entry.code(),
-                            entry.description(), entry.parameters()));
+                            entry.description(), entry.parameters(), entry.keyword()));
                 }
                 built.put(each, List.copyOf(list));
             }
@@ -1086,26 +1027,14 @@ public class LuaScriptEditorScreen extends Screen {
             if (errorLine) {
                 graphics.fill(PADDING, y, this.width - PADDING, y + LINE_HEIGHT, 0x33FF5555);
             }
-            String gutterText = this.lines.get(lineIndex).toString();
-            LuaSnippetMarkers.Mapped mapped = this.displayOf(gutterText);
-            LuaSnippetMarkers.Marker startMarker =
-                    LuaSnippetMarkers.startMarker(gutterText, this.pairedSnippetIndices());
-            String snippetIcon = startMarker == null ? null : startMarker.icon();
-            int gutterX = this.gutterLeft();
-            if (snippetIcon != null) {
-                // 樣板起始行：行號位置改畫樣板圖示
-                int iconSize = LINE_HEIGHT;
-                graphics.blit(this.gutterIcon(snippetIcon), gutterX + 1, y, iconSize, iconSize,
-                        0.0F, 0.0F, 24, 24, 24, 24);
-            } else {
-                String number = String.valueOf(lineIndex + 1);
-                graphics.drawString(this.font, number,
-                        gutterX + gutter - 4 - this.font.width(number),
-                        y + 1, errorLine ? 0xFFFF6B6B : LINE_NO, false);
-            }
+            String lineText = this.lines.get(lineIndex).toString();
+            String number = String.valueOf(lineIndex + 1);
+            graphics.drawString(this.font, number,
+                    this.gutterLeft() + gutter - 4 - this.font.width(number),
+                    y + 1, errorLine ? 0xFFFF6B6B : LINE_NO, false);
 
             this.drawSelection(graphics, lineIndex, y, textLeft);
-            this.drawLine(graphics, mapped.display(), textLeft, y);
+            this.drawCodeLine(graphics, lineText, textLeft, y);
         }
         graphics.disableScissor();
 
@@ -1745,26 +1674,14 @@ public class LuaScriptEditorScreen extends Screen {
         for (Map.Entry<String, String> entry : values.entrySet()) {
             code = code.replace("${" + entry.getKey() + "}", entry.getValue());
         }
-        // 行內標記：Start 貼在第一行程式碼前、End 貼在最後一行後，都不額外換行
-        // index 讓「樣板裡再插樣板」時內外兩層不會配錯
-        String body = code.endsWith("\n") ? code.substring(0, code.length() - 1) : code;
-        String[] bodyLines = body.split("\n", -1);
-        int snippetIndex = this.nextSnippetIndex();
-        bodyLines[0] = LuaSnippetMarkers.START_PREFIX + snippetIndex + " " + snippet.iconFile()
-                + " ]] " + bodyLines[0];
-        int last = bodyLines.length - 1;
-        bodyLines[last] = bodyLines[last] + " " + LuaSnippetMarkers.END_PREFIX + " "
-                + snippetIndex + "]]";
-        String block = String.join("\n", bodyLines) + "\n";
-        // 目前這一行如果有內容（不是空白），先斷行，讓區塊從新的一行開始
-        boolean needBreak = !this.lines.get(this.cursorLine).toString().trim().isEmpty();
-        int blockStart = this.cursorLine + (needBreak ? 1 : 0);
-        if (needBreak) {
-            block = "\n" + block;
+        if (code.endsWith("\n")) {
+            code = code.substring(0, code.length() - 1);
         }
-        this.insert(block);
-        // 游標停在區塊第一行程式碼（不是 End 之後的空白行）
-        this.setCursor(Math.min(blockStart + 1, this.lines.size() - 1), 0);
+        // 目前這一行如果有內容，先斷行，讓樣板從新的一行開始
+        if (!this.lines.get(this.cursorLine).toString().trim().isEmpty()) {
+            code = "\n" + code;
+        }
+        this.insert(code);
         this.setStatus("已插入：" + snippet.label(), 0xFF7BD88F);
     }
 
@@ -2248,13 +2165,10 @@ public class LuaScriptEditorScreen extends Screen {
             return;
         }
         String line = this.lines.get(lineIndex).toString();
-        LuaSnippetMarkers.Mapped mapped = this.displayOf(line);
-        int from = Math.min(mapped.toDisplay(Math.min(range[0], line.length())),
-                mapped.display().length());
-        int to = Math.min(mapped.toDisplay(Math.min(range[1], line.length())),
-                mapped.display().length());
-        int x1 = textLeft + this.font.width(mapped.display().substring(0, from));
-        int x2 = textLeft + this.font.width(mapped.display().substring(0, to));
+        int from = Math.min(range[0], line.length());
+        int to = Math.min(range[1], line.length());
+        int x1 = textLeft + this.font.width(line.substring(0, from)) + this.snippetShift(line, from);
+        int x2 = textLeft + this.font.width(line.substring(0, to)) + this.snippetShift(line, to);
         graphics.fill(x1, y, Math.max(x2, x1 + 1), y + LINE_HEIGHT, SELECTION);
     }
 
@@ -2268,9 +2182,7 @@ public class LuaScriptEditorScreen extends Screen {
         }
         String line = this.lines.get(this.cursorLine).toString();
         int column = Math.min(this.cursorColumn, line.length());
-        LuaSnippetMarkers.Mapped mapped = this.displayOf(line);
-        int displayColumn = Math.min(mapped.toDisplay(column), mapped.display().length());
-        int x = textLeft + this.font.width(mapped.display().substring(0, displayColumn));
+        int x = textLeft + this.font.width(line.substring(0, column)) + this.snippetShift(line, column);
         int y = textTop() + screenLine * LINE_HEIGHT;
         graphics.fill(x, y, x + 1, Math.min(y + LINE_HEIGHT, statusTop), CURSOR);
     }
@@ -2316,6 +2228,18 @@ public class LuaScriptEditorScreen extends Screen {
                 String word = line.substring(start, i);
                 if (KEYWORDS.contains(word)) {
                     color = KEYWORD;
+                } else if (LIBRARY_NAMES.contains(word) && i < length && line.charAt(i) == '.') {
+                    // 把 core.xxx / math.xxx 整段一起上色
+                    int memberStart = i + 1;
+                    int memberEnd = memberStart;
+                    while (memberEnd < length
+                            && (Character.isLetterOrDigit(line.charAt(memberEnd)) || line.charAt(memberEnd) == '_')) {
+                        memberEnd++;
+                    }
+                    if (memberEnd > memberStart) {
+                        i = memberEnd;
+                    }
+                    color = LIBRARY;
                 } else {
                     // 後面接 ( 的識別字視為函式呼叫，和 IntelliJ 一樣上色
                     int probe = i;
@@ -2341,15 +2265,20 @@ public class LuaScriptEditorScreen extends Screen {
     /** 滑鼠 x 對應到某一行的第幾個字元。 */
     private int columnAt(int lineIndex, double mouseX) {
         String line = this.lines.get(lineIndex).toString();
-        LuaSnippetMarkers.Mapped mapped = this.displayOf(line);
-        String display = mapped.display();
         int textLeft = this.contentLeft();
         int target = (int) mouseX - textLeft;
+        SnippetHit hit = this.snippetHit(line);
+        if (hit != null) {
+            int prefixWidth = this.font.width(line.substring(0, hit.column()));
+            if (target > prefixWidth + SNIPPET_ICON_GAP / 2) {
+                target -= SNIPPET_ICON_GAP;
+            }
+        }
         int column = 0;
-        while (column < display.length() && this.font.width(display.substring(0, column + 1)) <= target) {
+        while (column < line.length() && this.font.width(line.substring(0, column + 1)) <= target) {
             column++;
         }
-        return mapped.toBuffer()[Math.min(column, mapped.toBuffer().length - 1)];
+        return column;
     }
 
     /** 畫管理器列上的小圖示（來源 24x24，縮到 12x12）。 */
@@ -2477,13 +2406,6 @@ public class LuaScriptEditorScreen extends Screen {
         }
         this.browserFocused = false;
         int textLeft = this.contentLeft();
-        int clickedLine = this.scroll + (int) ((mouseY - textTop()) / LINE_HEIGHT);
-        if (clickedLine >= 0 && clickedLine < this.lines.size()
-                && mouseX >= this.gutterLeft() && mouseX < textLeft
-                && LuaSnippetMarkers.anyStartMarker(this.lines.get(clickedLine).toString()) != null) {
-            this.selectSnippetBlock(clickedLine);
-            return true;
-        }
         int lineIndex = this.scroll + (int) ((mouseY - textTop()) / LINE_HEIGHT);
         lineIndex = Math.max(0, Math.min(lineIndex, this.lines.size() - 1));
         int column = this.columnAt(lineIndex, mouseX);
@@ -3007,9 +2929,6 @@ public class LuaScriptEditorScreen extends Screen {
         if (this.readOnly) {
             return;
         }
-        if (this.handleSnippetMarkerDelete(true)) {
-            return;
-        }
         this.clearSyntaxError();
         this.recordUndo(true);
         if (this.hasSelection()) {
@@ -3046,9 +2965,6 @@ public class LuaScriptEditorScreen extends Screen {
 
     private void deleteForward() {
         if (this.readOnly) {
-            return;
-        }
-        if (this.handleSnippetMarkerDelete(false)) {
             return;
         }
         this.clearSyntaxError();
