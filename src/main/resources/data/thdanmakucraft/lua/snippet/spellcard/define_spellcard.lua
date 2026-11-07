@@ -1,4 +1,4 @@
----@label 建立子彈
+---@label 建立符卡
 ---@icon bossspellcard.png
 ---@description aa
 ---@parameter parameterName: 符卡變量名 = mySpellCard

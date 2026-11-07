@@ -1,4 +1,4 @@
----@label 建立子彈
+---@label 設定符卡持續時間
 ---@icon set_life_time.png
 ---@description aa
 ---@parameter target: 對象 = self
