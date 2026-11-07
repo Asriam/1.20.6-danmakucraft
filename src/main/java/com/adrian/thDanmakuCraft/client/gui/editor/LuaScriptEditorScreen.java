@@ -204,8 +204,10 @@ public class LuaScriptEditorScreen extends Screen {
     private int syntaxErrorLine;
     private String syntaxErrorMessage = "";
 
+    private enum Dialog { NONE, NEW_FILE, NEW_FOLDER, RENAME, DELETE, PARAMETERS, CLOSE_CONFIRM }
 
-    private enum Dialog { NONE, NEW_FILE, NEW_FOLDER, RENAME, DELETE, PARAMETERS }
+    /** 關閉確認視窗要顯示的未儲存檔案。 */
+    private List<String> closeDialogFiles = List.of();
 
     private Dialog dialog = Dialog.NONE;
 
@@ -454,7 +456,6 @@ public class LuaScriptEditorScreen extends Screen {
     /** 每個參數目前輸入的值（與 pendingParams 同索引）。 */
     private final List<String> pendingFieldValues = new ArrayList<>();
 
-
     private final int[] actionX = new int[TopAction.values().length];
     private final int[] actionW = new int[TopAction.values().length];
     private int hoveredAction = -1;
@@ -515,7 +516,6 @@ public class LuaScriptEditorScreen extends Screen {
     private static Path scriptsDir() {
         return LuaScriptFiles.scriptsDir();
     }
-
 
     private void openFile(String name) {
         this.switchTo(name, false);
@@ -654,6 +654,30 @@ public class LuaScriptEditorScreen extends Screen {
         } else {
             this.setStatus("已儲存全部 " + saved + " 個檔案", 0xFF7BD88F);
         }
+    }
+    /** 目前有哪些檔案有未儲存的變更（含尚未切換出去的緩衝區）。 */
+    private List<String> unsavedFiles() {
+        List<String> names = new java.util.ArrayList<>();
+        for (Map.Entry<String, Buffer> entry : this.buffers.entrySet()) {
+            Buffer buffer = entry.getValue();
+            if (!buffer.readOnly && buffer.dirty) {
+                names.add(entry.getKey());
+            }
+        }
+        names.sort(String::compareTo);
+        return names;
+    }
+
+    /** 關閉編輯器；有未儲存檔案時先跳詢問視窗。 */
+    @Override
+    public void onClose() {
+        this.stash();
+        this.closeDialogFiles = this.unsavedFiles();
+        if (this.closeDialogFiles.isEmpty()) {
+            super.onClose();
+            return;
+        }
+        this.dialog = Dialog.CLOSE_CONFIRM;
     }
 
     private void save() {
@@ -832,9 +856,6 @@ public class LuaScriptEditorScreen extends Screen {
     }
 
     /** 以樹狀方式把腳本與資料夾塞進列清單。 */
-
-
-
 
     /** 分類標題預設收合，所以這裡切換的是「展開」狀態。 */
     private void toggleGroup(String group) {
@@ -1214,7 +1235,6 @@ public class LuaScriptEditorScreen extends Screen {
                     labelX, rowY + (BROWSER_ROW_HEIGHT - 8) / 2, rowColor, false);
         }
 
-
         Scrollbar browserBar = this.browserScrollbar();
         this.drawScrollbar(graphics, browserBar, this.scrollbarDrag == DRAG_BROWSER
                 || this.hitScrollbar(browserBar, mouseX, mouseY));
@@ -1235,8 +1255,11 @@ public class LuaScriptEditorScreen extends Screen {
         }
     }
 
-
     private void renderDialog(GuiGraphics graphics) {
+        if (this.dialog == Dialog.CLOSE_CONFIRM) {
+            this.renderCloseDialog(graphics);
+            return;
+        }
         if (this.dialog == Dialog.PARAMETERS) {
             this.renderParameterDialog(graphics);
             return;
@@ -1247,8 +1270,6 @@ public class LuaScriptEditorScreen extends Screen {
         int y = (this.height - h) / 2;
         graphics.fill(x - 1, y - 1, x + w + 1, y + h + 1, 0xFF3B4252);
         graphics.fill(x, y, x + w, y + h, 0xF21B1F2A);
-
-
 
         if (this.dialog == Dialog.DELETE) {
             boolean folder = this.dialogSource.startsWith("dir:");
@@ -1272,6 +1293,59 @@ public class LuaScriptEditorScreen extends Screen {
         graphics.drawString(this.font, this.font.plainSubstrByWidth(text, w - 12), x + 6, y + 24, 0xFFFFFFFF, false);
     }
 
+    private static final int CLOSE_DIALOG_WIDTH = 340;
+    private static final int CLOSE_DIALOG_HEIGHT = 84;
+
+    private int[] closeDialogBox() {
+        return new int[]{(this.width - CLOSE_DIALOG_WIDTH) / 2,
+                (this.height - CLOSE_DIALOG_HEIGHT) / 2,
+                CLOSE_DIALOG_WIDTH, CLOSE_DIALOG_HEIGHT};
+    }
+
+    /** i = 0 儲存全部 / 1 不儲存 / 2 取消。 */
+    private int[] closeDialogButton(int index) {
+        int[] box = this.closeDialogBox();
+        int[] widths = {110, 100, 70};
+        int bx = box[0] + 8;
+        for (int i = 0; i < index; i++) {
+            bx += widths[i] + 8;
+        }
+        return new int[]{bx, box[1] + box[3] - 24, widths[index], 16};
+    }
+
+    private void renderCloseDialog(GuiGraphics graphics) {
+        int[] box = this.closeDialogBox();
+        int x = box[0], y = box[1], w = box[2], h = box[3];
+        graphics.fill(x - 1, y - 1, x + w + 1, y + h + 1, 0xFF3B4252);
+        graphics.fill(x, y, x + w, y + h, 0xF21B1F2A);
+        graphics.drawString(this.font, "有 " + this.closeDialogFiles.size() + " 個檔案尚未儲存",
+                x + 10, y + 8, 0xFFFFD479, false);
+
+        int lineY = y + 22;
+        int shown = Math.min(3, this.closeDialogFiles.size());
+        for (int i = 0; i < shown; i++) {
+            graphics.drawString(this.font, "- " + this.closeDialogFiles.get(i), x + 14, lineY,
+                    0xFFD4D4D4, false);
+            lineY += LINE_HEIGHT;
+        }
+        if (this.closeDialogFiles.size() > shown) {
+            graphics.drawString(this.font, "…還有 " + (this.closeDialogFiles.size() - shown) + " 個",
+                    x + 14, lineY, 0xFF6B7280, false);
+        }
+
+        String[] labels = {"儲存全部 (S)", "不儲存 (D)", "取消 (Esc)"};
+        for (int i = 0; i < 3; i++) {
+            int[] b = this.closeDialogButton(i);
+            boolean hover = this.inRect(this.lastMouseX, this.lastMouseY, b[0], b[1], b[2], b[3]);
+            int background = switch (i) {
+                case 0 -> hover ? 0xFF3E7A45 : 0xFF2E5A34;
+                case 1 -> hover ? 0xFF7A3E3E : 0xFF5A2E2E;
+                default -> hover ? 0xFF3B4252 : 0xFF2A303C;
+            };
+            graphics.fill(b[0], b[1], b[0] + b[2], b[1] + b[3], background);
+            graphics.drawString(this.font, labels[i], b[0] + 6, b[1] + 4, 0xFFFFFFFF, false);
+        }
+    }
     private static final int parameterRowOffset = 40;
     /** 縱向排列的參數表單：一列一個參數，Tab/↑↓ 換欄位。 */
     private void renderParameterDialog(GuiGraphics graphics) {
@@ -2089,8 +2163,6 @@ public class LuaScriptEditorScreen extends Screen {
         return index >= 0 && index < this.pendingParams.size() ? index : -1;
     }
 
-
-
     /** 樣板按鈕的說明（停留 1 秒）。 */
     private void renderSnippetTooltip(GuiGraphics graphics) {
         if (this.hoveredSnippet < 0 || System.currentTimeMillis() - this.hoverSnippetSince < 1000L) {
@@ -2335,6 +2407,22 @@ public class LuaScriptEditorScreen extends Screen {
             this.onClose();
             return true;
         }
+        if (this.dialog == Dialog.CLOSE_CONFIRM) {
+            for (int i = 0; i < 3; i++) {
+                int[] b = this.closeDialogButton(i);
+                if (this.inRect(mouseX, mouseY, b[0], b[1], b[2], b[3])) {
+                    this.dialog = Dialog.NONE;
+                    if (i == 0) {
+                        this.saveAll();
+                        super.onClose();
+                    } else if (i == 1) {
+                        super.onClose();
+                    }
+                    return true;
+                }
+            }
+            return true;
+        }
         if (this.dialog == Dialog.PARAMETERS) {
             // 下拉開著時：點選項 = 選取；點別處 = 關閉
             if (this.switchDropdownOpen) {
@@ -2537,7 +2625,6 @@ public class LuaScriptEditorScreen extends Screen {
         return true;
     }
 
-
     /** 重新命名目前選取的檔案。 */
     private void openRenameDialog() {
         String folder = this.currentFolder();
@@ -2559,7 +2646,6 @@ public class LuaScriptEditorScreen extends Screen {
         this.dialogSource = entry.path();
         this.dialogInput = this.dialogSource;
     }
-
 
     /** 刪除目前選取的檔案（需確認）。 */
     private void openDeleteDialog() {
@@ -2587,7 +2673,6 @@ public class LuaScriptEditorScreen extends Screen {
         this.dialogSource = entry.path();
         this.dialogInput = this.dialogSource;
     }
-
 
     /** 建立資料夾（可打 a/b 建立多層）。 */
     /** 建立資料夾（可打 a/b 建立多層）；選到資料夾時建在它裡面。 */
@@ -2742,6 +2827,20 @@ public class LuaScriptEditorScreen extends Screen {
         boolean control = hasControlDown();
         boolean shift = hasShiftDown();
 
+        if (this.dialog == Dialog.CLOSE_CONFIRM) {
+            if (keyCode == GLFW.GLFW_KEY_S || keyCode == GLFW.GLFW_KEY_ENTER
+                    || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+                this.dialog = Dialog.NONE;
+                this.saveAll();
+                super.onClose();
+            } else if (keyCode == GLFW.GLFW_KEY_D) {
+                this.dialog = Dialog.NONE;
+                super.onClose();
+            } else if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+                this.dialog = Dialog.NONE;
+            }
+            return true;
+        }
         if (this.dialog == Dialog.PARAMETERS) {
             this.handleParameterDialogKey(keyCode, control, shift);
             return true;

@@ -259,6 +259,10 @@ public class THObject implements ILuaValue, ITHContainerProvider, ISerializable 
         this.acceleration = acceleration;
     }
 
+    public void setGravity(double gravity) {
+        this.acceleration = new Vec3(0.0d, -gravity, 0.0d);
+    }
+
     public void setAccelerationFromDirection(double acceleration, Vec3 direction) {
         this.setAcceleration(direction.normalize().multiply(acceleration, acceleration, acceleration));
     }
@@ -1072,6 +1076,14 @@ public class THObject implements ILuaValue, ITHContainerProvider, ISerializable 
                 return LuaValue.NIL;
             }
         };
+        protected static final LibFunction setGravity = new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs varargs) {
+                LuaValue gravity = varargs.arg(2);
+                checkTHObject(varargs.arg(1)).setGravity(gravity.todouble());
+                return LuaValue.NIL;
+            }
+        };
         protected static final LibFunction setAccelerationFromDirection = new VarArgFunction() {
             @Override
             public Varargs invoke(Varargs varargs) {
@@ -1325,6 +1337,7 @@ public class THObject implements ILuaValue, ITHContainerProvider, ISerializable 
             library.set("setAcceleration", setAcceleration);
             library.set("setAccelerationFromDirection", setAccelerationFromDirection);
             library.set("setAccelerationFromRotation", setAccelerationFromRotation);
+            library.set("setGravity", setGravity);
             library.set("setRotation", setRotation);
             library.set("setRotationByDirectionalVector", setRotationByDirectionalVector);
             library.set("setColor", setColor);

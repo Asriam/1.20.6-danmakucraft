@@ -3,5 +3,4 @@
 ---@description aa
 ---@parameter target: 對象 = self
 ---@parameter maxAmount: 最大Object容納數量 = 600
-
 ${target}:setMaxObjectAmount("${maxAmount}")

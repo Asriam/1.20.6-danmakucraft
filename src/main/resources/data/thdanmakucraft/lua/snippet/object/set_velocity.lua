@@ -6,5 +6,4 @@
 ---@parameter y: Y 分量 = 0.0
 ---@parameter z: Z 分量 = 0.2
 ---@parameter_boolean setRotation: 對齊朝向 = true
-
 ${target}:setVelocity(math.vec3(${x}, ${y}, ${z}), ${setRotation})

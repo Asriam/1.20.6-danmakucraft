@@ -64,7 +64,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
     public AABB aabb = new AABB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
     public AABB bound = new AABB(-60.0D,-60.0D,-60.0D,60.0D,60.0D,60.0D);
     public boolean autoRemove = true;
-    public int autoRemoveLife = 120;
+    public int autoRemoveLife = 1200;
     private List<Entity> entitiesInBound = Lists.newArrayList();
     private LuaValue luaValueForm;
     private LuaValue luaClass;

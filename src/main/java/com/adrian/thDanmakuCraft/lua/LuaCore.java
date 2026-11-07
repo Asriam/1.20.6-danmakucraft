@@ -67,6 +67,11 @@ public class LuaCore {
         luaCore.runUserMainScript();
     }
 
+    public static void refreshLuaLib(){
+        LuaLoader.init();
+        LuaCore.init();
+    }
+
     /** 編輯器腳本根目錄：{@code config/thdanmakucraft/scripts}。 */
     public static Path userScriptsDir() {
         return FMLPaths.CONFIGDIR.get().resolve(THDanmakuCraftMod.MOD_ID).resolve("scripts");

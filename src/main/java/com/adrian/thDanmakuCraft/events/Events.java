@@ -25,8 +25,7 @@ public class Events {
     public static void registerCommand(RegisterCommandsEvent event) {
         CommandBuildContext context = event.getBuildContext();
         event.getDispatcher().register(Commands.literal("refresh_lua_lib").executes(arguments -> {
-            LuaLoader.init();
-            LuaCore.init();
+            LuaCore.refreshLuaLib();
             return 15;
         }));
 

@@ -3,5 +3,4 @@
 ---@description aa
 ---@parameter target: 對象 = self
 ---@parameter name: 符卡名 = test
-
 ${target}:setSpellCardName("${name}")
