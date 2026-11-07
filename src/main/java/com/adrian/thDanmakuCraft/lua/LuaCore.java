@@ -62,11 +62,11 @@ public class LuaCore {
 
     public static void init(){
         LUA = new LuaCore();
-        String path = "main.lua";
-        String script = LUA.luaLoader.getResourceAsString(getFileLocation(path));
         LuaCore luaCore = LuaCore.getInstance();
-        luaCore.loadScript(script, path).call();
-        // 再執行編輯器根目錄（config/thdanmakucraft/scripts）底下的 main.lua
+        String MainPath = "main.lua";
+        String AfterLoadingPath = "after_loading_libs.lua";
+        luaCore.loadScript(LUA.luaLoader.getResourceAsString(getFileLocation(MainPath)), MainPath).call();
+        luaCore.loadScript(LUA.luaLoader.getResourceAsString(getFileLocation(AfterLoadingPath)), AfterLoadingPath).call();
         luaCore.runUserMainScript();
     }
 
@@ -417,6 +417,7 @@ public class LuaCore {
                 return LuaValue.valueOf(LuaConstants.isConstant(name.checkjstring()));
             }
         });
+        LuaConstants.constantize(library);
         return library;
     }
 
@@ -462,6 +463,7 @@ public class LuaCore {
         library.set("DEG_TO_RAD",Mth.DEG_TO_RAD);
         library.set("RAD_TO_DEG",Mth.RAD_TO_DEG);
         library.set("PI",Mth.PI);
+        LuaConstants.constantize(library);
         return library;
     }
     public static LuaValue checkLuaClass(LuaValue value){
