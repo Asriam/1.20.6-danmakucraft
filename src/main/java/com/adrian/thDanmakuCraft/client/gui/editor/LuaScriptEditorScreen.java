@@ -1,6 +1,8 @@
 package com.adrian.thDanmakuCraft.client.gui.editor;
 
 import net.minecraft.client.Minecraft;
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -294,7 +296,7 @@ public class LuaScriptEditorScreen extends Screen {
     private static final int PARAM_ROW_HEIGHT = LINE_HEIGHT + 8;
 
     private enum SnippetCategory {
-        BULLET("Bullet"), OBJECT("Object"), LASER("Laser"), TASK("Task"), SPELLCARD("SpellCard");
+        BULLET("Bullet"), OBJECT("Object"), LASER("Laser"), TASK("Task"), SPELLCARD("SpellCard"), MATH("Math");
 
         private final String label;
 
@@ -373,6 +375,19 @@ public class LuaScriptEditorScreen extends Screen {
         return hit != null && column > hit.column() ? SNIPPET_ICON_GAP : 0;
     }
 
+    /**
+     * 畫圖示：開啟混合、對圖示套用線性濾波，讓縮小後的邊緣保留半透明（而不是只有 0/255）。
+     */
+    private void drawIcon(GuiGraphics graphics, ResourceLocation icon, int x, int y, int size) {
+        AbstractTexture texture = Minecraft.getInstance().getTextureManager().getTexture(icon);
+        // 每次畫都確保是線性濾波：資源重載（F3+T）會把濾波重設回 NEAREST，
+        // 那會讓縮小後的邊緣只剩 0/255 兩種 alpha。
+        texture.setFilter(true, false);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        graphics.blit(icon, x, y, size, size, 0.0F, 0.0F, 24, 24, 24, 24);
+    }
+
     /** 畫一行；若行內有樣板關鍵字，先在關鍵字前面畫樣板圖示。 */
     private void drawCodeLine(GuiGraphics graphics, String line, int x, int y) {
         SnippetHit hit = this.snippetHit(line);
@@ -384,8 +399,7 @@ public class LuaScriptEditorScreen extends Screen {
         String rest = line.substring(hit.column());
         this.drawLine(graphics, prefix, x, y);
         int iconX = x + this.font.width(prefix);
-        graphics.blit(hit.snippet().icon(), iconX, y, LINE_HEIGHT, LINE_HEIGHT,
-                0.0F, 0.0F, 24, 24, 24, 24);
+        this.drawIcon(graphics, hit.snippet().icon(), iconX, y, LINE_HEIGHT);
         this.drawLine(graphics, rest, iconX + SNIPPET_ICON_GAP, y);
     }
 
@@ -433,6 +447,7 @@ public class LuaScriptEditorScreen extends Screen {
     private boolean fieldSelecting;
     /** 每個參數目前輸入的值（與 pendingParams 同索引）。 */
     private final List<String> pendingFieldValues = new ArrayList<>();
+
 
     private final int[] actionX = new int[TopAction.values().length];
     private final int[] actionW = new int[TopAction.values().length];
@@ -1385,7 +1400,7 @@ public class LuaScriptEditorScreen extends Screen {
             } else if (action == TopAction.OPEN && this.browserOpen) {
                 graphics.fill(x, 2, x + ICON_SIZE, 2 + ICON_SIZE, 0xFF2D6CDF);
             }
-            graphics.blit(action.texture(), x, 2, ICON_SIZE, ICON_SIZE, 0.0F, 0.0F, 24, 24, 24, 24);
+            this.drawIcon(graphics, action.texture(), x, 2, ICON_SIZE);
             if (!enabled) {
                 graphics.fill(x, 2, x + ICON_SIZE, 2 + ICON_SIZE, 0x99000000);
             }
@@ -2293,8 +2308,7 @@ public class LuaScriptEditorScreen extends Screen {
 
     /** 畫管理器列上的小圖示（來源 24x24，縮到 12x12）。 */
     private void drawBrowserIcon(GuiGraphics graphics, ResourceLocation icon, int x, int y) {
-        graphics.blit(icon, x, y, BROWSER_ICON_SIZE, BROWSER_ICON_SIZE,
-                0.0F, 0.0F, 24, 24, 24, 24);
+        this.drawIcon(graphics, icon, x, y, BROWSER_ICON_SIZE);
     }
 
     private int gutterWidth() {
@@ -3787,6 +3801,7 @@ public class LuaScriptEditorScreen extends Screen {
      * 畫面會停在半初始化狀態，font 為 null，render 就會 NPE。這裡補一次 setScreen 讓它重新 init。
      */
     private void ensureInitialized() {
+
         if (this.reinitRequested) {
             return;
         }
