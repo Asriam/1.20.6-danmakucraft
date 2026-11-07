@@ -252,22 +252,40 @@ public final class LuaSnippetLibrary {
         return new Entry(label, icon, codeText, description, List.copyOf(parameters), keyword);
     }
 
-    /** 從樣板程式碼推導「關鍵字」：第一個 {@code 名稱:方法(} 或 {@code 名稱.方法(}。 */
+    /**
+     * 從樣板程式碼推導「關鍵字」：只看第一行真正的程式碼（跳過空行與 {@code --} 註解），
+     * 依序嘗試
+     * <ol>
+     *   <li>{@code :方法(}（給 {@code ${target}:setVelocity(...)} 這種寫法）</li>
+     *   <li>{@code 名稱:方法(} / {@code 名稱.方法(}</li>
+     * </ol>
+     * 這樣同一個檔案裡若同時出現 {@code math.vec3(...)}，也不會把關鍵字誤判成 {@code math.vec3}。
+     */
     private static String deriveKeyword(String code) {
-        // 1) 名稱:方法( 或 名稱.方法(
-        java.util.regex.Matcher matcher = java.util.regex.Pattern
-                .compile("([A-Za-z_][A-Za-z0-9_]*[:.][A-Za-z_][A-Za-z0-9_]*)\\s*\\(")
-                .matcher(code);
-        if (matcher.find()) {
-            return matcher.group(1);
+        String firstLine = null;
+        for (String line : code.split("\\R")) {
+            String trimmed = line.trim();
+            if (trimmed.isEmpty() || trimmed.startsWith("--")) {
+                continue;
+            }
+            firstLine = trimmed;
+            break;
         }
-        // 2) ${target}:方法( -> 用 ":方法" 當關鍵字
-        matcher = java.util.regex.Pattern
+        if (firstLine == null) {
+            return "";
+        }
+        java.util.regex.Matcher matcher = java.util.regex.Pattern
                 .compile(":([A-Za-z_][A-Za-z0-9_]*)\\s*\\(")
-                .matcher(code);
+                .matcher(firstLine);
         if (matcher.find()) {
             return ":" + matcher.group(1);
         }
+        matcher = java.util.regex.Pattern
+                .compile("([A-Za-z_][A-Za-z0-9_]*[:.][A-Za-z_][A-Za-z0-9_]*)\\s*\\(")
+                .matcher(firstLine);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
         return "";
-    }
+}
 }

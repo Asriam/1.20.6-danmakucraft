@@ -70,6 +70,9 @@ function object:setVelocityFromRotation(speed, rotation, isDeg, setRotation) end
 ---@param acceleration math.Vec3
 function object:setAcceleration(acceleration) end
 
+---@param gravity number
+function object:setGravity(gravity) end
+
 ---@param acceleration number
 ---@param direction math.Vec3
 ---@overload fun(acceleration:number, direction:table|{x,y,z})
