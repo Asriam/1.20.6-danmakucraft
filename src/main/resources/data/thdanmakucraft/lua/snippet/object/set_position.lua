@@ -6,4 +6,4 @@
 ---@parameter y: Y 分量 = 0.0
 ---@parameter z: Z 分量 = 0.2
 
-${target}:setPosition(math.vec3.new(${x}, ${y}, ${z}))
+${target}:setPosition(math.vec3(${x}, ${y}, ${z}))
