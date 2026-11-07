@@ -339,7 +339,7 @@ public class LuaScriptEditorScreen extends Screen {
         }
     }
 
-    /** 這一行第一個樣板關鍵字；沒有回傳 null。 */
+    /** 這一行第一個樣板關鍵字；沒有回傳 null。圖示位置會往前推到「接收者」的開頭。 */
     private SnippetHit snippetHit(String line) {
         this.ensureSnippetKeywords();
         if (line.isEmpty() || this.snippetKeywords.isEmpty()) {
@@ -348,16 +348,26 @@ public class LuaScriptEditorScreen extends Screen {
         int best = -1;
         Snippet bestSnippet = null;
         for (Map.Entry<String, Snippet> entry : this.snippetKeywords.entrySet()) {
-            int index = line.indexOf(entry.getKey());
-            if (index >= 0 && (best < 0 || index < best)) {
-                best = index;
+            int anchor = LuaSnippetAnchor.findAnchor(line, entry.getKey());
+            if (anchor >= 0 && (best < 0 || anchor < best)) {
+                best = anchor;
                 bestSnippet = entry.getValue();
             }
         }
         return best < 0 ? null : new SnippetHit(best, bestSnippet);
     }
 
-    /** 這個欄位在畫面上要額外往右偏移多少（樣板圖示的寬度）。 */
+    /**
+     * 把圖示位置往前推到接收者（{@code self} / {@code object} / {@code math} ...）的開頭。
+     * 例如 {@code local bullet = self:createTHBullet(...)} 的圖示會放在 {@code self} 前面，
+     * {@code self:setStyle(...)} 則放在 {@code self} 前面（而不是 {@code :setStyle} 前面）。
+     */
+      /**
+     * 圖示錨點：一般是接收者的開頭；若是 {@code function X:onInit()} 這種定義，
+     * 則放到 {@code function} 前面（比較符合「這段程式碼是樣板產生的」的直覺）。
+     */
+      /** 這個位置是否在「程式碼」裡（不在字串或註解中）。 */
+      /** 這個欄位在畫面上要額外往右偏移多少（樣板圖示的寬度）。 */
     private int snippetShift(String line, int column) {
         SnippetHit hit = this.snippetHit(line);
         return hit != null && column > hit.column() ? SNIPPET_ICON_GAP : 0;
