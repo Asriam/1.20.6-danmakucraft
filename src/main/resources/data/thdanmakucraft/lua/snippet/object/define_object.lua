@@ -4,15 +4,15 @@
 ---@parameter parameterName: 子彈變量名 = laserClass
 
 ---@type Class|THObject
-local objectClass = core.defineClass()
---[[@SnippetStart 114514 event.png ]]function ${parameterName}:onInit()
+local ${parameterName} = core.defineObjectClass()
+function ${parameterName}:onInit()
 
-end--[[@SnippetEnd 114514]]
+end
 
---[[@SnippetStart 114514 register_task_event.png ]]function ${parameterName}:onRegisterTasks(taskManager)
+function ${parameterName}:onRegisterTasks(taskManager)
 
-end--[[@SnippetEnd 114514]]
+end
 
---[[@SnippetStart 114514 event.png ]]function ${parameterName}:onTick()
+function ${parameterName}:onTick()
 
-end--[[@SnippetEnd 114514]]
+end

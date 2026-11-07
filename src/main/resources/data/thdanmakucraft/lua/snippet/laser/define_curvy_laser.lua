@@ -5,15 +5,15 @@
 ---@parameter width: 寬度 = 0.8
 
 ---@type Class|THCurvedLaser
-local ${parameterName} = core.defineClass()
---[[@SnippetStart 114514 event.png ]]function ${parameterName}:onInit()
+local ${parameterName} = core.defineCurvyLaserClass()
+function ${parameterName}:onInit()
     self:setWidth(${width})
-end--[[@SnippetEnd 114514]]
+end
 
---[[@SnippetStart 114514 register_task_event.png ]]function ${parameterName}:onRegisterTasks(taskManager)
+function ${parameterName}:onRegisterTasks(taskManager)
 
-end--[[@SnippetEnd 114514]]
+end
 
---[[@SnippetStart 114514 event.png ]]function ${parameterName}:onTick()
+function ${parameterName}:onTick()
 
-end--[[@SnippetEnd 114514]]
+end

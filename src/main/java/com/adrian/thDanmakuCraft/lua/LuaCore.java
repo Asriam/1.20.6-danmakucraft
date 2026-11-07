@@ -13,10 +13,7 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.loading.FMLPaths;
 import org.apache.commons.compress.utils.Lists;
-import org.luaj.vm2.Globals;
-import org.luaj.vm2.LuaTable;
-import org.luaj.vm2.LuaValue;
-import org.luaj.vm2.Varargs;
+import org.luaj.vm2.*;
 import org.luaj.vm2.lib.OneArgFunction;
 import org.luaj.vm2.lib.TwoArgFunction;
 import org.luaj.vm2.lib.VarArgFunction;
@@ -39,7 +36,7 @@ public class LuaCore {
     public static final String USER_SCRIPT_PREFIX = "scripts/";
     private static LuaCore LUA = new LuaCore();
     private final Globals GLOBALS = JsePlatform.standardGlobals();
-    private final Map<String,LuaValue> luaClassMap = Maps.newHashMap();
+    public final Map<String,LuaValue> luaClassMap = Maps.newHashMap();
     //private final Map<String, LuaFunction> luaFunctionMap = Maps.newHashMap();
     private final Map<String,LuaValue> metaTableMap = Maps.newHashMap();
     public final List<String> spellCardClassKeys = Lists.newArrayList();
@@ -244,6 +241,31 @@ public class LuaCore {
         }
         return clazz;
     }
+    private LuaFunction defineClassFunc (String ClassTypeName){
+        return new VarArgFunction() {
+            @Override
+            public LuaValue invoke(Varargs varargs) {
+                LuaValue clazz = LuaValue.tableOf();
+                LuaValue arg1 = varargs.arg(1);
+                if (arg1.isstring()) {
+                    LuaValue superClass = checkLuaClass(varargs.arg(2));
+                    String className = arg1.checkjstring();
+                    clazz.set("className", className);
+                    setSuperClass(clazz,superClass);
+                    LUA.luaClassMap.put(className, clazz);
+                }else {
+                    String asd = ClassTypeName.equals("") ? "" :  ClassTypeName+"$$";
+                    LuaValue superClass = checkLuaClass(varargs.arg(1));
+                    String className = "class$$"+asd  +(LUA.luaClassMap.size()+1);
+                    className = superClass.isnil() ? className : superClass.get("className").checkjstring() + "#" + className;
+                    clazz.set("className", className);
+                    setSuperClass(clazz,superClass);
+                    LUA.luaClassMap.put(className, clazz);
+                }
+                return clazz;
+            }
+        };
+    }
 
     public LuaValue coreAPI(){
         LuaValue library = LuaValue.tableOf();
@@ -307,29 +329,12 @@ public class LuaCore {
                         varargs.arg(2).tofloat()));
             }
         });
-        library.set("defineClass", new VarArgFunction() {
-            @Override
-            public LuaValue invoke(Varargs varargs) {
-                LuaValue clazz = LuaValue.tableOf();
-                LuaValue arg1 = varargs.arg(1);
-                if (arg1.isstring()) {
-                    LuaValue superClass = checkLuaClass(varargs.arg(2));
-                    String className = arg1.checkjstring();
-                    className = superClass.isnil() ? className : superClass.get("className").checkjstring() + "#" + className;
-                    clazz.set("className", className);
-                    setSuperClass(clazz,superClass);
-                    LUA.luaClassMap.put(className, clazz);
-                }else {
-                    LuaValue superClass = checkLuaClass(varargs.arg(1));
-                    String className = "class$$"+(LUA.luaClassMap.size()+1);
-                    className = superClass.isnil() ? className : superClass.get("className").checkjstring() + "#" + className;
-                    clazz.set("className", className);
-                    setSuperClass(clazz,superClass);
-                    LUA.luaClassMap.put(className, clazz);
-                }
-                return clazz;
-            }
-        });
+        library.set("defineClass", defineClassFunc(""));
+        library.set("defineObjectClass", defineClassFunc("object"));
+        library.set("defineBulletClass", defineClassFunc("bullet"));
+        library.set("defineLaserClass", defineClassFunc("laser"));
+        library.set("defineCurvyLaserClass", defineClassFunc("curvy_laser"));
+
         library.set("defineSpellCardClass", new VarArgFunction() {
             @Override
             public LuaValue invoke(Varargs varargs) {
@@ -338,14 +343,13 @@ public class LuaCore {
                 if (arg1.isstring()) {
                     LuaValue superClass = checkLuaClass(varargs.arg(2));
                     String className = arg1.checkjstring();
-                    className = superClass.isnil() ? className : superClass.get("className").checkjstring() + "#" + className;
                     clazz.set("className", className);
                     setSuperClass(clazz,superClass);
                     LUA.luaClassMap.put(className, clazz);
                     LUA.spellCardClassKeys.add(className);
                 }else {
                     LuaValue superClass = checkLuaClass(varargs.arg(1));
-                    String className = "class$$"+(LUA.luaClassMap.size()+1);
+                    String className = "class$$spellcard$$"+(LUA.luaClassMap.size()+1);
                     className = superClass.isnil() ? className : superClass.get("className").checkjstring() + "#" + className;
                     clazz.set("className", className);
                     setSuperClass(clazz,superClass);

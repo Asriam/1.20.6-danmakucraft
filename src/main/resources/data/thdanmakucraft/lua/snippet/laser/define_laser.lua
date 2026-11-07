@@ -6,16 +6,16 @@
 ---@parameter length: 長度 = 40.0
 
 ---@type Class|THLaser
-local ${parameterName} = core.defineClass()
---[[@SnippetStart 114514 event.png ]]function ${parameterName}:onInit()
+local ${parameterName} = core.defineLaserClass()
+function ${parameterName}:onInit()
     self:setWidth(${width})
     self:setLength(${length})
-end--[[@SnippetEnd 114514]]
+end
 
---[[@SnippetStart 114514 register_task_event.png ]]function ${parameterName}:onRegisterTasks(taskManager)
+function ${parameterName}:onRegisterTasks(taskManager)
 
-end--[[@SnippetEnd 114514]]
+end
 
---[[@SnippetStart 114514 event.png ]]function ${parameterName}:onTick()
+function ${parameterName}:onTick()
 
-end--[[@SnippetEnd 114514]]
+end

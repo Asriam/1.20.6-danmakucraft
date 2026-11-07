@@ -157,6 +157,11 @@ function vec2:lengthSquared()
     return self.x ^ 2 + self.y ^ 2
 end
 
+---@return string
+function vec2:tostring()
+    return "vec2("..self.x..","..self.y..")"
+end
+
 ---@param _vec2 math.Vec2
 ---@param t number
 ---@return math.Vec2
@@ -203,4 +208,8 @@ end
 ---@param a math.Vec2
 metatable.__len = function(a)
     return a:length()
+end
+
+metatable.__tostring = function(_vec2)
+    return _vec2:tostring()
 end

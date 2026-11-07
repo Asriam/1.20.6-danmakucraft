@@ -46,6 +46,18 @@ function c.vec3(x, y, z) end
 ---@overload fun()
 function c.defineClass(className, superClass) end
 
+---@overload fun()
+function c.defineObjectClass(className, superClass) end
+
+---@overload fun()
+function c.defineBulletClass(className, superClass) end
+
+---@overload fun()
+function c.defineLaserClass(className, superClass) end
+
+---@overload fun()
+function c.defineCurvyLaserClass(className, superClass) end
+
 ---@param className string
 ---@param superClass Class
 ---@return Class|THObjectContainer

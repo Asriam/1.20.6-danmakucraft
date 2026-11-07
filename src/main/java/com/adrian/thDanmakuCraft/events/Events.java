@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.events;
 
+import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.lua.LuaCore;
 import com.adrian.thDanmakuCraft.lua.LuaLoader;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
@@ -26,6 +27,13 @@ public class Events {
         event.getDispatcher().register(Commands.literal("refresh_lua_lib").executes(arguments -> {
             LuaLoader.init();
             LuaCore.init();
+            return 15;
+        }));
+
+        event.getDispatcher().register(Commands.literal("listAllLuaClasses").executes(arguments -> {
+            for (String key : LuaCore.getInstance().luaClassMap.keySet()){
+                THDanmakuCraftMod.LOGGER.info(key);
+            }
             return 15;
         }));
 

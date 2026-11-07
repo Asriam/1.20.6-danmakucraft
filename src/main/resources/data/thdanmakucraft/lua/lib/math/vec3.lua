@@ -198,6 +198,11 @@ function vec3:lerp(_vec3,t)
     return vec3.new(x,y,z)
 end
 
+---@return string
+function vec3:tostring()
+    return "vec3("..self.x..","..self.y..","..self.z..")"
+end
+
 ---@param a math.Vec3
 ---@param b math.Vec3
 metatable.__add = function(a, b)
@@ -243,4 +248,8 @@ end
 ---@param a math.Vec3
 metatable.__len = function(a)
     return a:length()
+end
+
+metatable.__tostring = function(_vec3)
+    return _vec3:tostring()
 end
