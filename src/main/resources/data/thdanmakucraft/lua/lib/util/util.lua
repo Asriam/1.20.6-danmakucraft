@@ -7,4 +7,5 @@
 util = {}
 core.doFile("lib/util/map.lua")
 core.doFile("lib/util/mytype.lua")
+core.doFile("lib/util/object_util.lua")
 --core.doFile("lib/util/tableClone.lua")

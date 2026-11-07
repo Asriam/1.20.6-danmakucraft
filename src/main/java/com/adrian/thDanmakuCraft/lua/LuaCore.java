@@ -53,6 +53,8 @@ public class LuaCore {
 
     public LuaCore() {
         //GLOBALS = JsePlatform.standardGlobals();
+        // 常數機制要在任何腳本執行前安裝（__index / __newindex）
+        LuaConstants.install(this.GLOBALS);
         this.putAPI();
         LuaEventCache.scriptEventCache.clear();
         luaLoader = LuaLoader.instance;
@@ -97,6 +99,19 @@ public class LuaCore {
         try {
             GLOBALS.set("core",coreAPI());
             GLOBALS.set("Mth", mthAPI());
+            // 全域函式：constantize("NAME", value) / constantize("NAME") / constantize(table)
+            GLOBALS.set("constantize", new VarArgFunction() {
+                @Override
+                public Varargs invoke(Varargs args) {
+                    return LuaConstants.constantize(args);
+                }
+            });
+            GLOBALS.set("isConstant", new OneArgFunction() {
+                @Override
+                public LuaValue call(LuaValue name) {
+                    return LuaValue.valueOf(LuaConstants.isConstant(name.checkjstring()));
+                }
+            });
             GLOBALS.set("luajava", NIL);
         } catch (Exception e) {
             LOGGER.warn("Failed put api!", e);
@@ -359,6 +374,19 @@ public class LuaCore {
                 LuaCore.LuaUtilVec2 = vec2Lib;
                 LuaCore.LuaUtilVec2Meta = metatable;
                 return null;
+            }
+        });
+
+        library.set("constantize", new VarArgFunction() {
+            @Override
+            public Varargs invoke(Varargs args) {
+                return LuaConstants.constantize(args);
+            }
+        });
+        library.set("isConstant", new OneArgFunction() {
+            @Override
+            public LuaValue call(LuaValue name) {
+                return LuaValue.valueOf(LuaConstants.isConstant(name.checkjstring()));
             }
         });
 
