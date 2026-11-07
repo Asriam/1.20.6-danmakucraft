@@ -16,6 +16,9 @@ out vec3 viewDir;
 out float vertexDistance;
 out float near;
 out float far;
+out mat4 uInvProjection;
+out mat4 uInvModelView;
+out vec2 texCoord2;
 
 void main() {
     mat3 normalMat = mat3(transpose(inverse(ModelViewMat)));
@@ -25,7 +28,9 @@ void main() {
     vertexColor = Color;
     normal = normalize(normalMat * Normal);
     vertexDistance = fog_distance(Position, FogShape);
-
+    uInvProjection = inverse(ProjMat);
+    uInvModelView = inverse(ModelViewMat);
     near = ProjMat[3][2]/(ProjMat[2][2]-1.0);
     far = ProjMat[3][2]/(ProjMat[2][2]+1.0);
+    texCoord2 = Position.xy * 0.5 + 0.5;
 }

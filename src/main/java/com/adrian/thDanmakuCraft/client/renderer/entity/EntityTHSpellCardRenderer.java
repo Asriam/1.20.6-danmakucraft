@@ -57,6 +57,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
     private static final LegacyBufferBuilder MAGIC_SQUARE_BUFFER = new LegacyBufferBuilder(4096);
     private static final LegacyBufferBuilder AURA_BUFFER = new LegacyBufferBuilder(4096);
     private static final LegacyBufferBuilder BACKGROUND_WARP_EFFECT_BUFFER = new LegacyBufferBuilder(4096);
+    private static final LegacyBufferBuilder BACKGROUND_WARP_EFFECT_DEPTH_BUFFER = new LegacyBufferBuilder(4096);
 
     private static final IImage.Image spellCardAura = new IImage.Image(ResourceLocationUtil.thdanmakucraft("textures/spellcard/eff_line.png"), 0.0f, 0.0f, 1.0f, 1.0f);
     private static final IImage.Image SPELLCARD_MAGIC_SQUARE = new IImage.Image(ResourceLocationUtil.thdanmakucraft("textures/spellcard/eff_magicsquare.png"), 0.0f, 0.0f, 1.0f, 1.0f);
@@ -183,8 +184,16 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         if(container.shouldApplyBackgroundWarpEffect){
             time = 30.0f;
             float radius = 200.0f;
-            float open2 = timer > time ? 1.0f : (float) Math.pow(Math.min(timer / time,1.0f),0.2f);
-            renderBackgroundWarpEffect(spellCard,container, poseStack, pos, partialTicks,radius*open2*close*Mth.lerp((float)Math.pow(Math.max(timeLeft,0.0f),1),0.4f,1.0f),open*close);
+            float open2 = timer > time ? 1.0f : (float) Math.pow(Math.min(timer / time,1.0f),0.6f);
+            float rad = radius*open2*close*Mth.lerp((float)Math.pow(Math.max(timeLeft,0.0f),1),0.4f,1.0f);
+            renderBackgroundWarpEffect(
+                    spellCard,
+                    container,
+                    poseStack,
+                    pos,
+                    partialTicks,
+                    rad,
+                    open*close);
         }
     }
 
@@ -192,19 +201,11 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         //float radius = 40.0f;
         poseStack.pushPose();
         //poseStack.translate(pos.x,pos.y,pos.z);
-        final VertexBuilder builder = new VertexBuilder(BACKGROUND_WARP_EFFECT_BUFFER);
         final Color color2 = new Color(255,0,200, (int) (180*alpha));
         RenderUtil.enableCull();
+        //out layer
         if(true) {
-        new SphereVertexHelper(poseStack.last().pose(), poseStack.last().normal(),
-                ConstantUtil.VECTOR3F_ZERO, new Vector3f(radius, radius, radius),
-                32, 32, 1.0f, false,
-                new Color(255,255,255,255),
-                new Color(255,255,255,255), true, false
-        ).vertex((vertexPos,normal,color)->
-                builder.vertex(vertexPos).normal(normal).color(color2).endVertex());
-        }
-        if(false) {
+            final VertexBuilder builder = new VertexBuilder(BACKGROUND_WARP_EFFECT_DEPTH_BUFFER);
             new SphereVertexHelper(
                     poseStack.last().pose(), poseStack.last().normal(),
                     ConstantUtil.VECTOR3F_ZERO, new Vector3f(radius, radius, radius),
@@ -215,6 +216,16 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
                         builder.vertex(vertexPos).normal(normal).color(color2).endVertex();
                     });
         }
+        if(false) {
+            final VertexBuilder builder = new VertexBuilder(BACKGROUND_WARP_EFFECT_BUFFER);
+            new SphereVertexHelper(poseStack.last().pose(), poseStack.last().normal(),
+                    ConstantUtil.VECTOR3F_ZERO, new Vector3f(radius, radius, radius),
+                    32, 32, 1.0f, false,
+                    new Color(255,255,255,255),
+                    new Color(255,255,255,255), true, false
+            ).vertex((vertexPos,normal,color)->
+                    builder.vertex(vertexPos).normal(normal).color(color2).endVertex());
+        }
         RenderUtil.enableCull();
         poseStack.popPose();
     }
@@ -222,6 +233,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
     public static void beforeRenderEntities(LevelRenderer levelRenderer, float partialTick){
         MAGIC_SQUARE_BUFFER.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         AURA_BUFFER.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        BACKGROUND_WARP_EFFECT_DEPTH_BUFFER.begin(VertexFormat.Mode.QUADS, ModVertexFormats.POSITION_NORMAL_COLOR);
         BACKGROUND_WARP_EFFECT_BUFFER.begin(VertexFormat.Mode.QUADS, ModVertexFormats.POSITION_NORMAL_COLOR);
         //BACKGROUND_WARP_EFFECT_BUFFER.color(0,0,0,255);
         //BACKGROUND_WARP_EFFECT_BUFFER.clear();
@@ -254,14 +266,14 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
             //TEST_RENDER_TARGET.blitToScreen(window[0],window[1],false);
         TEST_RENDER_TARGET.unbindWrite();*/
 
+        RenderType renderType = RenderTypes.DEBUG_FILLED_BOX;
+        renderType.setupRenderState();
+        BufferUploader.drawWithShader(BACKGROUND_WARP_EFFECT_DEPTH_BUFFER.end());
+        renderType.clearRenderState();
 
         RenderType bg_warp_ef_rt = RenderTypes.RENDER_TYPE_BACKGROUND_WARP_EFFECT;
         bg_warp_ef_rt.setupRenderState();
         RenderSystem.enableCull();
-        //ShaderInstance shader = RenderSystem.getShader();
-        //shader.getUniform("ProjMat").set(new Matrix4f());
-        //shader.getUniform("ModelViewMat").set(new Matrix4f());
-        //RenderSystem.getProjectionMatrix().set(RenderEvents.ProjectionMatrix);
         Matrix4f modelViewMat = new Matrix4f(RenderSystem.getModelViewMatrix());
         RenderSystem.getModelViewMatrix().set(RenderEvents.ModelViewMatrix);
         RenderSystem.disableDepthTest();

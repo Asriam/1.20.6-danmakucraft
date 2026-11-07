@@ -34,8 +34,8 @@ public class ItemTestDanmaku extends Item {
         THLaser laser = new THLaser(container);
         laser.setRotation(player.getXRot()* Mth.DEG_TO_RAD,player.getYRot()*Mth.DEG_TO_RAD);
         laser.setLength(0.0f);
-        laser.setWidth(0.5f);
-        laser.growLength(10.0f,120);
+        laser.setWidth(1.0f);
+        laser.growLength(60.0f,60);
         laser.setLifetime(1000);
         laser.spawn();
         container.setLifetime(1000);

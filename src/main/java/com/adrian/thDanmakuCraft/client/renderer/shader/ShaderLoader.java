@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-@EventBusSubscriber(modid = THDanmakuCraftMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = THDanmakuCraftMod.MOD_ID/*, bus = EventBusSubscriber.Bus.MOD*/, value = Dist.CLIENT)
 public class ShaderLoader {
 
     //private static final ResourceManager RESOURCE_MANAGER = Minecraft.getInstance().getResourceManager();
@@ -26,15 +26,16 @@ public class ShaderLoader {
     public static ModShaderInstance DANMAKU_DEPTH_OUTLINE_SHADER;
     public static ModShaderInstance DANMAKU_TEXTURE_SHADER;
     public static ModShaderInstance BACKGROUND_WARP_EFFECT;
+    public static ModShaderInstance NORMAL_MAP_SHADER;
 
     public ShaderLoader() {
     }
 
     public static void registryShaders(ResourceProvider resourceProvider){
         DANMAKU_DEPTH_OUTLINE_SHADER = registryShader(resourceProvider, ResourceLocationUtil.thdanmakucraft("danmaku/rendertype_danmaku_1"), RenderTypes.TEST_FORMAT);
-        BACKGROUND_WARP_EFFECT = registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("danmaku/rendertype_bgwarpef"), ModVertexFormats.POSITION_NORMAL);
         DANMAKU_TEXTURE_SHADER = registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("danmaku/rendertype_danmaku_texture"), ModVertexFormats.POSITION_COLOR_COLOR_TEX);
-
+        BACKGROUND_WARP_EFFECT = registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("danmaku/rendertype_bgwarpef"), ModVertexFormats.POSITION_NORMAL);
+        NORMAL_MAP_SHADER = registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("danmaku/rendertype_normalmap"), ModVertexFormats.POSITION_NORMAL);
     }
 
     @SubscribeEvent

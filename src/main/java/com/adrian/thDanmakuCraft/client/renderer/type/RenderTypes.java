@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
@@ -42,11 +43,18 @@ public class RenderTypes extends RenderStateShard{
         ShaderInstance shader = ShaderLoader.BACKGROUND_WARP_EFFECT;
         float timer = TickEvents.clientTicks+Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false);
         shader.safeGetUniform("Timer").set(timer);
+        Vec3 cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+        shader.safeGetUniform("CameraPosition").set((float) cameraPos.x,(float) cameraPos.y,(float) cameraPos.z);
         //System.out.println(timer);
         shader.setSampler("DepthBuffer",DEPTH_BUFFER_TARGET.getDepthTextureId());
         shader.setSampler("ScreenBuffer",target.getColorTextureId());
         return shader;
     });
+
+    public static final ShaderStateShard NORMAL_MAP_SHADER = new ShaderStateShard(() -> {
+        return (ShaderInstance) ShaderLoader.NORMAL_MAP_SHADER;
+    });
+
     public static final VertexFormat TEST_FORMAT = VertexFormat.builder()
                     .add("Position", VertexFormatElement.POSITION)
                     .add("Color"   , VertexFormatElement.COLOR)
@@ -201,6 +209,20 @@ public class RenderTypes extends RenderStateShard{
                     .setLightmapState(NO_LIGHTMAP)
                     .setOverlayState(NO_OVERLAY)
                     //.setWriteMaskState(COLOR_WRITE)
+                    .createCompositeState(false)
+    );
+
+    public static final RenderType DEBUG_FILLED_BOX = create(
+            "debug_aaa",
+            ModVertexFormats.POSITION_NORMAL_COLOR,
+            VertexFormat.Mode.QUADS,
+            1536,
+            false,
+            true,
+            RenderType.CompositeState.builder()
+                    .setShaderState(NORMAL_MAP_SHADER)
+                    .setLayeringState(VIEW_OFFSET_Z_LAYERING)
+                    .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
                     .createCompositeState(false)
     );
 }
