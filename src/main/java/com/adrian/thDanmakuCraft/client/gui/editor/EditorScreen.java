@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 @OnlyIn(Dist.CLIENT)
+@Deprecated
 public class EditorScreen extends Screen {
 
     private static final LegacyBufferBuilder EDITOR_BUFFER_BUILDER = new LegacyBufferBuilder(223);

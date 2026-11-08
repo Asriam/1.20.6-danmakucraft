@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.laser;
 
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.type.THBlendMode;
@@ -13,9 +14,11 @@ import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THLaser;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.vehicle.Minecart;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -23,6 +26,9 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
+
+import static com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.bullet.THBulletRenderers.BulletRenderer.ellipsoidVertex;
 
 @OnlyIn(value = Dist.CLIENT)
 public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
@@ -37,7 +43,7 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
     }
 
     public static void renderLaser(THLaser laser, Vec3 laserPos, float partialTicks, PoseStack poseStack, VertexConsumer vertexConsumer){
-        poseStack.pushPose();
+        /*poseStack.pushPose();
         Vector3f rotation = laser.getOffsetRotation(partialTicks);
         Vec3 pos = laser.getOffsetLaserCenter(partialTicks);
         poseStack.translate(pos.x,pos.y,pos.z);
@@ -113,7 +119,33 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
                 break;
             }
         }
-        poseStack.popPose();
+        poseStack.popPose();*/
+        Color laserCoreColor = laser.getColor();
+        Color laserColor = laser.getLaserColor().multiply(laserCoreColor);
+        float laserWidth = laser.getOffsetWidth(partialTicks)/2;
+        float laserLength = laser.getOffsetLength(partialTicks)/2;
+        Vector3f rotation = laser.getRotation();
+        Vector3f offsetRotation = new Vector3f(rotation.x+ Mth.PI/2,-rotation.y,-rotation.z);
+        Vector3f scale = new Vector3f(laserWidth,laserLength,laserWidth);
+        VertexBuilder builder = new VertexBuilder(THObjectContainerRenderer.ELLIPSOID_TEST_BUFFER);
+        Vec3 camPos = Minecraft.getInstance().getEntityRenderDispatcher().camera.getPosition();
+        Vec3 pos1 = laserPos.add(laser.getOffsetLaserCenter(partialTicks));
+        Vector3f pos = pos1.subtract(camPos).toVector3f();
+
+        // 四邊形必須面向相機：否則從某些角度看過去會變成一直線，
+        // 光線就不會穿過 ellipsoid（遠處會縮小到看不見）。
+        Quaternionf camRot = Minecraft.getInstance().getEntityRenderDispatcher().camera.rotation();
+        Vector3f right = new Vector3f(1.0f, 0.0f, 0.0f).rotate(camRot);
+        Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f).rotate(camRot);
+        float half = 1.6f * Math.max(Math.abs(scale.x),
+                Math.max(Math.abs(scale.y), Math.abs(scale.z)));
+
+        Vector4f vec4 = new  Vector4f(0.36f, 5.0f,0.1f, 1.0f);
+
+        ellipsoidVertex(builder, pos, right, up, -half, -half, offsetRotation, scale, laserColor, laserCoreColor, vec4);
+        ellipsoidVertex(builder, pos, right, up, half, -half, offsetRotation, scale, laserColor, laserCoreColor, vec4);
+        ellipsoidVertex(builder, pos, right, up, half, half, offsetRotation, scale, laserColor, laserCoreColor, vec4);
+        ellipsoidVertex(builder, pos, right, up, -half, half, offsetRotation, scale, laserColor, laserCoreColor, vec4);
     }
 
     @Override

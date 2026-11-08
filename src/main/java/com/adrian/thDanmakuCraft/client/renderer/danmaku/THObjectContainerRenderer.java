@@ -3,10 +3,8 @@ package com.adrian.thDanmakuCraft.client.renderer.danmaku;
 import com.adrian.thDanmakuCraft.client.renderer.shader.ShaderLoader;
 import com.adrian.thDanmakuCraft.client.renderer.type.ModVertexFormats;
 import com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes;
-import com.mojang.blaze3d.vertex.MeshData;
 import com.adrian.thDanmakuCraft.client.renderer.compat.LegacyBufferBuilder;
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
-import com.adrian.thDanmakuCraft.client.renderer.*;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRenderers;
@@ -34,7 +32,7 @@ public class THObjectContainerRenderer {
 
     private static final RenderTarget MAIN_RENDER_TARGET = Minecraft.getInstance().getMainRenderTarget();
     private static final RenderTarget TEST_RENDER_TARGET = new TextureTarget(1000,1000,true,true);
-    private static final RenderTarget DEPTH_BUFFER = new TextureTarget(1000,1000,true,true);
+    public static final RenderTarget DEPTH_BUFFER = new TextureTarget(1000,1000,true,true);
     //private static final RenderTarget DEPTH_BUFFER = new TextureTarget(MAIN_RENDER_TARGET.width,MAIN_RENDER_TARGET.height,true,true);
     private static final Map<THObjectType<?>, AbstractTHObjectRenderer<?>> THOBJECT_RENDERERS = THObjectRenderers.createEntityRenderers(new THObjectRendererProvider.Context());
 
@@ -83,6 +81,7 @@ public class THObjectContainerRenderer {
         if(shader != null) {
             THObjectContainerRenderer.DEPTH_BUFFER.copyDepthFrom(mainRenderTarget);
             shader.setSampler("DepthBuffer", THObjectContainerRenderer.DEPTH_BUFFER.getDepthTextureId());
+            ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER.setSampler("DepthBuffer", THObjectContainerRenderer.DEPTH_BUFFER.getDepthTextureId());
             //shader.setSampler("ScreenBuffer", mainRenderTarget.getColorTextureId());
             mainRenderTarget.bindWrite(true);
         }
@@ -95,7 +94,7 @@ public class THObjectContainerRenderer {
 
         RenderSystem.enableBlend();
         if (!objectList.isEmpty()) {
-            ELLIPSOID_TEST_BUFFER.begin(VertexFormat.Mode.QUADS, ModVertexFormats.POSITION_POSITION2_ROTATION_SCALE);
+            ELLIPSOID_TEST_BUFFER.begin(VertexFormat.Mode.QUADS, ModVertexFormats.POSITION_POSITION2_ROTATION_SCALE_COLOR_COLOR);
             boolean shouldRenderHitBox = entityRenderDispatcher.shouldRenderHitBoxes();
             RenderType renderTypeLines = RenderType.lines();
             ///Batching：重用同一個 map / 每個 RenderType 的 list（每幀只 clear）
@@ -168,15 +167,9 @@ public class THObjectContainerRenderer {
                     THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
                 }
             }
-            if (shouldApplyEffect()) {
-                THObjectContainerRenderer.TEST_RENDER_TARGET.bindWrite(true);
-            }
             RenderTypes.TEST_ELLIPSOID.setupRenderState();
             BufferUploader.drawWithShader(ELLIPSOID_TEST_BUFFER.end());
             RenderTypes.TEST_ELLIPSOID.clearRenderState();
-            if (shouldApplyEffect()) {
-                THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
-            }
             // 不清 map：list 留給下一幀重用（上一層已 clear）
 
         }

@@ -22,6 +22,7 @@ import net.neoforged.api.distmarker.OnlyIn;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import java.util.EnumMap;
 
@@ -108,13 +109,13 @@ public class THBulletRenderers {
                 int edgeB = cull.edgeBNum;
                 this.shouldCull = true;
                 Vector3f offset = new Vector3f(0.0f, -0.45f, 0.0f);
-                RenderUtil.renderSphere(vertexconsumer, posestack_pose, 2,
+                /*RenderUtil.renderSphere(vertexconsumer, posestack_pose, 2,
                         offset.add(0.0f, 0.4f, 0.0f, new Vector3f()),
                         coreScale,
                         edgeA, edgeB, false,
                         new Vec2(0.8f, 1.0f),
                         new Vec2(0.2f, 3.0f),
-                        color, 20, coreColor);
+                        color, 20, coreColor);*/
                 RenderUtil.renderSphere(vertexconsumer, posestack_pose, 1.2f,
                         offset,
                         scale,
@@ -122,35 +123,35 @@ public class THBulletRenderers {
                         new Vec2(0.4f, 2.0f),
                         new Vec2(0.4f, 2.0f),
                         color, color.setAlpha(0), coreColor.multiply(0.3f), true, false);
-                /*
-                this.shouldCull = true;
-                VertexBuilder builder1 = new VertexBuilder(THObjectContainerRenderer.BUFFER_2);
-                VertexBuilder builder2 = new VertexBuilder(vertexconsumer);
-                new SphereRenderer(
-                        posestack_pose.pose(), posestack_pose.normal(),
-                        offset.add(0.0f, 0.4f, 0.0f, new Vector3f()), coreScale,
-                        edgeA, edgeB,
-                        1.0f, false,
-                        color.multiply(0.6f), color.multiply(0.3f), false
-                ).render((pos, normal, vertexColor) -> {
-                    builder1.vertex(pos).color(vertexColor).color(coreColor).uv(0.8f, 1.0f).uv(0.2f, 3.0f).normal(normal).endVertex();
-                });
-                this.shouldCull = false;
-                new SphereRenderer(
-                        posestack_pose.pose(), posestack_pose.normal(),
-                        offset, scale,
-                        edgeA, edgeB,
-                        1.2f, true,
-                        color, color.setAlpha(0), false
-                ).render((pos, normal, vertexColor) -> {
-                    builder2.vertex(pos).color(vertexColor).color(coreColor.multiply(0.3f)).uv(0.4f, 2.0f).uv(0.4f, 2.0f).normal(normal).endVertex();
-                });*/
+                Vector3f rotation = bullet.getRotation();
+                Vector3f offsetRotation = new Vector3f(-rotation.x,rotation.y,rotation.z);
+                Vector3f scale2 = bullet.getScale().mul(new Vector3f(0.16f, 0.16f, 0.32f),new Vector3f());
+                VertexBuilder builder = new VertexBuilder(THObjectContainerRenderer.ELLIPSOID_TEST_BUFFER);
+                //Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
+                Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
+                Vector3f pos = pos1.subtract(camPos).toVector3f();
+
+                // 四邊形必須面向相機：否則從某些角度看過去會變成一直線，
+                // 光線就不會穿過 ellipsoid（遠處會縮小到看不見）。
+                Quaternionf camRot = renderer.getRenderDispatcher().camera.rotation();
+                Vector3f right = new Vector3f(1.0f, 0.0f, 0.0f).rotate(camRot);
+                Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f).rotate(camRot);
+                float half = 1.6f * Math.max(Math.abs(scale2.x),
+                        Math.max(Math.abs(scale2.y), Math.abs(scale2.z)));
+
+                Vector4f vec4 = new  Vector4f(0.36f, 5.0f,0.1f, 1.0f);
+                //Vector4f vec4 = new  Vector4f(0.8f, 1.0f,0.2f, 3.0f);
+
+                ellipsoidVertex(builder, pos, right, up, -half, -half, offsetRotation, scale2, color, coreColor, vec4);
+                ellipsoidVertex(builder, pos, right, up, half, -half, offsetRotation, scale2, color, coreColor, vec4);
+                ellipsoidVertex(builder, pos, right, up, half, half, offsetRotation, scale2, color, coreColor, vec4);
+                ellipsoidVertex(builder, pos, right, up, -half, half, offsetRotation, scale2, color, coreColor, vec4);
             }
         }
 
         public static class ball_small extends BulletRenderer {
             public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
-                poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
+                /*poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
                 Vector3f scale = new Vector3f(0.2f, 0.2f, 0.2f);
                 //Vec3 coreScale = scale.multiply(0.6f,0.6f,0.6f);
                 PoseStack.Pose posestack_pose = poseStack.last();
@@ -164,13 +165,35 @@ public class THBulletRenderers {
                         edgeA, edgeB, false,
                         new Vec2(0.33f, 6.0f),
                         new Vec2(-0.1f, 1.0f),
-                        color, color, coreColor);
+                        color, color, coreColor);*/
+                Vector3f rotation = bullet.getRotation();
+                Vector3f offsetRotation = new Vector3f(-rotation.x,rotation.y,rotation.z);
+                Vector3f scale = bullet.getScale().mul(new Vector3f(0.2f, 0.2f, 0.2f),new Vector3f());
+                VertexBuilder builder = new VertexBuilder(THObjectContainerRenderer.ELLIPSOID_TEST_BUFFER);
+                Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
+                Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
+                Vector3f pos = pos1.subtract(camPos).toVector3f();
+
+                // 四邊形必須面向相機：否則從某些角度看過去會變成一直線，
+                // 光線就不會穿過 ellipsoid（遠處會縮小到看不見）。
+                Quaternionf camRot = renderer.getRenderDispatcher().camera.rotation();
+                Vector3f right = new Vector3f(1.0f, 0.0f, 0.0f).rotate(camRot);
+                Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f).rotate(camRot);
+                float half = 1.6f * Math.max(Math.abs(scale.x),
+                        Math.max(Math.abs(scale.y), Math.abs(scale.z)));
+
+                Vector4f vec4 = new  Vector4f(0.33f, 6.0f,-0.1f, 1.0f);
+
+                ellipsoidVertex(builder, pos, right, up, -half, -half, offsetRotation, scale, color, coreColor, vec4);
+                ellipsoidVertex(builder, pos, right, up, half, -half, offsetRotation, scale, color, coreColor, vec4);
+                ellipsoidVertex(builder, pos, right, up, half, half, offsetRotation, scale, color, coreColor, vec4);
+                ellipsoidVertex(builder, pos, right, up, -half, half, offsetRotation, scale, color, coreColor, vec4);
             }
         }
 
         public static class ball_mid extends BulletRenderer {
             public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
-                poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
+                /*poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
                 Vector3f scale = new Vector3f(0.5f, 0.5f, 0.5f);
                 //Vec3 coreScale = scale.multiply(0.6f,0.6f,0.6f);
                 PoseStack.Pose posestack_pose = poseStack.last();
@@ -184,13 +207,35 @@ public class THBulletRenderers {
                         edgeA, edgeB, false,
                         new Vec2(0.5f, 2.0f),
                         new Vec2(0.0f, 2.0f),
-                        color, color, coreColor);
+                        color, color, coreColor);*/
+                Vector3f rotation = bullet.getRotation();
+                Vector3f offsetRotation = new Vector3f(-rotation.x, rotation.y, rotation.z);
+                Vector3f scale = bullet.getScale().mul(new Vector3f(0.5f, 0.5f, 0.5f), new Vector3f());
+                VertexBuilder builder = new VertexBuilder(THObjectContainerRenderer.ELLIPSOID_TEST_BUFFER);
+                Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
+                Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
+                Vector3f pos = pos1.subtract(camPos).toVector3f();
+
+                // 四邊形必須面向相機：否則從某些角度看過去會變成一直線，
+                // 光線就不會穿過 ellipsoid（遠處會縮小到看不見）。
+                Quaternionf camRot = renderer.getRenderDispatcher().camera.rotation();
+                Vector3f right = new Vector3f(1.0f, 0.0f, 0.0f).rotate(camRot);
+                Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f).rotate(camRot);
+                float half = 1.6f * Math.max(Math.abs(scale.x),
+                        Math.max(Math.abs(scale.y), Math.abs(scale.z)));
+
+                Vector4f vec4 = new Vector4f(0.5f, 2.0f, 0.0f, 2.0f);
+
+                ellipsoidVertex(builder, pos, right, up, -half, -half, offsetRotation, scale, color, coreColor, vec4);
+                ellipsoidVertex(builder, pos, right, up, half, -half, offsetRotation, scale, color, coreColor, vec4);
+                ellipsoidVertex(builder, pos, right, up, half, half, offsetRotation, scale, color, coreColor, vec4);
+                ellipsoidVertex(builder, pos, right, up, -half, half, offsetRotation, scale, color, coreColor, vec4);
             }
         }
 
         public static class ball_big extends BulletRenderer {
             public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
-                poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
+                /*poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
                 Vector3f scale = new Vector3f(0.8f, 0.8f, 0.8f);
                 //Vec3 coreScale = scale.multiply(0.8f, 0.8f, 0.8f);
                 PoseStack.Pose posestack_pose = poseStack.last();
@@ -204,7 +249,29 @@ public class THBulletRenderers {
                         edgeA, edgeB, false,
                         new Vec2(0.7f, 2.0f),
                         new Vec2(-0.1f, 2.0f),
-                        color, color, coreColor);
+                        color, color, coreColor);*/
+                Vector3f rotation = bullet.getRotation();
+                Vector3f offsetRotation = new Vector3f(-rotation.x,rotation.y,rotation.z);
+                Vector3f scale = bullet.getScale().mul(new Vector3f(1.0f, 1.0f, 1.0f),new Vector3f());
+                VertexBuilder builder = new VertexBuilder(THObjectContainerRenderer.ELLIPSOID_TEST_BUFFER);
+                Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
+                Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
+                Vector3f pos = pos1.subtract(camPos).toVector3f();
+
+                // 四邊形必須面向相機：否則從某些角度看過去會變成一直線，
+                // 光線就不會穿過 ellipsoid（遠處會縮小到看不見）。
+                Quaternionf camRot = renderer.getRenderDispatcher().camera.rotation();
+                Vector3f right = new Vector3f(1.0f, 0.0f, 0.0f).rotate(camRot);
+                Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f).rotate(camRot);
+                float half = 1.6f * Math.max(Math.abs(scale.x),
+                        Math.max(Math.abs(scale.y), Math.abs(scale.z)));
+
+                Vector4f vec4 = new  Vector4f(0.7f, 2.0f,-0.1f, 2.0f);
+
+                ellipsoidVertex(builder, pos, right, up, -half, -half, offsetRotation, scale, color, coreColor, vec4);
+                ellipsoidVertex(builder, pos, right, up, half, -half, offsetRotation, scale, color, coreColor, vec4);
+                ellipsoidVertex(builder, pos, right, up, half, half, offsetRotation, scale, color, coreColor, vec4);
+                ellipsoidVertex(builder, pos, right, up, -half, half, offsetRotation, scale, color, coreColor, vec4);
             }
         }
 
@@ -227,11 +294,12 @@ public class THBulletRenderers {
                         color, color.multiply(0.8f), coreColor.multiply(0.9f));*/
                 //poseStack.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
                 //poseStack.mulPose(Axis.YP.rotationDegrees(-180.0F));
-                Vector3f rotation = new Vector3f(0.0f, 0.0f, 0.0f);
-                Vector3f scale = new Vector3f(1.0f, 1.0f, 1.0f);
+                Vector3f rotation = bullet.getRotation();
+                Vector3f offsetRotation = new Vector3f(-rotation.x,rotation.y,rotation.z);
+                Vector3f scale = bullet.getScale().mul(new Vector3f(0.5f, 0.5f, 1.0f),new Vector3f());
                 VertexBuilder builder = new VertexBuilder(THObjectContainerRenderer.ELLIPSOID_TEST_BUFFER);
                 Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
-                Vec3 pos1 = bullet.getPosition();
+                Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
                 Vector3f pos = pos1.subtract(camPos).toVector3f();
 
                 // 四邊形必須面向相機：否則從某些角度看過去會變成一直線，
@@ -241,29 +309,33 @@ public class THBulletRenderers {
                 Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f).rotate(camRot);
                 float half = 1.6f * Math.max(Math.abs(scale.x),
                         Math.max(Math.abs(scale.y), Math.abs(scale.z)));
+                Vector4f vec4 = new  Vector4f(0.5f,1.5f,0.2f,0.4f);
 
-                this.ellipsoidVertex(builder, pos, right, up, -half, -half, rotation, scale);
-                this.ellipsoidVertex(builder, pos, right, up, half, -half, rotation, scale);
-                this.ellipsoidVertex(builder, pos, right, up, half, half, rotation, scale);
-                this.ellipsoidVertex(builder, pos, right, up, -half, half, rotation, scale);
+                ellipsoidVertex(builder, pos, right, up, -half, -half, offsetRotation, scale, color, coreColor, vec4);
+                ellipsoidVertex(builder, pos, right, up, half, -half, offsetRotation, scale, color, coreColor, vec4);
+                ellipsoidVertex(builder, pos, right, up, half, half, offsetRotation, scale, color, coreColor, vec4);
+                ellipsoidVertex(builder, pos, right, up, -half, half, offsetRotation, scale, color, coreColor, vec4);
             }
+        }
 
-            /** 寫一個 billboard 頂點：center + right*x + up*y。 */
-            private void ellipsoidVertex(VertexBuilder builder, Vector3f center, Vector3f right, Vector3f up,
-                                         float x, float y, Vector3f rotation, Vector3f scale) {
-                builder.vertex(center.x + right.x * x + up.x * y,
-                        center.y + right.y * x + up.y * y,
-                        center.z + right.z * x + up.z * y)
-                        .vertex(center)
-                        .vertex(rotation)
-                        .vertex(scale)
-                        .endVertex();
-            }
+        /** 寫一個 billboard 頂點：center + right*x + up*y。 */
+        public static void ellipsoidVertex(VertexBuilder builder, Vector3f center, Vector3f right, Vector3f up,
+                                            float x, float y, Vector3f rotation, Vector3f scale, Color color, Color coreColor, Vector4f vector4f) {
+            builder.vertex(center.x + right.x * x + up.x * y,
+                            center.y + right.y * x + up.y * y,
+                            center.z + right.z * x + up.z * y)
+                    .vertex(center)
+                    .vertex(rotation)
+                    .vertex(scale)
+                    .color(color)
+                    .color(coreColor)
+                    .vec4(vector4f.x,vector4f.y,vector4f.z,vector4f.w)
+                    .endVertex();
         }
 
         public static class grain_a extends BulletRenderer {
             public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
-                poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
+                /*poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
                 Vector3f scale = new Vector3f(0.2f, 0.4f, 0.2f);
                 //Vec3 coreScale = scale.multiply(0.6f, 0.6f, 0.6f);
                 PoseStack.Pose posestack_pose = poseStack.last();
@@ -278,7 +350,29 @@ public class THBulletRenderers {
                         edgeA, edgeB, false,
                         new Vec2(0.36f, 5.0f),
                         new Vec2(0.1f, 1.0f),
-                        color, color.multiply(0.5f), coreColor);
+                        color, color.multiply(0.5f), coreColor);*/
+                Vector3f rotation = bullet.getRotation();
+                Vector3f offsetRotation = new Vector3f(-rotation.x,rotation.y,rotation.z);
+                Vector3f scale = bullet.getScale().mul(new Vector3f(0.2f, 0.2f, 0.4f),new Vector3f());
+                VertexBuilder builder = new VertexBuilder(THObjectContainerRenderer.ELLIPSOID_TEST_BUFFER);
+                Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
+                Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
+                Vector3f pos = pos1.subtract(camPos).toVector3f();
+
+                // 四邊形必須面向相機：否則從某些角度看過去會變成一直線，
+                // 光線就不會穿過 ellipsoid（遠處會縮小到看不見）。
+                Quaternionf camRot = renderer.getRenderDispatcher().camera.rotation();
+                Vector3f right = new Vector3f(1.0f, 0.0f, 0.0f).rotate(camRot);
+                Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f).rotate(camRot);
+                float half = 1.6f * Math.max(Math.abs(scale.x),
+                        Math.max(Math.abs(scale.y), Math.abs(scale.z)));
+
+                Vector4f vec4 = new  Vector4f(0.36f, 5.0f,0.1f, 1.0f);
+
+                ellipsoidVertex(builder, pos, right, up, -half, -half, offsetRotation, scale, color, coreColor, vec4);
+                ellipsoidVertex(builder, pos, right, up, half, -half, offsetRotation, scale, color, coreColor, vec4);
+                ellipsoidVertex(builder, pos, right, up, half, half, offsetRotation, scale, color, coreColor, vec4);
+                ellipsoidVertex(builder, pos, right, up, -half, half, offsetRotation, scale, color, coreColor, vec4);
             }
         }
 
@@ -288,8 +382,8 @@ public class THBulletRenderers {
                 Vector3f scale = new Vector3f(0.25f, 0.5f, 0.25f);
                 Vector3f coreScale = scale.mul(0.6f, 0.6f, 0.6f, new Vector3f());
                 PoseStack.Pose posestack_pose = poseStack.last();
-                int edgeA = 4;
-                int edgeB = 4;
+                int edgeA = 6;
+                int edgeB = 5;
                 RenderUtil.renderSphere(vertexconsumer, posestack_pose, 2,
                         ConstantUtil.VECTOR3F_ZERO,
                         coreScale,

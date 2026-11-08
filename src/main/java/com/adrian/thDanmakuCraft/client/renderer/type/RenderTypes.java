@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.client.renderer.type;
 
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.shader.ShaderLoader;
 import com.adrian.thDanmakuCraft.events.TickEvents;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.Blend;
@@ -46,7 +47,7 @@ public class RenderTypes extends RenderStateShard{
         Vec3 cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
         shader.safeGetUniform("CameraPosition").set((float) cameraPos.x,(float) cameraPos.y,(float) cameraPos.z);
         //System.out.println(timer);
-        shader.setSampler("DepthBuffer",DEPTH_BUFFER_TARGET.getDepthTextureId());
+        shader.setSampler("DepthBuffer",THObjectContainerRenderer.DEPTH_BUFFER.getDepthTextureId());
         shader.setSampler("AuraDepthBuffer",AURA_DEPTH_BUFFER_TARGET.getDepthTextureId());
         shader.setSampler("ScreenBuffer",target.getColorTextureId());
         return shader;
@@ -58,7 +59,7 @@ public class RenderTypes extends RenderStateShard{
 
     public static final ShaderStateShard RENDER_ELLIPSOID_SHADER = new ShaderStateShard(() -> {
         ShaderInstance shader = ShaderLoader.RENDER_ELLIPSOID_SHADER;
-        shader.setSampler("DepthBuffer",DEPTH_BUFFER_TARGET.getDepthTextureId());
+        shader.setSampler("DepthBuffer", THObjectContainerRenderer.DEPTH_BUFFER.getDepthTextureId());
         return shader ;
     });
 
@@ -235,7 +236,7 @@ public class RenderTypes extends RenderStateShard{
 
     public static final RenderType TEST_ELLIPSOID = create(
             "debug_aaa2",
-            ModVertexFormats.POSITION_POSITION2_ROTATION_SCALE,
+            ModVertexFormats.POSITION_POSITION2_ROTATION_SCALE_COLOR_COLOR,
             VertexFormat.Mode.QUADS,
             1536,
             false,
@@ -243,7 +244,12 @@ public class RenderTypes extends RenderStateShard{
             RenderType.CompositeState.builder()
                     .setShaderState(RENDER_ELLIPSOID_SHADER)
                     .setLayeringState(VIEW_OFFSET_Z_LAYERING)
-                    .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                    //.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                    .setTransparencyState(LIGHTNING_TRANSPARENCY)
+                    .setLightmapState(NO_LIGHTMAP)
+                    .setOverlayState(NO_OVERLAY)
+                    .setWriteMaskState(COLOR_DEPTH_WRITE)
+                    .setOutputState(ITEM_ENTITY_TARGET)
                     .createCompositeState(false)
     );
 }

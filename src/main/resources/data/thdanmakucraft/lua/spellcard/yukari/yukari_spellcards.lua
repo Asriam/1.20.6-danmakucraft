@@ -39,7 +39,7 @@ function yukari_spellcrad_1:onTick()
     local bbb = function(_pos,_angle,offset)
         local bullet = self:createTHBullet(nil,
                 {_pos + _angle * (math.min(timer/120,1)^0.4*1.6),_angle,offset},
-                _pos,bullet_styles.ball_mid,3)
+                _pos,bullet_styles.ellipse,3)
         local p = _pos + _angle*(math.min(timer/120,1)^0.4*1.6)
         local acceleration = 0.026
         local velocity = _angle*(0.2 - acceleration*offset)
@@ -49,7 +49,7 @@ function yukari_spellcrad_1:onTick()
         bullet:setLifetime(120)
         bullet:setBlend("add")
         bullet:setDamage(4.0)
-        bullet:setColor(255,255,255,120)
+        bullet:setColor(255,255,255,200)
         --bullet:setCollision(false)
     end
 

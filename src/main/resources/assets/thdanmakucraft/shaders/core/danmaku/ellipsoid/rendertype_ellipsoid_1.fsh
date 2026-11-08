@@ -1,52 +1,36 @@
 #version 150
 
-uniform mat4 ModelViewMat;
+uniform sampler2D DepthBuffer;
+
+uniform vec2 ScreenSize;
+//uniform mat4 ModelViewMat;
 uniform mat4 ProjMat;
 
 in vec3 EllipsoidPosition;
 in vec3 EllipsoidRotation;
 in vec3 EllipsoidRadius;
 
+in vec4 BulletColor;
+in vec4 CoreColor;
+in vec4 params;
+
 in vec3 vRayDirection;
+in mat3 R;
+// 物件中心（view space）
+in vec3 centerVS;
+
+in float near;
+in float far;
 
 out vec4 fragColor;
 
-mat3 rotationMatrix(vec3 r)
-{
-    vec3 c = cos(r);
-    vec3 s = sin(r);
-
-    mat3 Rx = mat3(
-    1.0, 0.0, 0.0,
-    0.0, c.x, s.x,
-    0.0, -s.x, c.x
-    );
-
-    mat3 Ry = mat3(
-    c.y, 0.0, -s.y,
-    0.0, 1.0, 0.0,
-    s.y, 0.0, c.y
-    );
-
-    mat3 Rz = mat3(
-    c.z, s.z, 0.0,
-    -s.z, c.z, 0.0,
-    0.0, 0.0, 1.0
-    );
-
-    return Rz * Ry * Rx;
+float LinearizeDepth(float depth) {
+    float z = depth*2.0-1.0f;
+    return (2.0f*near*far)/(far+near-z*(far-near));
 }
 
 void main()
 {
-    // 把 view 的旋轉抽出來：Rotation 是物件在世界座標的角度，
-    // 要轉到 view space 才能跟 centerVS / 射線在同一個座標系
-    mat3 viewRot = mat3(ModelViewMat[0].xyz, ModelViewMat[1].xyz, ModelViewMat[2].xyz);
-    mat3 R = viewRot * rotationMatrix(EllipsoidRotation) * transpose(viewRot);
-
-    // 物件中心（view space）
-    vec3 centerVS = (ModelViewMat * vec4(EllipsoidPosition, 1.0)).xyz;
-
     // 相機射線（view space，相機在原點）
     vec3 roVS = vec3(0.0);
     vec3 rdVS = normalize(vRayDirection);
@@ -109,5 +93,25 @@ void main()
     gl_FragDepth = clamp(depth * 0.5 + 0.5, 0.0, 1.0);
 
     // 這個 pass 把深度寫進顏色（除錯用）：之後可改成固定顏色
-    fragColor = vec4(vec3(gl_FragDepth), 1.0);
+    //fragColor = vec4(normalLocal,1.0f);
+
+
+    vec3 viewAngle = normalize(-vRayDirection);
+    vec2 texCoord = gl_FragCoord.xy/ScreenSize;
+    float rimStrength = 1 - max(dot(viewAngle, normalVS),0.0f);
+    //vec4 params = vec4(0.5f,1.5f,0.2f,0.3f);
+    float rimFactor  = pow(rimStrength-params.z, params.w);
+    float rimFactor2 = pow(rimStrength+1.0f-params.x, params.y);
+    vec4 rim  = vec4(rimFactor);
+    vec4 rim2 = vec4(rimFactor2);
+    float sceneDepth  = 0.0f;//LinearizeDepth(texture(DepthBuffer, texCoord).r);
+    float bubbleDepth = LinearizeDepth(gl_FragDepth);
+    float distance = abs(bubbleDepth - sceneDepth);
+    float threshold = 0.4f;
+    float normalizedDistance = clamp(distance / threshold, 0.0, 1.0);
+    vec4 intersection = mix(vec4(1), vec4(0), pow(normalizedDistance,2));
+    vec4 bubbleBase = BulletColor;
+    vec4 outColor = max(vec4(1.0-(clamp(rim,0.0f,1.0f)+max(intersection,0.0f))),0.0f)*1.6f*bubbleBase + max(vec4(1.0-(rim2+clamp(intersection,0.0f,1.0f))),0.0f)*1.6f*(CoreColor*2.0f-1.0f);
+    fragColor = outColor;
+    //fragColor = vec4(vec3(texture(DepthBuffer, texCoord).r),1.0f);
 }

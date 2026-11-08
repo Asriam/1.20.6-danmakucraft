@@ -3,6 +3,7 @@ package com.adrian.thDanmakuCraft.client.gui.widgets;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 
+@Deprecated
 public abstract class TextureButton extends EditorButton {
     private ResourceLocation textureLocation;
 

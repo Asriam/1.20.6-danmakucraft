@@ -130,7 +130,8 @@ void main() {
     float inversedIntersection = 1.0f-intersection.r;
 
     vec2 warp = vec2(sin(Timer/40.0f),cos(Timer/36.0f));
-    vec2 uv2 = uvWarp(texCoord,(-normal.rg+0.2*warp)*rim*0.6*sin(Timer/120.0f)/ (vertexDistance/10.0f) *inversedIntersection*0.4f);
+    bool flag = senceDepth < aruaDepth;
+    vec2 uv2 = flag ? texCoord : uvWarp(texCoord,(-normal.rg+0.2*warp)*rim*0.6*sin(Timer/120.0f)/ (vertexDistance/10.0f) *inversedIntersection*0.4f);
     float WarpedSenceDepth = LinearizeDepth(texture(DepthBuffer, uv2).r);
 
     vec4 screen_color = texture(ScreenBuffer, mix(texCoord,uv2,aruaRawDepth));
@@ -140,7 +141,6 @@ void main() {
 
     vec4 intersectionColor = vec4(vec3(1.0f,0.0f,0.5f)*intersection.a,intersection.a*0.6);
 
-    bool flag = senceDepth < aruaDepth;
     float rawDepth = texture(DepthBuffer, texCoord).r;
     vec3 viewPos = clipToView(texCoord, flag ? rawDepth : aruaRawDepth);
     vec4 worldPosRaw = uInvModelView * vec4(viewPos, 1.0);

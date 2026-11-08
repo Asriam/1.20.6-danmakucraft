@@ -14,6 +14,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
 
+@Deprecated
 public class EditorButton {
 
     private static final ResourceLocation EDITOR_BUTTON_TEXTURE = ResourceLocationUtil.thdanmakucraft("textures/gui/editor_button.png");

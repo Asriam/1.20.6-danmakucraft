@@ -48,11 +48,16 @@ public class ModVertexFormats {
             VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.POSITION, 3);
     public static final VertexFormatElement SCALE = VertexFormatElement.register(23, 0,
             VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.POSITION, 3);
+    public static final VertexFormatElement VEC4 = VertexFormatElement.register(24, 0,
+            VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 4);
 
-    public static final VertexFormat POSITION_POSITION2_ROTATION_SCALE = VertexFormat.builder()
+    public static final VertexFormat POSITION_POSITION2_ROTATION_SCALE_COLOR_COLOR = VertexFormat.builder()
             .add("Position", VertexFormatElement.POSITION)
             .add("Position2", POSITION2)
             .add("Rotation", ROTATION)
             .add("Scale", SCALE)
+            .add("Color", VertexFormatElement.COLOR)
+            .add("Color2", COLOR2)
+            .add( "VEC4", VEC4)
             .build();
 }

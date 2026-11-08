@@ -30,6 +30,16 @@ public class VertexBuilder {
         return this;
     }
 
+    public VertexBuilder vec4(double x, double y, double z, double w){
+        //builder.vertex(x,y,z);
+        builder.putFloat(0, (float)x);
+        builder.putFloat(4, (float)y);
+        builder.putFloat(8, (float)z);
+        builder.putFloat(12, (float)w);
+        builder.nextElement();
+        return this;
+    }
+
     public VertexBuilder vertex(Matrix4f pose, float x, float y, float z){
         Vector3f pos = pose.transformPosition(x, y, z, new Vector3f());
         //Vector3f pos = new Vector3f(x,y,z);

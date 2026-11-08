@@ -5,6 +5,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 
+@Deprecated
 public class TextButton extends EditorButton {
     private String text;
     private static final Font font = Minecraft.getInstance().font;
