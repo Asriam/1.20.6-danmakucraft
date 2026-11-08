@@ -33,4 +33,11 @@ public class ModVertexFormats {
             .add("Normal", VertexFormatElement.NORMAL)
             .add("Color", VertexFormatElement.COLOR)
             .build();
+
+    public static final VertexFormat POSITION_POSITION2_ROTATION_SCALE = VertexFormat.builder()
+            .add("Position", VertexFormatElement.POSITION)
+            .add("Position2", VertexFormatElement.POSITION)
+            .add("Rotation", VertexFormatElement.POSITION)
+            .add("Scale", VertexFormatElement.POSITION)
+            .build();
 }

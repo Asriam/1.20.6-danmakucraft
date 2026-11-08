@@ -11,7 +11,6 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.RegisterShadersEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.Mod;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -27,6 +26,7 @@ public class ShaderLoader {
     public static ModShaderInstance DANMAKU_TEXTURE_SHADER;
     public static ModShaderInstance BACKGROUND_WARP_EFFECT;
     public static ModShaderInstance NORMAL_MAP_SHADER;
+    public static ModShaderInstance RENDER_ELLIPSOID_SHADER;
 
     public ShaderLoader() {
     }
@@ -34,8 +34,9 @@ public class ShaderLoader {
     public static void registryShaders(ResourceProvider resourceProvider){
         DANMAKU_DEPTH_OUTLINE_SHADER = registryShader(resourceProvider, ResourceLocationUtil.thdanmakucraft("danmaku/rendertype_danmaku_1"), RenderTypes.TEST_FORMAT);
         DANMAKU_TEXTURE_SHADER = registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("danmaku/rendertype_danmaku_texture"), ModVertexFormats.POSITION_COLOR_COLOR_TEX);
-        BACKGROUND_WARP_EFFECT = registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("danmaku/rendertype_bgwarpef"), ModVertexFormats.POSITION_NORMAL);
+        BACKGROUND_WARP_EFFECT = registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("danmaku/spellcard_effect/rendertype_bgwarpef"), ModVertexFormats.POSITION_NORMAL);
         NORMAL_MAP_SHADER = registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("danmaku/rendertype_normalmap"), ModVertexFormats.POSITION_NORMAL);
+        RENDER_ELLIPSOID_SHADER = registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("danmaku/ellipsoid/rendertype_ellipsoid_1"), ModVertexFormats.POSITION_NORMAL);
     }
 
     @SubscribeEvent

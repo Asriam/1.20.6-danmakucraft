@@ -254,7 +254,7 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
                     object.setDead();
                 }
             }
-            if(this.timer > this.lifetime+40 || this.objectManager.isEmpty()){
+            if(this.timer > this.lifetime+40){
                 this.discard();
             }
         }else {

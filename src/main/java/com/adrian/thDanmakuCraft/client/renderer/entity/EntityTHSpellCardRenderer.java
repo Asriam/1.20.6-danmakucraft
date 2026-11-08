@@ -38,6 +38,8 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import static com.adrian.thDanmakuCraft.client.renderer.shader.ShaderLoader.NORMAL_MAP_SHADER;
+import static com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes.AURA_DEPTH_BUFFER_TARGET;
 import static com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes.TEST_RENDER_TARGET;
 
 public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<EntityTHSpellCard>{
@@ -182,9 +184,10 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         }
 
         if(container.shouldApplyBackgroundWarpEffect){
-            time = 30.0f;
+            time = 60.0f;
             float radius = 200.0f;
-            float open2 = timer > time ? 1.0f : (float) Math.pow(Math.min(timer / time,1.0f),0.6f);
+            float value = (float) (-Math.pow(-Math.min(timer / time,1.0f)+1, 2.3)+1);
+            float open2 = timer > time ? 1.0f : value;
             float rad = radius*open2*close*Mth.lerp((float)Math.pow(Math.max(timeLeft,0.0f),1),0.4f,1.0f);
             renderBackgroundWarpEffect(
                     spellCard,
@@ -202,8 +205,8 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         poseStack.pushPose();
         //poseStack.translate(pos.x,pos.y,pos.z);
         final Color color2 = new Color(255,0,200, (int) (180*alpha));
-        RenderUtil.enableCull();
         //out layer
+        RenderUtil.disableCull();
         if(true) {
             final VertexBuilder builder = new VertexBuilder(BACKGROUND_WARP_EFFECT_DEPTH_BUFFER);
             new SphereVertexHelper(
@@ -213,10 +216,11 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
                     new Color(255, 255, 255, 255),
                     new Color(255, 255, 255, 255), false, false)
                     .vertex((vertexPos, normal, color) -> {
-                        builder.vertex(vertexPos).normal(normal).color(color2).endVertex();
+                        builder.vertex(vertexPos).normal(normal).endVertex();
                     });
         }
-        if(false) {
+        RenderUtil.enableCull();
+        if(true) {
             final VertexBuilder builder = new VertexBuilder(BACKGROUND_WARP_EFFECT_BUFFER);
             new SphereVertexHelper(poseStack.last().pose(), poseStack.last().normal(),
                     ConstantUtil.VECTOR3F_ZERO, new Vector3f(radius, radius, radius),
@@ -233,7 +237,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
     public static void beforeRenderEntities(LevelRenderer levelRenderer, float partialTick){
         MAGIC_SQUARE_BUFFER.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         AURA_BUFFER.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        BACKGROUND_WARP_EFFECT_DEPTH_BUFFER.begin(VertexFormat.Mode.QUADS, ModVertexFormats.POSITION_NORMAL_COLOR);
+        BACKGROUND_WARP_EFFECT_DEPTH_BUFFER.begin(VertexFormat.Mode.QUADS, ModVertexFormats.POSITION_NORMAL);
         BACKGROUND_WARP_EFFECT_BUFFER.begin(VertexFormat.Mode.QUADS, ModVertexFormats.POSITION_NORMAL_COLOR);
         //BACKGROUND_WARP_EFFECT_BUFFER.color(0,0,0,255);
         //BACKGROUND_WARP_EFFECT_BUFFER.clear();
@@ -262,21 +266,28 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         int[] window = new int[]{target.width, target.height};
         TEST_RENDER_TARGET.resize(window[0],window[1],false);
         TEST_RENDER_TARGET.copyDepthFrom(target);
+
+        AURA_DEPTH_BUFFER_TARGET.resize(window[0],window[1],false);
         /*TEST_RENDER_TARGET.bindWrite(false);
             //TEST_RENDER_TARGET.blitToScreen(window[0],window[1],false);
         TEST_RENDER_TARGET.unbindWrite();*/
 
         RenderType renderType = RenderTypes.DEBUG_FILLED_BOX;
         renderType.setupRenderState();
+
+        NORMAL_MAP_SHADER.apply();
+        AURA_DEPTH_BUFFER_TARGET.bindWrite(true);
         BufferUploader.drawWithShader(BACKGROUND_WARP_EFFECT_DEPTH_BUFFER.end());
+        AURA_DEPTH_BUFFER_TARGET.unbindWrite();
         renderType.clearRenderState();
 
         RenderType bg_warp_ef_rt = RenderTypes.RENDER_TYPE_BACKGROUND_WARP_EFFECT;
         bg_warp_ef_rt.setupRenderState();
-        RenderSystem.enableCull();
+        RenderSystem.disableCull();
         Matrix4f modelViewMat = new Matrix4f(RenderSystem.getModelViewMatrix());
         RenderSystem.getModelViewMatrix().set(RenderEvents.ModelViewMatrix);
         RenderSystem.disableDepthTest();
+        //TEST_RENDER_TARGET.bindWrite(true);
         TEST_RENDER_TARGET.bindWrite(true);
         BufferUploader.drawWithShader(BACKGROUND_WARP_EFFECT_BUFFER.end());
         TEST_RENDER_TARGET.unbindWrite();

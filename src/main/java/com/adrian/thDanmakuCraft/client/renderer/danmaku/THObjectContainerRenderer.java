@@ -1,6 +1,8 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku;
 
 import com.adrian.thDanmakuCraft.client.renderer.shader.ShaderLoader;
+import com.adrian.thDanmakuCraft.client.renderer.type.ModVertexFormats;
+import com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.adrian.thDanmakuCraft.client.renderer.compat.LegacyBufferBuilder;
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
@@ -36,58 +38,6 @@ public class THObjectContainerRenderer {
     //private static final RenderTarget DEPTH_BUFFER = new TextureTarget(MAIN_RENDER_TARGET.width,MAIN_RENDER_TARGET.height,true,true);
     private static final Map<THObjectType<?>, AbstractTHObjectRenderer<?>> THOBJECT_RENDERERS = THObjectRenderers.createEntityRenderers(new THObjectRendererProvider.Context());
 
-    private static PostChain blendChain;
-    private static void initBlend(){
-
-    }
-
-    /*static {
-        RenderEvents.registerRenderLevelStageTask("test_effect_clear", RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS, (poseStack, partialTick) -> {
-            //TEST_RENDER_TARGET.resize(THObjectContainerRenderer.MAIN_RENDER_TARGET.width , THObjectContainerRenderer.MAIN_RENDER_TARGET.height, false);
-            if(shouldApplyEffect()){
-            TEST_RENDER_TARGET.setClearColor(0.0f,0.0f,0.0f,0.0f);
-            TEST_RENDER_TARGET.clear(Minecraft.ON_OSX);
-            TEST_RENDER_TARGET.copyDepthFrom(MAIN_RENDER_TARGET);
-            MAIN_RENDER_TARGET.bindWrite(false);
-            }
-        });
-        RenderEvents.registerRenderLevelStageTask("test_effect_applier",
-                RenderLevelStageEvent.Stage.AFTER_ENTITIES,
-                (poseStack, partialTick) -> {
-                    if (shouldApplyEffect()) {
-                        if (Minecraft.useShaderTransparency()) {
-                            Minecraft.getInstance().levelRenderer.getItemEntityTarget().bindWrite(false);
-                        }
-                        THObjectContainerRenderer.applyEffect(poseStack, partialTick);
-                        if (Minecraft.useShaderTransparency()) {
-                            Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
-                        }
-                    }
-                });
-    }*/
-
-    /*public static void beforeRenderEntities(LevelRenderer levelRenderer, float partialTick){
-        if(shouldApplyEffect()) {
-            TEST_RENDER_TARGET.resize(THObjectContainerRenderer.MAIN_RENDER_TARGET.width , THObjectContainerRenderer.MAIN_RENDER_TARGET.height, false);
-            TEST_RENDER_TARGET.setClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            TEST_RENDER_TARGET.clear(Minecraft.ON_OSX);
-            TEST_RENDER_TARGET.copyDepthFrom(MAIN_RENDER_TARGET);
-            MAIN_RENDER_TARGET.bindWrite(false);
-        }
-    }
-
-    public static void afterRenderEntities(LevelRenderer levelRenderer, float partialTick){
-        if (shouldApplyEffect()) {
-            if (Minecraft.useShaderTransparency()) {
-                Minecraft.getInstance().levelRenderer.getItemEntityTarget().bindWrite(false);
-            }
-            THObjectContainerRenderer.applyEffect();
-            if (Minecraft.useShaderTransparency()) {
-                Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
-            }
-        }
-    }*/
-
     public static RenderTarget getRenderTarget(){
         return TEST_RENDER_TARGET;
     }
@@ -109,6 +59,7 @@ public class THObjectContainerRenderer {
     private static final Map<RenderType, List<THObject>> BATCHES = new HashMap<>();
     private static final LegacyBufferBuilder HIT_BOX_BUFFER = new LegacyBufferBuilder(4096);
     public static final LegacyBufferBuilder BUFFER_2 = new LegacyBufferBuilder(4096);
+    public static final LegacyBufferBuilder ELLIPSOID_TEST_BUFFER = new LegacyBufferBuilder(4096);
 
     private static LegacyBufferBuilder getBuffer(RenderType renderType){
         if (buffers.containsKey(renderType)){
@@ -132,7 +83,7 @@ public class THObjectContainerRenderer {
         if(shader != null) {
             THObjectContainerRenderer.DEPTH_BUFFER.copyDepthFrom(mainRenderTarget);
             shader.setSampler("DepthBuffer", THObjectContainerRenderer.DEPTH_BUFFER.getDepthTextureId());
-            shader.setSampler("ScreenBuffer", mainRenderTarget.getColorTextureId());
+            //shader.setSampler("ScreenBuffer", mainRenderTarget.getColorTextureId());
             mainRenderTarget.bindWrite(true);
         }
 
@@ -144,6 +95,7 @@ public class THObjectContainerRenderer {
 
         RenderSystem.enableBlend();
         if (!objectList.isEmpty()) {
+            ELLIPSOID_TEST_BUFFER.begin(VertexFormat.Mode.QUADS, ModVertexFormats.POSITION_POSITION2_ROTATION_SCALE);
             boolean shouldRenderHitBox = entityRenderDispatcher.shouldRenderHitBoxes();
             RenderType renderTypeLines = RenderType.lines();
             ///Batching：重用同一個 map / 每個 RenderType 的 list（每幀只 clear）
@@ -216,18 +168,27 @@ public class THObjectContainerRenderer {
                     THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
                 }
             }
+            if (shouldApplyEffect()) {
+                THObjectContainerRenderer.TEST_RENDER_TARGET.bindWrite(true);
+            }
+            RenderTypes.TEST_ELLIPSOID.setupRenderState();
+            BufferUploader.drawWithShader(ELLIPSOID_TEST_BUFFER.end());
+            RenderTypes.TEST_ELLIPSOID.clearRenderState();
+            if (shouldApplyEffect()) {
+                THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
+            }
             // 不清 map：list 留給下一幀重用（上一層已 clear）
 
         }
-        RenderSystem.blendEquation(32774);
-        //RenderSystem.disableBlend();
-        RenderSystem.defaultBlendFunc();
-
         if(shouldApplyEffect()) {
             THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
             mainRenderTarget.copyDepthFrom(THObjectContainerRenderer.TEST_RENDER_TARGET);
             mainRenderTarget.bindWrite(true);
         }
+
+        RenderSystem.blendEquation(32774);
+        //RenderSystem.disableBlend();
+        RenderSystem.defaultBlendFunc();
     }
 
     public static List<THObject> sortObjects(List<THObject> list, Vec3 cam){

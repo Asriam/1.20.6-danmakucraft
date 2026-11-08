@@ -3,7 +3,6 @@ package com.adrian.thDanmakuCraft.client.renderer.type;
 import com.adrian.thDanmakuCraft.client.renderer.shader.ShaderLoader;
 import com.adrian.thDanmakuCraft.events.TickEvents;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.Blend;
-import com.mojang.blaze3d.pipeline.MainTarget;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.shaders.BlendMode;
@@ -38,6 +37,7 @@ public class RenderTypes extends RenderStateShard{
     public static final ShaderStateShard DANMAKU_DEPTH_OUTLINE_SHADER = new ShaderStateShard(() -> ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER);
     public static RenderTarget TEST_RENDER_TARGET = new TextureTarget(2000,2000,true,true);
     public static RenderTarget DEPTH_BUFFER_TARGET = new TextureTarget(2000,2000,true,true);
+    public static RenderTarget AURA_DEPTH_BUFFER_TARGET = new TextureTarget(2000,2000,true,true);
     public static final ShaderStateShard BACKGROUND_WARP_EFFECT_SHADER = new ShaderStateShard(() -> {
         RenderTarget target = Minecraft.getInstance().getMainRenderTarget();
         ShaderInstance shader = ShaderLoader.BACKGROUND_WARP_EFFECT;
@@ -47,12 +47,19 @@ public class RenderTypes extends RenderStateShard{
         shader.safeGetUniform("CameraPosition").set((float) cameraPos.x,(float) cameraPos.y,(float) cameraPos.z);
         //System.out.println(timer);
         shader.setSampler("DepthBuffer",DEPTH_BUFFER_TARGET.getDepthTextureId());
+        shader.setSampler("AuraDepthBuffer",AURA_DEPTH_BUFFER_TARGET.getDepthTextureId());
         shader.setSampler("ScreenBuffer",target.getColorTextureId());
         return shader;
     });
 
     public static final ShaderStateShard NORMAL_MAP_SHADER = new ShaderStateShard(() -> {
         return (ShaderInstance) ShaderLoader.NORMAL_MAP_SHADER;
+    });
+
+    public static final ShaderStateShard RENDER_ELLIPSOID_SHADER = new ShaderStateShard(() -> {
+        ShaderInstance shader = ShaderLoader.RENDER_ELLIPSOID_SHADER;
+        shader.setSampler("DepthBuffer",DEPTH_BUFFER_TARGET.getDepthTextureId());
+        return shader ;
     });
 
     public static final VertexFormat TEST_FORMAT = VertexFormat.builder()
@@ -214,13 +221,27 @@ public class RenderTypes extends RenderStateShard{
 
     public static final RenderType DEBUG_FILLED_BOX = create(
             "debug_aaa",
-            ModVertexFormats.POSITION_NORMAL_COLOR,
+            ModVertexFormats.POSITION_NORMAL,
             VertexFormat.Mode.QUADS,
             1536,
             false,
             true,
             RenderType.CompositeState.builder()
                     .setShaderState(NORMAL_MAP_SHADER)
+                    .setLayeringState(VIEW_OFFSET_Z_LAYERING)
+                    .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                    .createCompositeState(false)
+    );
+
+    public static final RenderType TEST_ELLIPSOID = create(
+            "debug_aaa2",
+            ModVertexFormats.POSITION_POSITION2_ROTATION_SCALE,
+            VertexFormat.Mode.QUADS,
+            1536,
+            false,
+            true,
+            RenderType.CompositeState.builder()
+                    .setShaderState(RENDER_ELLIPSOID_SHADER)
                     .setLayeringState(VIEW_OFFSET_Z_LAYERING)
                     .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
                     .createCompositeState(false)

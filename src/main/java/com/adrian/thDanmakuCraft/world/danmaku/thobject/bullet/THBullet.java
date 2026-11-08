@@ -223,7 +223,7 @@ public class THBullet extends THObject {
         grain_b(IMAGE_WHITE,2.0f,new Vec3(0.15f,0.15f,0.15f),false, CollisionType.AABB, true),
         grain_c, kite, knife, knife_b,
         water_drop, mildew,
-        ellipse(IMAGE_WHITE,2.6f,new Vec3(0.4f,0.4f,0.5f),false, CollisionType.ELLIPSOID, true),
+        ellipse(IMAGE_WHITE,2.6f,new Vec3(0.4f,0.4f,0.5f),true, CollisionType.ELLIPSOID, true),
         heart, money, music, silence,
         water_drop_dark, ball_huge_dark, ball_light_dark;
 

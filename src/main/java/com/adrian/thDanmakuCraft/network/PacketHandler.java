@@ -12,7 +12,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 /**
  * NeoForge payload 註冊（取代 Forge 的 SimpleChannel）。
  */
-@EventBusSubscriber(modid = THDanmakuCraftMod.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = THDanmakuCraftMod.MOD_ID/*, bus = EventBusSubscriber.Bus.MOD*/)
 public final class PacketHandler {
 
     private PacketHandler() {

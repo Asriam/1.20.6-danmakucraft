@@ -120,6 +120,7 @@ public class RenderEvents {
 
     public static void afterRenderEntities(LevelRenderer levelRenderer, float partialTick){
         EntityTHSpellCardRenderer.afterRenderEntities(levelRenderer,partialTick);
+        EntityTHSpellCardRenderer.afterRenderLevel(levelRenderer,partialTick);
         //THObjectContainerRenderer.afterRenderEntities(levelRenderer,partialTick);
     }
 
@@ -128,7 +129,7 @@ public class RenderEvents {
     }
 
     public static void afterRenderLevel(LevelRenderer levelRenderer, float partialTick){
-        EntityTHSpellCardRenderer.afterRenderLevel(levelRenderer,partialTick);
+        //EntityTHSpellCardRenderer.afterRenderLevel(levelRenderer,partialTick);
     }
 
 

@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.bullet;
 
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.type.THBlendMode;
@@ -11,14 +12,19 @@ import com.adrian.thDanmakuCraft.world.danmaku.thobject.Blend;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.mojang.blaze3d.vertex.*;
+import com.mojang.math.Axis;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import java.util.EnumMap;
+
+import static com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes.TEST_ELLIPSOID;
 
 @OnlyIn(Dist.CLIENT)
 public class THBulletRenderers {
@@ -203,7 +209,7 @@ public class THBulletRenderers {
 
         public static class ellipse extends BulletRenderer {
             public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
-                poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
+                /*poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
                 Vector3f scale = new Vector3f(0.5f, 1.0f, 0.5f);
                 //Vec3 coreScale = scale.multiply(0.7f, 0.7f, 0.7f);
                 PoseStack.Pose posestack_pose = poseStack.last();
@@ -217,7 +223,20 @@ public class THBulletRenderers {
                         edgeA, edgeB, false,
                         new Vec2(0.5f, 3.0f),
                         new Vec2(0.0f, 2.0f),
-                        color, color.multiply(0.8f), coreColor.multiply(0.9f));
+                        color, color.multiply(0.8f), coreColor.multiply(0.9f));*/
+                //poseStack.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
+                //poseStack.mulPose(Axis.YP.rotationDegrees(-180.0F));
+                Matrix4f pose = poseStack.last().pose();
+                Vector3f rotation = bullet.getRotation();
+                Vector3f scale = new Vector3f(0.5f, 0.5f, 1.0f);
+                VertexBuilder builder = new VertexBuilder(THObjectContainerRenderer.ELLIPSOID_TEST_BUFFER);
+                Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
+                Vec3 pos1 = bullet.getPosition();
+                Vector3f pos = pose.transformPosition(0, 0, 0, new Vector3f());
+                builder.vertex(pose,-5.0f,5.0f,0.0f).vertex(pos).vertex(rotation).vertex(scale).endVertex();
+                builder.vertex(pose,5.0f,5.0f,0.0f).vertex(pos).vertex(rotation).vertex(scale).endVertex();
+                builder.vertex(pose,5.0f,-5.0f,0.0f).vertex(pos).vertex(rotation).vertex(scale).endVertex();
+                builder.vertex(pose,-5.0f,-5.0f,0.0f).vertex(pos).vertex(rotation).vertex(scale).endVertex();
             }
         }
 
