@@ -236,7 +236,7 @@ public class RenderTypes extends RenderStateShard{
 
     public static final RenderType TEST_ELLIPSOID = create(
             "debug_aaa2",
-            ModVertexFormats.POSITION_POSITION2_ROTATION_SCALE_COLOR_COLOR,
+            ModVertexFormats.TEST_ELLIPSOID_VERTEXTFORMAT,
             VertexFormat.Mode.QUADS,
             1536,
             false,

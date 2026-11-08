@@ -12,21 +12,18 @@ import com.adrian.thDanmakuCraft.world.danmaku.thobject.Blend;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.mojang.blaze3d.vertex.*;
-import com.mojang.math.Axis;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import java.util.EnumMap;
-
-import static com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes.TEST_ELLIPSOID;
 
 @OnlyIn(Dist.CLIENT)
 public class THBulletRenderers {
@@ -70,24 +67,25 @@ public class THBulletRenderers {
 
         public abstract void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor);
 
-        public RenderType getRenderType(THBullet bullet){
+        public RenderType getRenderType(THBullet bullet) {
             return RenderTypes.TEST_RENDER_TYPE_FUNCTION.apply(new RenderTypes.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(bullet.getBlend()), this.shouldCull));
         }
 
-        public static class bullet_2d extends BulletRenderer{
-            bullet_2d(){
+        public static class bullet_2d extends BulletRenderer {
+            bullet_2d() {
                 this.shouldCull = true;
             }
+
             @Override
             public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
                 render2DBullet(renderer, bullet, poseStack, vertexconsumer, partialTicks);
             }
 
-            public RenderType getRenderType(THBullet bullet){
+            public RenderType getRenderType(THBullet bullet) {
                 return RenderTypes.RENDER_TYPE_2D_DANMAKU.apply(
                         new RenderTypes.RENDER_TYPE_2D_DANMAKU_CONTEXT(
-                        bullet.getImage().getTextureLocation(),
-                        THBlendMode.getBlendMode(bullet.getBlend()))
+                                bullet.getImage().getTextureLocation(),
+                                THBlendMode.getBlendMode(bullet.getBlend()))
                 );
             }
         }
@@ -124,29 +122,19 @@ public class THBulletRenderers {
                         new Vec2(0.4f, 2.0f),
                         color, color.setAlpha(0), coreColor.multiply(0.3f), true, false);
                 Vector3f rotation = bullet.getRotation();
-                Vector3f offsetRotation = new Vector3f(-rotation.x,rotation.y,rotation.z);
-                Vector3f scale2 = bullet.getScale().mul(new Vector3f(0.16f, 0.16f, 0.32f),new Vector3f());
+                Vector3f offsetRotation = new Vector3f(-rotation.x, rotation.y, rotation.z);
+                Vector3f scale2 = bullet.getScale().mul(new Vector3f(0.14f, 0.14f, 0.3f), new Vector3f());
                 VertexBuilder builder = new VertexBuilder(THObjectContainerRenderer.ELLIPSOID_TEST_BUFFER);
                 //Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
                 Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
-                Vector3f pos = pos1.subtract(camPos).toVector3f();
-
-                // 四邊形必須面向相機：否則從某些角度看過去會變成一直線，
-                // 光線就不會穿過 ellipsoid（遠處會縮小到看不見）。
-                Quaternionf camRot = renderer.getRenderDispatcher().camera.rotation();
-                Vector3f right = new Vector3f(1.0f, 0.0f, 0.0f).rotate(camRot);
-                Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f).rotate(camRot);
-                float half = 1.6f * Math.max(Math.abs(scale2.x),
-                        Math.max(Math.abs(scale2.y), Math.abs(scale2.z)));
-
-                Vector4f vec4 = new  Vector4f(0.36f, 5.0f,0.1f, 1.0f);
-                //Vector4f vec4 = new  Vector4f(0.8f, 1.0f,0.2f, 3.0f);
-
-                ellipsoidVertex(builder, pos, right, up, -half, -half, offsetRotation, scale2, color, coreColor, vec4);
-                ellipsoidVertex(builder, pos, right, up, half, -half, offsetRotation, scale2, color, coreColor, vec4);
-                ellipsoidVertex(builder, pos, right, up, half, half, offsetRotation, scale2, color, coreColor, vec4);
-                ellipsoidVertex(builder, pos, right, up, -half, half, offsetRotation, scale2, color, coreColor, vec4);
+                Vector3f center = pos1.subtract(camPos).toVector3f();
+                renderEllipsoid(builder, center, offsetRotation, scale2, color, coreColor, new Vector4f(0.36f, 3.0f, 0.1f, 0.6f));
             }
+
+            /*@Override
+            public RenderType getRenderType(THBullet bullet) {
+                return RenderTypes.TEST_ELLIPSOID;
+            }*/
         }
 
         public static class ball_small extends BulletRenderer {
@@ -166,28 +154,19 @@ public class THBulletRenderers {
                         new Vec2(0.33f, 6.0f),
                         new Vec2(-0.1f, 1.0f),
                         color, color, coreColor);*/
-                Vector3f rotation = bullet.getRotation();
-                Vector3f offsetRotation = new Vector3f(-rotation.x,rotation.y,rotation.z);
-                Vector3f scale = bullet.getScale().mul(new Vector3f(0.2f, 0.2f, 0.2f),new Vector3f());
-                VertexBuilder builder = new VertexBuilder(THObjectContainerRenderer.ELLIPSOID_TEST_BUFFER);
+                Vector3f rotation = bullet.getOffsetRotation(partialTicks);
+                Vector3f offsetRotation = new Vector3f(-rotation.x, rotation.y, rotation.z);
+                Vector3f scale = bullet.getScale().mul(new Vector3f(0.2f, 0.2f, 0.2f), new Vector3f());
+                VertexBuilder builder = new VertexBuilder(vertexconsumer);
                 Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
                 Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
-                Vector3f pos = pos1.subtract(camPos).toVector3f();
+                Vector3f center = pos1.subtract(camPos).toVector3f();
+                renderEllipsoid(builder, center, offsetRotation, scale, color, coreColor, new Vector4f(0.33f, 6.0f, -0.1f, 1.0f));
+            }
 
-                // 四邊形必須面向相機：否則從某些角度看過去會變成一直線，
-                // 光線就不會穿過 ellipsoid（遠處會縮小到看不見）。
-                Quaternionf camRot = renderer.getRenderDispatcher().camera.rotation();
-                Vector3f right = new Vector3f(1.0f, 0.0f, 0.0f).rotate(camRot);
-                Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f).rotate(camRot);
-                float half = 1.6f * Math.max(Math.abs(scale.x),
-                        Math.max(Math.abs(scale.y), Math.abs(scale.z)));
-
-                Vector4f vec4 = new  Vector4f(0.33f, 6.0f,-0.1f, 1.0f);
-
-                ellipsoidVertex(builder, pos, right, up, -half, -half, offsetRotation, scale, color, coreColor, vec4);
-                ellipsoidVertex(builder, pos, right, up, half, -half, offsetRotation, scale, color, coreColor, vec4);
-                ellipsoidVertex(builder, pos, right, up, half, half, offsetRotation, scale, color, coreColor, vec4);
-                ellipsoidVertex(builder, pos, right, up, -half, half, offsetRotation, scale, color, coreColor, vec4);
+            @Override
+            public RenderType getRenderType(THBullet bullet) {
+                return RenderTypes.TEST_ELLIPSOID;
             }
         }
 
@@ -211,25 +190,16 @@ public class THBulletRenderers {
                 Vector3f rotation = bullet.getRotation();
                 Vector3f offsetRotation = new Vector3f(-rotation.x, rotation.y, rotation.z);
                 Vector3f scale = bullet.getScale().mul(new Vector3f(0.5f, 0.5f, 0.5f), new Vector3f());
-                VertexBuilder builder = new VertexBuilder(THObjectContainerRenderer.ELLIPSOID_TEST_BUFFER);
+                VertexBuilder builder = new VertexBuilder(vertexconsumer);
                 Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
                 Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
-                Vector3f pos = pos1.subtract(camPos).toVector3f();
+                Vector3f center = pos1.subtract(camPos).toVector3f();
+                renderEllipsoid(builder, center, offsetRotation, scale, color, coreColor, new Vector4f(0.5f, 2.0f, 0.0f, 2.0f));
+            }
 
-                // 四邊形必須面向相機：否則從某些角度看過去會變成一直線，
-                // 光線就不會穿過 ellipsoid（遠處會縮小到看不見）。
-                Quaternionf camRot = renderer.getRenderDispatcher().camera.rotation();
-                Vector3f right = new Vector3f(1.0f, 0.0f, 0.0f).rotate(camRot);
-                Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f).rotate(camRot);
-                float half = 1.6f * Math.max(Math.abs(scale.x),
-                        Math.max(Math.abs(scale.y), Math.abs(scale.z)));
-
-                Vector4f vec4 = new Vector4f(0.5f, 2.0f, 0.0f, 2.0f);
-
-                ellipsoidVertex(builder, pos, right, up, -half, -half, offsetRotation, scale, color, coreColor, vec4);
-                ellipsoidVertex(builder, pos, right, up, half, -half, offsetRotation, scale, color, coreColor, vec4);
-                ellipsoidVertex(builder, pos, right, up, half, half, offsetRotation, scale, color, coreColor, vec4);
-                ellipsoidVertex(builder, pos, right, up, -half, half, offsetRotation, scale, color, coreColor, vec4);
+            @Override
+            public RenderType getRenderType(THBullet bullet) {
+                return RenderTypes.TEST_ELLIPSOID;
             }
         }
 
@@ -251,27 +221,18 @@ public class THBulletRenderers {
                         new Vec2(-0.1f, 2.0f),
                         color, color, coreColor);*/
                 Vector3f rotation = bullet.getRotation();
-                Vector3f offsetRotation = new Vector3f(-rotation.x,rotation.y,rotation.z);
-                Vector3f scale = bullet.getScale().mul(new Vector3f(1.0f, 1.0f, 1.0f),new Vector3f());
-                VertexBuilder builder = new VertexBuilder(THObjectContainerRenderer.ELLIPSOID_TEST_BUFFER);
+                Vector3f offsetRotation = new Vector3f(-rotation.x, rotation.y, rotation.z);
+                Vector3f scale = bullet.getScale().mul(new Vector3f(1.0f, 1.0f, 1.0f), new Vector3f());
+                VertexBuilder builder = new VertexBuilder(vertexconsumer);
                 Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
                 Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
-                Vector3f pos = pos1.subtract(camPos).toVector3f();
+                Vector3f center = pos1.subtract(camPos).toVector3f();
+                renderEllipsoid(builder, center, offsetRotation, scale, color, coreColor, new Vector4f(0.7f, 2.0f, -0.1f, 2.0f));
+            }
 
-                // 四邊形必須面向相機：否則從某些角度看過去會變成一直線，
-                // 光線就不會穿過 ellipsoid（遠處會縮小到看不見）。
-                Quaternionf camRot = renderer.getRenderDispatcher().camera.rotation();
-                Vector3f right = new Vector3f(1.0f, 0.0f, 0.0f).rotate(camRot);
-                Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f).rotate(camRot);
-                float half = 1.6f * Math.max(Math.abs(scale.x),
-                        Math.max(Math.abs(scale.y), Math.abs(scale.z)));
-
-                Vector4f vec4 = new  Vector4f(0.7f, 2.0f,-0.1f, 2.0f);
-
-                ellipsoidVertex(builder, pos, right, up, -half, -half, offsetRotation, scale, color, coreColor, vec4);
-                ellipsoidVertex(builder, pos, right, up, half, -half, offsetRotation, scale, color, coreColor, vec4);
-                ellipsoidVertex(builder, pos, right, up, half, half, offsetRotation, scale, color, coreColor, vec4);
-                ellipsoidVertex(builder, pos, right, up, -half, half, offsetRotation, scale, color, coreColor, vec4);
+            @Override
+            public RenderType getRenderType(THBullet bullet) {
+                return RenderTypes.TEST_ELLIPSOID;
             }
         }
 
@@ -295,27 +256,42 @@ public class THBulletRenderers {
                 //poseStack.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
                 //poseStack.mulPose(Axis.YP.rotationDegrees(-180.0F));
                 Vector3f rotation = bullet.getRotation();
-                Vector3f offsetRotation = new Vector3f(-rotation.x,rotation.y,rotation.z);
-                Vector3f scale = bullet.getScale().mul(new Vector3f(0.5f, 0.5f, 1.0f),new Vector3f());
-                VertexBuilder builder = new VertexBuilder(THObjectContainerRenderer.ELLIPSOID_TEST_BUFFER);
+                Vector3f offsetRotation = new Vector3f(-rotation.x, rotation.y, rotation.z);
+                Vector3f scale = bullet.getScale().mul(new Vector3f(0.5f, 0.5f, 1.0f), new Vector3f());
+                VertexBuilder builder = new VertexBuilder(vertexconsumer);
                 Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
                 Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
-                Vector3f pos = pos1.subtract(camPos).toVector3f();
-
-                // 四邊形必須面向相機：否則從某些角度看過去會變成一直線，
-                // 光線就不會穿過 ellipsoid（遠處會縮小到看不見）。
-                Quaternionf camRot = renderer.getRenderDispatcher().camera.rotation();
-                Vector3f right = new Vector3f(1.0f, 0.0f, 0.0f).rotate(camRot);
-                Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f).rotate(camRot);
-                float half = 1.6f * Math.max(Math.abs(scale.x),
-                        Math.max(Math.abs(scale.y), Math.abs(scale.z)));
-                Vector4f vec4 = new  Vector4f(0.5f,1.5f,0.2f,0.4f);
-
-                ellipsoidVertex(builder, pos, right, up, -half, -half, offsetRotation, scale, color, coreColor, vec4);
-                ellipsoidVertex(builder, pos, right, up, half, -half, offsetRotation, scale, color, coreColor, vec4);
-                ellipsoidVertex(builder, pos, right, up, half, half, offsetRotation, scale, color, coreColor, vec4);
-                ellipsoidVertex(builder, pos, right, up, -half, half, offsetRotation, scale, color, coreColor, vec4);
+                Vector3f center = pos1.subtract(camPos).toVector3f();
+                renderEllipsoid(builder, center, offsetRotation, scale, color, coreColor, new Vector4f(0.5f, 1.5f, 0.2f, 0.4f));
             }
+
+            @Override
+            public RenderType getRenderType(THBullet bullet) {
+                return RenderTypes.TEST_ELLIPSOID;
+            }
+        }
+
+        public static Camera getCamera(){
+            return Minecraft.getInstance().gameRenderer.getMainCamera();
+        }
+
+        public static void renderEllipsoid(
+                VertexBuilder builder,
+                Vector3f center,
+                Vector3f rotation,
+                Vector3f scale,
+                Color color, Color coreColor, Vector4f vector4f){
+            // 四邊形必須面向相機：否則從某些角度看過去會變成一直線，
+            // 光線就不會穿過 ellipsoid（遠處會縮小到看不見）。
+            Quaternionf camRot = getCamera().rotation();
+            Vector3f right = new Vector3f(1.0f, 0.0f, 0.0f).rotate(camRot);
+            Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f).rotate(camRot);
+            float half = 1.6f * Math.max(Math.abs(scale.x),
+                    Math.max(Math.abs(scale.y), Math.abs(scale.z)));
+            ellipsoidVertex(builder, center, right, up, -half, -half, rotation, scale, color, coreColor, vector4f);
+            ellipsoidVertex(builder, center, right, up, half, -half, rotation, scale, color, coreColor, vector4f);
+            ellipsoidVertex(builder, center, right, up, half, half, rotation, scale, color, coreColor, vector4f);
+            ellipsoidVertex(builder, center, right, up, -half, half, rotation, scale, color, coreColor, vector4f);
         }
 
         /** 寫一個 billboard 頂點：center + right*x + up*y。 */
@@ -351,28 +327,19 @@ public class THBulletRenderers {
                         new Vec2(0.36f, 5.0f),
                         new Vec2(0.1f, 1.0f),
                         color, color.multiply(0.5f), coreColor);*/
-                Vector3f rotation = bullet.getRotation();
+                Vector3f rotation = bullet.getOffsetRotation(partialTicks);
                 Vector3f offsetRotation = new Vector3f(-rotation.x,rotation.y,rotation.z);
                 Vector3f scale = bullet.getScale().mul(new Vector3f(0.2f, 0.2f, 0.4f),new Vector3f());
-                VertexBuilder builder = new VertexBuilder(THObjectContainerRenderer.ELLIPSOID_TEST_BUFFER);
+                VertexBuilder builder = new VertexBuilder(vertexconsumer);
                 Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
                 Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
-                Vector3f pos = pos1.subtract(camPos).toVector3f();
+                Vector3f center = pos1.subtract(camPos).toVector3f();
+                renderEllipsoid(builder, center, offsetRotation, scale, color, coreColor, new Vector4f(0.36f, 5.0f,0.1f, 1.0f));
+            }
 
-                // 四邊形必須面向相機：否則從某些角度看過去會變成一直線，
-                // 光線就不會穿過 ellipsoid（遠處會縮小到看不見）。
-                Quaternionf camRot = renderer.getRenderDispatcher().camera.rotation();
-                Vector3f right = new Vector3f(1.0f, 0.0f, 0.0f).rotate(camRot);
-                Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f).rotate(camRot);
-                float half = 1.6f * Math.max(Math.abs(scale.x),
-                        Math.max(Math.abs(scale.y), Math.abs(scale.z)));
-
-                Vector4f vec4 = new  Vector4f(0.36f, 5.0f,0.1f, 1.0f);
-
-                ellipsoidVertex(builder, pos, right, up, -half, -half, offsetRotation, scale, color, coreColor, vec4);
-                ellipsoidVertex(builder, pos, right, up, half, -half, offsetRotation, scale, color, coreColor, vec4);
-                ellipsoidVertex(builder, pos, right, up, half, half, offsetRotation, scale, color, coreColor, vec4);
-                ellipsoidVertex(builder, pos, right, up, -half, half, offsetRotation, scale, color, coreColor, vec4);
+            @Override
+            public RenderType getRenderType(THBullet bullet) {
+                return RenderTypes.TEST_ELLIPSOID;
             }
         }
 

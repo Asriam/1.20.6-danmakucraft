@@ -1,15 +1,16 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.bullet;
 
-import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
+import com.adrian.thDanmakuCraft.client.renderer.buffer.VertexBuilder;
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.util.Color;
-import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.bullet.THBullet;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
@@ -18,6 +19,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 @OnlyIn(value = Dist.CLIENT)
 public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
@@ -43,10 +45,21 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
             int time = 6;
             float offSetTimer = bullet.getTimer() + partialTicks;
             boolean flag = bullet.spawnAnimation && offSetTimer < time-time*0.2f;
-            if(false && flag){
+            if(flag){
                 Vec3 size = bullet.getSize();
-                float scale = (float) (Math.max(Math.max(size.x,size.z),size.y) * 4.0f * (float) Math.pow((double) (time - offSetTimer) / time,1.2f));
-                poseStack.pushPose();
+                float _scale = (float) (Math.max(Math.max(size.x,size.z),size.y) * 4.0f * (float) Math.pow((double) (time - offSetTimer) / time,1.2f));
+                Vector3f rotation = new Vector3f();
+                Vector3f offsetRotation = new Vector3f(-rotation.x, rotation.y, rotation.z);
+                Vector3f scale = new Vector3f(_scale);
+                VertexBuilder builder = new VertexBuilder(THObjectContainerRenderer.ELLIPSOID_TEST_BUFFER);
+                Vec3 camPos = Minecraft.getInstance().getEntityRenderDispatcher().camera.getPosition();
+                Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
+                Vector3f center = pos1.subtract(camPos).toVector3f();
+                Color bulletColor = bullet.getBulletColor().multiply(bullet.getColor());
+                Color coreColor = bullet.getColor();
+                THBulletRenderers.BulletRenderer.renderEllipsoid(builder, center, offsetRotation, scale, bulletColor, coreColor, new Vector4f(0.5f, 2.0f, 0.0f, 2.0f));
+
+                /*poseStack.pushPose();
                 poseStack.mulPose(this.getRenderDispatcher().cameraOrientation());
                 poseStack.mulPose(Axis.XP.rotationDegrees(90.0F));
 
@@ -60,7 +73,7 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
                         bulletColor,
                         bulletColor,
                         bullet.getColor());
-                poseStack.popPose();
+                poseStack.popPose();*/
             }else {
                 if (style.shouldFaceCamera()) {
                     poseStack.mulPose(this.getRenderDispatcher().cameraOrientation());

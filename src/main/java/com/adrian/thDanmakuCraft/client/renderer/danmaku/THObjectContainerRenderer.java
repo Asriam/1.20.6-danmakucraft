@@ -94,7 +94,7 @@ public class THObjectContainerRenderer {
 
         RenderSystem.enableBlend();
         if (!objectList.isEmpty()) {
-            ELLIPSOID_TEST_BUFFER.begin(VertexFormat.Mode.QUADS, ModVertexFormats.POSITION_POSITION2_ROTATION_SCALE_COLOR_COLOR);
+            ELLIPSOID_TEST_BUFFER.begin(VertexFormat.Mode.QUADS, ModVertexFormats.TEST_ELLIPSOID_VERTEXTFORMAT);
             boolean shouldRenderHitBox = entityRenderDispatcher.shouldRenderHitBoxes();
             RenderType renderTypeLines = RenderType.lines();
             ///Batching：重用同一個 map / 每個 RenderType 的 list（每幀只 clear）

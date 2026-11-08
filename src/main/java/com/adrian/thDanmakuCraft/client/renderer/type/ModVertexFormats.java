@@ -51,7 +51,7 @@ public class ModVertexFormats {
     public static final VertexFormatElement VEC4 = VertexFormatElement.register(24, 0,
             VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 4);
 
-    public static final VertexFormat POSITION_POSITION2_ROTATION_SCALE_COLOR_COLOR = VertexFormat.builder()
+    public static final VertexFormat TEST_ELLIPSOID_VERTEXTFORMAT = VertexFormat.builder()
             .add("Position", VertexFormatElement.POSITION)
             .add("Position2", POSITION2)
             .add("Rotation", ROTATION)

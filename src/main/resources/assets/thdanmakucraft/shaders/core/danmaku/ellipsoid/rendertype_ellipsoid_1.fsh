@@ -29,6 +29,8 @@ float LinearizeDepth(float depth) {
     return (2.0f*near*far)/(far+near-z*(far-near));
 }
 
+#define test_flag 1
+
 void main()
 {
     // 相機射線（view space，相機在原點）
@@ -54,8 +56,10 @@ void main()
 
     float h = b * b - a * c;
 
+    #if (test_flag == 1)
     if (h < 0.0)
     discard;
+    #endif
 
     h = sqrt(h);
 
@@ -64,8 +68,10 @@ void main()
     if (t < 0.0)
     t = (-b + h) / a;
 
+    #if (test_flag == 1)
     if (t < 0.0)
     discard;
+    #endif
 
     // Local Hit Position
     vec3 hitLocal = roLocal + rdLocal * t;
@@ -85,8 +91,10 @@ void main()
     // Depth
     vec4 clipPos = ProjMat * vec4(hitVS, 1.0);
 
+    #if (test_flag == 1)
     if (clipPos.w <= 0.0)
     discard;
+    #endif
 
     float depth = clipPos.z / clipPos.w;
 
@@ -114,4 +122,7 @@ void main()
     vec4 outColor = max(vec4(1.0-(clamp(rim,0.0f,1.0f)+max(intersection,0.0f))),0.0f)*1.6f*bubbleBase + max(vec4(1.0-(rim2+clamp(intersection,0.0f,1.0f))),0.0f)*1.6f*(CoreColor*2.0f-1.0f);
     fragColor = outColor;
     //fragColor = vec4(vec3(texture(DepthBuffer, texCoord).r),1.0f);
+    #if (test_flag != 1)
+    fragColor = vec4(1.0f);
+    #endif
 }

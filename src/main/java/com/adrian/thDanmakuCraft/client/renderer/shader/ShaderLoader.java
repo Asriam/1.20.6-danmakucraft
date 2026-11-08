@@ -39,7 +39,7 @@ public class ShaderLoader {
         // 必須跟 RenderTypes.TEST_ELLIPSOID 的格式一致，否則 Position2/Rotation/Scale 不會被綁定
         RENDER_ELLIPSOID_SHADER = registryShader(resourceProvider,
                 ResourceLocationUtil.thdanmakucraft("danmaku/ellipsoid/rendertype_ellipsoid_1"),
-                ModVertexFormats.POSITION_POSITION2_ROTATION_SCALE_COLOR_COLOR);
+                ModVertexFormats.TEST_ELLIPSOID_VERTEXTFORMAT);
     }
 
     @SubscribeEvent

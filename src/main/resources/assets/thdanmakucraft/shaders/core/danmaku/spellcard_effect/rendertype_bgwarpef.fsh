@@ -137,7 +137,7 @@ void main() {
     vec4 screen_color = texture(ScreenBuffer, mix(texCoord,uv2,aruaRawDepth));
     vec4 intersection2 = mix(vec4(1), vec4(0), pow(clamp(abs(aruaDepth-WarpedSenceDepth) / threshold, 0.0, 1.0),3));
     vec4 ccc = vec4(vertexColor.rgb*vertexColor.a*rim*(1.0f-intersection2.r),rim*(1.0f-intersection2.r));
-    vec4 aruaColor = screen_color + ccc;
+    vec4 aruaColor = screen_color + ccc * 0.3f;
 
     vec4 intersectionColor = vec4(vec3(1.0f,0.0f,0.5f)*intersection.a,intersection.a*0.6);
 
