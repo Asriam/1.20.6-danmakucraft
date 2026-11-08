@@ -117,7 +117,7 @@ public class RenderTypes extends RenderStateShard{
                             .createCompositeState(true)
             ));
 
-    public static final RenderType RENDER_TYPE_BACKGROUND_WARP_EFFECT = RenderType.create("render_type_background_warp_effect", ModVertexFormats.POSITION_NORMAL_COLOR, VertexFormat.Mode.QUADS, 256, false, false,
+    public static final RenderType RENDER_TYPE_BACKGROUND_WARP_EFFECT = RenderType.create("render_type_background_warp_effect", ModVertexFormats.POSITION_NORMAL, VertexFormat.Mode.QUADS, 256, false, false,
                     CompositeState.builder()
                             .setShaderState(BACKGROUND_WARP_EFFECT_SHADER)
                             .setTransparencyState(

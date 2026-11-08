@@ -34,7 +34,7 @@ public class ShaderLoader {
     public static void registryShaders(ResourceProvider resourceProvider){
         DANMAKU_DEPTH_OUTLINE_SHADER = registryShader(resourceProvider, ResourceLocationUtil.thdanmakucraft("danmaku/rendertype_danmaku_1"), RenderTypes.TEST_FORMAT);
         DANMAKU_TEXTURE_SHADER = registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("danmaku/rendertype_danmaku_texture"), ModVertexFormats.POSITION_COLOR_COLOR_TEX);
-        BACKGROUND_WARP_EFFECT = registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("danmaku/spellcard_effect/rendertype_bgwarpef"), ModVertexFormats.POSITION_NORMAL_COLOR);
+        BACKGROUND_WARP_EFFECT = registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("danmaku/spellcard_effect/rendertype_bgwarpef"), ModVertexFormats.POSITION_NORMAL);
         NORMAL_MAP_SHADER = registryShader(resourceProvider,ResourceLocationUtil.thdanmakucraft("danmaku/rendertype_normalmap"), ModVertexFormats.POSITION_NORMAL);
         // 必須跟 RenderTypes.TEST_ELLIPSOID 的格式一致，否則 Position2/Rotation/Scale 不會被綁定
         RENDER_ELLIPSOID_SHADER = registryShader(resourceProvider,
