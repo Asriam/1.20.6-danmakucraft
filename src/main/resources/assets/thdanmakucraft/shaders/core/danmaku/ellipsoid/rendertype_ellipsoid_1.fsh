@@ -62,21 +62,23 @@ void main()
     vec3 ro = roLocal / radius;
     vec3 rd = rdLocal / radius;
 
-    // Ray Intersection
+    // Ray Intersection（rd 除以 radius 後長度不再是 1，所以要用一般二次式
+    // a*t^2 + 2b*t + c = 0，不能假設 a = 1）
+    float a = dot(rd, rd);
     float b = dot(ro, rd);
     float c = dot(ro, ro) - 1.0;
 
-    float h = b * b - c;
+    float h = b * b - a * c;
 
     if (h < 0.0)
     discard;
 
     h = sqrt(h);
 
-    float t = -b - h;
+    float t = (-b - h) / a;
 
     if (t < 0.0)
-    t = -b + h;
+    t = (-b + h) / a;
 
     if (t < 0.0)
     discard;

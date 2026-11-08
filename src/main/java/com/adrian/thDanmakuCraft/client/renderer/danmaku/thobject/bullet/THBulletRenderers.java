@@ -20,6 +20,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.EnumMap;
@@ -226,17 +227,37 @@ public class THBulletRenderers {
                         color, color.multiply(0.8f), coreColor.multiply(0.9f));*/
                 //poseStack.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
                 //poseStack.mulPose(Axis.YP.rotationDegrees(-180.0F));
-                Matrix4f pose = poseStack.last().pose();
-                Vector3f rotation = bullet.getRotation();
-                Vector3f scale = new Vector3f(0.5f, 0.5f, 1.0f);
+                Vector3f rotation = new Vector3f(0.0f, 0.0f, 0.0f);
+                Vector3f scale = new Vector3f(1.0f, 1.0f, 1.0f);
                 VertexBuilder builder = new VertexBuilder(THObjectContainerRenderer.ELLIPSOID_TEST_BUFFER);
                 Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
                 Vec3 pos1 = bullet.getPosition();
-                Vector3f pos = pose.transformPosition(0, 0, 0, new Vector3f());
-                builder.vertex(pose,-5.0f,5.0f,0.0f).vertex(pos).vertex(rotation).vertex(scale).endVertex();
-                builder.vertex(pose,5.0f,5.0f,0.0f).vertex(pos).vertex(rotation).vertex(scale).endVertex();
-                builder.vertex(pose,5.0f,-5.0f,0.0f).vertex(pos).vertex(rotation).vertex(scale).endVertex();
-                builder.vertex(pose,-5.0f,-5.0f,0.0f).vertex(pos).vertex(rotation).vertex(scale).endVertex();
+                Vector3f pos = pos1.subtract(camPos).toVector3f();
+
+                // 四邊形必須面向相機：否則從某些角度看過去會變成一直線，
+                // 光線就不會穿過 ellipsoid（遠處會縮小到看不見）。
+                Quaternionf camRot = renderer.getRenderDispatcher().camera.rotation();
+                Vector3f right = new Vector3f(1.0f, 0.0f, 0.0f).rotate(camRot);
+                Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f).rotate(camRot);
+                float half = 1.6f * Math.max(Math.abs(scale.x),
+                        Math.max(Math.abs(scale.y), Math.abs(scale.z)));
+
+                this.ellipsoidVertex(builder, pos, right, up, -half, -half, rotation, scale);
+                this.ellipsoidVertex(builder, pos, right, up, half, -half, rotation, scale);
+                this.ellipsoidVertex(builder, pos, right, up, half, half, rotation, scale);
+                this.ellipsoidVertex(builder, pos, right, up, -half, half, rotation, scale);
+            }
+
+            /** 寫一個 billboard 頂點：center + right*x + up*y。 */
+            private void ellipsoidVertex(VertexBuilder builder, Vector3f center, Vector3f right, Vector3f up,
+                                         float x, float y, Vector3f rotation, Vector3f scale) {
+                builder.vertex(center.x + right.x * x + up.x * y,
+                        center.y + right.y * x + up.y * y,
+                        center.z + right.z * x + up.z * y)
+                        .vertex(center)
+                        .vertex(rotation)
+                        .vertex(scale)
+                        .endVertex();
             }
         }
 
