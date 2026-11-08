@@ -34,10 +34,25 @@ public class ModVertexFormats {
             .add("Color", VertexFormatElement.COLOR)
             .build();
 
+    /**
+     * ellipsoid 用的三個額外 vec3 通道。
+     *
+     * <p>1.21.1 的 {@code VertexFormat#getOffset(element)} 是「以 element id 查表」，
+     * 所以若四個通道都用同一個 {@link VertexFormatElement#POSITION}（id 0），
+     * 四個 attribute 的 offset 都會變成 0，Position2／Rotation／Scale 會讀到 Position 的值。
+     * 因此這裡替它們註冊獨立的 id（20 已被 {@link #COLOR2} 用掉）。</p>
+     */
+    public static final VertexFormatElement POSITION2 = VertexFormatElement.register(21, 0,
+            VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.POSITION, 3);
+    public static final VertexFormatElement ROTATION = VertexFormatElement.register(22, 0,
+            VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.POSITION, 3);
+    public static final VertexFormatElement SCALE = VertexFormatElement.register(23, 0,
+            VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.POSITION, 3);
+
     public static final VertexFormat POSITION_POSITION2_ROTATION_SCALE = VertexFormat.builder()
             .add("Position", VertexFormatElement.POSITION)
-            .add("Position2", VertexFormatElement.POSITION)
-            .add("Rotation", VertexFormatElement.POSITION)
-            .add("Scale", VertexFormatElement.POSITION)
+            .add("Position2", POSITION2)
+            .add("Rotation", ROTATION)
+            .add("Scale", SCALE)
             .build();
 }
