@@ -78,7 +78,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
             {
                 poseStack.pushPose();
                 PoseStack.Pose pose = poseStack.last();
-                Vec2 rot = THObject.VectorAngleToRadAngle(spellCard.paramsForRender.lastMagicSquareRotation.lerp(spellCard.paramsForRender.magicSquareRotation,Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false)));
+                Vec2 rot = THObject.VectorAngleToRadAngle(spellCard.paramsForRender.lastMagicSquareRotation.lerp(spellCard.paramsForRender.magicSquareRotation,Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true)));
                 /*poseStack.mulPose(this.getRenderDispatcher().cameraOrientation()
                         .rotateZ(rotate));*/
                 poseStack.mulPose(new Quaternionf()

@@ -6,10 +6,13 @@
     },
     "vertex": "thdanmakucraft:danmaku/ellipsoid/rendertype_ellipsoid_1",
     "fragment": "thdanmakucraft:danmaku/ellipsoid/rendertype_ellipsoid_1",
-    "attributes": [ "Position", "Position2", "Rotation", "Scale" ],
-    "samplers": [],
+    "attributes": [ "Position", "Position2", "Rotation", "Scale" , "VEC4", "UV"],
+    "samplers": [
+        { "name": "DepthBuffer" }
+    ],
     "uniforms": [
         { "name": "ModelViewMat","type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
-        { "name": "ProjMat",     "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] }
+        { "name": "ProjMat",     "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
+        { "name": "ScreenSize",  "type": "float",     "count": 2,  "values": [ 1.0, 1.0 ] }
     ]
 }

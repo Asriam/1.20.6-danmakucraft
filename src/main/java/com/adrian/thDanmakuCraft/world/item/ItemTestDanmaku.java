@@ -43,7 +43,7 @@ public class ItemTestDanmaku extends Item {
         //THDanmakuCraftMod.LOGGER.info(entityTHObjectContainer.toString());
         //container.scriptEvent("onInit",container.ofLuaValue());
 
-        player.getCooldowns().addCooldown(this, 6);
+        player.getCooldowns().addCooldown(this, 0);
         return InteractionResultHolder.sidedSuccess(itemstack, level.isClientSide());
     }
 }

@@ -125,7 +125,7 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
         Color laserColor = laser.getLaserColor().multiply(laserCoreColor);
         float laserWidth = laser.getOffsetWidth(partialTicks)/2;
         float laserLength = Math.max(laser.getOffsetLength(partialTicks)/2,0.01f);
-        Vector3f rotation = laser.getRotation();
+        Vector3f rotation = laser.getOffsetRotation(partialTicks);
         Vector3f offsetRotation = new Vector3f(rotation.x,-rotation.y,-rotation.z);
         Vector3f scale = new Vector3f(laserWidth,laserWidth,laserLength);
         VertexBuilder builder = new VertexBuilder(THObjectContainerRenderer.ELLIPSOID_TEST_BUFFER);

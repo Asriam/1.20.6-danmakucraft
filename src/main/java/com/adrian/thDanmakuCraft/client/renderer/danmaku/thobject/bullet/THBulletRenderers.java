@@ -15,6 +15,7 @@ import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -121,7 +122,7 @@ public class THBulletRenderers {
                         new Vec2(0.4f, 2.0f),
                         new Vec2(0.4f, 2.0f),
                         color, color.setAlpha(0), coreColor.multiply(0.3f), true, false);
-                Vector3f rotation = bullet.getRotation();
+                Vector3f rotation = bullet.getOffsetRotation(partialTicks);
                 Vector3f offsetRotation = new Vector3f(-rotation.x, rotation.y, rotation.z);
                 Vector3f scale2 = bullet.getScale().mul(new Vector3f(0.14f, 0.14f, 0.3f), new Vector3f());
                 VertexBuilder builder = new VertexBuilder(THObjectContainerRenderer.ELLIPSOID_TEST_BUFFER);
@@ -187,7 +188,7 @@ public class THBulletRenderers {
                         new Vec2(0.5f, 2.0f),
                         new Vec2(0.0f, 2.0f),
                         color, color, coreColor);*/
-                Vector3f rotation = bullet.getRotation();
+                Vector3f rotation = bullet.getOffsetRotation(partialTicks);
                 Vector3f offsetRotation = new Vector3f(-rotation.x, rotation.y, rotation.z);
                 Vector3f scale = bullet.getScale().mul(new Vector3f(0.5f, 0.5f, 0.5f), new Vector3f());
                 VertexBuilder builder = new VertexBuilder(vertexconsumer);
@@ -220,7 +221,7 @@ public class THBulletRenderers {
                         new Vec2(0.7f, 2.0f),
                         new Vec2(-0.1f, 2.0f),
                         color, color, coreColor);*/
-                Vector3f rotation = bullet.getRotation();
+                Vector3f rotation = bullet.getOffsetRotation(partialTicks);
                 Vector3f offsetRotation = new Vector3f(-rotation.x, rotation.y, rotation.z);
                 Vector3f scale = bullet.getScale().mul(new Vector3f(1.0f, 1.0f, 1.0f), new Vector3f());
                 VertexBuilder builder = new VertexBuilder(vertexconsumer);
@@ -255,7 +256,7 @@ public class THBulletRenderers {
                         color, color.multiply(0.8f), coreColor.multiply(0.9f));*/
                 //poseStack.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
                 //poseStack.mulPose(Axis.YP.rotationDegrees(-180.0F));
-                Vector3f rotation = bullet.getRotation();
+                Vector3f rotation = bullet.getOffsetRotation(partialTicks);
                 Vector3f offsetRotation = new Vector3f(-rotation.x, rotation.y, rotation.z);
                 Vector3f scale = bullet.getScale().mul(new Vector3f(0.5f, 0.5f, 1.0f), new Vector3f());
                 VertexBuilder builder = new VertexBuilder(vertexconsumer);
@@ -283,7 +284,10 @@ public class THBulletRenderers {
                 Color color, Color coreColor, Vector4f vector4f){
             // 四邊形必須面向相機：否則從某些角度看過去會變成一直線，
             // 光線就不會穿過 ellipsoid（遠處會縮小到看不見）。
-            Quaternionf camRot = getCamera().rotation();
+            //Quaternionf camRot = getCamera().rotation();
+            Vec2 rot = THObject.VectorAngleToRadAngle(new Vec3(center));
+            Quaternionf camRot = new Quaternionf().rotateY(rot.y- Mth.PI).rotateX(rot.x);
+
             Vector3f right = new Vector3f(1.0f, 0.0f, 0.0f).rotate(camRot);
             Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f).rotate(camRot);
             float half = 1.6f * Math.max(Math.abs(scale.x),
