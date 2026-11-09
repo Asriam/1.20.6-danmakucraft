@@ -1,35 +1,27 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.laser;
 
+import com.adrian.thDanmakuCraft.client.renderer.RayCastingHelper;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
-import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.bullet.THBulletRenderers;
 import com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes;
-import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.type.THBlendMode;
 import com.adrian.thDanmakuCraft.client.renderer.buffer.VertexBuilder;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRendererProvider;
-import com.adrian.thDanmakuCraft.client.renderer.shape.CylinderVertexHelper;
-import com.adrian.thDanmakuCraft.client.renderer.shape.SphereVertexHelper;
 import com.adrian.thDanmakuCraft.util.Color;
-import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.laser.THLaser;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.util.Mth;
-import net.minecraft.world.entity.vehicle.Minecart;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import org.joml.Matrix3f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-
-import static com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.bullet.THBulletRenderers.BulletRenderer.ellipsoidVertex;
 
 @OnlyIn(value = Dist.CLIENT)
 public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
@@ -132,18 +124,32 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
         Vec3 camPos = Minecraft.getInstance().getEntityRenderDispatcher().camera.getPosition();
         Vec3 pos1 = laserPos.add(laser.getOffsetLaserCenter(partialTicks));
         Vector3f pos = pos1.subtract(camPos).toVector3f();
-        THBulletRenderers.BulletRenderer.renderEllipsoid(
+
+        // 用 ellipsoid 的長軸（local Z）反推頭尾，交給最小包圍四邊形的版本
+        Matrix3f rot = new Matrix3f().rotationZ(offsetRotation.z)
+                .mul(new Matrix3f().rotationY(offsetRotation.y))
+                .mul(new Matrix3f().rotationX(offsetRotation.x));
+        Vector3f axis = rot.getColumn(2, new Vector3f());
+        Vector3f head = new Vector3f(pos).sub(new Vector3f(axis).mul(laserLength));
+        Vector3f tail = new Vector3f(pos).add(new Vector3f(axis).mul(laserLength));
+        float boxWidth = laserWidth * 2.0f;
+
+        RayCastingHelper.renderEllipsoidForLaser(
                 builder,
-                pos,
+                head,
+                tail,
+                boxWidth,
                 offsetRotation,
                 scale.mul(0.6f, 0.6f, 0.8f, new Vector3f()),
                 laserCoreColor.multiply(0.6f),
                 laserCoreColor,
                 new Vector4f(0.0f, 1.0f,0.3f, 1.0f)
         );
-        THBulletRenderers.BulletRenderer.renderEllipsoid(
+        RayCastingHelper.renderEllipsoidForLaser(
                 builder,
-                pos,
+                head,
+                tail,
+                boxWidth,
                 offsetRotation,
                 scale,
                 laserColor.multiply(0.6f),

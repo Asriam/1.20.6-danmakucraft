@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.bullet;
 
+import com.adrian.thDanmakuCraft.client.renderer.RayCastingHelper;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
@@ -15,12 +16,10 @@ import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -129,7 +128,7 @@ public class THBulletRenderers {
                 //Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
                 Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
                 Vector3f center = pos1.subtract(camPos).toVector3f();
-                renderEllipsoid(builder, center, offsetRotation, scale2, color, coreColor, new Vector4f(0.36f, 3.0f, 0.1f, 0.6f));
+                RayCastingHelper.renderEllipsoid(builder, center, offsetRotation, scale2, color, coreColor, new Vector4f(0.36f, 3.0f, 0.1f, 0.6f));
             }
 
             /*@Override
@@ -162,7 +161,7 @@ public class THBulletRenderers {
                 Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
                 Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
                 Vector3f center = pos1.subtract(camPos).toVector3f();
-                renderEllipsoid(builder, center, offsetRotation, scale, color, coreColor, new Vector4f(0.33f, 6.0f, -0.1f, 1.0f));
+                RayCastingHelper.renderEllipsoid(builder, center, offsetRotation, scale, color, coreColor, new Vector4f(0.33f, 6.0f, -0.1f, 1.0f));
             }
 
             @Override
@@ -195,7 +194,7 @@ public class THBulletRenderers {
                 Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
                 Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
                 Vector3f center = pos1.subtract(camPos).toVector3f();
-                renderEllipsoid(builder, center, offsetRotation, scale, color, coreColor, new Vector4f(0.5f, 2.0f, 0.0f, 2.0f));
+                RayCastingHelper.renderEllipsoid(builder, center, offsetRotation, scale, color, coreColor, new Vector4f(0.5f, 2.0f, 0.0f, 2.0f));
             }
 
             @Override
@@ -228,7 +227,7 @@ public class THBulletRenderers {
                 Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
                 Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
                 Vector3f center = pos1.subtract(camPos).toVector3f();
-                renderEllipsoid(builder, center, offsetRotation, scale, color, coreColor, new Vector4f(0.7f, 2.0f, -0.1f, 2.0f));
+                RayCastingHelper.renderEllipsoid(builder, center, offsetRotation, scale, color, coreColor, new Vector4f(0.7f, 2.0f, -0.1f, 2.0f));
             }
 
             @Override
@@ -263,7 +262,7 @@ public class THBulletRenderers {
                 Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
                 Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
                 Vector3f center = pos1.subtract(camPos).toVector3f();
-                renderEllipsoid(builder, center, offsetRotation, scale, color, coreColor, new Vector4f(0.5f, 1.5f, 0.2f, 0.4f));
+                RayCastingHelper.renderEllipsoid(builder, center, offsetRotation, scale, color, coreColor, new Vector4f(0.5f, 1.5f, 0.2f, 0.4f));
             }
 
             @Override
@@ -274,43 +273,6 @@ public class THBulletRenderers {
 
         public static Camera getCamera(){
             return Minecraft.getInstance().gameRenderer.getMainCamera();
-        }
-
-        public static void renderEllipsoid(
-                VertexBuilder builder,
-                Vector3f center,
-                Vector3f rotation,
-                Vector3f scale,
-                Color color, Color coreColor, Vector4f vector4f){
-            // 四邊形必須面向相機：否則從某些角度看過去會變成一直線，
-            // 光線就不會穿過 ellipsoid（遠處會縮小到看不見）。
-            //Quaternionf camRot = getCamera().rotation();
-            Vec2 rot = THObject.VectorAngleToRadAngle(new Vec3(center));
-            Quaternionf camRot = new Quaternionf().rotateY(rot.y- Mth.PI).rotateX(rot.x);
-
-            Vector3f right = new Vector3f(1.0f, 0.0f, 0.0f).rotate(camRot);
-            Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f).rotate(camRot);
-            float half = 1.6f * Math.max(Math.abs(scale.x),
-                    Math.max(Math.abs(scale.y), Math.abs(scale.z)));
-            ellipsoidVertex(builder, center, right, up, -half, -half, rotation, scale, color, coreColor, vector4f);
-            ellipsoidVertex(builder, center, right, up, half, -half, rotation, scale, color, coreColor, vector4f);
-            ellipsoidVertex(builder, center, right, up, half, half, rotation, scale, color, coreColor, vector4f);
-            ellipsoidVertex(builder, center, right, up, -half, half, rotation, scale, color, coreColor, vector4f);
-        }
-
-        /** 寫一個 billboard 頂點：center + right*x + up*y。 */
-        public static void ellipsoidVertex(VertexBuilder builder, Vector3f center, Vector3f right, Vector3f up,
-                                            float x, float y, Vector3f rotation, Vector3f scale, Color color, Color coreColor, Vector4f vector4f) {
-            builder.vertex(center.x + right.x * x + up.x * y,
-                            center.y + right.y * x + up.y * y,
-                            center.z + right.z * x + up.z * y)
-                    .vertex(center)
-                    .vertex(rotation)
-                    .vertex(scale)
-                    .color(color)
-                    .color(coreColor)
-                    .vec4(vector4f.x,vector4f.y,vector4f.z,vector4f.w)
-                    .endVertex();
         }
 
         public static class grain_a extends BulletRenderer {
@@ -338,7 +300,7 @@ public class THBulletRenderers {
                 Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
                 Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
                 Vector3f center = pos1.subtract(camPos).toVector3f();
-                renderEllipsoid(builder, center, offsetRotation, scale, color, coreColor, new Vector4f(0.36f, 5.0f,0.1f, 1.0f));
+                RayCastingHelper.renderEllipsoid(builder, center, offsetRotation, scale, color, coreColor, new Vector4f(0.36f, 5.0f,0.1f, 1.0f));
             }
 
             @Override

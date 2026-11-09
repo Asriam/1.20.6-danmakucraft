@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.bullet;
 
+import com.adrian.thDanmakuCraft.client.renderer.RayCastingHelper;
 import com.adrian.thDanmakuCraft.client.renderer.buffer.VertexBuilder;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
@@ -57,7 +58,7 @@ public class THBulletRenderer extends AbstractTHObjectRenderer<THBullet> {
                 Vector3f center = pos1.subtract(camPos).toVector3f();
                 Color bulletColor = bullet.getBulletColor().multiply(bullet.getColor());
                 Color coreColor = bullet.getColor();
-                THBulletRenderers.BulletRenderer.renderEllipsoid(builder, center, offsetRotation, scale, bulletColor, coreColor, new Vector4f(0.5f, 2.0f, 0.0f, 2.0f));
+                RayCastingHelper.renderEllipsoid(builder, center, offsetRotation, scale, bulletColor, coreColor, new Vector4f(0.5f, 2.0f, 0.0f, 2.0f));
 
                 /*poseStack.pushPose();
                 poseStack.mulPose(this.getRenderDispatcher().cameraOrientation());
