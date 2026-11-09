@@ -67,7 +67,7 @@ public class TaskManager<T> implements IDataStorage, ILuaValue{
     public void registerTask(String taskName, AbstractTask<T> task){
         if(!canRegister){
             try {
-                throw new IllegalAccessException("You cannot register any tasks outer register method!");
+                throw new IllegalAccessException("You cannot register any tasks outer onRegisterTask method!");
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }

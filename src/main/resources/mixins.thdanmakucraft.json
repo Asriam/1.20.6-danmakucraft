@@ -4,10 +4,10 @@
   "plugin": "com.adrian.thDanmakuCraft.mixins.THMixinPlugin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-
   ],
   "client": [
-    "LevelRendererMixin"
+    "LevelRendererMixin",
+    "MinecraftMixin"
   ],
   "minVersion": "0.8"
 }

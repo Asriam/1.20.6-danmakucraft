@@ -19,14 +19,26 @@ in mat3 R;
 // 物件中心（view space）
 in vec3 centerVS;
 
-in float near;
-in float far;
+in mat4 inversedPojMat;
 
 out vec4 fragColor;
 
-float LinearizeDepth(float depth) {
-    float z = depth*2.0-1.0f;
-    return (2.0f*near*far)/(far+near-z*(far-near));
+float GetCameraDistance(vec2 uv, float rawDepth)
+{
+    // Raw Depth: [0, 1] -> NDC: [-1, 1]
+    vec4 clipPos = vec4(
+    uv * 2.0 - 1.0,
+    rawDepth * 2.0 - 1.0,
+    1.0
+    );
+
+    // Reconstruct View Space Position
+    vec4 viewPos = inversedPojMat * clipPos;
+
+    viewPos.xyz /= viewPos.w;
+
+    // Euclidean Distance
+    return length(viewPos.xyz);
 }
 
 #define test_flag 1
@@ -112,10 +124,10 @@ void main()
     float rimFactor2 = pow(rimStrength+1.0f-params.x, params.y);
     vec4 rim  = vec4(rimFactor);
     vec4 rim2 = vec4(rimFactor2);
-    float sceneDepth  = 0.0f;//LinearizeDepth(texture(DepthBuffer, texCoord).r);
-    float bubbleDepth = LinearizeDepth(gl_FragDepth);
+    float sceneDepth  = GetCameraDistance(texCoord,texture(DepthBuffer, texCoord).r);
+    float bubbleDepth = GetCameraDistance(texCoord,gl_FragDepth);
     float distance = abs(bubbleDepth - sceneDepth);
-    float threshold = 0.4f;
+    float threshold = 0.3f;
     float normalizedDistance = clamp(distance / threshold, 0.0, 1.0);
     vec4 intersection = mix(vec4(1), vec4(0), pow(normalizedDistance,2));
     vec4 bubbleBase = BulletColor;

@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.client.gui.widgets;
 
+import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.gui.editor.EditorScreen;
 import com.adrian.thDanmakuCraft.client.renderer.buffer.VertexBuilder;
 import com.adrian.thDanmakuCraft.util.Color;
@@ -50,7 +51,7 @@ public class EditorButton {
 
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         RenderSystem.disableCull();
-        BufferUploader.drawWithShader(buffer);
+        RenderUtil.drawAndClose(buffer);
     }
 
     public void onClicked(EditorScreen screen, int mouseX, int mouseY){

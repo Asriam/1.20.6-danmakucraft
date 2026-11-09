@@ -425,6 +425,29 @@ public class LegacyBufferBuilder implements VertexConsumer {
                 : this.vertexCount;
         MeshData.DrawState state = new MeshData.DrawState(this.format, this.vertexCount,
                 indexCount, this.mode, VertexFormat.IndexType.least(this.vertexCount));
-        return new MeshData(builder.build(), state);
+        return new OwnedMeshData(builder.build(), state, builder);
+    }
+
+    /**
+     * 連同 {@link ByteBufferBuilder} 一起釋放的 MeshData。
+     *
+     * <p>{@code MeshData.close()} 只會 release Result，不會 free builder 的 native buffer；
+     * 這裡的 builder 是每次 {@code end()} 新建的，所以一定要在 close 時一起 free，
+     * 否則每幀洩漏一塊原生記憶體（玩久了會 native OOM）。</p>
+     */
+    private static final class OwnedMeshData extends MeshData {
+        private final ByteBufferBuilder owner;
+
+        private OwnedMeshData(ByteBufferBuilder.Result result, MeshData.DrawState state,
+                              ByteBufferBuilder owner) {
+            super(result, state);
+            this.owner = owner;
+        }
+
+        @Override
+        public void close() {
+            super.close();
+            this.owner.close();
+        }
     }
 }

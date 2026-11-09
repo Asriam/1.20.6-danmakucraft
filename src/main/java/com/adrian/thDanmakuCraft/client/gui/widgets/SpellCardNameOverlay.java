@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.client.gui.widgets;
 
+import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.compat.LegacyBufferBuilder;
 import com.adrian.thDanmakuCraft.events.TickEvents;
 import com.adrian.thDanmakuCraft.util.Color;
@@ -119,9 +120,9 @@ public class SpellCardNameOverlay implements IGuiOverlay {
                 GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                 GlStateManager.SourceFactor.SRC_ALPHA,
                 GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-        BufferUploader.drawWithShader(_BUFFER_1.end());
+        RenderUtil.drawAndClose(_BUFFER_1.end());
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        BufferUploader.drawWithShader(_BUFFER_2.end());
+        RenderUtil.drawAndClose(_BUFFER_2.end());
         RenderSystem.disableBlend();
         //poseStack.popPose();
         removeList.forEach(spellCards::remove);

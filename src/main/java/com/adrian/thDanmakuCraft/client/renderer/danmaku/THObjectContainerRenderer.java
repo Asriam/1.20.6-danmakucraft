@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku;
 
+import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.shader.ShaderLoader;
 import com.adrian.thDanmakuCraft.client.renderer.type.ModVertexFormats;
 import com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes;
@@ -79,9 +80,10 @@ public class THObjectContainerRenderer {
         final ShaderInstance shader = ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER;
 
         if(shader != null) {
+            //DEPTH_BUFFER.clear(true);
             THObjectContainerRenderer.DEPTH_BUFFER.copyDepthFrom(mainRenderTarget);
             shader.setSampler("DepthBuffer", THObjectContainerRenderer.DEPTH_BUFFER.getDepthTextureId());
-            ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER.setSampler("DepthBuffer", THObjectContainerRenderer.DEPTH_BUFFER.getDepthTextureId());
+            //ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER.setSampler("DepthBuffer", mainRenderTarget.getDepthTextureId());
             //shader.setSampler("ScreenBuffer", mainRenderTarget.getColorTextureId());
             mainRenderTarget.bindWrite(true);
         }
@@ -140,7 +142,7 @@ public class THObjectContainerRenderer {
                 }
                 if (shouldRenderHitBox) {
                     renderTypeLines.setupRenderState();
-                    BufferUploader.drawWithShader(HIT_BOX_BUFFER.end());
+                    RenderUtil.drawAndClose(HIT_BOX_BUFFER.end());
                     renderTypeLines.clearRenderState();
                 }
                 if (shouldApplyEffect()) {
@@ -152,23 +154,23 @@ public class THObjectContainerRenderer {
                 if (hasBuffer2 || hasMain) {
                     renderType.setupRenderState();
                     if (hasBuffer2) {
-                        BufferUploader.drawWithShader(BUFFER_2.end());
+                        RenderUtil.drawAndClose(BUFFER_2.end());
                     }
                     if (hasMain) {
-                        BufferUploader.drawWithShader(builder.end());
+                        RenderUtil.drawAndClose(builder.end());
                     }
                     renderType.clearRenderState();
                 } else {
                     // 仍要重置緩衝，否則下一批會沿用舊資料
-                    BUFFER_2.end();
-                    builder.end();
+                    RenderUtil.close(BUFFER_2.end());
+                    RenderUtil.close(builder.end());
                 }
                 if (shouldApplyEffect()) {
                     THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
                 }
             }
             RenderTypes.TEST_ELLIPSOID.setupRenderState();
-            BufferUploader.drawWithShader(ELLIPSOID_TEST_BUFFER.end());
+            RenderUtil.drawAndClose(ELLIPSOID_TEST_BUFFER.end());
             RenderTypes.TEST_ELLIPSOID.clearRenderState();
             // 不清 map：list 留給下一幀重用（上一層已 clear）
 
@@ -258,7 +260,7 @@ public class THObjectContainerRenderer {
         bufferbuilder.vertex(screenWidth, 0.0, 0.0).endVertex();
         bufferbuilder.vertex(screenWidth, screenHeight, 0.0).endVertex();
         bufferbuilder.vertex(0.0, screenHeight, 0.0).endVertex();
-        BufferUploader.draw(bufferbuilder.end());
+        RenderUtil.drawPlainAndClose(bufferbuilder.end());
     }
 
     public static <T extends THObject> AbstractTHObjectRenderer<T> getTHObjectRenderer(@NotNull T object) {

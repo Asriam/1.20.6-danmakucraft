@@ -19,12 +19,12 @@ out vec3 EllipsoidRadius;
 out vec3 vRayDirection;
 out vec4 BulletColor;
 out vec4 CoreColor;
-out float near;
-out float far;
 
 out mat3 R;
 out vec3 centerVS;
 out vec4 params;
+
+out mat4 inversedPojMat;
 
 mat3 rotationMatrix(vec3 r)
 {
@@ -69,9 +69,6 @@ void main() {
     BulletColor = Color;
     CoreColor = Color2;
 
-    near = ProjMat[3][2]/(ProjMat[2][2]-1.0);
-    far = ProjMat[3][2]/(ProjMat[2][2]+1.0);
-
     // 把 view 的旋轉抽出來：Rotation 是物件在世界座標的角度，
     // 要轉到 view space 才能跟 centerVS / 射線在同一個座標系
     mat3 viewRot = mat3(ModelViewMat[0].xyz, ModelViewMat[1].xyz, ModelViewMat[2].xyz);
@@ -79,4 +76,6 @@ void main() {
     // 物件中心（view space）
     centerVS = (ModelViewMat * vec4(EllipsoidPosition, 1.0)).xyz;
     params = VEC4;
+
+    inversedPojMat = inverse(ProjMat);
 }

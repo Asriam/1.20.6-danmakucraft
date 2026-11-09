@@ -1,16 +1,14 @@
 package com.adrian.thDanmakuCraft.client.renderer.entity;
 
+import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.shader.ShaderLoader;
 import com.adrian.thDanmakuCraft.client.renderer.type.THBlendMode;
 import com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes;
 import com.adrian.thDanmakuCraft.client.renderer.type.ModVertexFormats;
 import com.adrian.thDanmakuCraft.client.renderer.buffer.VertexBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
 import com.adrian.thDanmakuCraft.client.renderer.compat.LegacyBufferBuilder;
 import com.adrian.thDanmakuCraft.client.renderer.*;
-import com.adrian.thDanmakuCraft.client.renderer.shape.ShapeVertexHelper;
 import com.adrian.thDanmakuCraft.client.renderer.shape.SphereVertexHelper;
-import com.adrian.thDanmakuCraft.events.RenderEvents;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.util.IImage;
@@ -28,20 +26,17 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import org.checkerframework.checker.units.qual.C;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import static com.adrian.thDanmakuCraft.client.renderer.shader.ShaderLoader.NORMAL_MAP_SHADER;
 import static com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes.AURA_DEPTH_BUFFER_TARGET;
-import static com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes.TEST_RENDER_TARGET;
+import static com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes.SPELLCARD_AURA_TARGET;
 
 public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<EntityTHSpellCard>{
     public EntityTHSpellCardRenderer(EntityRendererProvider.Context context) {
@@ -74,7 +69,7 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         float time = 30.0f;
         float open = timer > time ? 1.0f : (float) Math.pow(Math.min(timer / time,1.0f),0.8f);
         float close = timer < container.getLifetime()-time ? 1.0f : 1.0f - (float) Math.pow(Math.clamp((timer-container.getLifetime()+time) / time,0.0f,1.0f),2.0f);
-        float timeLeft = 1.0f-(float) container.getTimer()/container.getLifetime();
+        float timeLeft = 1.0f-(float) (container.getTimer()-1.0f+partialTicks)/container.getLifetime();
         Vec2 faceCamRotation = THObject.VectorAngleToRadAngle(this.getRenderDispatcher().camera.getPosition().vectorTo(pos));
         Vec2 scale = Vec2.ONE
                 .scale(8.0f + 0.8f*Mth.cos(timer/8.0f))
@@ -252,33 +247,38 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         renderType.setupRenderState();
         RenderSystem.setShaderTexture(0, spellCardAura.getTextureLocation());
         RenderSystem.enableCull();
-        BufferUploader.drawWithShader(AURA_BUFFER.end());
+        RenderUtil.drawAndClose(AURA_BUFFER.end());
         renderType.clearRenderState();
 
         renderType.setupRenderState();
         RenderSystem.enableCull();
-        BufferUploader.drawWithShader(MAGIC_SQUARE_BUFFER.end());
+        RenderUtil.drawAndClose(MAGIC_SQUARE_BUFFER.end());
         renderType.clearRenderState();
     }
+
+    public static void onResizeScreen(){
+        RenderTarget target = Minecraft.getInstance().getMainRenderTarget();
+        int[] window = new int[]{target.width, target.height};
+        SPELLCARD_AURA_TARGET.resize(window[0], window[1], Minecraft.ON_OSX);
+        AURA_DEPTH_BUFFER_TARGET.resize(window[0], window[1], Minecraft.ON_OSX);
+    };
 
     public static void afterRenderLevel(LevelRenderer levelRenderer, float partialTick){
         Minecraft mc = Minecraft.getInstance();
         RenderTarget target = mc.getMainRenderTarget();
         int[] window = new int[]{target.width, target.height};
-        TEST_RENDER_TARGET.resize(window[0],window[1],false);
-        TEST_RENDER_TARGET.copyDepthFrom(target);
+        SPELLCARD_AURA_TARGET.copyDepthFrom(target);
 
-        AURA_DEPTH_BUFFER_TARGET.resize(window[0],window[1],false);
-        /*TEST_RENDER_TARGET.bindWrite(false);
-            //TEST_RENDER_TARGET.blitToScreen(window[0],window[1],false);
-        TEST_RENDER_TARGET.unbindWrite();*/
+        SPELLCARD_AURA_TARGET.clear(false);
+        AURA_DEPTH_BUFFER_TARGET.clear(false);
 
-        RenderType renderType = RenderTypes.DEBUG_FILLED_BOX;
+        SPELLCARD_AURA_TARGET.copyDepthFrom(target);
+        RenderType renderType = RenderTypes.DEBUG_NORMAL_DEPTH;
         renderType.setupRenderState();
 
         NORMAL_MAP_SHADER.apply();
         AURA_DEPTH_BUFFER_TARGET.bindWrite(true);
-        BufferUploader.drawWithShader(BACKGROUND_WARP_EFFECT_DEPTH_BUFFER.end());
+        RenderUtil.drawAndClose(BACKGROUND_WARP_EFFECT_DEPTH_BUFFER.end());
         AURA_DEPTH_BUFFER_TARGET.unbindWrite();
         renderType.clearRenderState();
 
@@ -288,14 +288,16 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         //Matrix4f modelViewMat = new Matrix4f(RenderSystem.getModelViewMatrix());
         //RenderSystem.getModelViewMatrix().set(RenderEvents.ModelViewMatrix);
         RenderSystem.disableDepthTest();
-        TEST_RENDER_TARGET.bindWrite(true);
+        SPELLCARD_AURA_TARGET.bindWrite(true);
         ShaderLoader.BACKGROUND_WARP_EFFECT.setSampler("AuraDepthBuffer",AURA_DEPTH_BUFFER_TARGET.getDepthTextureId());
-        BufferUploader.drawWithShader(BACKGROUND_WARP_EFFECT_BUFFER.end());
-        TEST_RENDER_TARGET.unbindWrite();
+        ShaderLoader.BACKGROUND_WARP_EFFECT.setSampler("DepthBuffer", Minecraft.getInstance().getMainRenderTarget().getDepthTextureId());
+        RenderUtil.drawAndClose(BACKGROUND_WARP_EFFECT_BUFFER.end());
+        SPELLCARD_AURA_TARGET.unbindWrite();
         bg_warp_ef_rt.clearRenderState();
         target.bindWrite(false);
-        GlStateManager._enableBlend();        //RenderSystem.getModelViewMatrix().set(modelViewMat);
-        TEST_RENDER_TARGET.blitToScreen(window[0],window[1],false);
+        GlStateManager._enableBlend();
+        //RenderSystem.getModelViewMatrix().set(modelViewMat);
+        SPELLCARD_AURA_TARGET.blitToScreen(window[0],window[1],false);
         target.bindWrite(true);
     }
 }

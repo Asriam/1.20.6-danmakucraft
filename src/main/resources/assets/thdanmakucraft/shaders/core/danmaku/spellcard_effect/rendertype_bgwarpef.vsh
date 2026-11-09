@@ -14,8 +14,6 @@ out vec4 vertexColor;
 out vec3 normal;
 out vec3 viewDir;
 out float vertexDistance;
-out float near;
-out float far;
 out mat4 uInvProjection;
 out mat4 uInvModelView;
 out vec2 texCoord2;
@@ -32,7 +30,5 @@ void main() {
     uInvProjection = inverse(ProjMat);
     uInvModelView = inverse(ModelViewMat);
     normal2 = mat3(uInvModelView) * normal;
-    near = ProjMat[3][2]/(ProjMat[2][2]-1.0);
-    far = ProjMat[3][2]/(ProjMat[2][2]+1.0);
     texCoord2 = Position.xy * 0.5 + 0.5;
 }

@@ -36,9 +36,9 @@ public class RenderTypes extends RenderStateShard{
     }
 
     public static final ShaderStateShard DANMAKU_DEPTH_OUTLINE_SHADER = new ShaderStateShard(() -> ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER);
-    public static RenderTarget TEST_RENDER_TARGET = new TextureTarget(2000,2000,true,true);
-    public static RenderTarget DEPTH_BUFFER_TARGET = new TextureTarget(2000,2000,true,true);
-    public static RenderTarget AURA_DEPTH_BUFFER_TARGET = new TextureTarget(2000,2000,true,true);
+    public static RenderTarget SPELLCARD_AURA_TARGET = new TextureTarget(2000,2000,true,Minecraft.ON_OSX);
+    public static RenderTarget DEPTH_BUFFER_TARGET = new TextureTarget(2000,2000,true,Minecraft.ON_OSX);
+    public static RenderTarget AURA_DEPTH_BUFFER_TARGET = new TextureTarget(2000,2000,true,Minecraft.ON_OSX);
     public static final ShaderStateShard BACKGROUND_WARP_EFFECT_SHADER = new ShaderStateShard(() -> {
         RenderTarget target = Minecraft.getInstance().getMainRenderTarget();
         ShaderInstance shader = ShaderLoader.BACKGROUND_WARP_EFFECT;
@@ -220,7 +220,7 @@ public class RenderTypes extends RenderStateShard{
                     .createCompositeState(false)
     );
 
-    public static final RenderType DEBUG_FILLED_BOX = create(
+    public static final RenderType DEBUG_NORMAL_DEPTH = create(
             "debug_aaa",
             ModVertexFormats.POSITION_NORMAL,
             VertexFormat.Mode.QUADS,

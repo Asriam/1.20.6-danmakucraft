@@ -532,12 +532,13 @@ public class THObjectContainer implements ITHObjectContainer, IScript, ILuaValue
         private static void initTHObject(THObject object, String luaClassKey, Varargs args) {
             object.setLuaClass(luaClassKey);
             //object.initLuaValue();
-            LuaValue luaObject = object.ofLuaValue();
+            /*LuaValue luaObject = object.ofLuaValue();
             if(args == LuaValue.NIL){
                 object.invokeScriptEvent("onInit",luaObject);
             }else {
                 object.invokeScriptEvent("onInit", LuaValue.varargsOf(luaObject, args));
-            }
+            }*/
+            object.onInitLua(args);
             object.spawn();
         }
         private static final LibFunction getMaxObjectAmount = new OneArgFunction() {

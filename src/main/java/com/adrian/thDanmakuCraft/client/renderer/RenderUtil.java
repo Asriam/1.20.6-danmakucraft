@@ -6,6 +6,8 @@ import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
@@ -21,6 +23,39 @@ import java.util.List;
 
 @OnlyIn(Dist.CLIENT)
 public class RenderUtil {
+
+    /**
+     * 畫完之後釋放 MeshData（連同底層 ByteBufferBuilder 的 native buffer）。
+     *
+     * <p>1.21.1 的 {@code MeshData.close()} 只 release 它的 Result，不會 free
+     * {@code ByteBufferBuilder}；而 {@code LegacyBufferBuilder.end()} 是每次新建一個 builder，
+     * 所以只呼叫 {@code BufferUploader.drawWithShader(...)} 會每幀洩漏一塊原生記憶體。</p>
+     */
+    public static void drawAndClose(MeshData mesh) {
+        if (mesh == null) {
+            return;
+        }
+        try (mesh) {
+            BufferUploader.drawWithShader(mesh);
+        }
+    }
+
+    /** 同上，但走 {@code BufferUploader.draw(...)}。 */
+    public static void drawPlainAndClose(MeshData mesh) {
+        if (mesh == null) {
+            return;
+        }
+        try (mesh) {
+            BufferUploader.draw(mesh);
+        }
+    }
+
+    /** 只收尾、不繪製。 */
+    public static void close(MeshData mesh) {
+        if (mesh != null) {
+            mesh.close();
+        }
+    }
     public static List<Quad> quadList = Lists.newArrayList();
 
     public record Quad(Vertex vertex1,

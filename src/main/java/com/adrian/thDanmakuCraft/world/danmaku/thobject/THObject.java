@@ -128,9 +128,43 @@ public class THObject implements ILuaValue, ITHContainerProvider, ISerializable 
     public void registerTasks(){
 
     }
+
+    public void onInitLua(Varargs args){
+        LuaValue luaObject = this.ofLuaValue();
+        if(args == LuaValue.NIL){
+            this.invokeScriptEvent("onInit",luaObject);
+        }else {
+            this.invokeScriptEvent("onInit", LuaValue.varargsOf(luaObject, args));
+        }
+    }
+
+    public void onConstructLua(){
+        this.invokeScriptEvent("onConstruct", this.luaValueForm);
+    }
+
+    public void onRegisterTasksLua(){
+        this.invokeScriptEvent("onRegisterTasks", this.ofLuaValue(), this.taskManager.ofLuaValue());
+    }
+
+    public void onTickLua(){
+        this.invokeScriptEvent("onTick", this.ofLuaValue());
+    }
+
+    public void onHitLua(){
+        this.invokeScriptEvent("onHit", this.ofLuaValue());
+    }
+
+    public void onDeadLua(){
+        this.invokeScriptEvent("onDead", this.ofLuaValue());
+    }
+
+    public void onRemoveLua(){
+        this.invokeScriptEvent("onRemove", this.ofLuaValue());
+    }
+
     public void registerLuaTasks(){
         this.taskManager.canRegister = true;
-        this.invokeScriptEvent("onRegisterTasks", this.ofLuaValue(), this.taskManager.ofLuaValue());
+        this.onRegisterTasksLua();
         this.taskManager.registerTask("DeathAnimation",new TaskManager.Task<>((task, target)->{
             float t = (float) task.lifetime /task.timer;
         }));
@@ -141,12 +175,7 @@ public class THObject implements ILuaValue, ITHContainerProvider, ISerializable 
     public void initLua(String luaClassKey, Varargs args) {
         this.setLuaClass(luaClassKey);
         this.initLuaValue();
-        LuaValue luaObject = this.ofLuaValue();
-        if(args == LuaValue.NIL){
-            this.invokeScriptEvent("onInit",luaObject);
-        }else {
-            this.invokeScriptEvent("onInit", LuaValue.varargsOf(luaObject, args));
-        }
+        this.onInitLua(args);
     }
 
     public void initPosition(Vec3 position) {
@@ -536,11 +565,6 @@ public class THObject implements ILuaValue, ITHContainerProvider, ISerializable 
 
     public void invokeScriptEvent(String eventName, Varargs args) {
         LuaValue luaClass = this.getLuaClass();
-        /*
-        if (!this.invalidFuncions.isEmpty() && this.invalidFuncions.contains(eventName)) {
-            //THDanmakuCraftMod.LOGGER.warn("AtTempted to invoke a script that is probably invalid!");
-            return;
-        }*/
 
         if(luaClass == null || luaClass.isnil()) {
             //this.invalidFuncions.add(eventName);
@@ -625,7 +649,7 @@ public class THObject implements ILuaValue, ITHContainerProvider, ISerializable 
                 this.velocity.z + this.acceleration.z
         );
 
-        this.invokeScriptEvent("onTick", this.ofLuaValue());
+        this.onTickLua();
         this.taskManager.tickTasks();
 
         if (this.shouldCollide()) {
@@ -730,7 +754,7 @@ public class THObject implements ILuaValue, ITHContainerProvider, ISerializable 
     }
 
     public void onHit(HitResult result) {
-        this.invokeScriptEvent("onHit", this.ofLuaValue());
+        this.onHitLua();
         if (this.shouldSetDeadWhenCollision) {
             this.setVelocity(Vec3.ZERO, false);
             this.setDead();
@@ -770,11 +794,11 @@ public class THObject implements ILuaValue, ITHContainerProvider, ISerializable 
             this.remove();
         }
 
-        this.invokeScriptEvent("onDead", this.ofLuaValue());
+        this.onDeadLua();
     }
 
     public void onRemove() {
-        this.invokeScriptEvent("onRemove", this.ofLuaValue());
+        this.onRemoveLua();
     }
 
     public void setBlend(Blend blend) {
@@ -1375,7 +1399,7 @@ public class THObject implements ILuaValue, ITHContainerProvider, ISerializable 
 
     public void initLuaValue() {
         this.luaValueForm = this.ofLuaClass();
-        this.invokeScriptEvent("onConstruct", this.luaValueForm);
+        this.onConstructLua();
         this.registerLuaTasks();
         //this.addTasks();
     }
@@ -1406,9 +1430,9 @@ public class THObject implements ILuaValue, ITHContainerProvider, ISerializable 
         return meta;
     }
 
-    public void addTasks(){
+    /*public void addTasks(){
         this.invokeScriptEvent("onAddTasks", this.ofLuaValue());
-    }
+    }*/
 
     @Override
     public LuaValue ofLuaValue() {

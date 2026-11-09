@@ -17,8 +17,6 @@ in vec3 normal;
 in vec3 normal2;
 in vec3 viewDir;
 in float vertexDistance;
-in float near;
-in float far;
 in mat4 uInvProjection;
 in mat4 uInvModelView;
 in vec2 texCoord2;
@@ -28,9 +26,22 @@ out vec4 fragColor;
 //float near = FogStart;
 //float far = FogEnd;
 
-float LinearizeDepth(float depth) {
-    float z = depth*2.0-1.0f;
-    return (2.0f*near*far)/(far+near-z*(far-near));
+float GetCameraDistance(vec2 uv, float rawDepth)
+{
+    // Raw Depth: [0, 1] -> NDC: [-1, 1]
+    vec4 clipPos = vec4(
+    uv * 2.0 - 1.0,
+    rawDepth * 2.0 - 1.0,
+    1.0
+    );
+
+    // Reconstruct View Space Position
+    vec4 viewPos = uInvProjection * clipPos;
+
+    viewPos.xyz /= viewPos.w;
+
+    // Euclidean Distance
+    return length(viewPos.xyz);
 }
 
 vec2 uvWarp(vec2 uv, vec2 warpSize){
@@ -116,43 +127,49 @@ void main() {
     float sencenRawDepth = texture(DepthBuffer, texCoord).r;
     float aruaRawDepth = gl_FragCoord.z;
     float arua2RawDepth = texture(AuraDepthBuffer, texCoord).r;
-    float senceDepth = LinearizeDepth(sencenRawDepth);
-    float aruaDepth = LinearizeDepth(aruaRawDepth);
+    float senceDepth = GetCameraDistance(texCoord,sencenRawDepth);
+    float aruaDepth = GetCameraDistance(texCoord,aruaRawDepth);
 
     if(arua2RawDepth != 1.0f && sencenRawDepth < arua2RawDepth){
         discard;
     }
 
     float distance = abs(aruaDepth-senceDepth);
-    float threshold = 1.5f;
+    float threshold = 5.0f;
     float normalizedDistance = clamp(distance / threshold, 0.0, 1.0);
-    vec4 intersection = mix(vec4(1), vec4(0), pow(normalizedDistance,3)); // white to transparent gradient
+    vec4 intersection = mix(vec4(1), vec4(0), pow(normalizedDistance,2)); // white to transparent gradient
     float inversedIntersection = 1.0f-intersection.r;
 
     vec2 warp = vec2(sin(Timer/40.0f),cos(Timer/36.0f));
     bool flag = senceDepth < aruaDepth;
     vec2 uv2 = flag ? texCoord : uvWarp(texCoord,(-normal.rg+0.2*warp)*rim*0.6*sin(Timer/120.0f)/ (vertexDistance/10.0f) *inversedIntersection*0.4f);
-    float WarpedSenceDepth = LinearizeDepth(texture(DepthBuffer, uv2).r);
+    float WarpedSenceDepthRaw = texture(DepthBuffer, uv2).r;
+    float WarpedSenceDepth = GetCameraDistance(texCoord,WarpedSenceDepthRaw);
+    gl_FragDepth = WarpedSenceDepth;
+    flag = WarpedSenceDepth < aruaDepth;
 
     vec4 screen_color = texture(ScreenBuffer, mix(texCoord,uv2,aruaRawDepth));
     vec4 intersection2 = mix(vec4(1), vec4(0), pow(clamp(abs(aruaDepth-WarpedSenceDepth) / threshold, 0.0, 1.0),3));
     vec4 ccc = vec4(vertexColor.rgb*vertexColor.a*rim*(1.0f-intersection2.r),rim*(1.0f-intersection2.r));
-    vec4 aruaColor = screen_color + ccc * 0.3f;
+    vec4 aruaColor = screen_color + (1.0f-screen_color) * ccc * 0.6f;
 
-    vec4 intersectionColor = vec4(vec3(1.0f,0.0f,0.5f)*intersection.a,intersection.a*0.6);
+    vec4 intersectionColor = vec4(vec3(1.0f,0.0f,0.5f)*intersection2.a,intersection2.a*0.6);
 
     float rawDepth = texture(DepthBuffer, texCoord).r;
     vec3 viewPos = clipToView(texCoord, flag ? rawDepth : aruaRawDepth);
     vec4 worldPosRaw = uInvModelView * vec4(viewPos, 1.0);
     vec3 worldPos = worldPosRaw.xyz + CameraPosition;
     vec3 worldNormal = flag ? mat3(uInvModelView) * reconstructNormal(viewPos, texCoord) : normal2;
-    float aaa = 20.0f/(flag ? senceDepth : aruaDepth);
-    float gridVal = grid(worldPos+vec3(-Timer * 0.1,Timer * 0.1,-Timer * 0.1), worldNormal, aaa, 0.2);
-    float gridVal2 = grid(worldPos+vec3(Timer * 0.08,Timer * 0.08,Timer * 0.08), worldNormal, aaa, 0.2);
-    vec4 lineColor = vec4(vec3(vertexColor.rgb)*(gridVal+gridVal2*0.4f)*0.5f,1.0f);
-    vec4 backgroundColor = screen_color*vec4(vec3(0.5f),1.0f);
-    vec4 outColor = (flag ? backgroundColor : aruaColor) + lineColor;
-    outColor += intersectionColor*0.5f;
+    float aaa = 16.0f/(flag ? WarpedSenceDepth : aruaDepth);
+    float squareSize = 0.4f;
+    float gridVal = grid(worldPos+vec3(-Timer * 0.1,Timer * 0.1,-Timer * 0.1), worldNormal, aaa, squareSize);
+    float gridVal2 = grid(worldPos+vec3(Timer * 0.08,Timer * 0.08,Timer * 0.08), worldNormal, aaa, squareSize);
+    float pulse = sin(Timer/10.0f) * 0.2 + 0.8;
+    vec4 lineColor = vec4(vec3(vertexColor.rgb)*(gridVal+gridVal2*0.4f)*0.6f * pulse,1.0f);
+    vec4 backgroundColor = screen_color*vec4(vec3(min(1.0f,0.5f+intersection2.a)),1.0f);
+    vec4 outColor = (flag ? backgroundColor : aruaColor);
+    outColor = outColor + (1.0f-outColor) * lineColor;
+    outColor = outColor + (1.0f-outColor) * intersectionColor*0.6f;
 
     fragColor = outColor;
     //fragColor = linear_fog(fragColor, distance, FogStart, FogEnd, FogColor);
