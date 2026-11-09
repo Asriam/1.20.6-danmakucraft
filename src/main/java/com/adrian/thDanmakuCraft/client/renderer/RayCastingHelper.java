@@ -1,6 +1,8 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
+import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.client.renderer.buffer.VertexBuilder;
+import com.adrian.thDanmakuCraft.events.RenderEvents;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -14,6 +16,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RayCastingHelper {
+    /** 除錯用：把 renderEllipsoidForLaser 看到的矩陣印到 log（每秒最多一次）。 */
+    public static boolean DEBUG_MATRIX = false;
+    private static long lastMatrixLog = 0L;
+
     public static void renderEllipsoid(
             VertexBuilder builder,
             Vector3f center,
@@ -67,11 +73,18 @@ public class RayCastingHelper {
     }
 
     /**
-     * 給鐳射用：用「頭尾 + width」模擬一個 cube，算出它在螢幕上的<b>最小面積包圍四邊形</b>，
-     * 只畫那一塊區域（比全螢幕省非常多 fill rate）。
+     * 給鐳射用：把「頭尾 + width」想成一條 3D capsule，投影到螢幕後用最小面積的 4 頂點梯形框住。
      *
-     * <p>流程：8 個 cube 角落 → view space → 對近平面裁切 → 投影到 NDC →
-     * 凸包 → 旋轉卡尺求最小面積矩形 → 把矩形四個 NDC 角轉回相機相對世界座標。</p>
+     * <p>原理：相機看一顆半徑 r、深度 d 的球，投影到「正規化影像座標」
+     * (x/(-z), y/(-z))（也就是 z = -1 平面上的座標）會是一個圓，半徑
+     * rho = r / sqrt(d^2 - r^2)。整條 capsule 的投影就是兩端圓的凸包，
+     * 最小的 4 邊形 = 兩端沿軸向各延伸 rho 的端蓋 + 兩側外切線：</p>
+     * <pre>
+     *   A - dir*rhoA +- n*rhoA        B + dir*rhoB +- n*rhoB
+     * </pre>
+     *
+     * <p>和「8 個 OBB 角 → 凸包 → 旋轉卡尺」相比：CPU 只需 2 次投影 + 幾個向量運算，
+     * 面積也更小（OBB 截面用對角 sqrt(2)*r，這裡用實際的 rho）。</p>
      *
      * @param head  鐳射頭（相機相對世界座標）
      * @param tail  鐳射尾（相機相對世界座標）
@@ -86,80 +99,96 @@ public class RayCastingHelper {
             Vector3f scale,
             Color color, Color coreColor, Vector4f vector4f) {
         Vector3f center = new Vector3f(head).add(tail).mul(0.5f);
+        float radius = Math.max(Math.max(Math.abs(scale.x), Math.abs(scale.y)), Math.max(width * 0.5f, 1.0e-4f));
 
-        // ---- 1. 頭尾 + width → cube 的 8 個角 ----
-        Vector3f axis = new Vector3f(tail).sub(head);
-        if (axis.lengthSquared() < 1.0e-8f) {
-            axis.set(0.0f, 0.0f, 1.0f);
+        Matrix4f modelView = RenderEvents.ModelViewMatrix;
+        Matrix4f projection = RenderEvents.ProjectionMatrix;
+        if (false && DEBUG_MATRIX && System.currentTimeMillis() - lastMatrixLog > 1000L) {
+            lastMatrixLog = System.currentTimeMillis();
+            THDanmakuCraftMod.LOGGER.info("[ellipsoid] MV={} PJ={} head={} tail={} center={}",
+                    modelView, projection, head, tail, center);
+        }
+        Vector3f a = modelView.transformPosition(new Vector3f(head), new Vector3f());
+        Vector3f b = modelView.transformPosition(new Vector3f(tail), new Vector3f());
+
+        // 近平面裁切
+        final float nearZ = -0.01f;
+        boolean aIn = a.z <= nearZ;
+        boolean bIn = b.z <= nearZ;
+        if (!aIn && !bIn) {
+            return;
+        }
+        if (aIn != bIn) {
+            float t = (nearZ - a.z) / (b.z - a.z);
+            Vector3f clipped = new Vector3f(a).lerp(b, t);
+            if (aIn) {
+                b.set(clipped);
+            } else {
+                a.set(clipped);
+            }
+        }
+
+        // 沿著線段取樣：只取頭尾會漏掉「中段最靠近相機、螢幕半徑最大」的凸起，
+        // 導致某些視角下 quad 太小、框不住橢圓。
+        final int samples = 5;
+        Vector2f[] centers = new Vector2f[samples];
+        float[] radii = new float[samples];
+        for (int i = 0; i < samples; i++) {
+            float t = i / (float) (samples - 1);
+            float x = a.x + (b.x - a.x) * t;
+            float y = a.y + (b.y - a.y) * t;
+            float z = a.z + (b.z - a.z) * t;
+            float depth = Math.max(-z, radius * 1.001f);
+            float rho = radius / (float) Math.sqrt(Math.max(depth * depth - radius * radius, 1.0e-4f));
+            centers[i] = new Vector2f(x / -z, y / -z);
+            radii[i] = Math.min(rho, 8.0f);
+        }
+
+        Vector2f a2 = centers[0];
+        Vector2f b2 = centers[samples - 1];
+        Vector2f dir = new Vector2f(b2).sub(a2);
+        float length = dir.length();
+        if (length < 1.0e-5f) {
+            dir.set(1.0f, 0.0f);
         } else {
-            axis.normalize();
+            dir.div(length);
         }
-        Vector3f helper = Math.abs(axis.y) > 0.99f
-                ? new Vector3f(1.0f, 0.0f, 0.0f)
-                : new Vector3f(0.0f, 1.0f, 0.0f);
-        Vector3f right = new Vector3f(axis).cross(helper).normalize();
-        Vector3f up = new Vector3f(right).cross(axis).normalize();
-        float halfWidth = Math.max(width * 0.5f, 1.0e-4f);
+        Vector2f normal = new Vector2f(-dir.y, dir.x);
 
-        Vector3f[] corners = new Vector3f[8];
-        for (int i = 0; i < 8; i++) {
-            Vector3f base = (i < 4) ? head : tail;
-            float sx = ((i & 1) == 0) ? 1.0f : -1.0f;
-            float sy = ((i & 2) == 0) ? 1.0f : -1.0f;
-            corners[i] = new Vector3f(base)
-                    .add(new Vector3f(right).mul(halfWidth * sx))
-                    .add(new Vector3f(up).mul(halfWidth * sy));
+        // 把所有取樣圓投影到 (dir, normal) 基底上取包圍矩形
+        float pad = 0.0025f;
+        float minU = Float.MAX_VALUE, maxU = -Float.MAX_VALUE;
+        float minV = Float.MAX_VALUE, maxV = -Float.MAX_VALUE;
+        for (int i = 0; i < samples; i++) {
+            float u = centers[i].x * dir.x + centers[i].y * dir.y;
+            float v = centers[i].x * normal.x + centers[i].y * normal.y;
+            float r = radii[i] + pad;
+            minU = Math.min(minU, u - r);
+            maxU = Math.max(maxU, u + r);
+            minV = Math.min(minV, v - r);
+            maxV = Math.max(maxV, v + r);
         }
 
-        // ---- 2. 投影到 NDC（跨近平面時補切點）----
-        Matrix4f modelView = RenderSystem.getModelViewMatrix();
-        Matrix4f projection = RenderSystem.getProjectionMatrix();
-        List<Vector2f> projected = projectBoxOctants(corners, modelView, projection);
-        if (projected.isEmpty()) {
+        Vector2f c1 = new Vector2f(dir).mul(minU).add(new Vector2f(normal).mul(minV));
+        Vector2f c2 = new Vector2f(dir).mul(maxU).add(new Vector2f(normal).mul(minV));
+        Vector2f c3 = new Vector2f(dir).mul(maxU).add(new Vector2f(normal).mul(maxV));
+        Vector2f c4 = new Vector2f(dir).mul(minU).add(new Vector2f(normal).mul(maxV));
+
+        // 完全在畫面外就不畫
+        float ndcMinX = Math.min(Math.min(c1.x, c2.x), Math.min(c3.x, c4.x)) * projection.m00();
+        float ndcMaxX = Math.max(Math.max(c1.x, c2.x), Math.max(c3.x, c4.x)) * projection.m00();
+        float ndcMinY = Math.min(Math.min(c1.y, c2.y), Math.min(c3.y, c4.y)) * projection.m11();
+        float ndcMaxY = Math.max(Math.max(c1.y, c2.y), Math.max(c3.y, c4.y)) * projection.m11();
+        if (ndcMaxX < -1.0f || ndcMinX > 1.0f || ndcMaxY < -1.0f || ndcMinY > 1.0f) {
             return;
         }
 
-        // ---- 3. 凸包 + 最小面積矩形 ----
-        List<Vector2f> hull = convexHull(projected);
-        float[] rect = minAreaRect(hull);
-        if (rect == null) {
-            return;
-        }
-        float minU = rect[0], minV = rect[1], maxU = rect[2], maxV = rect[3];
-        float edgeX = rect[4], edgeY = rect[5], normalX = rect[6], normalY = rect[7];
-
-        // 留邊，避免橢圓邊緣被切掉
-        float pad = 0.01f + 0.05f * Math.max(maxU - minU, maxV - minV);
-        minU -= pad; minV -= pad; maxU += pad; maxV += pad;
-
-        // ---- 4. 完全在畫面外就不畫 ----
-        float screenMinX = Float.MAX_VALUE, screenMaxX = -Float.MAX_VALUE;
-        float screenMinY = Float.MAX_VALUE, screenMaxY = -Float.MAX_VALUE;
-        for (int i = 0; i < 4; i++) {
-            float u = ((i == 0 || i == 3) ? minU : maxU);
-            float v = ((i < 2) ? minV : maxV);
-            float ndcX = edgeX * u + normalX * v;
-            float ndcY = edgeY * u + normalY * v;
-            screenMinX = Math.min(screenMinX, ndcX);
-            screenMaxX = Math.max(screenMaxX, ndcX);
-            screenMinY = Math.min(screenMinY, ndcY);
-            screenMaxY = Math.max(screenMaxY, ndcY);
-        }
-        if (screenMaxX < -1.0f || screenMinX > 1.0f || screenMaxY < -1.0f || screenMinY > 1.0f) {
-            return;
-        }
-
-        // ---- 5. NDC 四角 → view space (z = -1) → 相機相對世界 ----
-        float tanX = 1.0f / projection.m00();
-        float tanY = 1.0f / projection.m11();
+        // 正規化影像座標 -> view space (z = -1) -> 相機相對世界座標
         Matrix4f invModelView = new Matrix4f(modelView).invert();
-        float[] us = {minU, maxU, maxU, minU};
-        float[] vs = {minV, minV, maxV, maxV};
-        for (int i = 0; i < 4; i++) {
-            float ndcX = edgeX * us[i] + normalX * vs[i];
-            float ndcY = edgeY * us[i] + normalY * vs[i];
+        Vector2f[] quad = {c1, c2, c3, c4};
+        for (Vector2f point : quad) {
             Vector3f world = invModelView.transformPosition(
-                    new Vector3f(ndcX * tanX, ndcY * tanY, -1.0f), new Vector3f());
+                    new Vector3f(point.x, point.y, -1.0f), new Vector3f());
             writeEllipsoidVertex(builder, world, center, rotation, scale, color, coreColor, vector4f);
         }
     }

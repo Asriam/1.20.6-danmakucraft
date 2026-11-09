@@ -132,6 +132,8 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
         Vector3f axis = rot.getColumn(2, new Vector3f());
         Vector3f head = new Vector3f(pos).sub(new Vector3f(axis).mul(laserLength));
         Vector3f tail = new Vector3f(pos).add(new Vector3f(axis).mul(laserLength));
+        //Vector3f head = laser.getOffsetPosition(partialTicks).subtract(camPos).toVector3f();
+        //Vector3f tail = laser.getOffsetEndPos(partialTicks).subtract(camPos).toVector3f();
         float boxWidth = laserWidth * 2.0f;
 
         RayCastingHelper.renderEllipsoidForLaser(
@@ -156,6 +158,25 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
                 laserCoreColor,
                 new Vector4f(0.0f, 1.0f,0.3f, 1.0f)
         );
+
+        /*RayCastingHelper.renderEllipsoid(
+                builder,
+                pos,
+                offsetRotation,
+                scale.mul(0.6f, 0.6f, 0.8f, new Vector3f()),
+                laserCoreColor.multiply(0.6f),
+                laserCoreColor,
+                new Vector4f(0.0f, 1.0f,0.3f, 1.0f)
+        );
+        RayCastingHelper.renderEllipsoid(
+                builder,
+                pos,
+                offsetRotation,
+                scale,
+                laserColor.multiply(0.6f),
+                laserCoreColor,
+                new Vector4f(0.0f, 1.0f,0.3f, 1.0f)
+        );*/
     }
 
     @Override

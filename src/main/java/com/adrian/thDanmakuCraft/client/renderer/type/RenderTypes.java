@@ -248,7 +248,7 @@ public class RenderTypes extends RenderStateShard{
                     .setTransparencyState(LIGHTNING_TRANSPARENCY)
                     .setLightmapState(NO_LIGHTMAP)
                     .setOverlayState(NO_OVERLAY)
-                    .setWriteMaskState(COLOR_DEPTH_WRITE)
+                    .setWriteMaskState(COLOR_WRITE)
                     .setOutputState(ITEM_ENTITY_TARGET)
                     .createCompositeState(false)
     );

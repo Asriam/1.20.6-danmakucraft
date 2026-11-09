@@ -9,6 +9,7 @@ import com.adrian.thDanmakuCraft.client.renderer.buffer.VertexBuilder;
 import com.adrian.thDanmakuCraft.client.renderer.compat.LegacyBufferBuilder;
 import com.adrian.thDanmakuCraft.client.renderer.*;
 import com.adrian.thDanmakuCraft.client.renderer.shape.SphereVertexHelper;
+import com.adrian.thDanmakuCraft.events.RenderEvents;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.util.ConstantUtil;
 import com.adrian.thDanmakuCraft.util.IImage;
@@ -31,6 +32,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -264,6 +266,10 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
     };
 
     public static void afterRenderLevel(LevelRenderer levelRenderer, float partialTick){
+        RenderEvents.ModelViewMatrix = new Matrix4f(RenderSystem.getModelViewMatrix());
+        RenderEvents.ProjectionMatrix = new Matrix4f(RenderSystem.getProjectionMatrix());
+
+
         Minecraft mc = Minecraft.getInstance();
         RenderTarget target = mc.getMainRenderTarget();
         int[] window = new int[]{target.width, target.height};

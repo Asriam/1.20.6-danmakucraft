@@ -66,8 +66,8 @@ public class RenderEvents {
         }
 
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_WEATHER){
-            ModelViewMatrix = new Matrix4f(RenderSystem.getModelViewMatrix());
-            ProjectionMatrix = new Matrix4f(RenderSystem.getProjectionMatrix());
+            //ModelViewMatrix = new Matrix4f(RenderSystem.getModelViewMatrix());
+            //ProjectionMatrix = new Matrix4f(RenderSystem.getProjectionMatrix());
             RenderTarget target = Minecraft.getInstance().getMainRenderTarget();
             RenderTypes.DEPTH_BUFFER_TARGET.copyDepthFrom(target);
             target.bindWrite(false);
