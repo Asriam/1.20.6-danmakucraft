@@ -1,5 +1,6 @@
 package com.adrian.thDanmakuCraft.client.renderer.entity;
 
+import com.adrian.thDanmakuCraft.client.renderer.shader.ShaderLoader;
 import com.adrian.thDanmakuCraft.client.renderer.type.THBlendMode;
 import com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes;
 import com.adrian.thDanmakuCraft.client.renderer.type.ModVertexFormats;
@@ -284,17 +285,16 @@ public class EntityTHSpellCardRenderer extends EntityTHObjectContainerRenderer<E
         RenderType bg_warp_ef_rt = RenderTypes.RENDER_TYPE_BACKGROUND_WARP_EFFECT;
         bg_warp_ef_rt.setupRenderState();
         RenderSystem.disableCull();
-        Matrix4f modelViewMat = new Matrix4f(RenderSystem.getModelViewMatrix());
-        RenderSystem.getModelViewMatrix().set(RenderEvents.ModelViewMatrix);
+        //Matrix4f modelViewMat = new Matrix4f(RenderSystem.getModelViewMatrix());
+        //RenderSystem.getModelViewMatrix().set(RenderEvents.ModelViewMatrix);
         RenderSystem.disableDepthTest();
-        //TEST_RENDER_TARGET.bindWrite(true);
         TEST_RENDER_TARGET.bindWrite(true);
+        ShaderLoader.BACKGROUND_WARP_EFFECT.setSampler("AuraDepthBuffer",AURA_DEPTH_BUFFER_TARGET.getDepthTextureId());
         BufferUploader.drawWithShader(BACKGROUND_WARP_EFFECT_BUFFER.end());
         TEST_RENDER_TARGET.unbindWrite();
         bg_warp_ef_rt.clearRenderState();
         target.bindWrite(false);
-        GlStateManager._enableBlend();
-        RenderSystem.getModelViewMatrix().set(modelViewMat);
+        GlStateManager._enableBlend();        //RenderSystem.getModelViewMatrix().set(modelViewMat);
         TEST_RENDER_TARGET.blitToScreen(window[0],window[1],false);
         target.bindWrite(true);
     }

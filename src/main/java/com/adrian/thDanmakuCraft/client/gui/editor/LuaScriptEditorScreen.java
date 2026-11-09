@@ -508,8 +508,10 @@ public class LuaScriptEditorScreen extends Screen {
 
     public LuaScriptEditorScreen(String fileName) {
         super(Component.literal("Lua Script Editor"));
-        this.openFile(LuaScriptFiles.normalizeName(fileName));
+        String requested = LuaScriptFiles.normalizeName(fileName);
+        this.openFile(requested);
         this.refreshFileList();
+        this.restoreTaskBar(requested);
     }
 
     // ------------------------------------------------------------------ 檔案
@@ -672,6 +674,7 @@ public class LuaScriptEditorScreen extends Screen {
     /** 關閉編輯器；有未儲存檔案時先跳詢問視窗。 */
     @Override
     public void onClose() {
+        this.saveTaskBar();
         this.stash();
         this.closeDialogFiles = this.unsavedFiles();
         if (this.closeDialogFiles.isEmpty()) {
@@ -680,6 +683,87 @@ public class LuaScriptEditorScreen extends Screen {
         }
         this.dialog = Dialog.CLOSE_CONFIRM;
         LuaCore.refreshLuaLib();
+    }
+    /** 關閉畫面（或被其他畫面取代）時也存一次工作欄。 */
+    @Override
+    public void removed() {
+        this.saveTaskBar();
+        super.removed();
+    }
+
+    /** 工作欄快取檔：config/thdanmakucraft/editor_tasks.txt。 */
+    private static Path taskStateFile() {
+        return scriptsDir().getParent().resolve("editor_tasks.txt");
+    }
+
+    /** 把工作欄清單 + 目前正在編輯的檔案寫入快取。 */
+    private void saveTaskBar() {
+        try {
+            Path file = taskStateFile();
+            Files.createDirectories(file.getParent());
+            StringBuilder text = new StringBuilder();
+            // 第一行記錄目前工作區的檔案，下次開啟時直接還原
+            if (this.fileName != null && !this.fileName.isEmpty()) {
+                text.append("current=").append(this.fileName).append('\n');
+            }
+            for (String path : this.taskBar) {
+                if (path != null && !path.isEmpty()) {
+                    text.append(path).append('\n');
+                }
+            }
+            Files.writeString(file, text.toString(), java.nio.charset.StandardCharsets.UTF_8);
+        } catch (IOException ignored) {
+            // 快取失敗不影響關閉
+        }
+    }
+
+    /** 下次開啟時，把上次的工作欄與正在編輯的檔案還原（只還原還存在的檔案）。 */
+    private void restoreTaskBar(String requested) {
+        Path file = taskStateFile();
+        if (!Files.isRegularFile(file)) {
+            return;
+        }
+        try {
+            List<String> lines = Files.readAllLines(file, java.nio.charset.StandardCharsets.UTF_8);
+            Set<String> available = new HashSet<>();
+            for (LuaScriptFiles.Entry entry : LuaScriptFiles.listAll()) {
+                available.add(entry.path());
+            }
+            String cachedCurrent = null;
+            int restored = 0;
+            for (String line : lines) {
+                String value = line.trim();
+                if (value.isEmpty()) {
+                    continue;
+                }
+                if (value.startsWith("current=")) {
+                    cachedCurrent = value.substring("current=".length()).trim();
+                    continue;
+                }
+                if (!available.contains(value) || this.taskBar.contains(value)) {
+                    continue;
+                }
+                this.taskBar.add(value);
+                restored++;
+            }
+            // 召喚者只給預設的 untitled 時，改成開啟上次正在編輯的檔案
+            boolean defaultRequest = "untitled".equals(requested) || "untitled.lua".equals(requested);
+            if (defaultRequest && cachedCurrent != null && !cachedCurrent.isEmpty()
+                    && available.contains(cachedCurrent)
+                    && !cachedCurrent.equals(this.fileName)) {
+                if (this.isBuiltinPath(cachedCurrent)) {
+                    this.openBuiltin(cachedCurrent);
+                } else {
+                    this.openFile(cachedCurrent);
+                }
+                restored++;
+            }
+            if (restored > 0) {
+                this.setStatus("已還原 " + restored + " 個工作欄檔案", 0xFF7BD88F);
+            }
+        } catch (IOException ignored) {
+            // 讀不到就當作沒有快取
+        }
     }
 
     private void save() {
