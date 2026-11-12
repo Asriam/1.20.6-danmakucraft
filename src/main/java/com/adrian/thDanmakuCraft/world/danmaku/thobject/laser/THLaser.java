@@ -51,6 +51,15 @@ public class THLaser extends THObject {
         this.initPosition(container.getPosition());
     }
 
+    public THLaser(THObjectContainer container, Vec3 position, float length, float width){
+        this(THObjectInit.TH_LASER.get(),container);
+        this.initPosition(position);
+        //this.setLength(length);
+        //this.setWidth(width);
+        this.length = length;
+        this.width = width;
+    }
+
     @Override
     public void registerTasks(){
         super.registerTasks();

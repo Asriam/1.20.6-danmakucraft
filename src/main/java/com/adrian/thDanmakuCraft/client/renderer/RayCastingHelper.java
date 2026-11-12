@@ -6,7 +6,13 @@ import com.adrian.thDanmakuCraft.events.RenderEvents;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexSorting;
+import com.mojang.math.Axis;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.joml.*;
@@ -34,8 +40,7 @@ public class RayCastingHelper {
 
         Vector3f right = new Vector3f(1.0f, 0.0f, 0.0f).rotate(camRot);
         Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f).rotate(camRot);
-        float half = 1.6f * Math.max(Math.abs(scale.x),
-                Math.max(Math.abs(scale.y), Math.abs(scale.z)));
+        float half = 1.6f * Math.max(Math.abs(scale.x), Math.max(Math.abs(scale.y), Math.abs(scale.z)));
         ellipsoidVertex(builder, center, right, up, -half, -half, rotation, scale, color, coreColor, vector4f);
         ellipsoidVertex(builder, center, right, up, half, -half, rotation, scale, color, coreColor, vector4f);
         ellipsoidVertex(builder, center, right, up, half, half, rotation, scale, color, coreColor, vector4f);
@@ -54,14 +59,22 @@ public class RayCastingHelper {
             Vector3f rotation,
             Vector3f scale,
             Color color, Color coreColor, Vector4f vector4f) {
-        Matrix4f projection = RenderSystem.getProjectionMatrix();
-        float tanX = 1.0f / projection.m00();
-        float tanY = 1.0f / projection.m11();
-        Matrix4f invModelView = new Matrix4f(RenderSystem.getModelViewMatrix()).invert();
-        ellipsoidScreenCorner(builder, invModelView, -tanX, -tanY, center, rotation, scale, color, coreColor, vector4f);
-        ellipsoidScreenCorner(builder, invModelView,  tanX, -tanY, center, rotation, scale, color, coreColor, vector4f);
-        ellipsoidScreenCorner(builder, invModelView,  tanX,  tanY, center, rotation, scale, color, coreColor, vector4f);
-        ellipsoidScreenCorner(builder, invModelView, -tanX,  tanY, center, rotation, scale, color, coreColor, vector4f);
+        Vector2f[] quad = {
+                new Vector2f(0.0f,0.0f),
+                new Vector2f(1.0f,0.0f),
+                new Vector2f(1.0f,1.0f),
+                new Vector2f(0.0f,1.0f),
+        };
+        for (Vector2f qua: quad) {
+            builder.vertex(qua.x, qua.y, -1.0f)
+                    .vertex(center)
+                    .vertex(rotation)
+                    .vertex(scale)
+                    .color(color)
+                    .color(coreColor)
+                    .vec4(vector4f.x, vector4f.y, vector4f.z, vector4f.w)
+                    .endVertex();
+        }
     }
 
     /** 以 view space 的 (x, y, -1) 為角落寫一個全螢幕四邊形頂點。 */
@@ -70,6 +83,19 @@ public class RayCastingHelper {
                                               Vector3f scale, Color color, Color coreColor, Vector4f params) {
         Vector3f corner = invModelView.transformPosition(new Vector3f(x, y, -1.0f), new Vector3f());
         writeEllipsoidVertex(builder, corner, center, rotation, scale, color, coreColor, params);
+    }
+
+    public static void bobView(PoseStack p_109139_, float p_109140_) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.getCameraEntity() instanceof Player) {
+            Player player = (Player)minecraft.getCameraEntity();
+            float f = player.walkDist - player.walkDistO;
+            float f1 = -(player.walkDist + f * p_109140_);
+            float f2 = Mth.lerp(p_109140_, player.oBob, player.bob);
+            p_109139_.translate(Mth.sin(f1 * (float) Math.PI) * f2 * 0.5F, -Math.abs(Mth.cos(f1 * (float) Math.PI) * f2), 0.0F);
+            p_109139_.mulPose(Axis.ZP.rotationDegrees(Mth.sin(f1 * (float) Math.PI) * f2 * 3.0F));
+            p_109139_.mulPose(Axis.XP.rotationDegrees(Math.abs(Mth.cos(f1 * (float) Math.PI - 0.2F) * f2) * 5.0F));
+        }
     }
 
     /**
@@ -90,6 +116,7 @@ public class RayCastingHelper {
      * @param tail  鐳射尾（相機相對世界座標）
      * @param width 鐳射粗細
      */
+
     public static void renderEllipsoidForLaser(
             VertexBuilder builder,
             Vector3f head,
@@ -101,13 +128,18 @@ public class RayCastingHelper {
         Vector3f center = new Vector3f(head).add(tail).mul(0.5f);
         float radius = Math.max(Math.max(Math.abs(scale.x), Math.abs(scale.y)), Math.max(width * 0.5f, 1.0e-4f));
 
-        Matrix4f modelView = RenderEvents.ModelViewMatrix;
-        Matrix4f projection = RenderEvents.ProjectionMatrix;
-        if (false && DEBUG_MATRIX && System.currentTimeMillis() - lastMatrixLog > 1000L) {
-            lastMatrixLog = System.currentTimeMillis();
-            THDanmakuCraftMod.LOGGER.info("[ellipsoid] MV={} PJ={} head={} tail={} center={}",
-                    modelView, projection, head, tail, center);
-        }
+        Matrix4f modelView = RenderSystem.getModelViewMatrix();
+        //Matrix4f projection = RenderSystem.getProjectionMatrix();
+        //Matrix4f projection = Minecraft.getInstance().gameRenderer.getProjectionMatrix(1.0d);
+
+        /*if (Minecraft.getInstance().options.bobView().get()) {
+            PoseStack posestack = new PoseStack();
+            bobView(posestack, Minecraft.getInstance().gameRenderer.getMainCamera().getPartialTickTime());
+            Matrix4f projection = new Matrix4f(RenderSystem.getProjectionMatrix());
+            projection.mul(posestack.last().pose().invert());
+            RenderSystem.setProjectionMatrix(projection, VertexSorting.DISTANCE_TO_ORIGIN);
+        }*/
+
         Vector3f a = modelView.transformPosition(new Vector3f(head), new Vector3f());
         Vector3f b = modelView.transformPosition(new Vector3f(tail), new Vector3f());
 
@@ -128,8 +160,7 @@ public class RayCastingHelper {
             }
         }
 
-        // 沿著線段取樣：只取頭尾會漏掉「中段最靠近相機、螢幕半徑最大」的凸起，
-        // 導致某些視角下 quad 太小、框不住橢圓。
+        // 沿線段取樣
         final int samples = 5;
         Vector2f[] centers = new Vector2f[samples];
         float[] radii = new float[samples];
@@ -155,7 +186,6 @@ public class RayCastingHelper {
         }
         Vector2f normal = new Vector2f(-dir.y, dir.x);
 
-        // 把所有取樣圓投影到 (dir, normal) 基底上取包圍矩形
         float pad = 0.0025f;
         float minU = Float.MAX_VALUE, maxU = -Float.MAX_VALUE;
         float minV = Float.MAX_VALUE, maxV = -Float.MAX_VALUE;
@@ -174,23 +204,16 @@ public class RayCastingHelper {
         Vector2f c3 = new Vector2f(dir).mul(maxU).add(new Vector2f(normal).mul(maxV));
         Vector2f c4 = new Vector2f(dir).mul(minU).add(new Vector2f(normal).mul(maxV));
 
-        // 完全在畫面外就不畫
-        float ndcMinX = Math.min(Math.min(c1.x, c2.x), Math.min(c3.x, c4.x)) * projection.m00();
-        float ndcMaxX = Math.max(Math.max(c1.x, c2.x), Math.max(c3.x, c4.x)) * projection.m00();
-        float ndcMinY = Math.min(Math.min(c1.y, c2.y), Math.min(c3.y, c4.y)) * projection.m11();
-        float ndcMaxY = Math.max(Math.max(c1.y, c2.y), Math.max(c3.y, c4.y)) * projection.m11();
-        if (ndcMaxX < -1.0f || ndcMinX > 1.0f || ndcMaxY < -1.0f || ndcMinY > 1.0f) {
-            return;
-        }
-
         // 正規化影像座標 -> view space (z = -1) -> 相機相對世界座標
         Matrix4f invModelView = new Matrix4f(modelView).invert();
         Vector2f[] quad = {c1, c2, c3, c4};
         for (Vector2f point : quad) {
-            Vector3f world = invModelView.transformPosition(
-                    new Vector3f(point.x, point.y, -1.0f), new Vector3f());
-            writeEllipsoidVertex(builder, world, center, rotation, scale, color, coreColor, vector4f);
+            /*Vector3f world = invModelView.transformPosition(
+                    new Vector3f(point.x, point.y, -1.0f), new Vector3f());*/
+            writeEllipsoidVertex(builder, new Vector3f(point.x, point.y, -1.0f), center, rotation, scale, color, coreColor, vector4f);
         }
+
+        //THDanmakuCraftMod.LOGGER.info("Quad:{}", (Object) quad);
     }
 
     /** 把 cube 的 8 個角投影成 NDC 點（跨近平面時補上切點）。 */
@@ -311,6 +334,17 @@ public class RayCastingHelper {
             }
         }
         return best;
+    }
+
+    /**
+     * 用相機參數自行組出 world -> view 的旋轉矩陣。
+     *
+     * <p>不直接使用 {@code RenderSystem.getModelViewMatrix()}：那個矩陣可能被上一個 pass
+     * （例如手持物品的 bobView）或其它模組污染，導致建 quad 與 shader 實際拿到的矩陣不一致。</p>
+     */
+    public static Matrix4f cameraModelView() {
+        Quaternionf rotation = Minecraft.getInstance().gameRenderer.getMainCamera().rotation();
+        return new Matrix4f().rotation(rotation.conjugate(new Quaternionf()));
     }
 
     /** 寫一個 ellipsoid 頂點（位置已算好）。 */

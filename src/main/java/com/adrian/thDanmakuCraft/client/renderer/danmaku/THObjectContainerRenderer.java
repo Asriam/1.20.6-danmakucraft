@@ -1,6 +1,8 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku;
 
+import com.adrian.thDanmakuCraft.client.renderer.MyRenderTargets;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
+import com.adrian.thDanmakuCraft.client.renderer.RayCastingHelper;
 import com.adrian.thDanmakuCraft.client.renderer.shader.ShaderLoader;
 import com.adrian.thDanmakuCraft.client.renderer.type.ModVertexFormats;
 import com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes;
@@ -9,13 +11,10 @@ import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRendererProvider;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRenderers;
-import com.adrian.thDanmakuCraft.util.io.ResourceLocationUtil;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.danmaku.THObjectContainer;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObjectType;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.pipeline.TextureTarget;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
@@ -32,13 +31,11 @@ import java.util.*;
 public class THObjectContainerRenderer {
 
     private static final RenderTarget MAIN_RENDER_TARGET = Minecraft.getInstance().getMainRenderTarget();
-    private static final RenderTarget TEST_RENDER_TARGET = new TextureTarget(1000,1000,true,true);
-    public static final RenderTarget DEPTH_BUFFER = new TextureTarget(1000,1000,true,true);
     //private static final RenderTarget DEPTH_BUFFER = new TextureTarget(MAIN_RENDER_TARGET.width,MAIN_RENDER_TARGET.height,true,true);
     private static final Map<THObjectType<?>, AbstractTHObjectRenderer<?>> THOBJECT_RENDERERS = THObjectRenderers.createEntityRenderers(new THObjectRendererProvider.Context());
 
     public static RenderTarget getRenderTarget(){
-        return TEST_RENDER_TARGET;
+        return MyRenderTargets.TEST_RENDER_TARGET;
     }
 
     public static void render(EntityRenderDispatcher entityRenderDispatcher, Frustum frustum, THObjectContainer container, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource bufferSource, int combinedOverlay) {
@@ -81,8 +78,8 @@ public class THObjectContainerRenderer {
 
         if(shader != null) {
             //DEPTH_BUFFER.clear(true);
-            THObjectContainerRenderer.DEPTH_BUFFER.copyDepthFrom(mainRenderTarget);
-            shader.setSampler("DepthBuffer", THObjectContainerRenderer.DEPTH_BUFFER.getDepthTextureId());
+            MyRenderTargets.DEPTH_BUFFER.copyDepthFrom(mainRenderTarget);
+            shader.setSampler("DepthBuffer", MyRenderTargets.DEPTH_BUFFER.getDepthTextureId());
             //ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER.setSampler("DepthBuffer", mainRenderTarget.getDepthTextureId());
             //shader.setSampler("ScreenBuffer", mainRenderTarget.getColorTextureId());
             mainRenderTarget.bindWrite(true);
@@ -90,8 +87,8 @@ public class THObjectContainerRenderer {
 
         if (shouldApplyEffect()) {
             mainRenderTarget.unbindWrite();
-            THObjectContainerRenderer.TEST_RENDER_TARGET.copyDepthFrom(mainRenderTarget);
-            THObjectContainerRenderer.TEST_RENDER_TARGET.bindWrite(true);
+            MyRenderTargets.TEST_RENDER_TARGET.copyDepthFrom(mainRenderTarget);
+            MyRenderTargets.TEST_RENDER_TARGET.bindWrite(true);
         }
 
         RenderSystem.enableBlend();
@@ -116,7 +113,7 @@ public class THObjectContainerRenderer {
             for (Map.Entry<RenderType, List<THObject>> entry : map.entrySet()) {
                 var renderType = entry.getKey();
                 var list = entry.getValue();
-                List<THObject> sortedList = sortObjects(list, cameraPosition);
+                List<THObject> sortedList = sortObjectsByDist(list, cameraPosition);
                 LegacyBufferBuilder builder = LegacyBufferBuilder.threadBuilder();
                 builder.begin(renderType.mode(), renderType.format());
                 if (shouldRenderHitBox) {
@@ -146,7 +143,7 @@ public class THObjectContainerRenderer {
                     renderTypeLines.clearRenderState();
                 }
                 if (shouldApplyEffect()) {
-                    THObjectContainerRenderer.TEST_RENDER_TARGET.bindWrite(true);
+                    MyRenderTargets.TEST_RENDER_TARGET.bindWrite(true);
                 }
                 // 空的批次（整批被剔除、或 BUFFER_2 沒人寫）就不必建立 MeshData / 發 draw call
                 boolean hasBuffer2 = BUFFER_2.vertexCount() > 0;
@@ -166,18 +163,23 @@ public class THObjectContainerRenderer {
                     RenderUtil.close(builder.end());
                 }
                 if (shouldApplyEffect()) {
-                    THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
+                    MyRenderTargets.TEST_RENDER_TARGET.unbindWrite();
                 }
             }
             RenderTypes.TEST_ELLIPSOID.setupRenderState();
+            // 畫 ellipsoid 前，把 modelview 換成「用相機參數組出來的矩陣」，
+            // 確保 shader 拿到的 ModelViewMat 跟建 quad 時用的完全一致。
+            Matrix4f previousModelView = new Matrix4f(RenderSystem.getModelViewMatrix());
+            RenderSystem.getModelViewMatrix().set(RayCastingHelper.cameraModelView());
             RenderUtil.drawAndClose(ELLIPSOID_TEST_BUFFER.end());
+            RenderSystem.getModelViewMatrix().set(previousModelView);
             RenderTypes.TEST_ELLIPSOID.clearRenderState();
             // 不清 map：list 留給下一幀重用（上一層已 clear）
 
         }
         if(shouldApplyEffect()) {
-            THObjectContainerRenderer.TEST_RENDER_TARGET.unbindWrite();
-            mainRenderTarget.copyDepthFrom(THObjectContainerRenderer.TEST_RENDER_TARGET);
+            MyRenderTargets.TEST_RENDER_TARGET.unbindWrite();
+            mainRenderTarget.copyDepthFrom(MyRenderTargets.TEST_RENDER_TARGET);
             mainRenderTarget.bindWrite(true);
         }
 
@@ -186,7 +188,7 @@ public class THObjectContainerRenderer {
         RenderSystem.defaultBlendFunc();
     }
 
-    public static List<THObject> sortObjects(List<THObject> list, Vec3 cam){
+    public static List<THObject> sortObjectsByDist(List<THObject> list, Vec3 cam){
         if (list == null || list.size() <= 1) {
             return list;
         }
@@ -218,7 +220,7 @@ public class THObjectContainerRenderer {
         LevelRenderer.renderLineBox(poseStack, vertexConsumer, aabb, 0.0F, 0.0F, 1.0F, 1.0F);
     }
 
-    public static void applyEffect(){
+    /*public static void applyEffect(){
         ShaderInstance customShader = ShaderLoader.getShader(ResourceLocationUtil.thdanmakucraft("box_blur"));
         if (customShader != null) {
             RenderTarget inTarget = TEST_RENDER_TARGET;
@@ -251,7 +253,7 @@ public class THObjectContainerRenderer {
             MAIN_RENDER_TARGET.bindWrite(false);
 
         }
-    }
+    }*/
 
     public static void drawOnScreen(float screenWidth, float screenHeight){
         LegacyBufferBuilder bufferbuilder = LegacyBufferBuilder.threadBuilder();

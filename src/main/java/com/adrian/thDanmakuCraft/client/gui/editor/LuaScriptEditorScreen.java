@@ -483,6 +483,11 @@ public class LuaScriptEditorScreen extends Screen {
     private int selectionColumn;
     /** 滑鼠拖曳選取文字。 */
     private boolean textSelecting;
+    /** 左鍵連擊：上一次點擊的時間、位置與連擊次數（2 = 選字、3 = 選整行）。 */
+    private long lastTextClickTime;
+    private int lastTextClickLine = -1;
+    private int lastTextClickColumn = -1;
+    private int textClickCount = 1;
     private int textAnchorLine;
     private int textAnchorColumn;
     private int scroll;
@@ -678,11 +683,21 @@ public class LuaScriptEditorScreen extends Screen {
         this.stash();
         this.closeDialogFiles = this.unsavedFiles();
         if (this.closeDialogFiles.isEmpty()) {
-            super.onClose();
+            this.closeWithRefresh();
             return;
         }
         this.dialog = Dialog.CLOSE_CONFIRM;
-        LuaCore.refreshLuaLib();
+    }
+
+    /** 關閉編輯器前自動重新載入 Lua lib（等同執行 /refresh_lua_lib）。 */
+    private void closeWithRefresh() {
+        try {
+            LuaCore.refreshLuaLib();
+        } catch (Throwable error) {
+            com.adrian.thDanmakuCraft.THDanmakuCraftMod.LOGGER.warn(
+                    "[thdanmakucraft] refresh lua lib on close failed", error);
+        }
+        super.onClose();
     }
     /** 關閉畫面（或被其他畫面取代）時也存一次工作欄。 */
     @Override
@@ -2500,9 +2515,9 @@ public class LuaScriptEditorScreen extends Screen {
                     this.dialog = Dialog.NONE;
                     if (i == 0) {
                         this.saveAll();
-                        super.onClose();
+                        this.closeWithRefresh();
                     } else if (i == 1) {
-                        super.onClose();
+                        this.closeWithRefresh();
                     }
                     return true;
                 }
@@ -2615,6 +2630,45 @@ public class LuaScriptEditorScreen extends Screen {
         int lineIndex = this.scroll + (int) ((mouseY - textTop()) / LINE_HEIGHT);
         lineIndex = Math.max(0, Math.min(lineIndex, this.lines.size() - 1));
         int column = this.columnAt(lineIndex, mouseX);
+
+        // ---- 左鍵連擊：2 下選單字、3 下選整行（像 Notepad）----
+        long clickTime = System.currentTimeMillis();
+        boolean multiClick = clickTime - this.lastTextClickTime <= 300L
+                && lineIndex == this.lastTextClickLine
+                && Math.abs(column - this.lastTextClickColumn) <= 1;
+        this.textClickCount = multiClick ? this.textClickCount + 1 : 1;
+        this.lastTextClickTime = clickTime;
+        this.lastTextClickLine = lineIndex;
+        this.lastTextClickColumn = column;
+
+        if (this.textClickCount >= 3 && !hasShiftDown()) {
+            // 三連擊：整行（含換行符，方便整行剪下/刪除）
+            this.selectionLine = lineIndex;
+            this.selectionColumn = 0;
+            if (lineIndex + 1 < this.lines.size()) {
+                this.setCursor(lineIndex + 1, 0, true);
+            } else {
+                this.setCursor(lineIndex, this.lines.get(lineIndex).length(), true);
+            }
+            this.textAnchorLine = lineIndex;
+            this.textAnchorColumn = 0;
+            this.textSelecting = true;
+            return true;
+        }
+
+        if (this.textClickCount == 2 && !hasShiftDown()) {
+            int[] word = this.wordRangeAt(lineIndex, column);
+            if (word != null) {
+                this.selectionLine = lineIndex;
+                this.selectionColumn = word[0];
+                this.setCursor(lineIndex, word[1], true);
+                this.textAnchorLine = lineIndex;
+                this.textAnchorColumn = word[0];
+                this.textSelecting = true;
+                return true;
+            }
+        }
+
         if (hasShiftDown()) {
             if (this.selectionLine < 0) {
                 this.selectionLine = this.cursorLine;
@@ -2918,10 +2972,10 @@ public class LuaScriptEditorScreen extends Screen {
                     || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
                 this.dialog = Dialog.NONE;
                 this.saveAll();
-                super.onClose();
+                this.closeWithRefresh();
             } else if (keyCode == GLFW.GLFW_KEY_DELETE) {
                 this.dialog = Dialog.NONE;
-                super.onClose();
+                this.closeWithRefresh();
             } else if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
                 this.dialog = Dialog.NONE;
             }
@@ -3312,6 +3366,45 @@ public class LuaScriptEditorScreen extends Screen {
         return new int[]{anchorLine, anchorColumn};
     }
 
+    /** 取得 (lineIndex, column) 所在的「單字」範圍（[start, end)）；空白處回傳 null。 */
+    private int[] wordRangeAt(int lineIndex, int column) {
+        if (lineIndex < 0 || lineIndex >= this.lines.size()) {
+            return null;
+        }
+        String text = this.lines.get(lineIndex).toString();
+        if (text.isEmpty()) {
+            return null;
+        }
+        int index = Math.max(0, Math.min(column, text.length() - 1));
+        char clicked = text.charAt(index);
+        if (Character.isWhitespace(clicked)) {
+            return null;
+        }
+        int start = index;
+        int end = index + 1;
+        if (isWordChar(clicked)) {
+            while (start > 0 && isWordChar(text.charAt(start - 1))) {
+                start--;
+            }
+            while (end < text.length() && isWordChar(text.charAt(end))) {
+                end++;
+            }
+        } else {
+            while (start > 0 && !Character.isWhitespace(text.charAt(start - 1))
+                    && !isWordChar(text.charAt(start - 1))) {
+                start--;
+            }
+            while (end < text.length() && !Character.isWhitespace(text.charAt(end))
+                    && !isWordChar(text.charAt(end))) {
+                end++;
+            }
+        }
+        return new int[]{start, end};
+    }
+
+    private static boolean isWordChar(char c) {
+        return Character.isLetterOrDigit(c) || c == '_';
+    }
     /** 某一行在選取範圍內的字元區間；不在範圍內回傳 null。 */
     private int[] selectionRangeOn(int lineIndex) {
         if (!this.hasSelection()) {

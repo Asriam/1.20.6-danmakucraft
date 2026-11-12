@@ -1,0 +1,18 @@
+{
+    "blend": {
+        "func": "add",
+        "srcrgb": "srcalpha",
+        "dstrgb": "1-srcalpha"
+    },
+    "vertex": "thdanmakucraft:danmaku/ellipsoid/rendertype_ellipsoid_2",
+    "fragment": "thdanmakucraft:danmaku/ellipsoid/rendertype_ellipsoid_2",
+    "attributes": [ "Position", "Position2", "Rotation", "Scale" , "VEC4", "UV"],
+    "samplers": [
+        { "name": "DepthBuffer" }
+    ],
+    "uniforms": [
+        { "name": "ModelViewMat","type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
+        { "name": "ProjectionMat",     "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
+        { "name": "ScreenSize",  "type": "float",     "count": 2,  "values": [ 1.0, 1.0 ] }
+    ]
+}

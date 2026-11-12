@@ -1,16 +1,14 @@
 package com.adrian.thDanmakuCraft.client.renderer.type;
 
-import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
+import com.adrian.thDanmakuCraft.client.renderer.MyRenderTargets;
+import com.adrian.thDanmakuCraft.client.renderer.RayCastingHelper;
 import com.adrian.thDanmakuCraft.client.renderer.shader.ShaderLoader;
 import com.adrian.thDanmakuCraft.events.TickEvents;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.Blend;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.shaders.BlendMode;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormatElement;
+import com.mojang.blaze3d.vertex.*;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
@@ -21,6 +19,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import org.joml.Matrix4f;
 
 import java.util.function.Function;
 
@@ -36,9 +35,6 @@ public class RenderTypes extends RenderStateShard{
     }
 
     public static final ShaderStateShard DANMAKU_DEPTH_OUTLINE_SHADER = new ShaderStateShard(() -> ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER);
-    public static RenderTarget SPELLCARD_AURA_TARGET = new TextureTarget(2000,2000,true,Minecraft.ON_OSX);
-    public static RenderTarget DEPTH_BUFFER_TARGET = new TextureTarget(2000,2000,true,Minecraft.ON_OSX);
-    public static RenderTarget AURA_DEPTH_BUFFER_TARGET = new TextureTarget(2000,2000,true,Minecraft.ON_OSX);
     public static final ShaderStateShard BACKGROUND_WARP_EFFECT_SHADER = new ShaderStateShard(() -> {
         RenderTarget target = Minecraft.getInstance().getMainRenderTarget();
         ShaderInstance shader = ShaderLoader.BACKGROUND_WARP_EFFECT;
@@ -47,8 +43,8 @@ public class RenderTypes extends RenderStateShard{
         Vec3 cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
         shader.safeGetUniform("CameraPosition").set((float) cameraPos.x,(float) cameraPos.y,(float) cameraPos.z);
         //System.out.println(timer);
-        shader.setSampler("DepthBuffer",THObjectContainerRenderer.DEPTH_BUFFER.getDepthTextureId());
-        shader.setSampler("AuraDepthBuffer",AURA_DEPTH_BUFFER_TARGET.getDepthTextureId());
+        shader.setSampler("DepthBuffer", MyRenderTargets.DEPTH_BUFFER.getDepthTextureId());
+        shader.setSampler("AuraDepthBuffer", MyRenderTargets.AURA_DEPTH_BUFFER_TARGET.getDepthTextureId());
         shader.setSampler("ScreenBuffer",target.getColorTextureId());
         return shader;
     });
@@ -59,9 +55,27 @@ public class RenderTypes extends RenderStateShard{
 
     public static final ShaderStateShard RENDER_ELLIPSOID_SHADER = new ShaderStateShard(() -> {
         ShaderInstance shader = ShaderLoader.RENDER_ELLIPSOID_SHADER;
-        shader.setSampler("DepthBuffer", THObjectContainerRenderer.DEPTH_BUFFER.getDepthTextureId());
+        shader.setSampler("DepthBuffer", MyRenderTargets.DEPTH_BUFFER.getDepthTextureId());
         return shader ;
     });
+
+    public static final ShaderStateShard RENDER_ELLIPSOID_SHADER_2 = new ShaderStateShard(() -> {
+        ShaderInstance shader = ShaderLoader.RENDER_ELLIPSOID_SHADER_2;
+        debug(shader);
+        shader.setSampler("DepthBuffer", MyRenderTargets.DEPTH_BUFFER.getDepthTextureId());
+        return shader ;
+    });
+
+    public static void debug(ShaderInstance shader){
+        Matrix4f projection = new Matrix4f(RenderSystem.getProjectionMatrix());
+        if (Minecraft.getInstance().options.bobView().get()) {
+            PoseStack posestack = new PoseStack();
+            RayCastingHelper.bobView(posestack, Minecraft.getInstance().gameRenderer.getMainCamera().getPartialTickTime());
+            projection.mul(posestack.last().pose().invert());
+            RenderSystem.setProjectionMatrix(projection, VertexSorting.DISTANCE_TO_ORIGIN);
+        }
+        shader.safeGetUniform("ProjectionMat").set(projection);
+    }
 
     public static final VertexFormat TEST_FORMAT = VertexFormat.builder()
                     .add("Position", VertexFormatElement.POSITION)
@@ -235,7 +249,7 @@ public class RenderTypes extends RenderStateShard{
     );
 
     public static final RenderType TEST_ELLIPSOID = create(
-            "debug_aaa2",
+            "test_ellipsoid_1",
             ModVertexFormats.TEST_ELLIPSOID_VERTEXTFORMAT,
             VertexFormat.Mode.QUADS,
             1536,
@@ -248,7 +262,28 @@ public class RenderTypes extends RenderStateShard{
                     .setTransparencyState(LIGHTNING_TRANSPARENCY)
                     .setLightmapState(NO_LIGHTMAP)
                     .setOverlayState(NO_OVERLAY)
-                    .setWriteMaskState(COLOR_WRITE)
+                    //.setWriteMaskState(COLOR_WRITE)
+                    //.setDepthTestState(NO_DEPTH_TEST)
+                    .setOutputState(ITEM_ENTITY_TARGET)
+                    .createCompositeState(false)
+    );
+
+    public static final RenderType TEST_ELLIPSOID_2 = create(
+            "test_ellipsoid_2",
+            ModVertexFormats.TEST_ELLIPSOID_VERTEXTFORMAT,
+            VertexFormat.Mode.QUADS,
+            1536,
+            false,
+            true,
+            RenderType.CompositeState.builder()
+                    .setShaderState(RENDER_ELLIPSOID_SHADER_2)
+                    .setLayeringState(VIEW_OFFSET_Z_LAYERING)
+                    //.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                    .setTransparencyState(LIGHTNING_TRANSPARENCY)
+                    .setLightmapState(NO_LIGHTMAP)
+                    .setOverlayState(NO_OVERLAY)
+                    //.setWriteMaskState(COLOR_WRITE)
+                    //.setDepthTestState(NO_DEPTH_TEST)
                     .setOutputState(ITEM_ENTITY_TARGET)
                     .createCompositeState(false)
     );

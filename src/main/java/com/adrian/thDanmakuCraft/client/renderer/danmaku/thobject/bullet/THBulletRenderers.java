@@ -58,14 +58,14 @@ public class THBulletRenderers {
                 (int) (bullet.color.a * 0.6)
         );
         Color coreColor = bullet.color;
-        factory.render(renderer, bullet, vertexConsumer, poseStack, partialTicks, color, coreColor);
+        factory.render(renderer, renderer.getRenderDispatcher().camera.getPosition(), bullet, vertexConsumer, poseStack, partialTicks, color, coreColor);
     }
 
     public static abstract class BulletRenderer implements THBulletRendererFactory {
         public boolean shouldCull = true;
         protected static RenderType defaultRenderType = RenderTypes.TEST_RENDER_TYPE_FUNCTION.apply(new RenderTypes.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(Blend.add), true));
 
-        public abstract void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor);
+        public abstract void render(THBulletRenderer renderer, Vec3 camPos, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor);
 
         public RenderType getRenderType(THBullet bullet) {
             return RenderTypes.TEST_RENDER_TYPE_FUNCTION.apply(new RenderTypes.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(bullet.getBlend()), this.shouldCull));
@@ -77,7 +77,7 @@ public class THBulletRenderers {
             }
 
             @Override
-            public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
+            public void render(THBulletRenderer renderer, Vec3 camPos, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
                 render2DBullet(renderer, bullet, poseStack, vertexconsumer, partialTicks);
             }
 
@@ -95,13 +95,13 @@ public class THBulletRenderers {
                 this.shouldCull = true;
             }
 
-            public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
+            public void render(THBulletRenderer renderer, Vec3 camPos, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
                 this.shouldCull = true;
                 poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
                 Vector3f scale = new Vector3f(0.4f, 0.8f, 0.4f);
                 Vector3f coreScale = scale.mul(0.4f, 0.4f, 0.4f, new Vector3f());
                 PoseStack.Pose posestack_pose = poseStack.last();
-                Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
+                //Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
                 THBulletRenderer.BULLET_LEVEL_OF_DETAIL cull = THBulletRenderer.BULLET_LEVEL_OF_DETAIL.getQualityLevel(bullet, camPos.x, camPos.y, camPos.z);
                 int edgeA = cull.edgeANum;
                 int edgeB = cull.edgeBNum;
@@ -138,7 +138,7 @@ public class THBulletRenderers {
         }
 
         public static class ball_small extends BulletRenderer {
-            public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
+            public void render(THBulletRenderer renderer, Vec3 camPos, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
                 /*poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
                 Vector3f scale = new Vector3f(0.2f, 0.2f, 0.2f);
                 //Vec3 coreScale = scale.multiply(0.6f,0.6f,0.6f);
@@ -158,9 +158,10 @@ public class THBulletRenderers {
                 Vector3f offsetRotation = new Vector3f(-rotation.x, rotation.y, rotation.z);
                 Vector3f scale = bullet.getScale().mul(new Vector3f(0.2f, 0.2f, 0.2f), new Vector3f());
                 VertexBuilder builder = new VertexBuilder(vertexconsumer);
-                Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
+                //Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
                 Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
                 Vector3f center = pos1.subtract(camPos).toVector3f();
+                //RayCastingHelper.renderEllipsoidOnScreen(builder, center, offsetRotation, scale, color, coreColor, new Vector4f(0.33f, 6.0f, -0.1f, 1.0f));
                 RayCastingHelper.renderEllipsoid(builder, center, offsetRotation, scale, color, coreColor, new Vector4f(0.33f, 6.0f, -0.1f, 1.0f));
             }
 
@@ -171,7 +172,7 @@ public class THBulletRenderers {
         }
 
         public static class ball_mid extends BulletRenderer {
-            public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
+            public void render(THBulletRenderer renderer, Vec3 camPos, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
                 /*poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
                 Vector3f scale = new Vector3f(0.5f, 0.5f, 0.5f);
                 //Vec3 coreScale = scale.multiply(0.6f,0.6f,0.6f);
@@ -191,7 +192,7 @@ public class THBulletRenderers {
                 Vector3f offsetRotation = new Vector3f(-rotation.x, rotation.y, rotation.z);
                 Vector3f scale = bullet.getScale().mul(new Vector3f(0.5f, 0.5f, 0.5f), new Vector3f());
                 VertexBuilder builder = new VertexBuilder(vertexconsumer);
-                Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
+                //Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
                 Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
                 Vector3f center = pos1.subtract(camPos).toVector3f();
                 RayCastingHelper.renderEllipsoid(builder, center, offsetRotation, scale, color, coreColor, new Vector4f(0.5f, 2.0f, 0.0f, 2.0f));
@@ -204,7 +205,7 @@ public class THBulletRenderers {
         }
 
         public static class ball_big extends BulletRenderer {
-            public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
+            public void render(THBulletRenderer renderer, Vec3 camPos, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
                 /*poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
                 Vector3f scale = new Vector3f(0.8f, 0.8f, 0.8f);
                 //Vec3 coreScale = scale.multiply(0.8f, 0.8f, 0.8f);
@@ -224,7 +225,7 @@ public class THBulletRenderers {
                 Vector3f offsetRotation = new Vector3f(-rotation.x, rotation.y, rotation.z);
                 Vector3f scale = bullet.getScale().mul(new Vector3f(1.0f, 1.0f, 1.0f), new Vector3f());
                 VertexBuilder builder = new VertexBuilder(vertexconsumer);
-                Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
+                //Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
                 Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
                 Vector3f center = pos1.subtract(camPos).toVector3f();
                 RayCastingHelper.renderEllipsoid(builder, center, offsetRotation, scale, color, coreColor, new Vector4f(0.7f, 2.0f, -0.1f, 2.0f));
@@ -237,7 +238,7 @@ public class THBulletRenderers {
         }
 
         public static class ellipse extends BulletRenderer {
-            public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
+            public void render(THBulletRenderer renderer, Vec3 camPos, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
                 /*poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
                 Vector3f scale = new Vector3f(0.5f, 1.0f, 0.5f);
                 //Vec3 coreScale = scale.multiply(0.7f, 0.7f, 0.7f);
@@ -259,7 +260,7 @@ public class THBulletRenderers {
                 Vector3f offsetRotation = new Vector3f(-rotation.x, rotation.y, rotation.z);
                 Vector3f scale = bullet.getScale().mul(new Vector3f(0.5f, 0.5f, 1.0f), new Vector3f());
                 VertexBuilder builder = new VertexBuilder(vertexconsumer);
-                Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
+                //Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
                 Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
                 Vector3f center = pos1.subtract(camPos).toVector3f();
                 RayCastingHelper.renderEllipsoid(builder, center, offsetRotation, scale, color, coreColor, new Vector4f(0.5f, 1.5f, 0.2f, 0.4f));
@@ -276,7 +277,7 @@ public class THBulletRenderers {
         }
 
         public static class grain_a extends BulletRenderer {
-            public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
+            public void render(THBulletRenderer renderer, Vec3 camPos, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
                 /*poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
                 Vector3f scale = new Vector3f(0.2f, 0.4f, 0.2f);
                 //Vec3 coreScale = scale.multiply(0.6f, 0.6f, 0.6f);
@@ -297,7 +298,7 @@ public class THBulletRenderers {
                 Vector3f offsetRotation = new Vector3f(-rotation.x,rotation.y,rotation.z);
                 Vector3f scale = bullet.getScale().mul(new Vector3f(0.2f, 0.2f, 0.4f),new Vector3f());
                 VertexBuilder builder = new VertexBuilder(vertexconsumer);
-                Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
+                //Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
                 Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
                 Vector3f center = pos1.subtract(camPos).toVector3f();
                 RayCastingHelper.renderEllipsoid(builder, center, offsetRotation, scale, color, coreColor, new Vector4f(0.36f, 5.0f,0.1f, 1.0f));
@@ -310,7 +311,7 @@ public class THBulletRenderers {
         }
 
         public static class grain_b extends BulletRenderer {
-            public void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
+            public void render(THBulletRenderer renderer, Vec3 camPos, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
                 poseStack.scale(bullet.getScale().x, bullet.getScale().y, bullet.getScale().z);
                 Vector3f scale = new Vector3f(0.25f, 0.5f, 0.25f);
                 Vector3f coreScale = scale.mul(0.6f, 0.6f, 0.6f, new Vector3f());
@@ -365,6 +366,6 @@ public class THBulletRenderers {
     }
 
     public interface THBulletRendererFactory {
-        void render(THBulletRenderer renderer, THBullet bullet, VertexConsumer consumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor);
+        void render(THBulletRenderer renderer, Vec3 camPos, THBullet bullet, VertexConsumer consumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor);
     }
 }

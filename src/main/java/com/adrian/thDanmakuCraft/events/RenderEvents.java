@@ -1,15 +1,13 @@
 package com.adrian.thDanmakuCraft.events;
 
 import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
-import com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes;
+import com.adrian.thDanmakuCraft.client.renderer.MyRenderTargets;
 import com.adrian.thDanmakuCraft.client.renderer.RenderUtil;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.entity.EntityTHSpellCardRenderer;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.adrian.thDanmakuCraft.world.entity.EntityTHObjectContainer;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -20,11 +18,8 @@ import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.Mod;
 import org.apache.commons.compress.utils.Lists;
 import org.joml.Matrix4f;
-import org.lwjgl.opengl.GL44;
-import org.lwjgl.opengl.GL46;
 
 import java.util.HashMap;
 import java.util.List;
@@ -69,7 +64,7 @@ public class RenderEvents {
             //ModelViewMatrix = new Matrix4f(RenderSystem.getModelViewMatrix());
             //ProjectionMatrix = new Matrix4f(RenderSystem.getProjectionMatrix());
             RenderTarget target = Minecraft.getInstance().getMainRenderTarget();
-            RenderTypes.DEPTH_BUFFER_TARGET.copyDepthFrom(target);
+            MyRenderTargets.DEPTH_BUFFER_TARGET.copyDepthFrom(target);
             target.bindWrite(false);
         }
 
@@ -130,6 +125,9 @@ public class RenderEvents {
 
     public static void afterRenderLevel(LevelRenderer levelRenderer, float partialTick){
         //EntityTHSpellCardRenderer.afterRenderLevel(levelRenderer,partialTick);
+        //beforeRenderEntities(levelRenderer, partialTick);
+        //RenderEvents.ModelViewMatrix = new Matrix4f(RenderSystem.getModelViewMatrix());
+        //RenderEvents.ProjectionMatrix = new Matrix4f(RenderSystem.getProjectionMatrix());
     }
 
 

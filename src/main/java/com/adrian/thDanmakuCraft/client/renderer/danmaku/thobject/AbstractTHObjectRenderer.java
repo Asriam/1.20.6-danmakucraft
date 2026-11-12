@@ -28,7 +28,7 @@ import org.joml.Vector3f;
 @OnlyIn(value = Dist.CLIENT)
 public abstract class AbstractTHObjectRenderer<T extends THObject>{
 
-    private final EntityRenderDispatcher renderDispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
+    public static final EntityRenderDispatcher renderDispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
 
     public AbstractTHObjectRenderer(THObjectRendererProvider.Context context) {
     }

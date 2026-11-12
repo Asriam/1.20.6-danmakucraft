@@ -1,9 +1,7 @@
 package com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.laser;
 
 import com.adrian.thDanmakuCraft.client.renderer.RayCastingHelper;
-import com.adrian.thDanmakuCraft.client.renderer.danmaku.THObjectContainerRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.type.RenderTypes;
-import com.adrian.thDanmakuCraft.client.renderer.type.THBlendMode;
 import com.adrian.thDanmakuCraft.client.renderer.buffer.VertexBuilder;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.AbstractTHObjectRenderer;
 import com.adrian.thDanmakuCraft.client.renderer.danmaku.thobject.THObjectRendererProvider;
@@ -18,7 +16,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import org.joml.Matrix3f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -120,20 +117,17 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
         Vector3f rotation = laser.getOffsetRotation(partialTicks);
         Vector3f offsetRotation = new Vector3f(rotation.x,-rotation.y,-rotation.z);
         Vector3f scale = new Vector3f(laserWidth,laserWidth,laserLength);
-        VertexBuilder builder = new VertexBuilder(THObjectContainerRenderer.ELLIPSOID_TEST_BUFFER);
-        Vec3 camPos = Minecraft.getInstance().getEntityRenderDispatcher().camera.getPosition();
-        Vec3 pos1 = laserPos.add(laser.getOffsetLaserCenter(partialTicks));
-        Vector3f pos = pos1.subtract(camPos).toVector3f();
-
+        VertexBuilder builder = new VertexBuilder(vertexConsumer);
+        Vec3 camPos = AbstractTHObjectRenderer.renderDispatcher.camera.getPosition();
         // 用 ellipsoid 的長軸（local Z）反推頭尾，交給最小包圍四邊形的版本
-        Matrix3f rot = new Matrix3f().rotationZ(offsetRotation.z)
+        /*Matrix3f rot = new Matrix3f().rotationZ(offsetRotation.z)
                 .mul(new Matrix3f().rotationY(offsetRotation.y))
-                .mul(new Matrix3f().rotationX(offsetRotation.x));
-        Vector3f axis = rot.getColumn(2, new Vector3f());
-        Vector3f head = new Vector3f(pos).sub(new Vector3f(axis).mul(laserLength));
-        Vector3f tail = new Vector3f(pos).add(new Vector3f(axis).mul(laserLength));
-        //Vector3f head = laser.getOffsetPosition(partialTicks).subtract(camPos).toVector3f();
-        //Vector3f tail = laser.getOffsetEndPos(partialTicks).subtract(camPos).toVector3f();
+                .mul(new Matrix3f().rotationX(offsetRotation.x));*/
+        //Vector3f axis = rot.getColumn(2, new Vector3f());
+        //Vector3f head = new Vector3f(pos).sub(new Vector3f(axis).mul(laserLength));
+        //Vector3f tail = new Vector3f(pos).add(new Vector3f(axis).mul(laserLength));
+        Vector3f head = laserPos.subtract(camPos).toVector3f();//laser.getOffsetPosition(partialTicks).subtract(camPos).toVector3f();
+        Vector3f tail = laser.getOffsetEndPos(partialTicks).subtract(camPos).toVector3f();
         float boxWidth = laserWidth * 2.0f;
 
         RayCastingHelper.renderEllipsoidForLaser(
@@ -158,8 +152,8 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
                 laserCoreColor,
                 new Vector4f(0.0f, 1.0f,0.3f, 1.0f)
         );
-
-        /*RayCastingHelper.renderEllipsoid(
+        /*Vector3f pos = laserPos.add(laser.getOffsetLaserCenter(partialTicks)).subtract(camPos).toVector3f();
+        RayCastingHelper.renderEllipsoidOnScreen(
                 builder,
                 pos,
                 offsetRotation,
@@ -168,7 +162,7 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
                 laserCoreColor,
                 new Vector4f(0.0f, 1.0f,0.3f, 1.0f)
         );
-        RayCastingHelper.renderEllipsoid(
+        RayCastingHelper.renderEllipsoidOnScreen(
                 builder,
                 pos,
                 offsetRotation,
@@ -181,7 +175,9 @@ public class THLaserRenderer extends AbstractTHObjectRenderer<THLaser> {
 
     @Override
     public RenderType getRenderType(THLaser laser){
-        return RenderTypes.TEST_RENDER_TYPE_FUNCTION.apply(new RenderTypes.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(laser.getBlend()), true));
+        //return RenderTypes.TEST_ELLIPSOID;
+        return RenderTypes.TEST_ELLIPSOID_2;
+        //return RenderTypes.TEST_RENDER_TYPE_FUNCTION.apply(new RenderTypes.TEST_RENDER_TYPE_FUNCTION_CONTEXT(THBlendMode.getBlendMode(laser.getBlend()), true));
     }
 
     @Override
