@@ -50,8 +50,21 @@ public class ModVertexFormats {
             VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.POSITION, 3);
     public static final VertexFormatElement VEC4 = VertexFormatElement.register(24, 0,
             VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 4);
+    public static final VertexFormatElement SHAPE = VertexFormatElement.register(25, 0,
+            VertexFormatElement.Type.SHORT, VertexFormatElement.Usage.UV, 2);
 
     public static final VertexFormat TEST_ELLIPSOID_VERTEXTFORMAT = VertexFormat.builder()
+            .add("Position", VertexFormatElement.POSITION)
+            .add("Position2", POSITION2)
+            .add("Rotation", ROTATION)
+            .add("Scale", SCALE)
+            .add("Color", VertexFormatElement.COLOR)
+            .add("Color2", COLOR2)
+            .add( "VEC4", VEC4)
+            .add("Shape", SHAPE)
+            .build();
+
+    public static final VertexFormat TEST_ELLIPSOID_VERTEXTFORMAT_2 = VertexFormat.builder()
             .add("Position", VertexFormatElement.POSITION)
             .add("Position2", POSITION2)
             .add("Rotation", ROTATION)

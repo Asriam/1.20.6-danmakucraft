@@ -1,15 +1,11 @@
 package com.adrian.thDanmakuCraft.client.renderer;
 
-import com.adrian.thDanmakuCraft.THDanmakuCraftMod;
 import com.adrian.thDanmakuCraft.client.renderer.buffer.VertexBuilder;
-import com.adrian.thDanmakuCraft.events.RenderEvents;
 import com.adrian.thDanmakuCraft.util.Color;
 import com.adrian.thDanmakuCraft.world.danmaku.thobject.THObject;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexSorting;
 import com.mojang.math.Axis;
-import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
@@ -26,6 +22,16 @@ public class RayCastingHelper {
     public static boolean DEBUG_MATRIX = false;
     private static long lastMatrixLog = 0L;
 
+    public enum Shape{
+        Sphere((short) 1),Ellipsoid((short) 2), Cube((short) 3), Star((short) 4);
+
+        public final short shapeId;
+
+        Shape(short shapeId) {
+            this.shapeId = shapeId;
+        }
+    }
+
     public static void renderEllipsoid(
             VertexBuilder builder,
             Vector3f center,
@@ -41,10 +47,31 @@ public class RayCastingHelper {
         Vector3f right = new Vector3f(1.0f, 0.0f, 0.0f).rotate(camRot);
         Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f).rotate(camRot);
         float half = 1.6f * Math.max(Math.abs(scale.x), Math.max(Math.abs(scale.y), Math.abs(scale.z)));
-        ellipsoidVertex(builder, center, right, up, -half, -half, rotation, scale, color, coreColor, vector4f);
-        ellipsoidVertex(builder, center, right, up, half, -half, rotation, scale, color, coreColor, vector4f);
-        ellipsoidVertex(builder, center, right, up, half, half, rotation, scale, color, coreColor, vector4f);
-        ellipsoidVertex(builder, center, right, up, -half, half, rotation, scale, color, coreColor, vector4f);
+        vertex(builder, center, right, up, -half, -half, rotation, scale, color, coreColor, vector4f, Shape.Ellipsoid);
+        vertex(builder, center, right, up, half, -half, rotation, scale, color, coreColor, vector4f, Shape.Ellipsoid);
+        vertex(builder, center, right, up, half, half, rotation, scale, color, coreColor, vector4f, Shape.Ellipsoid);
+        vertex(builder, center, right, up, -half, half, rotation, scale, color, coreColor, vector4f, Shape.Ellipsoid);
+    }
+
+    public static void renderShape(
+            VertexBuilder builder,
+            Vector3f center,
+            Vector3f rotation,
+            Vector3f scale,
+            Color color, Color coreColor, Vector4f vector4f, Shape shape){
+        // 四邊形必須面向相機：否則從某些角度看過去會變成一直線，
+        // 光線就不會穿過 ellipsoid（遠處會縮小到看不見）。
+        //Quaternionf camRot = getCamera().rotation();
+        Vec2 rot = THObject.VectorAngleToRadAngle(new Vec3(center));
+        Quaternionf camRot = new Quaternionf().rotateY(rot.y- Mth.PI).rotateX(rot.x);
+
+        Vector3f right = new Vector3f(1.0f, 0.0f, 0.0f).rotate(camRot);
+        Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f).rotate(camRot);
+        float half = 1.6f * Math.max(Math.abs(scale.x), Math.max(Math.abs(scale.y), Math.abs(scale.z)));
+        vertex(builder, center, right, up, -half, -half, rotation, scale, color, coreColor, vector4f, shape);
+        vertex(builder, center, right, up, half, -half, rotation, scale, color, coreColor, vector4f, shape);
+        vertex(builder, center, right, up, half, half, rotation, scale, color, coreColor, vector4f, shape);
+        vertex(builder, center, right, up, -half, half, rotation, scale, color, coreColor, vector4f, shape);
     }
 
     /**
@@ -129,16 +156,6 @@ public class RayCastingHelper {
         float radius = Math.max(Math.max(Math.abs(scale.x), Math.abs(scale.y)), Math.max(width * 0.5f, 1.0e-4f));
 
         Matrix4f modelView = RenderSystem.getModelViewMatrix();
-        //Matrix4f projection = RenderSystem.getProjectionMatrix();
-        //Matrix4f projection = Minecraft.getInstance().gameRenderer.getProjectionMatrix(1.0d);
-
-        /*if (Minecraft.getInstance().options.bobView().get()) {
-            PoseStack posestack = new PoseStack();
-            bobView(posestack, Minecraft.getInstance().gameRenderer.getMainCamera().getPartialTickTime());
-            Matrix4f projection = new Matrix4f(RenderSystem.getProjectionMatrix());
-            projection.mul(posestack.last().pose().invert());
-            RenderSystem.setProjectionMatrix(projection, VertexSorting.DISTANCE_TO_ORIGIN);
-        }*/
 
         Vector3f a = modelView.transformPosition(new Vector3f(head), new Vector3f());
         Vector3f b = modelView.transformPosition(new Vector3f(tail), new Vector3f());
@@ -358,12 +375,13 @@ public class RayCastingHelper {
                 .color(color)
                 .color(coreColor)
                 .vec4(params.x, params.y, params.z, params.w)
+                .shape(Shape.Ellipsoid.shapeId)
                 .endVertex();
     }
 
     /** 寫一個 billboard 頂點：center + right*x + up*y。 */
-        public static void ellipsoidVertex(VertexBuilder builder, Vector3f center, Vector3f right, Vector3f up,
-                                            float x, float y, Vector3f rotation, Vector3f scale, Color color, Color coreColor, Vector4f vector4f) {
+        public static void vertex(VertexBuilder builder, Vector3f center, Vector3f right, Vector3f up,
+                                  float x, float y, Vector3f rotation, Vector3f scale, Color color, Color coreColor, Vector4f vector4f, Shape shape) {
             builder.vertex(center.x + right.x * x + up.x * y,
                             center.y + right.y * x + up.y * y,
                             center.z + right.z * x + up.z * y)
@@ -373,6 +391,7 @@ public class RayCastingHelper {
                     .color(color)
                     .color(coreColor)
                     .vec4(vector4f.x,vector4f.y,vector4f.z,vector4f.w)
+                    .shape(shape.shapeId)
                     .endVertex();
         }
 }

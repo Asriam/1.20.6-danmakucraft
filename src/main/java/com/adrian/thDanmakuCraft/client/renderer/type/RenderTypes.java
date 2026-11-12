@@ -55,7 +55,9 @@ public class RenderTypes extends RenderStateShard{
 
     public static final ShaderStateShard RENDER_ELLIPSOID_SHADER = new ShaderStateShard(() -> {
         ShaderInstance shader = ShaderLoader.RENDER_ELLIPSOID_SHADER;
-        shader.setSampler("DepthBuffer", MyRenderTargets.DEPTH_BUFFER.getDepthTextureId());
+        if(shader != null) {
+            shader.setSampler("DepthBuffer", MyRenderTargets.DEPTH_BUFFER.getDepthTextureId());
+        }
         return shader ;
     });
 
@@ -270,7 +272,7 @@ public class RenderTypes extends RenderStateShard{
 
     public static final RenderType TEST_ELLIPSOID_2 = create(
             "test_ellipsoid_2",
-            ModVertexFormats.TEST_ELLIPSOID_VERTEXTFORMAT,
+            ModVertexFormats.TEST_ELLIPSOID_VERTEXTFORMAT_2,
             VertexFormat.Mode.QUADS,
             1536,
             false,

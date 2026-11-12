@@ -15,6 +15,7 @@ in vec4 CoreColor;
 in vec3 vRayDirection;
 in mat4 inversedPojMat;
 in vec4 params;
+flat in int ShapeType;
 
 out vec4 fragColor;
 
@@ -45,7 +46,14 @@ float GetCameraDistance(vec2 uv, float rawDepth)
 void main()
 {
     vec2 texCoord = gl_FragCoord.xy/ScreenSize;
-    UvDepthNormal e1 = RayCastingElliposid(ModelViewMat, ProjMat, vRayDirection, EllipsoidPosition, EllipsoidRotation, EllipsoidRadius, true);
+    UvDepthNormal e1;
+    switch (ShapeType) {
+        case 1: e1 = RayCastingElliposid(ModelViewMat, ProjMat, vRayDirection, EllipsoidPosition, EllipsoidRotation, EllipsoidRadius, true) ; break;
+        case 2: e1 = RayCastingElliposid(ModelViewMat, ProjMat, vRayDirection, EllipsoidPosition, EllipsoidRotation, EllipsoidRadius, true); break;
+        case 3: e1 = RayCastingCube(ModelViewMat, ProjMat, vRayDirection, EllipsoidPosition, EllipsoidRotation, EllipsoidRadius, true); break;
+        case 4: e1 = RayCastingStar(ModelViewMat, ProjMat, vRayDirection, EllipsoidPosition, EllipsoidRotation, EllipsoidRadius, 0.55f, 0.85f, true); break;
+        default : e1 = RayCastingElliposid(ModelViewMat, ProjMat, vRayDirection, EllipsoidPosition, EllipsoidRotation, EllipsoidRadius, true) ; break;
+    }
     gl_FragDepth = e1.depth;
     vec3 viewAngle = normalize(-vRayDirection);
     float rimStrength = 1 - max(dot(viewAngle, e1.normal),0.0f);

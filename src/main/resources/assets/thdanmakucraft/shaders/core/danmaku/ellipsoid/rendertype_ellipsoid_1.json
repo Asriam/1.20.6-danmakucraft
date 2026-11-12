@@ -6,7 +6,7 @@
     },
     "vertex": "thdanmakucraft:danmaku/ellipsoid/rendertype_ellipsoid_1",
     "fragment": "thdanmakucraft:danmaku/ellipsoid/rendertype_ellipsoid_1",
-    "attributes": [ "Position", "Position2", "Rotation", "Scale" , "VEC4", "UV"],
+    "attributes": [ "Position", "Position2", "Rotation", "Scale" , "VEC4", "Shape"],
     "samplers": [
         { "name": "DepthBuffer" }
     ],

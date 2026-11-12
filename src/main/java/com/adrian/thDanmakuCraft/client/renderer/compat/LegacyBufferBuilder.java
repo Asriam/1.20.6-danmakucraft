@@ -147,6 +147,16 @@ public class LegacyBufferBuilder implements VertexConsumer {
         this.data.putFloat(absoluteOffset, value);
     }
 
+    private void putIntAt(int absoluteOffset, int value) {
+        ensureVertex();
+        this.data.putInt(absoluteOffset, value);
+    }
+
+    private void putShortAt(int absoluteOffset, short value) {
+        ensureVertex();
+        this.data.putShort(absoluteOffset, value);
+    }
+
     private void putByteAt(int absoluteOffset, byte value) {
         ensureVertex();
         this.data.put(absoluteOffset, value);
@@ -162,6 +172,28 @@ public class LegacyBufferBuilder implements VertexConsumer {
         ensureVertexOpen();
         markWritten(this.elementIndex);
         putFloatAt(this.vertexStart + elementOffset(this.elementIndex) + index, value);
+        return this;
+    }
+
+    public LegacyBufferBuilder putInt(int index, int value) {
+        if (this.elementIndex >= this.elementCount) {
+            warnOverrun();
+            return this;
+        }
+        ensureVertexOpen();
+        markWritten(this.elementIndex);
+        putIntAt(this.vertexStart + elementOffset(this.elementIndex) + index, value);
+        return this;
+    }
+
+    public LegacyBufferBuilder putShort(int index, short value) {
+        if (this.elementIndex >= this.elementCount) {
+            warnOverrun();
+            return this;
+        }
+        ensureVertexOpen();
+        markWritten(this.elementIndex);
+        putShortAt(this.vertexStart + elementOffset(this.elementIndex) + index, value);
         return this;
     }
 

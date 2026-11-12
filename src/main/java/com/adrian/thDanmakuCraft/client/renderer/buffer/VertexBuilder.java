@@ -22,7 +22,6 @@ public class VertexBuilder {
     }
 
     public VertexBuilder vertex(double x, double y, double z){
-        //builder.vertex(x,y,z);
         builder.putFloat(0, (float)x);
         builder.putFloat(4, (float)y);
         builder.putFloat(8, (float)z);
@@ -31,7 +30,6 @@ public class VertexBuilder {
     }
 
     public VertexBuilder vec4(double x, double y, double z, double w){
-        //builder.vertex(x,y,z);
         builder.putFloat(0, (float)x);
         builder.putFloat(4, (float)y);
         builder.putFloat(8, (float)z);
@@ -40,9 +38,15 @@ public class VertexBuilder {
         return this;
     }
 
+    public VertexBuilder shape(short shape){
+        builder.putShort(0, shape);
+        //builder.putShort(4, shape);
+        builder.nextElement();
+        return this;
+    }
+
     public VertexBuilder vertex(Matrix4f pose, float x, float y, float z){
         Vector3f pos = pose.transformPosition(x, y, z, new Vector3f());
-        //Vector3f pos = new Vector3f(x,y,z);
         return this.vertex(pos.x, pos.y, pos.z);
     }
 
@@ -59,7 +63,6 @@ public class VertexBuilder {
     }
 
     public VertexBuilder color(int r, int g, int b, int a){
-        //builder.color(r,g,b,a);
         builder.putByte(0, (byte)r);
         builder.putByte(1, (byte)g);
         builder.putByte(2, (byte)b);

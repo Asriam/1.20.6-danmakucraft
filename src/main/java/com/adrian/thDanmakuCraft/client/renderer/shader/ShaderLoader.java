@@ -45,7 +45,7 @@ public class ShaderLoader {
                 ModVertexFormats.TEST_ELLIPSOID_VERTEXTFORMAT);
         RENDER_ELLIPSOID_SHADER_2 = _registryShader(resourceProvider,
                 ResourceLocationUtil.thdanmakucraft("danmaku/ellipsoid/rendertype_ellipsoid_2"),
-                ModVertexFormats.TEST_ELLIPSOID_VERTEXTFORMAT);
+                ModVertexFormats.TEST_ELLIPSOID_VERTEXTFORMAT_2);
     }
 
     @SubscribeEvent

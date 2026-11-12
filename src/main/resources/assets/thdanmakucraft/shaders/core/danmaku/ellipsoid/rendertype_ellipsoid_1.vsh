@@ -11,6 +11,7 @@ in vec3 Scale;
 in vec4 Color;
 in vec4 Color2;
 in vec4 VEC4;
+in int Shape;
 
 // 傳給 fragment shader 的資料
 out vec3 EllipsoidPosition;
@@ -22,6 +23,7 @@ out vec4 CoreColor;
 out vec3 vRayDirection;
 out vec4 params;
 out mat4 inversedPojMat;
+flat out int ShapeType;
 
 void main() {
     vec4 viewPos = ModelViewMat * vec4(Position, 1.0);
@@ -34,4 +36,5 @@ void main() {
     CoreColor = Color2;
     params = VEC4;
     inversedPojMat = inverse(ProjMat);
+    ShapeType = Shape;
 }

@@ -16,6 +16,7 @@ import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
@@ -334,6 +335,43 @@ public class THBulletRenderers {
                         color, color.multiply(0.5f), coreColor.multiply(0.4f));
             }
         }
+
+        public static class star_big extends BulletRenderer {
+            public void render(THBulletRenderer renderer, Vec3 camPos, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
+                Vector3f rotation = bullet.getOffsetRotation(partialTicks);
+                Vector3f offsetRotation = new Vector3f(-rotation.x + Mth.DEG_TO_RAD * 90.0f, rotation.y , rotation.z);
+                Vector3f scale = bullet.getScale().mul(new Vector3f(1.0f, 1.0f, 0.3f), new Vector3f());
+                VertexBuilder builder = new VertexBuilder(vertexconsumer);
+                //Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
+                Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
+                Vector3f center = pos1.subtract(camPos).toVector3f();
+                RayCastingHelper.renderShape(new VertexBuilder(THObjectContainerRenderer.BUFFER_2), center, offsetRotation, scale.mul(0.66f,new Vector3f()), coreColor, coreColor, new Vector4f(0.7f, 2.0f, -0.1f, 2.0f),RayCastingHelper.Shape.Star);
+                RayCastingHelper.renderShape(builder, center, offsetRotation, scale, color, color, new Vector4f(0.7f, 2.0f, -0.1f, 2.0f),RayCastingHelper.Shape.Star);
+            }
+
+            @Override
+            public RenderType getRenderType(THBullet bullet) {
+                return RenderTypes.TEST_ELLIPSOID;
+            }
+        }
+
+        public static class star_small extends BulletRenderer {
+            public void render(THBulletRenderer renderer, Vec3 camPos, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
+                Vector3f rotation = bullet.getOffsetRotation(partialTicks);
+                Vector3f offsetRotation = new Vector3f(-rotation.x, rotation.y, rotation.z);
+                Vector3f scale = bullet.getScale().mul(new Vector3f(0.5f, 0.5f, 0.5f), new Vector3f());
+                VertexBuilder builder = new VertexBuilder(vertexconsumer);
+                //Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
+                Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
+                Vector3f center = pos1.subtract(camPos).toVector3f();
+                RayCastingHelper.renderEllipsoid(builder, center, offsetRotation, scale, color, coreColor, new Vector4f(0.7f, 2.0f, -0.1f, 2.0f));
+            }
+
+            @Override
+            public RenderType getRenderType(THBullet bullet) {
+                return RenderTypes.TEST_ELLIPSOID;
+            }
+        }
     }
 
     private static final EnumMap<THBullet.DefaultBulletStyle, BulletRenderer> DefaultBulletRenderers = new EnumMap<>(THBullet.DefaultBulletStyle.class);
@@ -363,6 +401,8 @@ public class THBulletRenderers {
         register(THBullet.DefaultBulletStyle.grain_a, new BulletRenderer.grain_a());
         register(THBullet.DefaultBulletStyle.grain_b, new BulletRenderer.grain_b());
         register(THBullet.DefaultBulletStyle.ellipse, new BulletRenderer.ellipse());
+        register(THBullet.DefaultBulletStyle.star_big, new BulletRenderer.star_big());
+        register(THBullet.DefaultBulletStyle.star_small, new BulletRenderer.star_small());
     }
 
     public interface THBulletRendererFactory {
