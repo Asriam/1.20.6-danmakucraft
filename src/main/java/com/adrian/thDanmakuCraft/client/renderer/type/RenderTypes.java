@@ -20,10 +20,13 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.joml.Matrix4f;
+import org.lwjgl.opengl.GL33;
 
 import java.util.function.Function;
 
 import static net.minecraft.client.renderer.RenderType.*;
+import static org.lwjgl.opengl.GL11C.GL_TRIANGLE_STRIP;
+
 @OnlyIn(Dist.CLIENT)
 public class RenderTypes extends RenderStateShard{
 
@@ -57,18 +60,24 @@ public class RenderTypes extends RenderStateShard{
         ShaderInstance shader = ShaderLoader.RENDER_ELLIPSOID_SHADER;
         if(shader != null) {
             shader.setSampler("DepthBuffer", MyRenderTargets.DEPTH_BUFFER.getDepthTextureId());
+            debug1(shader);
         }
         return shader ;
     });
 
+    public static void debug1(ShaderInstance shader){
+        //GL33.glEnableVertexAttribArray(1);
+        //GL33.glVertexAttribDivisor(2,4);
+    }
+
     public static final ShaderStateShard RENDER_ELLIPSOID_SHADER_2 = new ShaderStateShard(() -> {
         ShaderInstance shader = ShaderLoader.RENDER_ELLIPSOID_SHADER_2;
-        debug(shader);
+        debug2(shader);
         shader.setSampler("DepthBuffer", MyRenderTargets.DEPTH_BUFFER.getDepthTextureId());
         return shader ;
     });
 
-    public static void debug(ShaderInstance shader){
+    public static void debug2(ShaderInstance shader){
         Matrix4f projection = new Matrix4f(RenderSystem.getProjectionMatrix());
         if (Minecraft.getInstance().options.bobView().get()) {
             PoseStack posestack = new PoseStack();

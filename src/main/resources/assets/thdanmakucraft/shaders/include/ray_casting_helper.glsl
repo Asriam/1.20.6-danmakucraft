@@ -259,13 +259,13 @@ UvDepthNormal RayCastingCube(mat4 ModelViewMat, mat4 ProjectionMat, vec3 vRayDir
 }
 
 // -----------------------------------------------------------------------------
-// Analytic 5-point star ray casting（圓潤輪廓、精確求交）
+// Analytic 5-point star ray casting（圓潤輪廓 + 圓潤橫截面）
 // -----------------------------------------------------------------------------
 
 /**
  * 星形輪廓在 theta 方向的半徑。
  *
- * @param roundness 0 = 星角較尖（餘弦輪廓），1 = 非常圓潤（平滑的花瓣狀星形）
+ * @param roundness 0 = 星角較尖（餘弦輪廓），1 = 非常圓潤（平滑花瓣狀星形）
  */
 float StarRadiusAt(float theta, float outerRadius, float innerRatio, float roundness) {
     float base = 0.5 + 0.5 * cos(5.0 * theta);   // 1 = 尖端方向，0 = 內凹方向
@@ -277,6 +277,22 @@ float StarRadiusAt(float theta, float outerRadius, float innerRatio, float round
 vec2 StarBoundary(float theta, float outerRadius, float innerRatio, float roundness) {
     float r = StarRadiusAt(theta, outerRadius, innerRatio, roundness);
     return vec2(cos(theta), sin(theta)) * r;
+}
+
+/**
+ * 厚度剖面：s = 0 是中心、s = 1 是輪廓，回傳 0..1 的高度比例。
+ *
+ * <p>用 (1 - s²)²：中心與輪廓兩端的導數都是 0，所以橫截面是
+ * 平順的透鏡形（不是菱形），中心沒有尖點、邊緣也不會出現折線。</p>
+ */
+float StarProfile(float s) {
+    float q = 1.0 - s * s;
+    return q * q;
+}
+
+/** 厚度剖面對 s 的導數。 */
+float StarProfileDerivative(float s) {
+    return -4.0 * s * (1.0 - s * s);
 }
 
 /** Möller–Trumbore 射線-三角形交集。 */
@@ -309,25 +325,34 @@ bool RayCastingTriangle(vec3 ro, vec3 rd, vec3 a, vec3 b, vec3 c,
     return true;
 }
 
-/** 依命中位置直接算錐面的平滑法線（避免看到一片片三角面）。 */
+/**
+ * 用命中位置直接算「平滑曲面」的法線（不是三角面的法線）。
+ *
+ * <p>曲面參數化：S(theta, s) = (s·R(theta)·cos, s·R(theta)·sin, ±H·profile(s))，
+ * 法線 = cross(∂S/∂theta, ∂S/∂s)，所以即使幾何是分段的，打光也是平滑的。</p>
+ */
 vec3 StarSmoothNormal(vec3 hitLocal, float outerRadius, float innerRatio, float roundness,
-                      float capHeight, vec3 rayDir) {
+                      float capHeight, vec3 rdLocal) {
     float theta = atan(hitLocal.y, hitLocal.x);
-    float zSign = hitLocal.z < 0.0 ? -1.0 : 1.0;
-    vec3 apex = vec3(0.0, 0.0, capHeight * zSign);
-
+    float c = cos(theta);
+    float sn = sin(theta);
     float r = StarRadiusAt(theta, outerRadius, innerRatio, roundness);
+
+    float rho = length(hitLocal.xy);
+    float s = clamp(rho / max(r, 1.0e-4), 0.001, 1.0);
+
     const float e = 0.001;
     float dr = (StarRadiusAt(theta + e, outerRadius, innerRatio, roundness)
               - StarRadiusAt(theta - e, outerRadius, innerRatio, roundness)) / (2.0 * e);
 
-    float c = cos(theta);
-    float s = sin(theta);
-    vec3 p = vec3(c * r, s * r, 0.0);
-    vec3 dp = vec3(c * dr - s * r, s * dr + c * r, 0.0);
+    float zSign = hitLocal.z < 0.0 ? -1.0 : 1.0;
+    float df = StarProfileDerivative(s);
 
-    vec3 n = normalize(cross(p - apex, dp));
-    if (dot(n, rayDir) > 0.0) {
+    vec3 dTheta = s * vec3(c * dr - sn * r, sn * dr + c * r, 0.0);
+    vec3 dS = vec3(c * r, sn * r, zSign * capHeight * df);
+
+    vec3 n = normalize(cross(dTheta, dS));
+    if (dot(n, rdLocal) > 0.0) {
         n = -n;
     }
     return n;
@@ -336,11 +361,11 @@ vec3 StarSmoothNormal(vec3 hitLocal, float outerRadius, float innerRatio, float 
 /**
  * 五角星 ray casting：解析求交（不用 ray marching）。
  *
- * <p>輪廓是「圓潤的五角星」曲線（半徑隨角度連續變化），前後各一個頂點在
- * z = ±{@code _size.z}，用 32 段扇形三角面逼近；法線用錐面解析解算，
- * 所以輪廓平滑、也不會看到一片片平面。</p>
+ * <p>輪廓是半徑隨角度連續變化的「圓潤五角星」曲線；
+ * 厚度方向用 {@link StarProfile} 的弧面（透鏡形橫截面），
+ * 幾何以 64 段扇形逼近、法線用解析曲面算，所以輪廓與明暗都是平滑的。</p>
  *
- * @param _size      (星形半徑, 星形半徑, 前後頂點高度)
+ * @param _size      (星形半徑, 星形半徑, 中心高度)
  * @param innerRatio 內外半徑比（0.45 左右）
  * @param roundness  輪廓圓潤度：0 = 星角較尖，1 = 很圓潤
  */
@@ -361,7 +386,8 @@ UvDepthNormal RayCastingStar(mat4 ModelViewMat, mat4 ProjectionMat, vec3 vRayDir
     float ratio = clamp(innerRatio, 0.05, 0.95);
     float round_ = clamp(roundness, 0.0, 1.0);
 
-    const int SEGMENTS = 32;
+    const int SEGMENTS = 64;
+    const float MID_S = 0.55;
 
     float bestT = 1.0e30;
     bool hit = false;
@@ -372,27 +398,42 @@ UvDepthNormal RayCastingStar(mat4 ModelViewMat, mat4 ProjectionMat, vec3 vRayDir
     float cc = dot(roLocal, roLocal) - boundRadius * boundRadius;
     float hh = b * b - cc;
 
+    // height-field 固體：只看得到面向相機的那一層，另一層永遠被遮住
+    float zSign = roLocal.z >= 0.0 ? 1.0 : -1.0;
+
     if (hh >= 0.0) {
-        // 先算好輪廓取樣點，避免每個三角面重複計算
-        vec2 boundary[SEGMENTS + 1];
+        // 輪廓取樣點（兩個環共用，中環直接縮放即可）
+        vec2 rim[SEGMENTS + 1];
         for (int j = 0; j <= SEGMENTS; j++) {
             float theta = float(j) * PI * 2.0 / float(SEGMENTS);
-            boundary[j] = StarBoundary(theta, outer, ratio, round_);
+            rim[j] = StarBoundary(theta, outer, ratio, round_);
         }
 
-        for (int cap = 0; cap < 2; cap++) {
-            float zSign = (cap == 0) ? 1.0 : -1.0;
-            vec3 apex = vec3(0.0, 0.0, capHeight * zSign);
+        vec3 apex = vec3(0.0, 0.0, capHeight * zSign);
+        float midZ = capHeight * StarProfile(MID_S) * zSign;
 
-            for (int j = 0; j < SEGMENTS; j++) {
-                float tHit;
-                vec3 normal;
-                if (RayCastingTriangle(roLocal, rdLocal, apex,
-                                       vec3(boundary[j], 0.0), vec3(boundary[j + 1], 0.0),
-                                       tHit, normal) && tHit < bestT) {
-                    bestT = tHit;
-                    hit = true;
-                }
+        for (int j = 0; j < SEGMENTS; j++) {
+            float tHit;
+            vec3 normal;
+
+            vec3 a = vec3(rim[j] * MID_S, midZ);
+            vec3 b = vec3(rim[j + 1] * MID_S, midZ);
+            vec3 c = vec3(rim[j], 0.0);
+            vec3 d = vec3(rim[j + 1], 0.0);
+
+            // 中心扇形（apex -> 中環）
+            if (RayCastingTriangle(roLocal, rdLocal, apex, a, b, tHit, normal) && tHit < bestT) {
+                bestT = tHit;
+                hit = true;
+            }
+            // 中環 -> 輪廓（兩個三角形組成的四邊形）
+            if (RayCastingTriangle(roLocal, rdLocal, a, c, d, tHit, normal) && tHit < bestT) {
+                bestT = tHit;
+                hit = true;
+            }
+            if (RayCastingTriangle(roLocal, rdLocal, a, d, b, tHit, normal) && tHit < bestT) {
+                bestT = tHit;
+                hit = true;
             }
         }
     }
@@ -416,6 +457,109 @@ UvDepthNormal RayCastingStar(mat4 ModelViewMat, mat4 ProjectionMat, vec3 vRayDir
     // 平面投影；背面做鏡像，貼圖方向才不會反
     vec2 starUV = hitLocal.xy / (outer * 2.0) + 0.5;
     if (normalLocal.z < 0.0) {
+        starUV.x = 1.0 - starUV.x;
+    }
+
+    // Depth
+    vec4 clipPos = ProjectionMat * vec4(hitVS, 1.0);
+
+    if (shouldDiscard && clipPos.w <= 0.0) {
+        discard;
+    }
+
+    float depth = clipPos.z / clipPos.w;
+
+    UvDepthNormal result;
+    result.uv = starUV;
+    result.depth = clamp(depth * 0.5 + 0.5, 0.0, 1.0);
+    result.normal = normalVS;
+    return result;
+}
+// -----------------------------------------------------------------------------
+// Lucky paper star ray casting（10 個平面摺痕）
+// -----------------------------------------------------------------------------
+
+/** 星形多邊形的第 i 個頂點（i = 0..9；偶數 = 尖端、奇數 = 內凹點）。 */
+vec2 PaperStarVertex(int i, float outerRadius, float innerRatio) {
+    float angle = float(i) * PI * 0.2 + PI * 0.5;
+    float radius = ((i / 2) * 2 == i) ? outerRadius : outerRadius * innerRatio;
+    return vec2(cos(angle), sin(angle)) * radius;
+}
+
+/**
+ * 幸運星（lucky paper star）ray casting。
+ *
+ * <p>正面/背面各由 10 個平面三角形組成（中心一個尖點、輪廓是五角星多邊形）：
+ * 相鄰面法線不同，所以星角是凸摺線（ridge）、內凹點是凹摺線（valley），
+ * 就是紙摺幸運星那種「一顆一顆面」的樣子。每個方向只要 10 次三角形求交。</p>
+ *
+ * @param _size      (星形半徑, 星形半徑, 中心尖點高度)
+ * @param innerRatio 內外半徑比（0.45 左右）
+ */
+UvDepthNormal RayCastingPaperStar(mat4 ModelViewMat, mat4 ProjectionMat, vec3 vRayDirection,
+                                  vec3 centerPos, vec3 rotation, vec3 _size,
+                                  float innerRatio, bool shouldDiscard) {
+    mat3 viewRot = mat3(ModelViewMat[0].xyz, ModelViewMat[1].xyz, ModelViewMat[2].xyz);
+    mat3 R = viewRot * rotationMatrix(rotation);
+    vec3 centerVS = (ModelViewMat * vec4(centerPos, 1.0)).xyz;
+
+    vec3 roLocal = transpose(R) * (vec3(0.0) - centerVS);
+    vec3 rdLocal = normalize(transpose(R) * normalize(vRayDirection));
+
+    vec3 halfSize = max(abs(_size), vec3(1.0e-4));
+    float outer = halfSize.x;
+    float peak = halfSize.z;
+    float ratio = clamp(innerRatio, 0.05, 0.95);
+
+    float bestT = 1.0e30;
+    vec3 bestNormal = vec3(0.0, 0.0, 1.0);
+    bool hit = false;
+
+    // 包圍球快速剔除
+    float boundRadius = length(vec3(outer, outer, peak));
+    float b = dot(roLocal, rdLocal);
+    float cc = dot(roLocal, roLocal) - boundRadius * boundRadius;
+    float hh = b * b - cc;
+
+    if (hh >= 0.0) {
+        // height field：只看面向相機的那一側
+        float zSign = roLocal.z >= 0.0 ? 1.0 : -1.0;
+        vec3 apex = vec3(0.0, 0.0, peak * zSign);
+
+        for (int i = 0; i < 10; i++) {
+            vec2 v0 = PaperStarVertex(i, outer, ratio);
+            vec2 v1 = PaperStarVertex(i + 1, outer, ratio);
+            float tHit;
+            vec3 normal;
+            if (RayCastingTriangle(roLocal, rdLocal, apex, vec3(v0, 0.0), vec3(v1, 0.0),
+                                   tHit, normal) && tHit < bestT) {
+                bestT = tHit;
+                bestNormal = normal;
+                hit = true;
+            }
+        }
+    }
+
+    if (shouldDiscard && !hit) {
+        discard;
+    }
+    if (!hit) {
+        bestT = 0.0;
+    }
+
+    // 平面法線：保留摺線的硬邊（這是紙摺感的重點）
+    if (dot(bestNormal, rdLocal) > 0.0) {
+        bestNormal = -bestNormal;
+    }
+
+    vec3 hitLocal = roLocal + rdLocal * bestT;
+    vec3 normalVS = normalize(R * bestNormal);
+    vec3 hitVS = centerVS + R * hitLocal;
+
+    // ------------------------------------------------------------------ UV
+    // 平面投影；背面做鏡像，貼圖方向才不會反
+    vec2 starUV = hitLocal.xy / (outer * 2.0) + 0.5;
+    if (bestNormal.z < 0.0) {
         starUV.x = 1.0 - starUV.x;
     }
 

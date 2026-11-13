@@ -1,4 +1,4 @@
-#version 150
+#version 330 core
 
 uniform mat4 ProjMat;
 uniform mat4 ModelViewMat;
@@ -13,28 +13,30 @@ in vec4 Color2;
 in vec4 VEC4;
 in int Shape;
 
-// 傳給 fragment shader 的資料
-out vec3 EllipsoidPosition;
-out vec3 EllipsoidRotation;
-out vec3 EllipsoidRadius;
-out vec4 BulletColor;
-out vec4 CoreColor;
 // 相機到這個頂點的射線（view space）
 out vec3 vRayDirection;
-out vec4 params;
-out mat4 inversedPojMat;
+// 傳給 fragment shader 的資料
+flat out vec3 EllipsoidPosition;
+flat out vec3 EllipsoidRotation;
+flat out vec3 EllipsoidRadius;
+flat out vec4 BulletColor;
+flat out vec4 CoreColor;
+flat out vec4 params;
+flat out mat4 inversedPojMat;
 flat out int ShapeType;
 
 void main() {
     vec4 viewPos = ModelViewMat * vec4(Position, 1.0);
     gl_Position = ProjMat * viewPos;
     vRayDirection = viewPos.xyz;
-    EllipsoidPosition = Position2;
-    EllipsoidRotation = Rotation;
-    EllipsoidRadius = Scale;
-    BulletColor = Color;
-    CoreColor = Color2;
-    params = VEC4;
-    inversedPojMat = inverse(ProjMat);
-    ShapeType = Shape;
+    if (gl_VertexID == 0){
+        EllipsoidPosition = Position2;
+        EllipsoidRotation = Rotation;
+        EllipsoidRadius = Scale;
+        BulletColor = Color;
+        CoreColor = Color2;
+        params = VEC4;
+        inversedPojMat = inverse(ProjMat);
+        ShapeType = Shape;
+    }
 }

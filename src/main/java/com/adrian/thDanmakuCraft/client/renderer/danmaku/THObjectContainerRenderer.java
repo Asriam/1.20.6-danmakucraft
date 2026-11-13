@@ -75,7 +75,6 @@ public class THObjectContainerRenderer {
 
         final RenderTarget mainRenderTarget = THObjectContainerRenderer.MAIN_RENDER_TARGET;
         final ShaderInstance shader = ShaderLoader.DANMAKU_DEPTH_OUTLINE_SHADER;
-
         if(shader != null) {
             //DEPTH_BUFFER.clear(true);
             MyRenderTargets.DEPTH_BUFFER.copyDepthFrom(mainRenderTarget);

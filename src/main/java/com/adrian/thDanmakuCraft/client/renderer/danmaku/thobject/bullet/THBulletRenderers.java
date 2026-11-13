@@ -340,7 +340,7 @@ public class THBulletRenderers {
             public void render(THBulletRenderer renderer, Vec3 camPos, THBullet bullet, VertexConsumer vertexconsumer, PoseStack poseStack, float partialTicks, Color color, Color coreColor) {
                 Vector3f rotation = bullet.getOffsetRotation(partialTicks);
                 Vector3f offsetRotation = new Vector3f(-rotation.x + Mth.DEG_TO_RAD * 90.0f, rotation.y , rotation.z);
-                Vector3f scale = bullet.getScale().mul(new Vector3f(1.0f, 1.0f, 0.3f), new Vector3f());
+                Vector3f scale = bullet.getScale().mul(new Vector3f(1.0f, 1.0f, 0.5f), new Vector3f());
                 VertexBuilder builder = new VertexBuilder(vertexconsumer);
                 //Vec3 camPos = renderer.getRenderDispatcher().camera.getPosition();
                 Vec3 pos1 = bullet.getOffsetPosition(partialTicks);
